@@ -22,6 +22,9 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import fr.mrmicky.fastboard.FastBoard;
@@ -40,24 +43,32 @@ import org.jspecify.annotations.NullMarked;
 public class SettingsService {
 
     private final BuildSystemPlugin plugin;
+    private final ConfigService configService;
+    private final Messages messages;
+    private final PlayerServiceImpl playerService;
     private final WorldServiceImpl worldService;
 
     private final Map<UUID, FastBoard> boards;
     private final Map<UUID, BukkitTask> scoreboardTasks;
 
-    public SettingsService(BuildSystemPlugin plugin) {
+    public SettingsService(
+            BuildSystemPlugin plugin,
+            ConfigService configService,
+            Messages messages,
+            PlayerServiceImpl playerService,
+            WorldServiceImpl worldService) {
         this.plugin = plugin;
-        this.worldService = plugin.getWorldService();
+        this.configService = configService;
+        this.messages = messages;
+        this.playerService = playerService;
+        this.worldService = worldService;
 
         this.boards = new HashMap<>();
         this.scoreboardTasks = new HashMap<>();
     }
 
     public Settings getSettings(Player player) {
-        return plugin.getPlayerService()
-                .getPlayerStorage()
-                .getBuildPlayer(player)
-                .getSettings();
+        return playerService.getPlayerStorage().getBuildPlayer(player).getSettings();
     }
 
     /**
@@ -66,7 +77,7 @@ public class SettingsService {
      * @param player The player object
      */
     public void displayScoreboard(Player player) {
-        if (!plugin.getConfigService().current().settings().scoreboard()) {
+        if (!configService.current().settings().scoreboard()) {
             return;
         }
 
@@ -79,7 +90,7 @@ public class SettingsService {
             return;
         }
 
-        board.updateTitle(plugin.getMessages().getString("title", player));
+        board.updateTitle(messages.getString("title", player));
         BukkitTask scoreboardTask = Bukkit.getScheduler()
                 .runTaskTimerAsynchronously(plugin, () -> updateScoreboard(player, board), 0L, 20L);
         this.scoreboardTasks.put(player.getUniqueId(), scoreboardTask);
@@ -89,7 +100,7 @@ public class SettingsService {
      * Displays scoreboards for all online players who have it enabled and if enabled in the config.
      */
     public void displayScoreboard() {
-        if (!plugin.getConfigService().current().settings().scoreboard()) {
+        if (!configService.current().settings().scoreboard()) {
             return;
         }
 
@@ -104,7 +115,7 @@ public class SettingsService {
     }
 
     private void updateScoreboard(Player player, FastBoard board) {
-        List<String> body = plugin.getMessages().getStringList("body", player, (line) -> getPlaceholders(line, player));
+        List<String> body = messages.getStringList("body", player, (line) -> getPlaceholders(line, player));
         board.updateLines(body);
     }
 
@@ -136,10 +147,10 @@ public class SettingsService {
             permission = worldData.getPermission();
             project = worldData.getProject();
             creator = builders.hasCreator() ? builders.getCreator().getName() : "-";
-            creation = plugin.getMessages().formatDate(buildWorld.getCreation());
-            lastEdited = plugin.getMessages().formatDate(worldData.getLastEdited());
-            lastLoaded = plugin.getMessages().formatDate(worldData.getLastLoaded());
-            lastUnloaded = plugin.getMessages().formatDate(worldData.getLastUnloaded());
+            creation = messages.formatDate(buildWorld.getCreation());
+            lastEdited = messages.formatDate(worldData.getLastEdited());
+            lastLoaded = messages.formatDate(worldData.getLastLoaded());
+            lastUnloaded = messages.formatDate(worldData.getLastUnloaded());
         }
 
         return new Map.Entry[] {
@@ -172,7 +183,7 @@ public class SettingsService {
     }
 
     public void forceUpdateSidebar(BuildWorld buildWorld) {
-        if (!plugin.getConfigService().current().settings().scoreboard()) {
+        if (!configService.current().settings().scoreboard()) {
             return;
         }
         World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
@@ -183,7 +194,7 @@ public class SettingsService {
     }
 
     public void forceUpdateSidebar(Player player) {
-        if (!plugin.getConfigService().current().settings().scoreboard()
+        if (!configService.current().settings().scoreboard()
                 || !getSettings(player).isScoreboard()) {
             return;
         }

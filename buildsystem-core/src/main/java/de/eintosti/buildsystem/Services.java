@@ -100,15 +100,15 @@ final class Services {
                 new WorldStatusRegistryImpl(plugin, navigatorCategoryRegistry(), messages(), this::world);
         this.customizableIcons = new CustomizableIcons(plugin);
 
-        this.customBlockManager = new CustomBlockManager(plugin);
+        this.customBlockManager = new CustomBlockManager(plugin, this::world);
         this.playerLookupService = new PlayerLookupService(plugin);
-        (this.playerService = new PlayerServiceImpl(plugin)).init();
+        (this.playerService = new PlayerServiceImpl(plugin, config(), this::world)).init();
         this.navigatorEditorService = new NavigatorEditorService();
         this.noClipService = new NoClipService(plugin);
         (this.worldService = new WorldServiceImpl(plugin, messages(), this::spawn)).init();
         this.backupService = new BackupServiceImpl(plugin);
-        this.settingsService = new SettingsService(plugin);
-        this.spawnService = new SpawnService(plugin);
+        this.settingsService = new SettingsService(plugin, config(), messages(), player(), world());
+        this.spawnService = new SpawnService(plugin, world());
         this.menuItems = new MenuItems(plugin, config(), messages(), settings());
         // Created after MenuItems (which it needs); nothing constructed earlier depends on it.
         this.navigatorService = new NavigatorService(

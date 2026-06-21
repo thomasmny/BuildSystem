@@ -21,6 +21,8 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.util.DirectionUtil;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
+import java.util.function.Supplier;
 import org.bukkit.Axis;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -47,9 +49,11 @@ import org.jspecify.annotations.NullMarked;
 public class CustomBlockManager implements Listener {
 
     private final BuildSystemPlugin plugin;
+    private final Supplier<WorldServiceImpl> worldService;
 
-    public CustomBlockManager(BuildSystemPlugin plugin) {
+    public CustomBlockManager(BuildSystemPlugin plugin, Supplier<WorldServiceImpl> worldService) {
         this.plugin = plugin;
+        this.worldService = worldService;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -60,7 +64,7 @@ public class CustomBlockManager implements Listener {
         }
 
         Player player = event.getPlayer();
-        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(player.getWorld());
+        BuildWorld buildWorld = worldService.get().getWorldStorage().getBuildWorld(player.getWorld());
         boolean isBuildWorld = buildWorld != null;
 
         ItemStack itemStack = event.getItemInHand();
