@@ -108,13 +108,13 @@ public class WorldServiceImpl implements WorldService {
     @Override
     @Contract("_ -> new")
     public WorldBuilder newWorld(String name) {
-        return new WorldBuilderImpl(plugin, name);
+        return new WorldBuilderImpl(WorldContext.fromPlugin(plugin), worldStorage, plugin.getDataFolder(), name);
     }
 
     @Override
     @Contract("_ -> new")
     public WorldImporter importWorld(String name) {
-        return new WorldImporterImpl(plugin, name);
+        return new WorldImporterImpl(WorldContext.fromPlugin(plugin), worldStorage, name);
     }
 
     public void startWorldNameInput(
@@ -143,7 +143,8 @@ public class WorldServiceImpl implements WorldService {
             }
         }
 
-        WorldImporterImpl worldImporter = new WorldImporterImpl(plugin, worldName)
+        WorldImporterImpl worldImporter = new WorldImporterImpl(
+                        WorldContext.fromPlugin(plugin), worldStorage, worldName)
                 .type(worldType)
                 .creator(creator)
                 .customGenerator(
