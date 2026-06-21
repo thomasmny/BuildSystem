@@ -21,7 +21,6 @@ import static java.util.Map.entry;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.Displayable;
@@ -29,7 +28,10 @@ import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.*;
 import java.util.Map.Entry;
 import org.bukkit.Material;
@@ -40,13 +42,19 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class FolderSubCommand extends AbstractSubCommand {
 
-    private final WorldServiceImpl worldService;
     private final FolderStorage folderStorage;
+    private final NavigatorCategoryRegistryImpl navigatorCategoryRegistry;
+    private final Prompts prompts;
 
-    public FolderSubCommand(BuildSystemPlugin plugin) {
-        super(plugin);
-        this.worldService = plugin.getWorldService();
+    public FolderSubCommand(
+            Messages messages,
+            WorldServiceImpl worldService,
+            NavigatorCategoryRegistryImpl navigatorCategoryRegistry,
+            Prompts prompts) {
+        super(messages, worldService);
         this.folderStorage = worldService.getFolderStorage();
+        this.navigatorCategoryRegistry = navigatorCategoryRegistry;
+        this.prompts = prompts;
     }
 
     @Override
@@ -138,8 +146,7 @@ public class FolderSubCommand extends AbstractSubCommand {
                         .groups(
                                 buildWorld.getData().getVisibility(),
                                 buildWorld.getData().getStatus().getId())) {
-                    NavigatorCategory worldCategory =
-                            plugin.getNavigatorCategoryRegistry().getCategoryForWorld(buildWorld);
+                    NavigatorCategory worldCategory = navigatorCategoryRegistry.getCategoryForWorld(buildWorld);
                     messages.sendMessage(
                             player,
                             "worlds_folder_world_category_mismatch",
@@ -178,7 +185,7 @@ public class FolderSubCommand extends AbstractSubCommand {
             return;
         }
 
-        this.plugin.getPrompts().prompt(player).title("enter_world_permission").request(input -> {
+        this.prompts.prompt(player).title("enter_world_permission").request(input -> {
             folder.setPermission(input.trim());
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
@@ -192,7 +199,7 @@ public class FolderSubCommand extends AbstractSubCommand {
             return;
         }
 
-        this.plugin.getPrompts().prompt(player).title("enter_world_project").request(input -> {
+        this.prompts.prompt(player).title("enter_world_project").request(input -> {
             folder.setProject(input.trim());
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);

@@ -17,12 +17,13 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.entity.Player;
@@ -31,8 +32,8 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class UnimportSubCommand extends AbstractSubCommand {
 
-    public UnimportSubCommand(BuildSystemPlugin plugin) {
-        super(plugin);
+    public UnimportSubCommand(Messages messages, WorldServiceImpl worldService) {
+        super(messages, worldService);
     }
 
     @Override
@@ -42,7 +43,7 @@ public class UnimportSubCommand extends AbstractSubCommand {
             return;
         }
 
-        plugin.getWorldService()
+        worldService
                 .unimportWorld(buildWorld, SaveBehavior.SAVE)
                 .thenRun(() -> messages.sendMessage(
                         player, "worlds_unimport_finished", Map.entry("%world%", buildWorld.getName())));
@@ -53,7 +54,7 @@ public class UnimportSubCommand extends AbstractSubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        WorldStorage ws = plugin.getWorldService().getWorldStorage();
+        WorldStorage ws = worldService.getWorldStorage();
         return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
     }
 

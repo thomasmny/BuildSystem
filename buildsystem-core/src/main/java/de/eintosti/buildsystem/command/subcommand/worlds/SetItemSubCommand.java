@@ -18,11 +18,12 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.Material;
@@ -33,8 +34,8 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SetItemSubCommand extends AbstractSubCommand {
 
-    public SetItemSubCommand(BuildSystemPlugin plugin) {
-        super(plugin);
+    public SetItemSubCommand(Messages messages, WorldServiceImpl worldService) {
+        super(messages, worldService);
     }
 
     @Override
@@ -59,7 +60,7 @@ public class SetItemSubCommand extends AbstractSubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        WorldStorage ws = plugin.getWorldService().getWorldStorage();
+        WorldStorage ws = worldService.getWorldStorage();
         return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
     }
 

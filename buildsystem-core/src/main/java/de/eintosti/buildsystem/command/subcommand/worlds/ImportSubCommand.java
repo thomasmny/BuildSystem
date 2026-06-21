@@ -20,14 +20,17 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import static java.util.Map.entry;
 
 import com.google.common.collect.Lists;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.StringCleaner;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.*;
@@ -39,8 +42,20 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class ImportSubCommand extends AbstractSubCommand {
 
-    public ImportSubCommand(BuildSystemPlugin plugin) {
-        super(plugin);
+    private final ConfigService configService;
+    private final PlayerLookupService playerLookupService;
+    private final TaskScheduler scheduler;
+
+    public ImportSubCommand(
+            Messages messages,
+            WorldServiceImpl worldService,
+            ConfigService configService,
+            PlayerLookupService playerLookupService,
+            TaskScheduler scheduler) {
+        super(messages, worldService);
+        this.configService = configService;
+        this.playerLookupService = playerLookupService;
+        this.scheduler = scheduler;
     }
 
     @Override
@@ -55,7 +70,6 @@ public class ImportSubCommand extends AbstractSubCommand {
             return;
         }
 
-        WorldServiceImpl worldService = plugin.getWorldService();
         if (worldService.getWorldStorage().worldExists(worldName)) {
             messages.sendMessage(player, "worlds_import_world_is_imported");
             return;
@@ -63,7 +77,7 @@ public class ImportSubCommand extends AbstractSubCommand {
 
         // Validate the name before touching the filesystem so invalid input cannot probe directory existence
         String invalidChar = StringCleaner.firstInvalidChar(
-                worldName, plugin.getConfigService().current().world().invalidCharacters());
+                worldName, configService.current().world().invalidCharacters());
         if (invalidChar != null) {
             messages.sendMessage(
                     player,
@@ -135,9 +149,9 @@ public class ImportSubCommand extends AbstractSubCommand {
         Generator resolvedGenerator = generator;
         String resolvedGeneratorName = generatorName;
         BuildWorldType resolvedWorldType = worldType;
-        plugin.getPlayerLookupService()
+        playerLookupService
                 .lookupUniqueId(creatorName)
-                .thenAccept(creatorId -> Bukkit.getScheduler().runTask(plugin, () -> {
+                .thenAccept(creatorId -> scheduler.run(() -> {
                     if (creatorId == null) {
                         messages.sendMessage(player, "worlds_import_player_not_found");
                         return;
@@ -160,8 +174,7 @@ public class ImportSubCommand extends AbstractSubCommand {
             Generator generator,
             String generatorName) {
         messages.sendMessage(player, "worlds_import_started", Map.entry("%world%", worldName));
-        if (plugin.getWorldService()
-                .importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
+        if (worldService.importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
             messages.sendMessage(player, "worlds_import_finished");
         }
     }
@@ -172,7 +185,7 @@ public class ImportSubCommand extends AbstractSubCommand {
         if (args.length == 2) {
             String[] directories = Bukkit.getWorldContainer().list((dir, name) -> {
                 if (StringCleaner.hasInvalidNameCharacters(
-                        name, plugin.getConfigService().current().world().invalidCharacters())) {
+                        name, configService.current().world().invalidCharacters())) {
                     return false;
                 }
                 File worldFolder = new File(dir, name);
@@ -182,7 +195,7 @@ public class ImportSubCommand extends AbstractSubCommand {
                 if (!new File(worldFolder, "level.dat").exists()) {
                     return false;
                 }
-                return !plugin.getWorldService().getWorldStorage().worldExists(name);
+                return !worldService.getWorldStorage().worldExists(name);
             });
             if (directories != null) {
                 for (String dir : directories) {

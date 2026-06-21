@@ -18,11 +18,16 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.Prompts;
+import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.entity.Player;
@@ -31,8 +36,23 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SetPermissionSubCommand extends AbstractSubCommand {
 
-    public SetPermissionSubCommand(BuildSystemPlugin plugin) {
-        super(plugin);
+    private final ConfigService configService;
+    private final Menus menus;
+    private final Prompts prompts;
+    private final SettingsService settingsService;
+
+    public SetPermissionSubCommand(
+            Messages messages,
+            WorldServiceImpl worldService,
+            ConfigService configService,
+            Menus menus,
+            Prompts prompts,
+            SettingsService settingsService) {
+        super(messages, worldService);
+        this.configService = configService;
+        this.menus = menus;
+        this.prompts = prompts;
+        this.settingsService = settingsService;
     }
 
     @Override
@@ -46,11 +66,10 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
     }
 
     public void getPermissionInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
-        plugin.getPrompts().prompt(player).title("enter_world_permission").request(input -> {
+        prompts.prompt(player).title("enter_world_permission").request(input -> {
             String permission = input.trim();
 
-            List<String> whitelist =
-                    plugin.getConfigService().current().settings().worldPermissionWhitelist();
+            List<String> whitelist = configService.current().settings().worldPermissionWhitelist();
             if (!isPermissionAllowed(permission, whitelist)) {
                 XSound.ENTITY_ITEM_BREAK.play(player);
                 messages.sendMessage(player, "worlds_setpermission_not_allowed");
@@ -58,13 +77,13 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
                 if (closeInventory) {
                     player.closeInventory();
                 } else {
-                    plugin.getMenus().openEdit(buildWorld, player);
+                    menus.openEdit(buildWorld, player);
                 }
                 return;
             }
 
             buildWorld.getData().setPermission(permission);
-            plugin.getSettingsService().forceUpdateSidebar(buildWorld);
+            settingsService.forceUpdateSidebar(buildWorld);
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
             messages.sendMessage(player, "worlds_setpermission_set", Map.entry("%world%", buildWorld.getName()));
@@ -72,7 +91,7 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
             if (closeInventory) {
                 player.closeInventory();
             } else {
-                plugin.getMenus().openEdit(buildWorld, player);
+                menus.openEdit(buildWorld, player);
             }
         });
     }
@@ -96,7 +115,7 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        WorldStorage ws = plugin.getWorldService().getWorldStorage();
+        WorldStorage ws = worldService.getWorldStorage();
         return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
     }
 

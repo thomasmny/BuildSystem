@@ -18,12 +18,15 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.Prompts;
+import de.eintosti.buildsystem.player.PlayerLookupService;
+import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -35,17 +38,30 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class RemoveBuilderSubCommand extends AbstractSubCommand {
 
-    public RemoveBuilderSubCommand(BuildSystemPlugin plugin) {
-        super(plugin);
+    private final PlayerLookupService playerLookupService;
+    private final Prompts prompts;
+    private final TaskScheduler scheduler;
+
+    public RemoveBuilderSubCommand(
+            Messages messages,
+            WorldServiceImpl worldService,
+            PlayerLookupService playerLookupService,
+            Prompts prompts,
+            TaskScheduler scheduler) {
+        super(messages, worldService);
+        this.playerLookupService = playerLookupService;
+        this.prompts = prompts;
+        this.scheduler = scheduler;
     }
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = plugin.getWorldService()
-                .getWorldStorage()
-                .getBuildWorld(player.getWorld().getName());
-        var permissions = WorldPermissionsImpl.of(plugin, buildWorld);
-        if (!permissions.canPerformCommand(player, getArgument().getPermission())) {
+        BuildWorld buildWorld =
+                worldService.getWorldStorage().getBuildWorld(player.getWorld().getName());
+        if (buildWorld != null
+                && !buildWorld
+                        .getPermissions()
+                        .canPerformCommand(player, getArgument().getPermission())) {
             messages.sendPermissionError(player);
             return;
         }
@@ -69,9 +85,9 @@ public class RemoveBuilderSubCommand extends AbstractSubCommand {
             return;
         }
 
-        plugin.getPlayerLookupService()
+        playerLookupService
                 .lookupUniqueId(builderName)
-                .thenAccept(builderId -> Bukkit.getScheduler().runTask(plugin, () -> {
+                .thenAccept(builderId -> scheduler.run(() -> {
                     if (builderId == null) {
                         messages.sendMessage(player, "worlds_removebuilder_player_not_found");
                         player.closeInventory();
@@ -103,7 +119,7 @@ public class RemoveBuilderSubCommand extends AbstractSubCommand {
     }
 
     private void getRemoveBuilderInput(Player player, BuildWorld buildWorld) {
-        plugin.getPrompts().prompt(player).title("enter_player_name").request(input -> {
+        prompts.prompt(player).title("enter_player_name").request(input -> {
             String builderName = input.trim();
             removeBuilder(player, buildWorld, builderName);
         });
@@ -114,9 +130,8 @@ public class RemoveBuilderSubCommand extends AbstractSubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        BuildWorld buildWorld = plugin.getWorldService()
-                .getWorldStorage()
-                .getBuildWorld(player.getWorld().getName());
+        BuildWorld buildWorld =
+                worldService.getWorldStorage().getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
             return List.of();
         }

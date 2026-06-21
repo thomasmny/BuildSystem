@@ -17,10 +17,11 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -29,9 +30,9 @@ public class ItemSubCommand extends AbstractSubCommand {
 
     private final MenuItems menuItems;
 
-    public ItemSubCommand(BuildSystemPlugin plugin) {
-        super(plugin);
-        this.menuItems = plugin.getMenuItems();
+    public ItemSubCommand(Messages messages, WorldServiceImpl worldService, MenuItems menuItems) {
+        super(messages, worldService);
+        this.menuItems = menuItems;
     }
 
     @Override

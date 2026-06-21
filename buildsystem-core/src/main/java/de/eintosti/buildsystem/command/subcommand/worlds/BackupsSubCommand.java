@@ -18,11 +18,13 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,17 +35,24 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class BackupsSubCommand extends AbstractSubCommand {
 
-    public BackupsSubCommand(BuildSystemPlugin plugin) {
-        super(plugin);
+    private final BackupServiceImpl backupService;
+    private final Menus menus;
+
+    public BackupsSubCommand(
+            Messages messages, WorldServiceImpl worldService, BackupServiceImpl backupService, Menus menus) {
+        super(messages, worldService);
+        this.backupService = backupService;
+        this.menus = menus;
     }
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = plugin.getWorldService()
-                .getWorldStorage()
-                .getBuildWorld(player.getWorld().getName());
-        if (!WorldPermissionsImpl.of(plugin, buildWorld)
-                .canPerformCommand(player, getArgument().getPermission())) {
+        BuildWorld buildWorld =
+                worldService.getWorldStorage().getBuildWorld(player.getWorld().getName());
+        if (buildWorld != null
+                && !buildWorld
+                        .getPermissions()
+                        .canPerformCommand(player, getArgument().getPermission())) {
             messages.sendPermissionError(player);
             return;
         }
@@ -56,7 +65,7 @@ public class BackupsSubCommand extends AbstractSubCommand {
         switch (args.length) {
             case 1 -> {
                 XSound.BLOCK_CHEST_OPEN.play(player);
-                plugin.getMenus().openBackups(buildWorld, player);
+                menus.openBackups(buildWorld, player);
             }
             case 2 -> {
                 if (args[1].equalsIgnoreCase("create")) {
@@ -66,11 +75,10 @@ public class BackupsSubCommand extends AbstractSubCommand {
                     }
 
                     Entry<String, Object> worldNamePlaceholder = Map.entry("%world%", buildWorld.getName());
-                    plugin.getBackupService()
-                            .backup(
-                                    buildWorld,
-                                    () -> messages.sendMessage(player, "worlds_backup_created", worldNamePlaceholder),
-                                    () -> messages.sendMessage(player, "worlds_backup_failed", worldNamePlaceholder));
+                    backupService.backup(
+                            buildWorld,
+                            () -> messages.sendMessage(player, "worlds_backup_created", worldNamePlaceholder),
+                            () -> messages.sendMessage(player, "worlds_backup_failed", worldNamePlaceholder));
                 } else {
                     messages.sendMessage(player, "worlds_backup_usage");
                 }

@@ -159,17 +159,37 @@ public final class Menus {
      * menu need not depend on the plugin; folds into the command layer once that is constructor-injected.
      */
     public void promptWorldProject(BuildWorld buildWorld, Player player) {
-        new SetProjectSubCommand(plugin).getProjectInput(player, buildWorld, false);
+        new SetProjectSubCommand(
+                        plugin.getMessages(),
+                        plugin.getWorldService(),
+                        this,
+                        plugin.getPrompts(),
+                        plugin.getSettingsService())
+                .getProjectInput(player, buildWorld, false);
     }
 
     /** Opens the world-permission chat prompt; transitional bridge, see {@link #promptWorldProject}. */
     public void promptWorldPermission(BuildWorld buildWorld, Player player) {
-        new SetPermissionSubCommand(plugin).getPermissionInput(player, buildWorld, false);
+        new SetPermissionSubCommand(
+                        plugin.getMessages(),
+                        plugin.getWorldService(),
+                        plugin.getConfigService(),
+                        this,
+                        plugin.getPrompts(),
+                        plugin.getSettingsService())
+                .getPermissionInput(player, buildWorld, false);
     }
 
     /** Opens the add-builder chat prompt; transitional bridge, see {@link #promptWorldProject}. */
     public void promptAddBuilder(BuildWorld buildWorld, Player player) {
-        new AddBuilderSubCommand(plugin).getAddBuilderInput(player, buildWorld, false);
+        new AddBuilderSubCommand(
+                        plugin.getMessages(),
+                        plugin.getWorldService(),
+                        this,
+                        plugin.getPlayerLookupService(),
+                        plugin.getPrompts(),
+                        scheduler)
+                .getAddBuilderInput(player, buildWorld, false);
     }
 
     public void openNavigator(Player player) {

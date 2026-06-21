@@ -45,14 +45,23 @@ public final class CategoryShortcuts implements DynamicSubCommands {
     public Optional<SubCommand> resolve(String name) {
         return plugin.getNavigatorCategoryRegistry()
                 .getCategory(name.toLowerCase(Locale.ROOT))
-                .map(category -> new CategorySubCommand(plugin, category.getId()));
+                .map(category -> categoryCommand(category.getId()));
     }
 
     @Override
     public List<SubCommand> available(Player player) {
         return plugin.getNavigatorCategoryRegistry().getCategories().stream()
                 .filter(category -> CategoryPermissions.canAccess(player, category.getId()))
-                .<SubCommand>map(category -> new CategorySubCommand(plugin, category.getId()))
+                .<SubCommand>map(category -> categoryCommand(category.getId()))
                 .toList();
+    }
+
+    private CategorySubCommand categoryCommand(String categoryId) {
+        return new CategorySubCommand(
+                plugin.getMessages(),
+                plugin.getWorldService(),
+                plugin.getNavigatorCategoryRegistry(),
+                plugin.getMenus(),
+                categoryId);
     }
 }

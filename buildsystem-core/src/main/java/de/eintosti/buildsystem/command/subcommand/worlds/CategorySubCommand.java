@@ -17,12 +17,15 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.display.CategoryPermissions;
+import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -35,11 +38,20 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class CategorySubCommand extends AbstractSubCommand {
 
+    private final NavigatorCategoryRegistryImpl navigatorCategoryRegistry;
+    private final Menus menus;
     private final String categoryId;
     private final Argument argument;
 
-    public CategorySubCommand(BuildSystemPlugin plugin, String categoryId) {
-        super(plugin);
+    public CategorySubCommand(
+            Messages messages,
+            WorldServiceImpl worldService,
+            NavigatorCategoryRegistryImpl navigatorCategoryRegistry,
+            Menus menus,
+            String categoryId) {
+        super(messages, worldService);
+        this.navigatorCategoryRegistry = navigatorCategoryRegistry;
+        this.menus = menus;
         this.categoryId = categoryId;
         this.argument = new CategoryArgument(categoryId);
     }
@@ -51,14 +63,14 @@ public class CategorySubCommand extends AbstractSubCommand {
             return;
         }
 
-        NavigatorCategoryRegistry registry = plugin.getNavigatorCategoryRegistry();
+        NavigatorCategoryRegistry registry = navigatorCategoryRegistry;
         NavigatorCategory category = registry.getCategory(categoryId).orElse(null);
         if (category == null) {
             // The category was deleted between the shortcut being listed and this invocation.
             messages.sendMessage(player, "worlds_unknown_command");
             return;
         }
-        plugin.getMenus().openCategoryWorlds(category, player);
+        menus.openCategoryWorlds(category, player);
     }
 
     @Override
