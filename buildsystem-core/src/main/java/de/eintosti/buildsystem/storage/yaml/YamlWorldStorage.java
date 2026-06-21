@@ -31,17 +31,13 @@ import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
-import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 import org.bukkit.Difficulty;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -52,50 +48,26 @@ public class YamlWorldStorage extends WorldStorageImpl {
     private static final String WORLDS_KEY = "worlds";
 
     private final BuildSystemPlugin plugin;
-    private final File file;
+    private final YamlStore store;
     private final FileConfiguration config;
-
-    /**
-     * Serializes all access to {@link #config} and {@link #file}. {@code save}, {@code load} and {@code delete} run on
-     * the common pool, so without this lock concurrent tasks would mutate the non-thread-safe configuration and write
-     * the same file at once, corrupting worlds.yml.
-     */
-    private final Object ioLock = new Object();
 
     public YamlWorldStorage(BuildSystemPlugin plugin) {
         super(plugin.getLogger());
         this.plugin = plugin;
-        this.file = new File(plugin.getDataFolder(), "worlds.yml");
-        this.config = YamlConfiguration.loadConfiguration(file);
+        this.store = new YamlStore(plugin.getDataFolder(), "worlds.yml", plugin.getLogger());
+        this.config = store.config();
     }
 
     @Override
     public CompletableFuture<Void> save(BuildWorld buildWorld) {
-        return CompletableFuture.runAsync(() -> {
-            synchronized (ioLock) {
-                config.set(WORLDS_KEY + "." + buildWorld.getName(), serializeWorld(buildWorld));
-                saveFile();
-            }
-        });
+        return CompletableFuture.runAsync(() -> store.atomicSave(
+                () -> config.set(WORLDS_KEY + "." + buildWorld.getName(), serializeWorld(buildWorld))));
     }
 
     @Override
     public CompletableFuture<Void> save(Collection<BuildWorld> buildWorlds) {
-        return CompletableFuture.runAsync(() -> {
-            synchronized (ioLock) {
-                buildWorlds.forEach(
-                        buildWorld -> config.set(WORLDS_KEY + "." + buildWorld.getName(), serializeWorld(buildWorld)));
-                saveFile();
-            }
-        });
-    }
-
-    private void saveFile() {
-        try {
-            config.save(file);
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not save worlds.yml file", e);
-        }
+        return CompletableFuture.runAsync(() -> store.atomicSave(() -> buildWorlds.forEach(
+                buildWorld -> config.set(WORLDS_KEY + "." + buildWorld.getName(), serializeWorld(buildWorld)))));
     }
 
     public Map<String, Object> serializeWorld(BuildWorld buildWorld) {
@@ -133,32 +105,22 @@ public class YamlWorldStorage extends WorldStorageImpl {
 
     @Override
     public CompletableFuture<Collection<BuildWorld>> load() {
-        return CompletableFuture.supplyAsync(() -> {
-            synchronized (ioLock) {
-                Collection<BuildWorld> worlds = new ArrayList<>();
-                for (String worldName : loadWorldKeys()) {
-                    try {
-                        worlds.add(loadWorld(worldName));
-                    } catch (Exception e) {
-                        logger.log(Level.WARNING, "Skipping world \"" + worldName + "\": could not be loaded", e);
-                    }
+        return CompletableFuture.supplyAsync(() -> store.locked(() -> {
+            Collection<BuildWorld> worlds = new ArrayList<>();
+            for (String worldName : loadWorldKeys()) {
+                try {
+                    worlds.add(loadWorld(worldName));
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "Skipping world \"" + worldName + "\": could not be loaded", e);
                 }
-                return worlds;
             }
-        });
+            return worlds;
+        }));
     }
 
     private Set<String> loadWorldKeys() {
-        if (!file.exists()) {
-            config.options().copyDefaults(true);
-            saveFile();
+        if (!store.reload()) {
             return Set.of();
-        }
-
-        try {
-            config.load(file);
-        } catch (IOException | InvalidConfigurationException e) {
-            logger.log(Level.SEVERE, "Could not load worlds.yml file", e);
         }
 
         ConfigurationSection section = config.getConfigurationSection(WORLDS_KEY);
@@ -353,11 +315,6 @@ public class YamlWorldStorage extends WorldStorageImpl {
 
     @Override
     public CompletableFuture<Void> delete(String worldKey) {
-        return CompletableFuture.runAsync(() -> {
-            synchronized (ioLock) {
-                config.set(WORLDS_KEY + "." + worldKey, null);
-                saveFile();
-            }
-        });
+        return CompletableFuture.runAsync(() -> store.atomicSave(() -> config.set(WORLDS_KEY + "." + worldKey, null)));
     }
 }
