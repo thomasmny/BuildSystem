@@ -16,6 +16,7 @@ import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.api.world.backup.BackupService;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -202,11 +203,12 @@ public class BackupServiceImpl implements BackupService {
 
         worlds.forEach(buildWorld -> {
             WorldData worldData = buildWorld.getData();
-            worldData.setTimeSinceBackup((int) (worldData.getTimeSinceBackup() + UPDATE_PERIOD));
+            worldData.set(WorldDataKey.TIME_SINCE_BACKUP, (int)
+                    (worldData.get(WorldDataKey.TIME_SINCE_BACKUP) + UPDATE_PERIOD));
 
-            if (worldData.getTimeSinceBackup() > autoBackup.interval()) {
+            if (worldData.get(WorldDataKey.TIME_SINCE_BACKUP) > autoBackup.interval()) {
                 getProfile(buildWorld).createBackup();
-                worldData.setTimeSinceBackup(0);
+                worldData.set(WorldDataKey.TIME_SINCE_BACKUP, 0);
             }
         });
     }

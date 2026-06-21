@@ -21,6 +21,7 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
@@ -99,7 +100,7 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
 
                     ItemBuilder.of(material)
                             .name(displayName)
-                            .glow(buildWorld.getData().getStatus().equals(status))
+                            .glow(buildWorld.getData().get(WorldDataKey.STATUS).equals(status))
                             .into(inventory, slot);
                 })
                 .onClick((player, event) -> {
@@ -109,7 +110,7 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
                     }
 
                     player.closeInventory();
-                    buildWorld.getData().setStatus(status);
+                    buildWorld.getData().set(WorldDataKey.STATUS, status);
                     settingsService.forceUpdateSidebar(buildWorld);
 
                     XSound.ENTITY_CHICKEN_EGG.play(player);

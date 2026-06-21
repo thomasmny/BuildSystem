@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
@@ -169,9 +170,9 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
     @Override
     public NavigatorCategory getCategoryForWorld(BuildWorld world) {
         WorldData data = world.getData();
-        String statusId = data.getStatus().getId();
+        String statusId = data.get(WorldDataKey.STATUS).getId();
         for (NavigatorCategory category : getCategories()) {
-            if (category.getVisibilities().contains(data.getVisibility())
+            if (category.getVisibilities().contains(data.get(WorldDataKey.VISIBILITY))
                     && category.getStatusIds().contains(statusId)) {
                 return category;
             }

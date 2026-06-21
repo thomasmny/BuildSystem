@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.ArrayList;
@@ -81,15 +82,15 @@ public class NoAICommand extends CommandBase {
         }
 
         WorldData worldData = buildWorld.getData();
-        if (worldData.isMobAi()) {
-            worldData.setMobAi(false);
+        if (worldData.get(WorldDataKey.MOB_AI)) {
+            worldData.set(WorldDataKey.MOB_AI, false);
             messages.sendMessage(player, "noai_activated", Map.entry("%world%", buildWorld.getName()));
         } else {
-            worldData.setMobAi(true);
+            worldData.set(WorldDataKey.MOB_AI, true);
             messages.sendMessage(player, "noai_deactivated", Map.entry("%world%", buildWorld.getName()));
         }
 
-        boolean hasAi = worldData.isMobAi();
+        boolean hasAi = worldData.get(WorldDataKey.MOB_AI);
         world.getLivingEntities().forEach(entity -> entity.setAI(hasAi));
     }
 }

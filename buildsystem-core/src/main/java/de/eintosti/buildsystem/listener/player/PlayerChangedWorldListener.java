@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -82,7 +83,7 @@ public class PlayerChangedWorldListener implements Listener {
 
         BuildWorld newWorld = worldStorage.getBuildWorld(worldName);
         if (newWorld != null
-                && !newWorld.getData().isPhysics()
+                && !newWorld.getData().get(WorldDataKey.PHYSICS)
                 && player.hasPermission("buildsystem.physics.message")) {
             messages.sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", newWorld.getName()));
         }
@@ -119,7 +120,7 @@ public class PlayerChangedWorldListener implements Listener {
     private void setGoldBlock(@Nullable BuildWorld buildWorld) {
         if (buildWorld == null
                 || buildWorld.getType() != BuildWorldType.VOID
-                || !buildWorld.getData().getStatus().getId().equals(WorldStatusRegistry.NOT_STARTED_ID)) {
+                || !buildWorld.getData().get(WorldDataKey.STATUS).getId().equals(WorldStatusRegistry.NOT_STARTED_ID)) {
             return;
         }
 
@@ -143,7 +144,7 @@ public class PlayerChangedWorldListener implements Listener {
                 .getCachedValues();
         cachedValues.resetArchiveStateIfPresent(player);
 
-        if (!buildWorld.getData().getStatus().isBuildingAllowed()) {
+        if (!buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
             cachedValues.saveArchiveState(player);
 
             removeArmorContent(player);

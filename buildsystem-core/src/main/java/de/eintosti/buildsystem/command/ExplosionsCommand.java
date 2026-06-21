@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.ArrayList;
@@ -81,11 +82,11 @@ public class ExplosionsCommand extends CommandBase {
         }
 
         WorldData worldData = buildWorld.getData();
-        if (!worldData.isExplosions()) {
-            worldData.setExplosions(true);
+        if (!worldData.get(WorldDataKey.EXPLOSIONS)) {
+            worldData.set(WorldDataKey.EXPLOSIONS, true);
             messages.sendMessage(player, "explosions_activated", Map.entry("%world%", buildWorld.getName()));
         } else {
-            worldData.setExplosions(false);
+            worldData.set(WorldDataKey.EXPLOSIONS, false);
             messages.sendMessage(player, "explosions_deactivated", Map.entry("%world%", buildWorld.getName()));
         }
     }

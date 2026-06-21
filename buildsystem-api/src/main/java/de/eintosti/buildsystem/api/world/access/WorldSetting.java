@@ -18,11 +18,12 @@
 package de.eintosti.buildsystem.api.world.access;
 
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import java.util.function.Predicate;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * A protectable boolean world setting that gates whether a player may modify the world in a particular way.
+ * A protectable boolean world setting that gates whether a player may modify the world in a particular way. Each setting
+ * pairs its bypass permission with the {@link WorldDataKey} holding the underlying boolean.
  *
  * @since 4.0.0
  */
@@ -32,24 +33,24 @@ public enum WorldSetting {
     /**
      * Whether blocks may be broken in the world.
      */
-    BLOCK_BREAKING("buildsystem.bypass.settings", WorldData::isBlockBreaking),
+    BLOCK_BREAKING("buildsystem.bypass.settings", WorldDataKey.BLOCK_BREAKING),
 
     /**
      * Whether blocks may be placed in the world.
      */
-    BLOCK_PLACEMENT("buildsystem.bypass.settings", WorldData::isBlockPlacement),
+    BLOCK_PLACEMENT("buildsystem.bypass.settings", WorldDataKey.BLOCK_PLACEMENT),
 
     /**
      * Whether blocks may be interacted with in the world.
      */
-    BLOCK_INTERACTIONS("buildsystem.bypass.settings", WorldData::isBlockInteractions);
+    BLOCK_INTERACTIONS("buildsystem.bypass.settings", WorldDataKey.BLOCK_INTERACTIONS);
 
     private final String bypassPermission;
-    private final Predicate<WorldData> enabled;
+    private final WorldDataKey<Boolean> key;
 
-    WorldSetting(String bypassPermission, Predicate<WorldData> enabled) {
+    WorldSetting(String bypassPermission, WorldDataKey<Boolean> key) {
         this.bypassPermission = bypassPermission;
-        this.enabled = enabled;
+        this.key = key;
     }
 
     /**
@@ -68,6 +69,6 @@ public enum WorldSetting {
      * @return {@code true} if the setting is enabled, otherwise {@code false}
      */
     public boolean isEnabled(WorldData data) {
-        return enabled.test(data);
+        return data.get(key);
     }
 }

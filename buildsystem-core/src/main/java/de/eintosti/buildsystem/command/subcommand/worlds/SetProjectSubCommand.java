@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -63,7 +64,7 @@ public class SetProjectSubCommand extends AbstractSubCommand {
 
     public void getProjectInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
         prompts.prompt(player).title("enter_world_project").request(input -> {
-            buildWorld.getData().setProject(input.trim());
+            buildWorld.getData().set(WorldDataKey.PROJECT, input.trim());
             settingsService.forceUpdateSidebar(buildWorld);
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);

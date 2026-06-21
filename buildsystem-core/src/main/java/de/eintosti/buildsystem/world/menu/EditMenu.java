@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
@@ -201,9 +202,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                                 toggle.render(menuItems, buildWorld.getData(), player, inventory, slot))
                         .onClick((player, event) -> {
                             if (requirePermission(player, toggle.permission())) {
-                                WorldData worldData = buildWorld.getData();
-                                toggle.setter()
-                                        .accept(worldData, !toggle.getter().test(worldData));
+                                toggle.flip(buildWorld.getData());
                                 reopen(player);
                             }
                         })
@@ -435,7 +434,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                     inventory,
                     SLOT_BUILDERS,
                     XMaterial.IRON_PICKAXE,
-                    buildWorld.getData().isBuildersEnabled(),
+                    buildWorld.getData().get(WorldDataKey.BUILDERS_ENABLED),
                     "worldeditor_builders_item",
                     "worldeditor_builders_lore");
         } else {
@@ -448,7 +447,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
     private void renderVisibility(Player player, Inventory inventory) {
         String displayName = messages.getString("worldeditor_visibility_item", player);
-        boolean isPrivate = buildWorld.getData().getVisibility().isPrivate();
+        boolean isPrivate = buildWorld.getData().get(WorldDataKey.VISIBILITY).isPrivate();
 
         if (!playerManager.canCreateWorld(player, Visibility.matchVisibility(isPrivate))) {
             ItemBuilder.of(XMaterial.BARRIER)
@@ -473,7 +472,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
     private void renderDifficulty(Player player, Inventory inventory) {
         XMaterial material =
-                switch (buildWorld.getData().getDifficulty()) {
+                switch (buildWorld.getData().get(WorldDataKey.DIFFICULTY)) {
                     case EASY -> XMaterial.GOLDEN_HELMET;
                     case NORMAL -> XMaterial.IRON_HELMET;
                     case HARD -> XMaterial.DIAMOND_HELMET;
@@ -488,7 +487,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
     }
 
     private void renderStatus(Player player, Inventory inventory) {
-        BuildWorldStatus status = buildWorld.getData().getStatus();
+        BuildWorldStatus status = buildWorld.getData().get(WorldDataKey.STATUS);
         ItemBuilder.of(status.getIcon())
                 .name(messages.getString("worldeditor_status_item", player))
                 .lore(messages.getStringList(
@@ -504,7 +503,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                 .lore(messages.getStringList(
                         "worldeditor_project_lore",
                         player,
-                        Map.entry("%project%", buildWorld.getData().getProject())))
+                        Map.entry("%project%", buildWorld.getData().get(WorldDataKey.PROJECT))))
                 .into(inventory, SLOT_PROJECT);
     }
 
@@ -514,12 +513,12 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                 .lore(messages.getStringList(
                         "worldeditor_permission_lore",
                         player,
-                        Map.entry("%permission%", buildWorld.getData().getPermission())))
+                        Map.entry("%permission%", buildWorld.getData().get(WorldDataKey.PERMISSION))))
                 .into(inventory, SLOT_PERMISSION);
     }
 
     private String getDifficultyName(Player player) {
-        return switch (buildWorld.getData().getDifficulty()) {
+        return switch (buildWorld.getData().get(WorldDataKey.DIFFICULTY)) {
             case PEACEFUL -> messages.getString("difficulty_peaceful", player);
             case EASY -> messages.getString("difficulty_easy", player);
             case NORMAL -> messages.getString("difficulty_normal", player);
@@ -558,7 +557,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         }
 
         WorldData worldData = buildWorld.getData();
-        worldData.setBuildersEnabled(!worldData.isBuildersEnabled());
+        worldData.set(WorldDataKey.BUILDERS_ENABLED, !worldData.get(WorldDataKey.BUILDERS_ENABLED));
         reopen(player);
     }
 
@@ -575,8 +574,11 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         }
         if (requirePermission(player, "buildsystem.edit.visibility")) {
             WorldData worldData = buildWorld.getData();
-            worldData.setVisibility(
-                    worldData.getVisibility().isPrivate() ? Visibility.EVERYONE : Visibility.ADDED_PLAYERS);
+            worldData.set(
+                    WorldDataKey.VISIBILITY,
+                    worldData.get(WorldDataKey.VISIBILITY).isPrivate()
+                            ? Visibility.EVERYONE
+                            : Visibility.ADDED_PLAYERS);
         }
         reopen(player);
     }

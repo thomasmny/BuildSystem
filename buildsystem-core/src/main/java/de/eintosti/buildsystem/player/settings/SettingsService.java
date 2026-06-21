@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
@@ -143,14 +144,14 @@ public class SettingsService {
             WorldData worldData = buildWorld.getData();
             Builders builders = buildWorld.getBuilders();
 
-            status = ColorAPI.process(worldData.getStatus().getStyledName());
-            permission = worldData.getPermission();
-            project = worldData.getProject();
+            status = ColorAPI.process(worldData.get(WorldDataKey.STATUS).getStyledName());
+            permission = worldData.get(WorldDataKey.PERMISSION);
+            project = worldData.get(WorldDataKey.PROJECT);
             creator = builders.hasCreator() ? builders.getCreator().getName() : "-";
             creation = messages.formatDate(buildWorld.getCreation());
-            lastEdited = messages.formatDate(worldData.getLastEdited());
-            lastLoaded = messages.formatDate(worldData.getLastLoaded());
-            lastUnloaded = messages.formatDate(worldData.getLastUnloaded());
+            lastEdited = messages.formatDate(worldData.get(WorldDataKey.LAST_EDITED));
+            lastLoaded = messages.formatDate(worldData.get(WorldDataKey.LAST_LOADED));
+            lastUnloaded = messages.formatDate(worldData.get(WorldDataKey.LAST_UNLOADED));
         }
 
         return new Map.Entry[] {

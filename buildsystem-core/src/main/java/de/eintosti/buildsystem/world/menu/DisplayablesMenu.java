@@ -23,6 +23,7 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.*;
 import de.eintosti.buildsystem.api.world.display.WorldFilter.Mode;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
@@ -245,8 +246,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         // A world shows in every category that groups it (overlapping categories each list it), not just its primary
         // resolved category.
         if (!this.category.groups(
-                buildWorld.getData().getVisibility(),
-                buildWorld.getData().getStatus().getId())) {
+                buildWorld.getData().get(WorldDataKey.VISIBILITY),
+                buildWorld.getData().get(WorldDataKey.STATUS).getId())) {
             return false;
         }
         if (!buildWorld.getPermissions().canEnter(this.player)) {

@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
@@ -97,7 +98,7 @@ abstract class AbstractWorldCreator {
             folder.addWorld(newBuildWorld);
         }
 
-        newBuildWorld.getData().setLastLoaded(System.currentTimeMillis());
+        newBuildWorld.getData().set(WorldDataKey.LAST_LOADED, System.currentTimeMillis());
         worldStorage.addBuildWorld(newBuildWorld);
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostCreateEvent(newBuildWorld, isImport()));
         return newBuildWorld;

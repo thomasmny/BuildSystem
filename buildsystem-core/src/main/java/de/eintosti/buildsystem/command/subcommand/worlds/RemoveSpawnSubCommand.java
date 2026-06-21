@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -49,7 +50,7 @@ public class RemoveSpawnSubCommand extends AbstractSubCommand {
             return;
         }
 
-        buildWorld.getData().setCustomSpawn("");
+        buildWorld.getData().set(WorldDataKey.CUSTOM_SPAWN, "");
         messages.sendMessage(
                 player, "worlds_removespawn_world_spawn_removed", Map.entry("%world%", buildWorld.getName()));
     }

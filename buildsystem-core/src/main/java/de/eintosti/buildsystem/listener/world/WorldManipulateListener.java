@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.api.event.world.BuildWorldManipulationEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldSetting;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.event.EventDispatcher;
@@ -106,7 +107,7 @@ public class WorldManipulateListener implements Listener {
 
         dispatcher.tryDispatchManipulationEvent(player, event);
 
-        if (!buildWorld.getData().isPhysics() && event.getClickedBlock() != null) {
+        if (!buildWorld.getData().get(WorldDataKey.PHYSICS) && event.getClickedBlock() != null) {
             if (event.getAction() == Action.PHYSICAL && event.getClickedBlock().getType() == XMaterial.FARMLAND.get()) {
                 event.setCancelled(true);
             }
@@ -131,7 +132,7 @@ public class WorldManipulateListener implements Listener {
             return;
         }
 
-        worldData.setLastEdited(System.currentTimeMillis());
+        worldData.set(WorldDataKey.LAST_EDITED, System.currentTimeMillis());
         updateStatus(worldData, player);
     }
 
@@ -152,11 +153,11 @@ public class WorldManipulateListener implements Listener {
 
     private void updateStatus(WorldData worldData, Player player) {
         worldData
-                .getStatus()
+                .get(WorldDataKey.STATUS)
                 .getProgressesTo()
                 .flatMap(worldStatusRegistry::getStatus)
                 .ifPresent(next -> {
-                    worldData.setStatus(next);
+                    worldData.set(WorldDataKey.STATUS, next);
                     settingsService.forceUpdateSidebar(player);
                 });
     }

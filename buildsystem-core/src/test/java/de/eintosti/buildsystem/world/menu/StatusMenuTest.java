@@ -28,6 +28,7 @@ import static org.mockito.Mockito.when;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.MenuItems;
@@ -70,7 +71,7 @@ class StatusMenuTest {
         WorldStatusRegistry registry = TestData.statusRegistry();
 
         WorldData data = mock(WorldData.class);
-        when(data.getStatus()).thenReturn(TestData.NOT_STARTED);
+        when(data.get(WorldDataKey.STATUS)).thenReturn(TestData.NOT_STARTED);
         BuildWorld buildWorld = mock(BuildWorld.class);
         when(buildWorld.getName()).thenReturn("world");
         when(buildWorld.getData()).thenReturn(data);

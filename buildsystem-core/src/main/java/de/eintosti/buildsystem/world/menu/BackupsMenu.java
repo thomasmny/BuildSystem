@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.world.menu;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
@@ -141,7 +142,7 @@ public class BackupsMenu extends ButtonMenu<MenuButton> {
     }
 
     private String getDurationUntilBackup() {
-        int timeSinceBackup = buildWorld.getData().getTimeSinceBackup();
+        int timeSinceBackup = buildWorld.getData().get(WorldDataKey.TIME_SINCE_BACKUP);
         int secondsRemaining = Math.max(0, getBackupIntervalSeconds() - timeSinceBackup);
         return "%02d:%02d".formatted(secondsRemaining / 60, secondsRemaining % 60);
     }

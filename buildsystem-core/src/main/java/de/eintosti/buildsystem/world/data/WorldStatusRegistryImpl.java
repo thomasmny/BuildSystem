@@ -21,6 +21,7 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.yaml.YamlStatusStorage;
@@ -295,7 +296,8 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
      */
     public List<BuildWorld> worldsWithStatus(String id) {
         return worldService.get().getWorldStorage().getBuildWorlds().stream()
-                .filter(world -> world.getData().getStatus().getId().equals(id))
+                .filter(world ->
+                        world.getData().get(WorldDataKey.STATUS).getId().equals(id))
                 .toList();
     }
 
@@ -315,7 +317,7 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
         this.statuses.remove(id);
         BuildWorldStatus fallback = getDefaultStatus();
         for (BuildWorld world : worldsWithStatus(id)) {
-            world.getData().setStatus(fallback);
+            world.getData().set(WorldDataKey.STATUS, fallback);
             worldService.get().getWorldStorage().save(world);
         }
 

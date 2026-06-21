@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.WorldSort;
@@ -39,7 +40,7 @@ class DisplayOrderingTest {
         WorldData data = mock(WorldData.class);
         when(world.getName()).thenReturn(name);
         when(world.getData()).thenReturn(data);
-        when(data.isPinned()).thenReturn(pinned);
+        when(data.get(WorldDataKey.PINNED)).thenReturn(pinned);
         return world;
     }
 

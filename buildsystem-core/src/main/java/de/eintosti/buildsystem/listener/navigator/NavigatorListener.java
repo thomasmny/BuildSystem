@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -217,7 +218,7 @@ public class NavigatorListener implements Listener {
      */
     private void disableArchivedWorlds(Player player, Cancellable cancellable) {
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        if (buildWorld == null || buildWorld.getData().getStatus().isBuildingAllowed()) {
+        if (buildWorld == null || buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
             return;
         }
 

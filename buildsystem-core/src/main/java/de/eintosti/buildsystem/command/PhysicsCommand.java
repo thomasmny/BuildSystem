@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.ArrayList;
@@ -57,7 +58,7 @@ public class PhysicsCommand extends CommandBase {
                 if (args[0].equalsIgnoreCase("all") && !worldStorage.worldExists("all")) {
                     worldStorage
                             .getBuildWorlds()
-                            .forEach(world -> world.getData().setPhysics(true));
+                            .forEach(world -> world.getData().set(WorldDataKey.PHYSICS, true));
                     messages.sendMessage(player, "physics_activated_all");
                 } else {
                     togglePhysics(player, Bukkit.getWorld(args[0]));
@@ -91,11 +92,11 @@ public class PhysicsCommand extends CommandBase {
         }
 
         WorldData worldData = buildWorld.getData();
-        if (!worldData.isPhysics()) {
-            worldData.setPhysics(true);
+        if (!worldData.get(WorldDataKey.PHYSICS)) {
+            worldData.set(WorldDataKey.PHYSICS, true);
             messages.sendMessage(player, "physics_activated", Map.entry("%world%", buildWorld.getName()));
         } else {
-            worldData.setPhysics(false);
+            worldData.set(WorldDataKey.PHYSICS, false);
             messages.sendMessage(player, "physics_deactivated", Map.entry("%world%", buildWorld.getName()));
         }
     }

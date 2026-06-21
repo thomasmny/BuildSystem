@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.player.customblock;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.util.DirectionUtil;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.function.Supplier;
@@ -79,15 +80,15 @@ public class CustomBlockManager implements Listener {
         }
 
         boolean hadToDisablePhysics = false;
-        if (isBuildWorld && !buildWorld.getData().isPhysics()) {
+        if (isBuildWorld && !buildWorld.getData().get(WorldDataKey.PHYSICS)) {
             hadToDisablePhysics = true;
-            buildWorld.getData().setPhysics(true);
+            buildWorld.getData().set(WorldDataKey.PHYSICS, true);
         }
 
         setBlock(event, customBlock);
 
         if (isBuildWorld && hadToDisablePhysics) {
-            buildWorld.getData().setPhysics(false);
+            buildWorld.getData().set(WorldDataKey.PHYSICS, false);
         }
     }
 

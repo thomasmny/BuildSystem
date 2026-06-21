@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.listener.world;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.util.DirectionUtil;
 import java.util.List;
@@ -50,7 +51,7 @@ public class BlockPhysicsListener implements Listener {
 
     private boolean physicsAllowed(World world) {
         BuildWorld buildWorld = worldStorage.getBuildWorld(world);
-        return buildWorld == null || buildWorld.getData().isPhysics();
+        return buildWorld == null || buildWorld.getData().get(WorldDataKey.PHYSICS);
     }
 
     @EventHandler

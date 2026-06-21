@@ -21,18 +21,17 @@ import static java.util.Map.entry;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.menu.MenuItems;
 import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
 
 /**
  * The declarative catalog of {@link EditMenu}'s uniform toggle slots — those whose only action is "check permission,
- * flip a boolean world setting, re-open". Each {@link Toggle} owns its icon, permission, message keys, the world-data
- * getter/setter it flips, and how to render itself, so the menu just iterates the catalog to wire and draw them. The
+ * flip a boolean world setting, re-open". Each {@link Toggle} owns its icon, permission, message keys, the
+ * {@link WorldDataKey} it flips, and how to render itself, so the menu just iterates the catalog to wire and draw them. The
  * heterogeneous slots (sub-menus, time, butcher, difficulty) are wired individually in the menu.
  */
 @NullMarked
@@ -49,8 +48,7 @@ final class EditMenuToggles {
                             "buildsystem.edit.pin",
                             "worldeditor_pin_item",
                             "worldeditor_pin_lore",
-                            WorldData::isPinned,
-                            WorldData::setPinned)),
+                            WorldDataKey.PINNED)),
             entry(
                     20,
                     new Toggle(
@@ -58,8 +56,7 @@ final class EditMenuToggles {
                             "buildsystem.edit.breaking",
                             "worldeditor_blockbreaking_item",
                             "worldeditor_blockbreaking_lore",
-                            WorldData::isBlockBreaking,
-                            WorldData::setBlockBreaking)),
+                            WorldDataKey.BLOCK_BREAKING)),
             entry(
                     21,
                     new Toggle(
@@ -67,8 +64,7 @@ final class EditMenuToggles {
                             "buildsystem.edit.placement",
                             "worldeditor_blockplacement_item",
                             "worldeditor_blockplacement_lore",
-                            WorldData::isBlockPlacement,
-                            WorldData::setBlockPlacement)),
+                            WorldDataKey.BLOCK_PLACEMENT)),
             entry(
                     22,
                     new Toggle(
@@ -76,8 +72,7 @@ final class EditMenuToggles {
                             "buildsystem.edit.physics",
                             "worldeditor_physics_item",
                             "worldeditor_physics_lore",
-                            WorldData::isPhysics,
-                            WorldData::setPhysics)),
+                            WorldDataKey.PHYSICS)),
             entry(
                     24,
                     new Toggle(
@@ -85,8 +80,7 @@ final class EditMenuToggles {
                             "buildsystem.edit.explosions",
                             "worldeditor_explosions_item",
                             "worldeditor_explosions_lore",
-                            WorldData::isExplosions,
-                            WorldData::setExplosions)),
+                            WorldDataKey.EXPLOSIONS)),
             entry(
                     31,
                     new Toggle(
@@ -94,8 +88,7 @@ final class EditMenuToggles {
                             "buildsystem.edit.mobai",
                             "worldeditor_mobai_item",
                             "worldeditor_mobai_lore",
-                            WorldData::isMobAi,
-                            WorldData::setMobAi)),
+                            WorldDataKey.MOB_AI)),
             entry(
                     33,
                     new Toggle(
@@ -103,8 +96,7 @@ final class EditMenuToggles {
                             "buildsystem.edit.interactions",
                             "worldeditor_blockinteractions_item",
                             "worldeditor_blockinteractions_lore",
-                            WorldData::isBlockInteractions,
-                            WorldData::setBlockInteractions)));
+                            WorldDataKey.BLOCK_INTERACTIONS)));
 
     private EditMenuToggles() {}
 
@@ -114,27 +106,27 @@ final class EditMenuToggles {
             String permission,
             String itemKey,
             String loreKey,
-            Predicate<WorldData> getter,
-            BiConsumer<WorldData, Boolean> setter) {
+            WorldDataKey<Boolean> key) {
 
         /**
          * Creates a toggle whose icon is the same whether the setting is enabled or not.
          */
-        Toggle(
-                XMaterial material,
-                String permission,
-                String itemKey,
-                String loreKey,
-                Predicate<WorldData> getter,
-                BiConsumer<WorldData, Boolean> setter) {
-            this(material, material, permission, itemKey, loreKey, getter, setter);
+        Toggle(XMaterial material, String permission, String itemKey, String loreKey, WorldDataKey<Boolean> key) {
+            this(material, material, permission, itemKey, loreKey, key);
+        }
+
+        /**
+         * Flips this toggle's underlying setting on the given world data.
+         */
+        void flip(WorldData worldData) {
+            worldData.set(key, !worldData.get(key));
         }
 
         /**
          * Renders this toggle's icon into the slot, reflecting the live world-data state.
          */
         void render(MenuItems menuItems, WorldData worldData, Player player, Inventory inventory, int slot) {
-            boolean enabled = getter.test(worldData);
+            boolean enabled = worldData.get(key);
             menuItems.addToggleItem(player, inventory, slot, iconFor(enabled), enabled, itemKey, loreKey);
         }
 

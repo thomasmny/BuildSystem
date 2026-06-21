@@ -23,6 +23,7 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
@@ -144,8 +145,8 @@ public class FolderSubCommand extends AbstractSubCommand {
                 // "home" category from getCategoryForWorld keeps "can I see it here" and "can I file it here" in sync.
                 if (!folder.getCategory()
                         .groups(
-                                buildWorld.getData().getVisibility(),
-                                buildWorld.getData().getStatus().getId())) {
+                                buildWorld.getData().get(WorldDataKey.VISIBILITY),
+                                buildWorld.getData().get(WorldDataKey.STATUS).getId())) {
                     NavigatorCategory worldCategory = navigatorCategoryRegistry.getCategoryForWorld(buildWorld);
                     messages.sendMessage(
                             player,
@@ -276,8 +277,8 @@ public class FolderSubCommand extends AbstractSubCommand {
             worldService.getWorldStorage().getBuildWorlds().stream()
                     .filter(bw -> folder.getCategory()
                             .groups(
-                                    bw.getData().getVisibility(),
-                                    bw.getData().getStatus().getId()))
+                                    bw.getData().get(WorldDataKey.VISIBILITY),
+                                    bw.getData().get(WorldDataKey.STATUS).getId()))
                     .filter(bw -> op.equals("add") ? !bw.isAssignedToFolder() : folder.containsWorld(bw))
                     .forEach(bw -> WorldsCompletions.addIfStartsWith(args[3], bw.getName(), result));
             return result;

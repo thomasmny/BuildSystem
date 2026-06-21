@@ -24,6 +24,7 @@ import com.sk89q.worldedit.extension.platform.Actor;
 import com.sk89q.worldedit.extent.NullExtent;
 import com.sk89q.worldedit.util.eventbus.Subscribe;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -66,7 +67,7 @@ public class EditSessionListener implements Listener {
         }
 
         if (buildWorld.getPermissions().hasAdminPermission(player)) {
-            buildWorld.getData().setLastEdited(System.currentTimeMillis());
+            buildWorld.getData().set(WorldDataKey.LAST_EDITED, System.currentTimeMillis());
             return;
         }
 
@@ -80,6 +81,6 @@ public class EditSessionListener implements Listener {
             return;
         }
 
-        buildWorld.getData().setLastEdited(System.currentTimeMillis());
+        buildWorld.getData().set(WorldDataKey.LAST_EDITED, System.currentTimeMillis());
     }
 }

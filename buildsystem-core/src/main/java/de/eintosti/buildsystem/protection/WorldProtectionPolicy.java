@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.protection;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldSetting;
 import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -39,7 +40,7 @@ public final class WorldProtectionPolicy {
             return Denial.NONE;
         }
 
-        if (!world.getData().getStatus().isBuildingAllowed()) {
+        if (!world.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
             return Denial.ARCHIVED;
         }
 
@@ -57,7 +58,7 @@ public final class WorldProtectionPolicy {
             return Denial.NONE;
         }
 
-        if (world.getData().isBuildersEnabled() && !builders.isBuilder(player)) {
+        if (world.getData().get(WorldDataKey.BUILDERS_ENABLED) && !builders.isBuilder(player)) {
             return Denial.NOT_A_BUILDER;
         }
 

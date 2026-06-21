@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.api.world.display;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import java.util.Comparator;
 import java.util.Locale;
 import org.jspecify.annotations.NullMarked;
@@ -97,7 +98,7 @@ public enum WorldSort {
      */
     private static String getProjectSortKey(Displayable displayable) {
         return switch (displayable) {
-            case BuildWorld world -> world.getData().getProject().toLowerCase(Locale.ROOT);
+            case BuildWorld world -> world.getData().get(WorldDataKey.PROJECT).toLowerCase(Locale.ROOT);
             case Folder folder -> folder.getProject().toLowerCase(Locale.ROOT);
             default -> "";
         };
@@ -112,7 +113,7 @@ public enum WorldSort {
      */
     private static int getStatusSortKey(Displayable displayable) {
         if (displayable instanceof BuildWorld buildWorld) {
-            return buildWorld.getData().getStatus().getOrder();
+            return buildWorld.getData().get(WorldDataKey.STATUS).getOrder();
         }
         return Integer.MAX_VALUE;
     }

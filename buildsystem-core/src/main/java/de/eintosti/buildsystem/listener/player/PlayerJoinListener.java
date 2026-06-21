@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.navigator.NavigatorService;
@@ -114,12 +115,12 @@ public class PlayerJoinListener implements Listener {
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld != null) {
             WorldData worldData = buildWorld.getData();
-            if (!worldData.isPhysics() && player.hasPermission("buildsystem.physics.message")) {
+            if (!worldData.get(WorldDataKey.PHYSICS) && player.hasPermission("buildsystem.physics.message")) {
                 messages.sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", worldName));
             }
 
             if (configService.current().settings().archive().vanish()
-                    && !worldData.getStatus().isBuildingAllowed()) {
+                    && !worldData.get(WorldDataKey.STATUS).isBuildingAllowed()) {
                 player.addPotionEffect(
                         new PotionEffect(XPotion.INVISIBILITY.get(), PotionEffect.INFINITE_DURATION, 0, false, false),
                         false);

@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.storage.yaml.YamlFolderStorage;
 import de.eintosti.buildsystem.storage.yaml.YamlWorldStorage;
@@ -90,7 +91,7 @@ class StorageMigrationTest {
         BuildWorld world = loaded.iterator().next();
         assertEquals("MyWorld", world.getName());
         assertEquals(uuid, world.getUniqueId());
-        assertEquals("build.test", world.getData().getPermission());
+        assertEquals("build.test", world.getData().get(WorldDataKey.PERMISSION));
 
         YamlConfiguration onDisk = readFile("worlds.yml");
         assertEquals(StorageMigration.CURRENT_VERSION, onDisk.getInt("version"));

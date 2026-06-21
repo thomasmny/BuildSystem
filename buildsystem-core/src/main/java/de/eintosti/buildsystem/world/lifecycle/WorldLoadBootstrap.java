@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.lifecycle;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
@@ -132,7 +133,7 @@ public class WorldLoadBootstrap {
             return LoadResult.FAILED;
         }
 
-        buildWorld.getData().setLastLoaded(System.currentTimeMillis());
+        buildWorld.getData().set(WorldDataKey.LAST_LOADED, System.currentTimeMillis());
         plugin.getLogger().info("✔ World loaded: " + worldName);
         return LoadResult.LOADED;
     }

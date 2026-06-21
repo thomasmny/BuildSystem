@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.lifecycle;
 
 import de.eintosti.buildsystem.api.event.world.BuildWorldLoadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostLoadEvent;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldLoader;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
@@ -83,7 +84,7 @@ public class WorldLoaderImpl implements WorldLoader {
             return;
         }
 
-        this.buildWorld.getData().setLastLoaded(System.currentTimeMillis());
+        this.buildWorld.getData().set(WorldDataKey.LAST_LOADED, System.currentTimeMillis());
         this.buildWorld.setLoaded(true);
 
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostLoadEvent(this.buildWorld));

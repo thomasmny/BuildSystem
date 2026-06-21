@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
@@ -117,13 +118,13 @@ class YamlWorldStorageRoundTripTest {
         newStorage().save(sampleWorld(UUID.randomUUID(), "DataWorld")).join();
 
         BuildWorld world = newStorage().load().join().iterator().next();
-        assertEquals(TestData.FINISHED, world.getData().getStatus());
-        assertEquals("MyProject", world.getData().getProject());
-        assertEquals("buildsystem.test", world.getData().getPermission());
-        assertEquals(Difficulty.NORMAL, world.getData().getDifficulty());
-        assertTrue(world.getData().getVisibility().isPrivate());
-        assertTrue(world.getData().isBlockBreaking());
-        assertEquals(42, world.getData().getTimeSinceBackup());
+        assertEquals(TestData.FINISHED, world.getData().get(WorldDataKey.STATUS));
+        assertEquals("MyProject", world.getData().get(WorldDataKey.PROJECT));
+        assertEquals("buildsystem.test", world.getData().get(WorldDataKey.PERMISSION));
+        assertEquals(Difficulty.NORMAL, world.getData().get(WorldDataKey.DIFFICULTY));
+        assertTrue(world.getData().get(WorldDataKey.VISIBILITY).isPrivate());
+        assertTrue(world.getData().get(WorldDataKey.BLOCK_BREAKING));
+        assertEquals(42, world.getData().get(WorldDataKey.TIME_SINCE_BACKUP));
     }
 
     @Test
@@ -138,11 +139,11 @@ class YamlWorldStorageRoundTripTest {
     @Test
     void roundTrip_preservesCustomSpawn() {
         BuildWorldImpl world = sampleWorld(UUID.randomUUID(), "SpawnWorld");
-        world.getData().setCustomSpawn("1.0;64.0;2.0;90.0;0.0");
+        world.getData().set(WorldDataKey.CUSTOM_SPAWN, "1.0;64.0;2.0;90.0;0.0");
         newStorage().save(world).join();
 
         BuildWorld loaded = newStorage().load().join().iterator().next();
-        assertEquals("1.0;64.0;2.0;90.0;0.0", loaded.getData().getCustomSpawn());
+        assertEquals("1.0;64.0;2.0;90.0;0.0", loaded.getData().get(WorldDataKey.CUSTOM_SPAWN));
     }
 
     @Test
@@ -157,7 +158,7 @@ class YamlWorldStorageRoundTripTest {
         yaml.save(new File(dataFolder, "worlds.yml"));
 
         BuildWorld loaded = newStorage().load().join().iterator().next();
-        assertEquals("5.0;70.0;5.0;0.0;0.0", loaded.getData().getCustomSpawn());
+        assertEquals("5.0;70.0;5.0;0.0;0.0", loaded.getData().get(WorldDataKey.CUSTOM_SPAWN));
     }
 
     @Test
@@ -201,7 +202,7 @@ class YamlWorldStorageRoundTripTest {
 
         Collection<BuildWorld> loaded = newStorage().load().join();
         assertEquals(1, loaded.size());
-        assertEquals(TestData.NOT_STARTED, loaded.iterator().next().getData().getStatus());
+        assertEquals(TestData.NOT_STARTED, loaded.iterator().next().getData().get(WorldDataKey.STATUS));
     }
 
     @Test

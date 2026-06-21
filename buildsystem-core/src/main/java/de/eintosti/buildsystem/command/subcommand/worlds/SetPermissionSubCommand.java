@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.config.ConfigService;
@@ -82,7 +83,7 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
                 return;
             }
 
-            buildWorld.getData().setPermission(permission);
+            buildWorld.getData().set(WorldDataKey.PERMISSION, permission);
             settingsService.forceUpdateSidebar(buildWorld);
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);

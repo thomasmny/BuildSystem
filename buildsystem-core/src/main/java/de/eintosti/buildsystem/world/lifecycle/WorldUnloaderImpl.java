@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.lifecycle;
 
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostUnloadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldUnloadEvent;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldUnloader;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
@@ -155,7 +156,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
             return;
         }
 
-        this.buildWorld.getData().setLastUnloaded(System.currentTimeMillis());
+        this.buildWorld.getData().set(WorldDataKey.LAST_UNLOADED, System.currentTimeMillis());
         this.buildWorld.setLoaded(false);
         this.unloadTask = null;
 

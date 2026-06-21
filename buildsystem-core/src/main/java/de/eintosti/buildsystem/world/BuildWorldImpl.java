@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
@@ -191,28 +192,29 @@ public final class BuildWorldImpl implements BuildWorld {
 
     @Override
     public XMaterial getIcon() {
-        return this.worldData.getMaterial();
+        return this.worldData.get(WorldDataKey.MATERIAL);
     }
 
     @Override
     public void setIcon(XMaterial material) {
-        this.worldData.setMaterial(material);
+        this.worldData.set(WorldDataKey.MATERIAL, material);
     }
 
     @Override
     public @Nullable String getIconSkullTexture() {
-        return this.worldData.getIconSkullTexture();
+        String texture = this.worldData.get(WorldDataKey.ICON_SKULL_TEXTURE);
+        return texture.isBlank() ? null : texture;
     }
 
     @Override
     public void setIconSkullTexture(@Nullable String skullTexture) {
-        this.worldData.setIconSkullTexture(skullTexture);
+        this.worldData.set(WorldDataKey.ICON_SKULL_TEXTURE, skullTexture == null ? "" : skullTexture);
     }
 
     @Override
     public String getDisplayName(Player player) {
         String title = context.messages().getString("world_item_title", player, Map.entry("%world%", this.name));
-        if (this.worldData.isPinned()) {
+        if (this.worldData.get(WorldDataKey.PINNED)) {
             return context.messages().getString("world_item_pinned_prefix", player) + title;
         }
         return title;
@@ -222,16 +224,20 @@ public final class BuildWorldImpl implements BuildWorld {
     public List<String> getLore(Player player) {
         @SuppressWarnings("unchecked")
         Map.Entry<String, Object>[] placeholders = List.of(
-                        Map.entry("%status%", worldData.getStatus().getStyledName()),
-                        Map.entry("%project%", worldData.getProject()),
-                        Map.entry("%permission%", worldData.getPermission()),
+                        Map.entry("%status%", worldData.get(WorldDataKey.STATUS).getStyledName()),
+                        Map.entry("%project%", worldData.get(WorldDataKey.PROJECT)),
+                        Map.entry("%permission%", worldData.get(WorldDataKey.PERMISSION)),
                         Map.entry(
                                 "%creator%",
                                 builders.hasCreator() ? builders.getCreator().getName() : "-"),
                         Map.entry("%creation%", context.messages().formatDate(getCreation())),
-                        Map.entry("%lastedited%", context.messages().formatDate(worldData.getLastEdited())),
-                        Map.entry("%lastloaded%", context.messages().formatDate(worldData.getLastLoaded())),
-                        Map.entry("%lastunloaded%", context.messages().formatDate(worldData.getLastUnloaded())))
+                        Map.entry(
+                                "%lastedited%", context.messages().formatDate(worldData.get(WorldDataKey.LAST_EDITED))),
+                        Map.entry(
+                                "%lastloaded%", context.messages().formatDate(worldData.get(WorldDataKey.LAST_LOADED))),
+                        Map.entry(
+                                "%lastunloaded%",
+                                context.messages().formatDate(worldData.get(WorldDataKey.LAST_UNLOADED))))
                 .toArray(Map.Entry[]::new);
 
         List<String> messageList = getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())
@@ -269,7 +275,7 @@ public final class BuildWorldImpl implements BuildWorld {
     @Override
     public Profileable getHeadProfile() {
         Builder creator = builders.getCreator();
-        if (worldData.getVisibility().isPrivate() && creator != null) {
+        if (worldData.get(WorldDataKey.VISIBILITY).isPrivate() && creator != null) {
             return Profileable.of(creator.getUniqueId());
         }
         return Profileable.username(name);
@@ -309,13 +315,13 @@ public final class BuildWorldImpl implements BuildWorld {
     @Override
     public Difficulty cycleDifficulty() {
         Difficulty newDifficulty =
-                switch (worldData.getDifficulty()) {
+                switch (worldData.get(WorldDataKey.DIFFICULTY)) {
                     case PEACEFUL -> Difficulty.EASY;
                     case EASY -> Difficulty.NORMAL;
                     case NORMAL -> Difficulty.HARD;
                     case HARD -> Difficulty.PEACEFUL;
                 };
-        worldData.setDifficulty(newDifficulty);
+        worldData.set(WorldDataKey.DIFFICULTY, newDifficulty);
         return newDifficulty;
     }
 

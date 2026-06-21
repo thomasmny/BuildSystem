@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -52,7 +53,7 @@ public class SetSpawnSubCommand extends AbstractSubCommand {
         }
 
         Location playerLocation = player.getLocation();
-        buildWorld.getData().setCustomSpawn(CustomSpawn.format(playerLocation));
+        buildWorld.getData().set(WorldDataKey.CUSTOM_SPAWN, CustomSpawn.format(playerLocation));
         messages.sendMessage(player, "worlds_setspawn_world_spawn_set", Map.entry("%world%", buildWorld.getName()));
     }
 
