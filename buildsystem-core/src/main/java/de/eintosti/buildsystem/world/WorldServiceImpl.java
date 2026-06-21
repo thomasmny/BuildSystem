@@ -114,6 +114,9 @@ public class WorldServiceImpl implements WorldService {
     public WorldBuilder newWorld(String name) {
         // Defense-in-depth: the menus sanitize names before they reach here, but this is public API. Reject any name
         // that would resolve outside the world container so a caller cannot create a directory in, say, plugins/.
+        if (StringCleaner.isReservedName(name)) {
+            throw new IllegalArgumentException("World name '" + name + "' is reserved and cannot be used");
+        }
         File worldDirectory = new File(Bukkit.getWorldContainer(), name);
         if (StringCleaner.isPathEscape(Bukkit.getWorldContainer(), worldDirectory)) {
             throw new IllegalArgumentException("World name '" + name + "' resolves outside the world container");
