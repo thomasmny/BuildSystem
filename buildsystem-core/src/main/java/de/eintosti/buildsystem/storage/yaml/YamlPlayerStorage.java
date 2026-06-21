@@ -21,10 +21,14 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.codec.PlayerCodec;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -38,43 +42,57 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
     private final YamlStore store;
     private final FileConfiguration config;
     private final PlayerCodec codec;
+    private final Executor background;
 
-    public YamlPlayerStorage(BuildSystemPlugin plugin) {
+    public YamlPlayerStorage(BuildSystemPlugin plugin, TaskScheduler scheduler) {
         super(plugin.getLogger());
         this.store = new YamlStore(plugin.getDataFolder(), "players.yml", plugin.getLogger());
         this.config = store.config();
         this.codec = new PlayerCodec(plugin.getLogger());
+        this.background = scheduler.background();
     }
 
     @Override
     public CompletableFuture<Void> save(BuildPlayer buildPlayer) {
-        return CompletableFuture.runAsync(() -> store.atomicSave(
-                () -> config.set(PLAYERS_KEY + "." + codec.key(buildPlayer), codec.serialize(buildPlayer))));
+        // Serialize on the calling (main) thread; the async block only writes the captured map to disk.
+        String playerKey = codec.key(buildPlayer);
+        Map<String, Object> serialized = codec.serialize(buildPlayer);
+        return CompletableFuture.runAsync(
+                () -> store.atomicSave(() -> config.set(PLAYERS_KEY + "." + playerKey, serialized)), background);
     }
 
     @Override
     public CompletableFuture<Void> save(Collection<BuildPlayer> players) {
-        return CompletableFuture.runAsync(() -> store.atomicSave(() ->
-                players.forEach(player -> config.set(PLAYERS_KEY + "." + codec.key(player), codec.serialize(player)))));
+        Map<String, Object> serialized = new LinkedHashMap<>();
+        for (BuildPlayer player : players) {
+            serialized.put(codec.key(player), codec.serialize(player));
+        }
+        return CompletableFuture.runAsync(
+                () -> store.atomicSave(() ->
+                        serialized.forEach((playerKey, value) -> config.set(PLAYERS_KEY + "." + playerKey, value))),
+                background);
     }
 
     @Override
     public CompletableFuture<Collection<BuildPlayer>> load() {
-        return CompletableFuture.supplyAsync(() -> store.locked(() -> {
-            Collection<BuildPlayer> players = new ArrayList<>();
-            for (String playerUuid : loadPlayerKeys()) {
-                try {
-                    ConfigurationSection section = config.getConfigurationSection(PLAYERS_KEY + "." + playerUuid);
-                    if (section == null) {
-                        continue;
+        return CompletableFuture.supplyAsync(
+                () -> store.locked(() -> {
+                    Collection<BuildPlayer> players = new ArrayList<>();
+                    for (String playerUuid : loadPlayerKeys()) {
+                        try {
+                            ConfigurationSection section =
+                                    config.getConfigurationSection(PLAYERS_KEY + "." + playerUuid);
+                            if (section == null) {
+                                continue;
+                            }
+                            players.add(codec.deserialize(playerUuid, section));
+                        } catch (Exception e) {
+                            logger.log(Level.WARNING, "Skipping player \"" + playerUuid + "\": could not be loaded", e);
+                        }
                     }
-                    players.add(codec.deserialize(playerUuid, section));
-                } catch (Exception e) {
-                    logger.log(Level.WARNING, "Skipping player \"" + playerUuid + "\": could not be loaded", e);
-                }
-            }
-            return players;
-        }));
+                    return players;
+                }),
+                background);
     }
 
     private Set<String> loadPlayerKeys() {
@@ -98,6 +116,6 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
     @Override
     public CompletableFuture<Void> delete(String playerKey) {
         return CompletableFuture.runAsync(
-                () -> store.atomicSave(() -> config.set(PLAYERS_KEY + "." + playerKey, null)));
+                () -> store.atomicSave(() -> config.set(PLAYERS_KEY + "." + playerKey, null)), background);
     }
 }

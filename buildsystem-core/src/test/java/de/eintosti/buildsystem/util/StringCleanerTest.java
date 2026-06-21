@@ -85,6 +85,31 @@ class StringCleanerTest {
     }
 
     @Test
+    void isReservedName_windowsDeviceNames_returnTrueCaseInsensitively() {
+        assertTrue(StringCleaner.isReservedName("CON"));
+        assertTrue(StringCleaner.isReservedName("con"));
+        assertTrue(StringCleaner.isReservedName("CoM1"));
+        assertTrue(StringCleaner.isReservedName("lpt9"));
+        assertTrue(StringCleaner.isReservedName("NUL"));
+    }
+
+    @Test
+    void isReservedName_dotAndEmpty_returnTrue() {
+        assertTrue(StringCleaner.isReservedName("."));
+        assertTrue(StringCleaner.isReservedName(".."));
+        assertTrue(StringCleaner.isReservedName(""));
+        assertTrue(StringCleaner.isReservedName("   "));
+    }
+
+    @Test
+    void isReservedName_ordinaryNames_returnFalse() {
+        assertFalse(StringCleaner.isReservedName("World"));
+        assertFalse(StringCleaner.isReservedName("COM")); // no trailing digit
+        assertFalse(StringCleaner.isReservedName("COM10")); // outside COM1-9
+        assertFalse(StringCleaner.isReservedName("console"));
+    }
+
+    @Test
     void isPathEscape_normalChild_returnsFalse() {
         File base = new File("/srv/templates");
         File child = new File("/srv/templates/myworld");

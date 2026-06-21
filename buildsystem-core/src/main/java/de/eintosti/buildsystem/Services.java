@@ -51,6 +51,7 @@ import org.jspecify.annotations.Nullable;
 public final class Services {
 
     private final BuildSystemPlugin plugin;
+    private final TaskScheduler taskScheduler;
 
     private @Nullable ConfigService configService;
     private @Nullable Messages messages;
@@ -76,6 +77,15 @@ public final class Services {
 
     Services(BuildSystemPlugin plugin) {
         this.plugin = plugin;
+        this.taskScheduler = new TaskScheduler(plugin);
+    }
+
+    /**
+     * The plugin's single {@link TaskScheduler}, owning the shared background executor. Available for the whole plugin
+     * lifetime; {@link TaskScheduler#shutdown() shut down} on disable.
+     */
+    public TaskScheduler scheduler() {
+        return taskScheduler;
     }
 
     /**
@@ -107,13 +117,13 @@ public final class Services {
 
         this.customBlockManager = new CustomBlockManager(plugin, this::world);
         this.playerLookupService = new PlayerLookupService(plugin);
-        (this.playerService = new PlayerServiceImpl(plugin, config(), this::world)).init();
+        (this.playerService = new PlayerServiceImpl(plugin, config(), this::world, taskScheduler)).init();
         this.navigatorEditorService = new NavigatorEditorService();
         this.noClipService = new NoClipService(plugin);
         this.worldService = new WorldServiceImpl(plugin, this);
         this.backupService = new BackupServiceImpl(plugin, config(), messages(), world(), this::spawn);
         this.settingsService = new SettingsService(plugin, config(), messages(), player(), world());
-        this.spawnService = new SpawnService(plugin, world());
+        this.spawnService = new SpawnService(plugin, world(), taskScheduler);
         this.menuItems = new MenuItems(plugin, messages(), settings());
         this.navigatorItems = new NavigatorItems(plugin, config(), messages());
         this.navigatorService = new NavigatorService(
@@ -122,11 +132,11 @@ public final class Services {
                 navigatorItems(),
                 player(),
                 messages(),
-                new TaskScheduler(plugin),
+                taskScheduler,
                 new NamespacedKey(plugin, "owner"),
                 new NamespacedKey(plugin, "category"));
         this.menus = new Menus(plugin, this);
-        this.prompts = new Prompts(messages(), config(), new TaskScheduler(plugin));
+        this.prompts = new Prompts(messages(), config(), taskScheduler);
 
         // Load persisted worlds/folders last: world entities pull collaborators from a WorldContext that bundles
         // services created above (e.g. MenuItems, SpawnService), so the whole service graph must exist before loading.
@@ -231,7 +241,7 @@ public final class Services {
                     spawn(),
                     worldStatusRegistry(),
                     customizableIcons(),
-                    new TaskScheduler(plugin),
+                    taskScheduler,
                     plugin.getLogger());
         }
         return worldContext;

@@ -21,14 +21,12 @@ import com.cryptomorin.xseries.XGameRule;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
-import java.io.File;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -36,12 +34,14 @@ import org.jspecify.annotations.Nullable;
 public class ConfigService {
 
     private final BuildSystemPlugin plugin;
+    private final WorldEditWandDetector wandDetector;
     private volatile PluginConfig current;
 
     public ConfigService(BuildSystemPlugin plugin) {
         this.plugin = plugin;
+        this.wandDetector = new WorldEditWandDetector(plugin.getDataFolder().getParentFile());
         // Initialize with a placeholder; load() must be called before current() is used.
-        this.current = parse(plugin.getConfig(), plugin.getLogger());
+        this.current = parse(plugin.getConfig(), plugin.getLogger(), wandDetector.detect());
     }
 
     /**
@@ -57,7 +57,7 @@ public class ConfigService {
      * Reloads the configuration from disk and re-parses it into a new {@link PluginConfig}.
      */
     public void load() {
-        this.current = parse(plugin.getConfig(), plugin.getLogger());
+        this.current = parse(plugin.getConfig(), plugin.getLogger(), wandDetector.detect());
     }
 
     /**
@@ -97,34 +97,20 @@ public class ConfigService {
     }
 
     /**
-     * Parses the given {@link FileConfiguration} into a {@link PluginConfig} record tree.
+     * Parses the given {@link FileConfiguration} into a {@link PluginConfig} record tree. Pure: it reads only from
+     * {@code config}. The WorldEdit wand is resolved separately (see {@link WorldEditWandDetector}) and passed in, so
+     * parsing never touches the filesystem.
      *
      * @param config The file configuration to parse
      * @param logger The logger to use for warnings
+     * @param worldEditWand The resolved WorldEdit wand material
      * @return The parsed {@link PluginConfig}
      */
-    PluginConfig parse(FileConfiguration config, Logger logger) {
-        return parse(config, logger, plugin.getDataFolder().getParentFile());
+    static PluginConfig parse(FileConfiguration config, Logger logger, XMaterial worldEditWand) {
+        return new PluginConfig(parseSettings(config, worldEditWand), parseWorld(config, logger), parseFolder(config));
     }
 
-    /**
-     * Parses a config for testing purposes (WorldEdit wand detection skipped — returns default
-     * {@link XMaterial#WOODEN_AXE}).
-     *
-     * @param config The file configuration to parse
-     * @param logger The logger to use for warnings
-     * @return The parsed {@link PluginConfig}
-     */
-    static PluginConfig parseForTest(FileConfiguration config, Logger logger) {
-        return parse(config, logger, null);
-    }
-
-    private static PluginConfig parse(FileConfiguration config, Logger logger, @Nullable File pluginParentDir) {
-        return new PluginConfig(
-                parseSettings(config, pluginParentDir), parseWorld(config, logger), parseFolder(config));
-    }
-
-    private static PluginConfig.Settings parseSettings(FileConfiguration config, @Nullable File pluginParentDir) {
+    private static PluginConfig.Settings parseSettings(FileConfiguration config, XMaterial worldEditWand) {
         PluginConfig.Settings.Archive archive = new PluginConfig.Settings.Archive(
                 config.getBoolean("settings.archive.vanish", true),
                 config.getBoolean("settings.archive.change-gamemode", true),
@@ -139,8 +125,7 @@ public class ConfigService {
                 config.getBoolean("settings.build-mode.move-items", true));
 
         PluginConfig.Settings.Builder builder = new PluginConfig.Settings.Builder(
-                config.getBoolean("settings.builder.block-worldedit-non-builder", true),
-                parseWorldEditWand(pluginParentDir));
+                config.getBoolean("settings.builder.block-worldedit-non-builder", true), worldEditWand);
 
         PluginConfig.Settings.Navigator navigator = new PluginConfig.Settings.Navigator(
                 XMaterial.valueOf(Objects.requireNonNullElse(config.getString("settings.navigator.item"), "CLOCK")),
@@ -211,7 +196,7 @@ public class ConfigService {
 
         PluginConfig.World.Backup backup = new PluginConfig.World.Backup(
                 Math.min(config.getInt("world.backup.max-backups-per-world", 5), 18),
-                parseStorageSettings(config, logger),
+                StorageSettingsFactory.fromConfig(config, logger),
                 autoBackup);
 
         Set<String> deletionBlacklist = config.getStringList("world.deletion-blacklist").stream()
@@ -278,76 +263,6 @@ public class ConfigService {
         return new PluginConfig.Folder(
                 config.getBoolean("folder.override-permissions", true),
                 config.getBoolean("folder.override-projects", false));
-    }
-
-    private static PluginConfig.World.Backup.StorageSettings parseStorageSettings(
-            FileConfiguration config, Logger logger) {
-        String type = Objects.requireNonNullElse(config.getString("world.backup.storage.type"), "local")
-                .toLowerCase();
-
-        return switch (type) {
-            case "s3" ->
-                new PluginConfig.World.Backup.S3(
-                        config.getString("world.backup.storage.s3.url"),
-                        config.getString("world.backup.storage.s3.access-key"),
-                        config.getString("world.backup.storage.s3.secret-key"),
-                        config.getString("world.backup.storage.s3.region"),
-                        config.getString("world.backup.storage.s3.bucket"),
-                        config.getString("world.backup.storage.s3.path"));
-            case "sftp" ->
-                new PluginConfig.World.Backup.Sftp(
-                        config.getString("world.backup.storage.sftp.host"),
-                        config.getInt("world.backup.storage.sftp.port", 22),
-                        config.getString("world.backup.storage.sftp.username"),
-                        config.getString("world.backup.storage.sftp.password"),
-                        config.getString("world.backup.storage.sftp.path"));
-            default -> {
-                if (!type.equals("local")) {
-                    logger.warning("Unknown backup storage type '" + type + "', defaulting to local storage.");
-                }
-                yield new PluginConfig.World.Backup.Local();
-            }
-        };
-    }
-
-    /**
-     * Parses the WorldEdit wand material from the WorldEdit or FastAsyncWorldEdit config file.
-     *
-     * @param pluginDir The parent directory of all plugins, or null to skip WorldEdit detection
-     * @return The parsed {@link XMaterial} for the WorldEdit wand
-     */
-    static XMaterial parseWorldEditWand(@Nullable File pluginDir) {
-        File configFile = null;
-
-        if (pluginDir != null) {
-            File weConfig = new File(pluginDir + File.separator + "WorldEdit", "config.yml");
-            if (weConfig.exists()) {
-                configFile = weConfig;
-            }
-
-            File faweConfig = new File(pluginDir + File.separator + "FastAsyncWorldEdit", "worldedit-config.yml");
-            if (faweConfig.exists()) {
-                configFile = faweConfig;
-            }
-        }
-
-        XMaterial defaultWand = XMaterial.WOODEN_AXE;
-        if (configFile == null) {
-            return defaultWand;
-        }
-
-        YamlConfiguration weYaml = YamlConfiguration.loadConfiguration(configFile);
-        String wand = weYaml.getString("wand-item");
-        if (wand == null) {
-            return defaultWand;
-        }
-
-        String namespace = "minecraft:";
-        if (wand.toLowerCase(Locale.ROOT).startsWith(namespace)) {
-            wand = wand.substring(namespace.length());
-        }
-
-        return XMaterial.matchXMaterial(wand).orElse(defaultWand);
     }
 
     /**

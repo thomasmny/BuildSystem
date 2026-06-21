@@ -62,7 +62,7 @@ public class WorldsCommand extends CommandBase {
         BackupServiceImpl backupService = services.backup();
         Logger logger = plugin.getLogger();
         File dataFolder = plugin.getDataFolder();
-        TaskScheduler scheduler = new TaskScheduler(plugin);
+        TaskScheduler scheduler = services.scheduler();
 
         this.dispatcher = new SubCommandDispatcher(
                 messages,

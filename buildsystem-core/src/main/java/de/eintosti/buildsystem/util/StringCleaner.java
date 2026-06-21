@@ -20,6 +20,8 @@ package de.eintosti.buildsystem.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Locale;
+import java.util.Set;
 import java.util.regex.Pattern;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -31,6 +33,11 @@ public final class StringCleaner {
     public static final String DEFAULT_INVALID_CHARACTERS = "^\b$";
 
     private static final Pattern INVALID_NAME_PATTERN = Pattern.compile(INVALID_NAME_CHARACTERS);
+
+    /** Windows device names that cannot back a directory regardless of extension. */
+    private static final Set<String> RESERVED_NAMES = Set.of(
+            "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1",
+            "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9");
 
     private StringCleaner() {}
 
@@ -55,6 +62,23 @@ public final class StringCleaner {
                 .replaceAll(configuredPattern, "")
                 .replace(" ", "_")
                 .trim();
+    }
+
+    /**
+     * Checks whether a name is reserved or degenerate as a directory name. {@link #isPathEscape} already rejects names
+     * that traverse out of the container; this rejects ones that stay inside it but still cannot back a world folder:
+     * the current/parent aliases ({@code .}/{@code ..}), the empty name, and the Windows device names (CON, PRN, AUX,
+     * NUL, COM1-9, LPT1-9) that are unusable even on a server that later moves between platforms.
+     *
+     * @param name the candidate world or folder name
+     * @return {@code true} if the name must not be used
+     */
+    public static boolean isReservedName(String name) {
+        String trimmed = name.trim();
+        if (trimmed.isEmpty() || trimmed.equals(".") || trimmed.equals("..")) {
+            return true;
+        }
+        return RESERVED_NAMES.contains(trimmed.toUpperCase(Locale.ROOT));
     }
 
     /**

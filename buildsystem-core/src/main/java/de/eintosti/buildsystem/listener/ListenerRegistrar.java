@@ -76,7 +76,7 @@ public final class ListenerRegistrar {
         NavigatorEditorService navigatorEditorService = services.navigatorEditor();
         NoClipService noClipService = services.noClip();
         SpawnService spawnService = services.spawn();
-        TaskScheduler scheduler = new TaskScheduler(plugin);
+        TaskScheduler scheduler = services.scheduler();
         PlayerLookupService playerLookupService = services.playerLookup();
         UpdateChecker updateChecker = plugin.getUpdateChecker();
 

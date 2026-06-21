@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
@@ -47,10 +48,10 @@ import org.jspecify.annotations.Nullable;
  * {@link Codec} for {@link BuildWorld}s, mapping a world to and from its section. Since v4 the section is keyed by the
  * world's UUID and the name is carried as a {@code name} field (a rename is then a field update, not a key move).
  *
- * <p>The bulk of a world's state lives under the nested {@code data} section, whose keys mirror the property keys
- * registered in {@link WorldDataImpl} — the {@code DATA_*} constants here must stay in lock-step with those. Reads are
- * defensive: unknown enums fall back to safe defaults and a single unparseable entry surfaces as an exception for the
- * storage to skip rather than aborting the whole load.
+ * <p>The bulk of a world's state lives under the nested {@code data} section, whose keys come straight from
+ * {@link WorldDataKey} via {@link #dataPath} — the same catalog {@link WorldDataImpl} registers and serializes by, so
+ * there is no parallel key list to keep in sync. Reads are defensive: unknown enums fall back to safe defaults and a
+ * single unparseable entry surfaces as an exception for the storage to skip rather than aborting the whole load.
  */
 @NullMarked
 public final class WorldCodec implements Codec<BuildWorld> {
@@ -65,27 +66,8 @@ public final class WorldCodec implements Codec<BuildWorld> {
     private static final String CHUNK_GENERATOR = "chunk-generator";
     private static final String DATA = "data";
 
-    private static final String DATA_SPAWN = "spawn";
-    private static final String DATA_PERMISSION = "permission";
-    private static final String DATA_PROJECT = "project";
-    private static final String DATA_DIFFICULTY = "difficulty";
-    private static final String DATA_MATERIAL = "material";
-    private static final String DATA_ICON_SKULL_TEXTURE = "icon-skull-texture";
-    private static final String DATA_STATUS = "status";
-    private static final String DATA_BLOCK_BREAKING = "block-breaking";
-    private static final String DATA_BLOCK_INTERACTIONS = "block-interactions";
-    private static final String DATA_BLOCK_PLACEMENT = "block-placement";
-    private static final String DATA_BUILDERS_ENABLED = "builders-enabled";
-    private static final String DATA_EXPLOSIONS = "explosions";
-    private static final String DATA_MOB_AI = "mob-ai";
-    private static final String DATA_PHYSICS = "physics";
-    private static final String DATA_PINNED = "pinned";
-    private static final String DATA_VISIBILITY = "visibility";
-    private static final String DATA_PRIVATE = "private";
-    private static final String DATA_TIME_SINCE_BACKUP = "time-since-backup";
-    private static final String DATA_LAST_LOADED = "last-loaded";
-    private static final String DATA_LAST_UNLOADED = "last-unloaded";
-    private static final String DATA_LAST_EDITED = "last-edited";
+    // The data keys come straight from WorldDataKey (see dataPath); only the pre-4.0 private boolean has no key.
+    private static final String LEGACY_PRIVATE = "private";
 
     private final WorldContext context;
     private final PlayerLookupService playerLookup;
@@ -158,26 +140,31 @@ public final class WorldCodec implements Codec<BuildWorld> {
     private WorldDataImpl parseWorldData(String worldName, ConfigurationSection section) {
         return new WorldDataBuilder(worldName)
                 .withCustomSpawn(parseCustomSpawn(section))
-                .withPermission(section.getString(DATA + "." + DATA_PERMISSION, "-"))
-                .withProject(section.getString(DATA + "." + DATA_PROJECT, "-"))
-                .withDifficulty(Difficulty.valueOf(section.getString(DATA + "." + DATA_DIFFICULTY, "PEACEFUL")
-                        .toUpperCase(Locale.ROOT)))
+                .withPermission(section.getString(dataPath(WorldDataKey.PERMISSION), "-"))
+                .withProject(section.getString(dataPath(WorldDataKey.PROJECT), "-"))
+                .withDifficulty(parseDifficulty(section, worldName))
                 .withMaterial(parseMaterial(section, worldName))
-                .withIconSkullTexture(section.getString(DATA + "." + DATA_ICON_SKULL_TEXTURE, ""))
+                .withIconSkullTexture(section.getString(dataPath(WorldDataKey.ICON_SKULL_TEXTURE), ""))
                 .withStatus(parseStatus(section, worldName))
-                .withBlockBreaking(section.getBoolean(DATA + "." + DATA_BLOCK_BREAKING))
-                .withBlockInteractions(section.getBoolean(DATA + "." + DATA_BLOCK_INTERACTIONS))
-                .withBlockPlacement(section.getBoolean(DATA + "." + DATA_BLOCK_PLACEMENT))
-                .withBuildersEnabled(section.getBoolean(DATA + "." + DATA_BUILDERS_ENABLED))
-                .withExplosions(section.getBoolean(DATA + "." + DATA_EXPLOSIONS))
-                .withMobAi(section.getBoolean(DATA + "." + DATA_MOB_AI))
-                .withPhysics(section.getBoolean(DATA + "." + DATA_PHYSICS))
-                .withPinned(section.getBoolean(DATA + "." + DATA_PINNED, false))
+                .withBlockBreaking(
+                        section.getBoolean(dataPath(WorldDataKey.BLOCK_BREAKING), WorldDataImpl.DEFAULT_BLOCK_BREAKING))
+                .withBlockInteractions(section.getBoolean(
+                        dataPath(WorldDataKey.BLOCK_INTERACTIONS), WorldDataImpl.DEFAULT_BLOCK_INTERACTIONS))
+                .withBlockPlacement(section.getBoolean(
+                        dataPath(WorldDataKey.BLOCK_PLACEMENT), WorldDataImpl.DEFAULT_BLOCK_PLACEMENT))
+                .withBuildersEnabled(section.getBoolean(
+                        dataPath(WorldDataKey.BUILDERS_ENABLED), WorldDataImpl.DEFAULT_BUILDERS_ENABLED))
+                .withExplosions(section.getBoolean(dataPath(WorldDataKey.EXPLOSIONS), WorldDataImpl.DEFAULT_EXPLOSIONS))
+                .withMobAi(section.getBoolean(dataPath(WorldDataKey.MOB_AI), WorldDataImpl.DEFAULT_MOB_AI))
+                .withPhysics(section.getBoolean(dataPath(WorldDataKey.PHYSICS), WorldDataImpl.DEFAULT_PHYSICS))
+                .withPinned(section.getBoolean(dataPath(WorldDataKey.PINNED), WorldDataImpl.DEFAULT_PINNED))
                 .withVisibility(parseVisibility(section))
-                .withTimeSinceBackup(section.getInt(DATA + "." + DATA_TIME_SINCE_BACKUP, 0))
-                .withLastLoaded(section.getLong(DATA + "." + DATA_LAST_LOADED))
-                .withLastUnloaded(section.getLong(DATA + "." + DATA_LAST_UNLOADED))
-                .withLastEdited(section.getLong(DATA + "." + DATA_LAST_EDITED))
+                .withTimeSinceBackup(section.getInt(
+                        dataPath(WorldDataKey.TIME_SINCE_BACKUP), WorldDataImpl.DEFAULT_TIME_SINCE_BACKUP))
+                .withLastLoaded(section.getLong(dataPath(WorldDataKey.LAST_LOADED), WorldDataImpl.DEFAULT_TIMESTAMP))
+                .withLastUnloaded(
+                        section.getLong(dataPath(WorldDataKey.LAST_UNLOADED), WorldDataImpl.DEFAULT_TIMESTAMP))
+                .withLastEdited(section.getLong(dataPath(WorldDataKey.LAST_EDITED), WorldDataImpl.DEFAULT_TIMESTAMP))
                 .withPermissionOverrideEnabled(
                         () -> context.configService().current().folder().overridePermissions())
                 .withProjectOverrideEnabled(
@@ -186,12 +173,20 @@ public final class WorldCodec implements Codec<BuildWorld> {
     }
 
     /**
+     * {@return the nested {@code data.<id>} path for a key} The data keys are owned by {@link WorldDataKey}, so the
+     * codec never duplicates the on-disk strings.
+     */
+    private static String dataPath(WorldDataKey<?> key) {
+        return DATA + "." + key.id();
+    }
+
+    /**
      * Reads a world's custom spawn. It is serialized under {@code data.spawn} (its property key), but pre-property-map
      * files stored it at the top-level {@code spawn} key, so that location is the fallback.
      */
     private String parseCustomSpawn(ConfigurationSection section) {
-        String dataSpawn = section.getString(DATA + "." + DATA_SPAWN);
-        return dataSpawn != null ? dataSpawn : section.getString(DATA_SPAWN, "");
+        String dataSpawn = section.getString(dataPath(WorldDataKey.CUSTOM_SPAWN));
+        return dataSpawn != null ? dataSpawn : section.getString(WorldDataKey.CUSTOM_SPAWN.id(), "");
     }
 
     private BuildWorldType parseType(String worldName, ConfigurationSection section) {
@@ -209,12 +204,27 @@ public final class WorldCodec implements Codec<BuildWorld> {
     }
 
     /**
+     * Resolves a world's {@link Difficulty}, falling back to {@link Difficulty#PEACEFUL} when the persisted value is
+     * unknown. Like the other enums, an unparseable difficulty must not abort the world's load.
+     */
+    private Difficulty parseDifficulty(ConfigurationSection section, String worldName) {
+        String raw = section.getString(dataPath(WorldDataKey.DIFFICULTY), Difficulty.PEACEFUL.name());
+        try {
+            return Difficulty.valueOf(raw.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            context.logger()
+                    .warning("Unknown difficulty \"" + raw + "\" for \"" + worldName + "\". Defaulting to PEACEFUL.");
+            return Difficulty.PEACEFUL;
+        }
+    }
+
+    /**
      * Resolves a world's status from its persisted id, migrating pre-4.0 enum names (e.g. {@code NOT_STARTED}) to the
      * equivalent lower-case status id. Falls back to the registry default when the id is unknown.
      */
     private BuildWorldStatus parseStatus(ConfigurationSection section, String worldName) {
         WorldStatusRegistry registry = context.statusRegistry();
-        String raw = section.getString(DATA + "." + DATA_STATUS);
+        String raw = section.getString(dataPath(WorldDataKey.STATUS));
         if (raw == null) {
             return registry.getDefaultStatus();
         }
@@ -232,7 +242,7 @@ public final class WorldCodec implements Codec<BuildWorld> {
      * {@code private} boolean when the new key is absent.
      */
     private Visibility parseVisibility(ConfigurationSection section) {
-        String raw = section.getString(DATA + "." + DATA_VISIBILITY);
+        String raw = section.getString(dataPath(WorldDataKey.VISIBILITY));
         if (raw != null) {
             try {
                 return Visibility.valueOf(raw.toUpperCase(Locale.ROOT));
@@ -240,11 +250,11 @@ public final class WorldCodec implements Codec<BuildWorld> {
                 // Fall through to the legacy private flag.
             }
         }
-        return Visibility.matchVisibility(section.getBoolean(DATA + "." + DATA_PRIVATE));
+        return Visibility.matchVisibility(section.getBoolean(DATA + "." + LEGACY_PRIVATE));
     }
 
     private XMaterial parseMaterial(ConfigurationSection section, String worldName) {
-        String itemString = section.getString(DATA + "." + DATA_MATERIAL);
+        String itemString = section.getString(dataPath(WorldDataKey.MATERIAL));
         if (itemString == null) {
             itemString = XMaterial.BEDROCK.name();
             context.logger().warning("Could not find material for \"" + worldName + "\". Defaulting to BEDROCK.");

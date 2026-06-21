@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
@@ -57,6 +58,7 @@ public class WorldRenamer {
     private final ConfigService configService;
     private final Messages messages;
     private final SpawnService spawnService;
+    private final TaskScheduler scheduler;
 
     public WorldRenamer(
             BuildSystemPlugin plugin,
@@ -64,13 +66,15 @@ public class WorldRenamer {
             WorldStorageImpl worldStorage,
             ConfigService configService,
             Messages messages,
-            SpawnService spawnService) {
+            SpawnService spawnService,
+            TaskScheduler scheduler) {
         this.plugin = plugin;
         this.worldService = worldService;
         this.worldStorage = worldStorage;
         this.configService = configService;
         this.messages = messages;
         this.spawnService = spawnService;
+        this.scheduler = scheduler;
     }
 
     public void rename(Player player, BuildWorld buildWorld, String newName) {
@@ -124,25 +128,26 @@ public class WorldRenamer {
 
         File oldWorldFile = new File(Bukkit.getWorldContainer(), oldName);
         File newWorldFile = new File(Bukkit.getWorldContainer(), sanitizedNewName);
-        CompletableFuture.runAsync(() -> {
-                    try {
-                        FileUtils.copy(oldWorldFile, newWorldFile);
-                        FileUtils.deleteDirectory(oldWorldFile);
-                    } catch (Exception e) {
-                        throw new RuntimeException("Failed to rename world directory", e);
-                    }
-                })
-                .thenRun(() -> Bukkit.getScheduler()
-                        .runTask(
-                                plugin,
-                                () -> reconstruct(
-                                        player,
-                                        buildWorld,
-                                        oldName,
-                                        sanitizedNewName,
-                                        oldWorld,
-                                        oldSpawnLocation,
-                                        removedPlayers)));
+        CompletableFuture.runAsync(
+                        () -> {
+                            try {
+                                FileUtils.copy(oldWorldFile, newWorldFile);
+                                FileUtils.deleteDirectory(oldWorldFile);
+                            } catch (Exception e) {
+                                throw new RuntimeException("Failed to rename world directory", e);
+                            }
+                        },
+                        scheduler.background())
+                .thenRunAsync(
+                        () -> reconstruct(
+                                player,
+                                buildWorld,
+                                oldName,
+                                sanitizedNewName,
+                                oldWorld,
+                                oldSpawnLocation,
+                                removedPlayers),
+                        scheduler.mainThread());
     }
 
     private void reconstruct(

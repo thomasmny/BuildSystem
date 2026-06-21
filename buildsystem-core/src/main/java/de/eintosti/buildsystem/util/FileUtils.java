@@ -150,7 +150,18 @@ public final class FileUtils {
      */
     public static void deleteDirectory(Path directoryPath) throws IOException {
         try (Stream<Path> walk = Files.walk(directoryPath)) {
-            walk.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+            // Children before parents, and every delete is checked: File#delete swallows failures (a locked or
+            // permission-denied file would leave orphaned data and report success), so use Files#delete and surface
+            // the first failure as the IOException this method already advertises.
+            walk.sorted(Comparator.reverseOrder()).forEach(path -> {
+                try {
+                    Files.delete(path);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            });
+        } catch (UncheckedIOException e) {
+            throw e.getCause();
         }
     }
 

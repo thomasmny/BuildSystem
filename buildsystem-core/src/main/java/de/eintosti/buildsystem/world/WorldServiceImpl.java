@@ -114,6 +114,9 @@ public class WorldServiceImpl implements WorldService {
     public WorldBuilder newWorld(String name) {
         // Defense-in-depth: the menus sanitize names before they reach here, but this is public API. Reject any name
         // that would resolve outside the world container so a caller cannot create a directory in, say, plugins/.
+        if (StringCleaner.isReservedName(name)) {
+            throw new IllegalArgumentException("World name '" + name + "' is reserved and cannot be used");
+        }
         File worldDirectory = new File(Bukkit.getWorldContainer(), name);
         if (StringCleaner.isPathEscape(Bukkit.getWorldContainer(), worldDirectory)) {
             throw new IllegalArgumentException("World name '" + name + "' resolves outside the world container");
@@ -256,20 +259,27 @@ public class WorldServiceImpl implements WorldService {
         // Bukkit statics from a pool thread.
         BukkitScheduler scheduler = Bukkit.getScheduler();
 
-        // Registry removal and metadata persistence are awaited before folder deletion
-        // so a crash mid-delete leaves an orphaned folder (re-importable) rather than
-        // an orphaned registry entry pointing at a deleted folder.
-        return unimportWorld(buildWorld, SaveBehavior.DISCARD).thenRunAsync(() -> {
-            try {
-                FileUtils.deleteDirectory(deleteFolder);
-            } catch (IOException e) {
-                throw new CompletionException(new WorldDeletionException(
-                        "An unexpected error occurred during directory deletion for world: " + worldName, e));
-            }
-            scheduler.runTask(
-                    plugin,
-                    () -> Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostDeleteEvent(buildWorld)));
-        });
+        // Registry removal and metadata persistence are awaited before folder deletion so a crash mid-delete leaves an
+        // orphaned folder (re-importable) rather than an orphaned registry entry pointing at a deleted folder. The
+        // directory delete is disk I/O, so it runs on the shared background pool.
+        return unimportWorld(buildWorld, SaveBehavior.DISCARD)
+                .thenRunAsync(
+                        () -> {
+                            try {
+                                FileUtils.deleteDirectory(deleteFolder);
+                            } catch (IOException e) {
+                                throw new CompletionException(new WorldDeletionException(
+                                        "An unexpected error occurred during directory deletion for world: "
+                                                + worldName,
+                                        e));
+                            }
+                            scheduler.runTask(
+                                    plugin,
+                                    () -> Bukkit.getServer()
+                                            .getPluginManager()
+                                            .callEvent(new BuildWorldPostDeleteEvent(buildWorld)));
+                        },
+                        services.scheduler().background());
     }
 
     /**
@@ -280,7 +290,14 @@ public class WorldServiceImpl implements WorldService {
      * @param newName The name the world should be renamed to
      */
     public void renameWorld(Player player, BuildWorld buildWorld, String newName) {
-        new WorldRenamer(plugin, this, worldStorage, services.config(), services.messages(), services.spawn())
+        new WorldRenamer(
+                        plugin,
+                        this,
+                        worldStorage,
+                        services.config(),
+                        services.messages(),
+                        services.spawn(),
+                        services.scheduler())
                 .rename(player, buildWorld, newName);
     }
 

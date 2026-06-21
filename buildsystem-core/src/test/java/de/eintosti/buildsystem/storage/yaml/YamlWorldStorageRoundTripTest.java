@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.test.TestData;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
@@ -167,10 +168,12 @@ class YamlWorldStorageRoundTripTest {
     }
 
     @Test
-    void construction_doesNotResolveServices() {
-        // Worlds are loaded during plugin enable, before services such as MenuItems/SpawnService exist. Constructing
-        // the storage must not resolve any service (the codec is built lazily on first load); otherwise startup throws.
+    void construction_doesNotResolveLateServices() {
+        // Worlds are loaded during plugin enable, before the late services the codec needs (MenuItems/SpawnService via
+        // the WorldContext, and PlayerLookupService) exist. Construction must not resolve those (the codec is built
+        // lazily on first load); only the always-available scheduler may be pulled.
         Services strict = mock(Services.class);
+        when(strict.scheduler()).thenReturn(new TaskScheduler(plugin));
         when(strict.worldContext()).thenThrow(new IllegalStateException("service not initialized yet"));
         when(strict.playerLookup()).thenThrow(new IllegalStateException("service not initialized yet"));
 
@@ -203,6 +206,45 @@ class YamlWorldStorageRoundTripTest {
         Collection<BuildWorld> loaded = newStorage().load().join();
         assertEquals(1, loaded.size());
         assertEquals(TestData.NOT_STARTED, loaded.iterator().next().getData().get(WorldDataKey.STATUS));
+    }
+
+    @Test
+    void load_invalidDifficultyEnum_defaultsToPeaceful() throws Exception {
+        YamlConfiguration yaml = new YamlConfiguration();
+        yaml.set("worlds.Bad.uuid", UUID.randomUUID().toString());
+        yaml.set("worlds.Bad.type", "NORMAL");
+        yaml.set("worlds.Bad.date", 1L);
+        yaml.set("worlds.Bad.data.status", "FINISHED");
+        yaml.set("worlds.Bad.data.difficulty", "NOT_A_DIFFICULTY");
+        yaml.save(new File(dataFolder, "worlds.yml"));
+
+        Collection<BuildWorld> loaded = newStorage().load().join();
+        assertEquals(1, loaded.size());
+        assertEquals(Difficulty.PEACEFUL, loaded.iterator().next().getData().get(WorldDataKey.DIFFICULTY));
+    }
+
+    @Test
+    void load_missingDataKeys_restoreCreationDefaults() throws Exception {
+        // A world entry that predates these keys (or was hand-edited) must come back with the same defaults a freshly
+        // created world has — not getBoolean/getLong's implicit false/0.
+        YamlConfiguration yaml = new YamlConfiguration();
+        yaml.set("worlds.Sparse.uuid", UUID.randomUUID().toString());
+        yaml.set("worlds.Sparse.type", "NORMAL");
+        yaml.set("worlds.Sparse.date", 1L);
+        yaml.set("worlds.Sparse.data.status", "FINISHED");
+        yaml.save(new File(dataFolder, "worlds.yml"));
+
+        BuildWorld world = newStorage().load().join().iterator().next();
+        assertTrue(world.getData().get(WorldDataKey.BLOCK_BREAKING));
+        assertTrue(world.getData().get(WorldDataKey.BLOCK_INTERACTIONS));
+        assertTrue(world.getData().get(WorldDataKey.BLOCK_PLACEMENT));
+        assertTrue(world.getData().get(WorldDataKey.EXPLOSIONS));
+        assertTrue(world.getData().get(WorldDataKey.MOB_AI));
+        assertTrue(world.getData().get(WorldDataKey.PHYSICS));
+        assertFalse(world.getData().get(WorldDataKey.BUILDERS_ENABLED));
+        assertEquals(WorldDataImpl.DEFAULT_TIMESTAMP, world.getData().get(WorldDataKey.LAST_EDITED));
+        assertEquals(WorldDataImpl.DEFAULT_TIMESTAMP, world.getData().get(WorldDataKey.LAST_LOADED));
+        assertEquals(WorldDataImpl.DEFAULT_TIMESTAMP, world.getData().get(WorldDataKey.LAST_UNLOADED));
     }
 
     @Test

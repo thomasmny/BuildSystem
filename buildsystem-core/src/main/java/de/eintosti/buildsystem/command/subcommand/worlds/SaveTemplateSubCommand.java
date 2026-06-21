@@ -100,7 +100,7 @@ public class SaveTemplateSubCommand extends AbstractSubCommand {
                 "worlds_savetemplate_started",
                 Map.entry("%world%", buildWorld.getName()),
                 Map.entry("%template%", templateName));
-        CompletableFuture.runAsync(() -> FileUtils.copy(worldDir, templateDir))
+        CompletableFuture.runAsync(() -> FileUtils.copy(worldDir, templateDir), scheduler.background())
                 .whenComplete((ignored, throwable) -> scheduler.run(() -> {
                     if (throwable != null) {
                         logger.log(

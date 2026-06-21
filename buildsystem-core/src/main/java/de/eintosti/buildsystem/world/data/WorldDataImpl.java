@@ -44,6 +44,26 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class WorldDataImpl implements WorldData {
 
+    /**
+     * Default values for the persisted world settings. These are the single source of truth for both world creation
+     * (the {@link WorldDataBuilder} field initializers) and deserialization ({@code WorldCodec} passes them to
+     * {@code getBoolean}/{@code getLong}/{@code getInt} so a key absent from disk restores the same value a freshly
+     * created world would have). Keeping them here keeps the two paths from drifting apart.
+     */
+    public static final boolean DEFAULT_BLOCK_BREAKING = true;
+
+    public static final boolean DEFAULT_BLOCK_INTERACTIONS = true;
+    public static final boolean DEFAULT_BLOCK_PLACEMENT = true;
+    public static final boolean DEFAULT_BUILDERS_ENABLED = false;
+    public static final boolean DEFAULT_EXPLOSIONS = true;
+    public static final boolean DEFAULT_MOB_AI = true;
+    public static final boolean DEFAULT_PHYSICS = true;
+    public static final boolean DEFAULT_PINNED = false;
+    public static final int DEFAULT_TIME_SINCE_BACKUP = 0;
+
+    /** Sentinel for the {@code last-*} timestamps meaning "never". */
+    public static final long DEFAULT_TIMESTAMP = -1L;
+
     private final Map<String, PersistentProperty<?>> data = new HashMap<>();
 
     private String worldName;
@@ -177,19 +197,19 @@ public class WorldDataImpl implements WorldData {
         private XMaterial material = XMaterial.GRASS_BLOCK;
         private String iconSkullTexture = "";
         private @Nullable BuildWorldStatus status;
-        private boolean blockBreaking = true;
-        private boolean blockInteractions = true;
-        private boolean blockPlacement = true;
-        private boolean buildersEnabled = false;
-        private boolean explosions = true;
-        private boolean mobAi = true;
-        private boolean physics = true;
-        private boolean pinned = false;
+        private boolean blockBreaking = DEFAULT_BLOCK_BREAKING;
+        private boolean blockInteractions = DEFAULT_BLOCK_INTERACTIONS;
+        private boolean blockPlacement = DEFAULT_BLOCK_PLACEMENT;
+        private boolean buildersEnabled = DEFAULT_BUILDERS_ENABLED;
+        private boolean explosions = DEFAULT_EXPLOSIONS;
+        private boolean mobAi = DEFAULT_MOB_AI;
+        private boolean physics = DEFAULT_PHYSICS;
+        private boolean pinned = DEFAULT_PINNED;
         private Visibility visibility = Visibility.EVERYONE;
-        private int timeSinceBackup = 0;
-        private long lastEdited = -1L;
-        private long lastLoaded = -1L;
-        private long lastUnloaded = -1L;
+        private int timeSinceBackup = DEFAULT_TIME_SINCE_BACKUP;
+        private long lastEdited = DEFAULT_TIMESTAMP;
+        private long lastLoaded = DEFAULT_TIMESTAMP;
+        private long lastUnloaded = DEFAULT_TIMESTAMP;
         BooleanSupplier permissionOverrideEnabled = () -> false;
         BooleanSupplier projectOverrideEnabled = () -> false;
 

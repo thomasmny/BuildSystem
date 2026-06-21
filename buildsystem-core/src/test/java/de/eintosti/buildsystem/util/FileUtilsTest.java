@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.util;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -90,6 +91,22 @@ class FileUtilsTest {
         File missing = tempDir.resolve("missing").toFile();
 
         assertThrows(IOException.class, () -> FileUtils.deleteDirectory(missing));
+    }
+
+    @Test
+    void deleteDirectory_failedDeleteIsReportedNotSwallowed() throws IOException {
+        File world = createWorldLikeDirectory("locked");
+        Path region = world.toPath().resolve("region");
+
+        // Clear write permission on the directory so its contents cannot be deleted. Skip where the platform or user
+        // does not enforce it (e.g. running as root, or a filesystem ignoring the bit) so the test stays deterministic.
+        assumeTrue(region.toFile().setWritable(false, false), "could not make directory read-only");
+        try {
+            assumeTrue(!Files.isWritable(region), "directory write permission is not enforced here");
+            assertThrows(IOException.class, () -> FileUtils.deleteDirectory(world));
+        } finally {
+            region.toFile().setWritable(true, false);
+        }
     }
 
     @Test

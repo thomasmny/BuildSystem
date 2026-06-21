@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlPlayerStorage;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.Collections;
 import java.util.HashSet;
@@ -48,11 +49,14 @@ public class PlayerServiceImpl implements PlayerService {
     private final Set<UUID> buildModePlayers;
 
     public PlayerServiceImpl(
-            BuildSystemPlugin plugin, ConfigService configService, Supplier<WorldServiceImpl> worldService) {
+            BuildSystemPlugin plugin,
+            ConfigService configService,
+            Supplier<WorldServiceImpl> worldService,
+            TaskScheduler scheduler) {
         this.plugin = plugin;
         this.configService = configService;
         this.worldService = worldService;
-        this.playerStorage = new YamlPlayerStorage(plugin);
+        this.playerStorage = new YamlPlayerStorage(plugin, scheduler);
         this.maxWorldsResolver = new MaxWorldsResolver(plugin.getLogger());
         this.buildModePlayers = new HashSet<>();
     }

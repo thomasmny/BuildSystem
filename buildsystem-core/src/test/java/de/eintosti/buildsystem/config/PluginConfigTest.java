@@ -35,7 +35,7 @@ class PluginConfigTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return ConfigService.parseForTest(config, LOGGER);
+        return ConfigService.parse(config, LOGGER, XMaterial.WOODEN_AXE);
     }
 
     // -----------------------------------------------------------------------
@@ -273,6 +273,25 @@ class PluginConfigTest {
         assertEquals("user", sftp.username());
         assertEquals("pass", sftp.password());
         assertEquals("/backups/", sftp.path());
+    }
+
+    @Test
+    void backupStorage_s3MissingRequiredKey_fallsBackToLocal() {
+        // 'bucket' is required for S3; without it the remote cannot work, so it must fall back to local rather than
+        // construct an S3 record with a null bucket that only fails later at connection time.
+        PluginConfig cfg = parse("""
+                world:
+                  backup:
+                    storage:
+                      type: s3
+                      s3:
+                        url: "https://example.com"
+                        access-key: "MYACCESSKEY"
+                        secret-key: "MYSECRETKEY"
+                """);
+
+        assertInstanceOf(
+                PluginConfig.World.Backup.Local.class, cfg.world().backup().storage());
     }
 
     // -----------------------------------------------------------------------
