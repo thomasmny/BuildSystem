@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.world.menu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import de.eintosti.buildsystem.world.menu.EditMenu.TimeOfDay;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
