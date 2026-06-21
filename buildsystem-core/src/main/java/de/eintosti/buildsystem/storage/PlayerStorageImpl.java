@@ -34,6 +34,12 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * In-memory cache of {@link BuildPlayer}s keyed by UUID. Like the world storage, lookups may run off the main thread —
+ * {@code AsyncPlayerPreLoginEvent} reads a connecting player's settings on Bukkit's async login thread — so the cache is
+ * a {@link ConcurrentHashMap}. The startup {@link #loadPlayers() load} publishes its entries with {@code putAll}: saved
+ * data wins over any blank entry a concurrent lookup may have created in the brief load window.
+ */
 @NullMarked
 public abstract class PlayerStorageImpl implements PlayerStorage {
 

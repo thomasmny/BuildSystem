@@ -174,6 +174,19 @@ class WorldStorageImplTest {
     }
 
     @Test
+    void rename_caseOnlyChange_keepsNameResolvable() {
+        // Old and new names lower-case to the same key; the world must stay resolvable after the rename.
+        BuildWorld w = world("India");
+        storage.addBuildWorld(w);
+
+        when(w.getName()).thenReturn("INDIA");
+        storage.rename(w, "India", "INDIA");
+
+        assertSame(w, storage.getBuildWorld("india"));
+        assertSame(w, storage.getBuildWorld("INDIA"));
+    }
+
+    @Test
     void rename_remapsNameLookup() {
         BuildWorld buildWorld = world("oldName");
         storage.addBuildWorld(buildWorld);

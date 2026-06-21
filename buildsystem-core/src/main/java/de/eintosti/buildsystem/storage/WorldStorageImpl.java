@@ -37,6 +37,13 @@ import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * In-memory index of the server's {@link BuildWorld}s, keyed both by UUID and by lower-cased name. Mutations
+ * ({@link #addBuildWorld}, {@link #removeBuildWorld}, {@link #rename}) run on the main thread, but lookups may be called
+ * off it: {@code AsyncPlayerPreLoginEvent} resolves a returning player's last world on Bukkit's async login thread. The
+ * indexes are therefore {@link ConcurrentHashMap}s so concurrent reads stay safe and consistently published, and the
+ * compound mutations are ordered so a concurrent reader never observes a world's two index entries out of step.
+ */
 @NullMarked
 public abstract class WorldStorageImpl implements WorldStorage {
 
@@ -99,8 +106,14 @@ public abstract class WorldStorageImpl implements WorldStorage {
     }
 
     public synchronized void rename(BuildWorld buildWorld, String oldName, String newName) {
-        this.uuidByName.remove(oldName.toLowerCase());
-        this.uuidByName.put(newName.toLowerCase(), buildWorld.getUniqueId());
+        String oldKey = oldName.toLowerCase();
+        String newKey = newName.toLowerCase();
+        // Publish the new name before dropping the old one so a concurrent (async) reader never sees the world vanish.
+        // Guard the removal: a case-only rename maps both names to the same key, which must stay resolvable.
+        this.uuidByName.put(newKey, buildWorld.getUniqueId());
+        if (!oldKey.equals(newKey)) {
+            this.uuidByName.remove(oldKey);
+        }
     }
 
     @Override
