@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.storage.codec.BuilderListCodec;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
@@ -81,7 +82,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         world.put("type", buildWorld.getType().name());
         world.put("data", serializeWorldData((WorldDataImpl) buildWorld.getData()));
         world.put("date", buildWorld.getCreation());
-        world.put("builders", serializeBuilders(builders.getAllBuilders()));
+        world.put("builders", BuilderListCodec.format(builders.getAllBuilders()));
         if (buildWorld.getCustomGenerator() != null) {
             world.put("chunk-generator", buildWorld.getCustomGenerator().toString());
         }
@@ -93,14 +94,6 @@ public class YamlWorldStorage extends WorldStorageImpl {
         return worldData.getAllData().entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey, entry -> entry.getValue().getConfigFormat()));
-    }
-
-    private String serializeBuilders(Collection<Builder> builders) {
-        StringBuilder builderList = new StringBuilder();
-        for (Builder builder : builders) {
-            builderList.append(";").append(builder);
-        }
-        return !builderList.isEmpty() ? builderList.substring(1) : builderList.toString();
     }
 
     @Override
@@ -141,7 +134,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         WorldDataImpl worldData = parseWorldData(worldName);
         long creationDate =
                 config.isLong("worlds." + worldName + ".date") ? config.getLong("worlds." + worldName + ".date") : -1;
-        List<Builder> builders = parseBuilders(worldName);
+        List<Builder> builders = BuilderListCodec.parse(config.getString(WORLDS_KEY + "." + worldName + ".builders"));
         String generatorName = config.getString("worlds." + worldName + ".chunk-generator");
         CustomGeneratorImpl customGenerator =
                 generatorName != null ? CustomGeneratorImpl.of(generatorName, worldName) : null;
@@ -283,29 +276,6 @@ public class YamlWorldStorage extends WorldStorageImpl {
         }
 
         return Builder.deserialize(creator);
-    }
-
-    private List<Builder> parseBuilders(String worldName) {
-        List<Builder> builders = new ArrayList<>();
-
-        if (config.isString(WORLDS_KEY + "." + worldName + ".builders")) {
-            String buildersString = config.getString(WORLDS_KEY + "." + worldName + ".builders");
-            if (buildersString != null && !buildersString.isEmpty()) {
-                String[] splitBuilders = buildersString.split(";");
-                for (String serializedBuilder : splitBuilders) {
-                    Builder builder = Builder.deserialize(serializedBuilder);
-                    if (builder == null) {
-                        plugin.getLogger()
-                                .warning("Could not deserialize builder: " + serializedBuilder + " for world: "
-                                        + worldName);
-                        continue;
-                    }
-                    builders.add(builder);
-                }
-            }
-        }
-
-        return builders;
     }
 
     @Override

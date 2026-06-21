@@ -26,9 +26,9 @@ import de.eintosti.buildsystem.api.world.display.WorldDisplay;
 import de.eintosti.buildsystem.api.world.display.WorldFilter;
 import de.eintosti.buildsystem.api.world.display.WorldSort;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
-import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
+import de.eintosti.buildsystem.storage.codec.LogoutLocationCodec;
 import de.eintosti.buildsystem.world.display.WorldDisplayImpl;
 import de.eintosti.buildsystem.world.display.WorldFilterImpl;
 import java.util.*;
@@ -71,7 +71,7 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
 
         serialized.put("settings", serializeSettings(player.getSettings()));
         if (player.getLogoutLocation() != null) {
-            serialized.put("logout-location", player.getLogoutLocation().toString());
+            serialized.put("logout-location", LogoutLocationCodec.format(player.getLogoutLocation()));
         }
 
         return serialized;
@@ -148,29 +148,9 @@ public class YamlPlayerStorage extends PlayerStorageImpl {
         Settings settings = loadSettings(config, path + ".settings");
 
         BuildPlayerImpl buildPlayer = new BuildPlayerImpl(uuid, settings);
-        buildPlayer.setLogoutLocation(loadLogoutLocation(config, "players." + playerUuid + ".logout-location"));
+        buildPlayer.setLogoutLocation(
+                LogoutLocationCodec.parse(config.getString("players." + playerUuid + ".logout-location")));
         return buildPlayer;
-    }
-
-    private @Nullable LogoutLocation loadLogoutLocation(FileConfiguration configuration, String pathPrefix) {
-        String location = configuration.getString(pathPrefix);
-        if (location == null || location.trim().isEmpty()) {
-            return null;
-        }
-
-        String[] parts = location.split(":");
-        if (parts.length != 6) {
-            return null;
-        }
-
-        String worldName = parts[0];
-        double x = Double.parseDouble(parts[1]);
-        double y = Double.parseDouble(parts[2]);
-        double z = Double.parseDouble(parts[3]);
-        float yaw = Float.parseFloat(parts[4]);
-        float pitch = Float.parseFloat(parts[5]);
-
-        return new LogoutLocation(worldName, x, y, z, yaw, pitch);
     }
 
     private NavigatorType parseNavigatorType(@Nullable String raw) {
