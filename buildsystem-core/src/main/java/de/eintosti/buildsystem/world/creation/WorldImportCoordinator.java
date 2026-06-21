@@ -21,6 +21,8 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -47,44 +49,48 @@ public class WorldImportCoordinator {
     private final BuildSystemPlugin plugin;
     private final WorldServiceImpl worldService;
     private final WorldStorageImpl worldStorage;
+    private final ConfigService configService;
+    private final Messages messages;
 
     public WorldImportCoordinator(
-            BuildSystemPlugin plugin, WorldServiceImpl worldService, WorldStorageImpl worldStorage) {
+            BuildSystemPlugin plugin,
+            WorldServiceImpl worldService,
+            WorldStorageImpl worldStorage,
+            ConfigService configService,
+            Messages messages) {
         this.plugin = plugin;
         this.worldService = worldService;
         this.worldStorage = worldStorage;
+        this.configService = configService;
+        this.messages = messages;
     }
 
     public void importWorlds(Player player, String[] worldList, Generator generator, @Nullable Builder creator) {
-        int delay = plugin.getConfigService().current().world().importAllDelay();
-        plugin.getMessages()
-                .sendMessage(
-                        player, "worlds_importall_started", Map.entry("%amount%", String.valueOf(worldList.length)));
-        plugin.getMessages().sendMessage(player, "worlds_importall_delay", Map.entry("%delay%", String.valueOf(delay)));
+        int delay = configService.current().world().importAllDelay();
+        messages.sendMessage(
+                player, "worlds_importall_started", Map.entry("%amount%", String.valueOf(worldList.length)));
+        messages.sendMessage(player, "worlds_importall_delay", Map.entry("%delay%", String.valueOf(delay)));
 
         importingAllWorlds.set(true);
         BulkImportListener listener = new BulkImportListener() {
             @Override
             public void skippedExisting(String worldName) {
-                plugin.getMessages()
-                        .sendMessage(
-                                player, "worlds_importall_world_already_imported", Map.entry("%world%", worldName));
+                messages.sendMessage(
+                        player, "worlds_importall_world_already_imported", Map.entry("%world%", worldName));
             }
 
             @Override
             public void invalidName(String worldName, String invalidChar) {
-                plugin.getMessages()
-                        .sendMessage(
-                                player,
-                                "worlds_importall_invalid_character",
-                                Map.entry("%world%", worldName),
-                                Map.entry("%char%", invalidChar));
+                messages.sendMessage(
+                        player,
+                        "worlds_importall_invalid_character",
+                        Map.entry("%world%", worldName),
+                        Map.entry("%char%", invalidChar));
             }
 
             @Override
             public void imported(String worldName) {
-                plugin.getMessages()
-                        .sendMessage(player, "worlds_importall_world_imported", Map.entry("%world%", worldName));
+                messages.sendMessage(player, "worlds_importall_world_imported", Map.entry("%world%", worldName));
             }
         };
         importStaggered(
@@ -92,7 +98,7 @@ public class WorldImportCoordinator {
                         listener,
                         worldName -> worldService.importWorld(
                                 player, worldName, creator, BuildWorldType.IMPORTED, generator, "void", false))
-                .thenRun(() -> plugin.getMessages().sendMessage(player, "worlds_importall_finished"));
+                .thenRun(() -> messages.sendMessage(player, "worlds_importall_finished"));
     }
 
     public boolean isImportingAllWorlds() {
@@ -135,8 +141,8 @@ public class WorldImportCoordinator {
      */
     private CompletableFuture<Integer> importStaggered(
             String[] worldNames, BulkImportListener listener, Predicate<String> importer) {
-        int delay = plugin.getConfigService().current().world().importAllDelay();
-        String invalidCharacters = plugin.getConfigService().current().world().invalidCharacters();
+        int delay = configService.current().world().importAllDelay();
+        String invalidCharacters = configService.current().world().invalidCharacters();
 
         CompletableFuture<Integer> result = new CompletableFuture<>();
         AtomicInteger index = new AtomicInteger(0);

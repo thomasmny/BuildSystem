@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.world.lifecycle;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
@@ -42,12 +43,17 @@ public class WorldLoadBootstrap {
     private final BuildSystemPlugin plugin;
     private final FolderStorageImpl folderStorage;
     private final WorldStorageImpl worldStorage;
+    private final ConfigService configService;
 
     public WorldLoadBootstrap(
-            BuildSystemPlugin plugin, FolderStorageImpl folderStorage, WorldStorageImpl worldStorage) {
+            BuildSystemPlugin plugin,
+            FolderStorageImpl folderStorage,
+            WorldStorageImpl worldStorage,
+            ConfigService configService) {
         this.plugin = plugin;
         this.folderStorage = folderStorage;
         this.worldStorage = worldStorage;
+        this.configService = configService;
     }
 
     public void loadWorlds() {
@@ -57,11 +63,8 @@ public class WorldLoadBootstrap {
                     worlds.forEach(worldStorage::addBuildWorld);
                     assignWorldsToFolders();
 
-                    boolean loadAllWorlds = !plugin.getConfigService()
-                            .current()
-                            .world()
-                            .unload()
-                            .enabled();
+                    boolean loadAllWorlds =
+                            !configService.current().world().unload().enabled();
                     if (loadAllWorlds) {
                         plugin.getLogger().info("*** All worlds will be loaded now ***");
                     }
@@ -118,17 +121,12 @@ public class WorldLoadBootstrap {
     private LoadResult preLoadWorld(BuildWorld buildWorld, boolean alwaysLoad) {
         String worldName = buildWorld.getName();
         boolean shouldPreLoad = alwaysLoad
-                || plugin.getConfigService()
-                        .current()
-                        .world()
-                        .unload()
-                        .blacklistedWorlds()
-                        .contains(worldName);
+                || configService.current().world().unload().blacklistedWorlds().contains(worldName);
         if (!shouldPreLoad) {
             return LoadResult.NOT_LOADED;
         }
 
-        World world = new BukkitWorldFactory(plugin.getConfigService(), plugin.getLogger(), buildWorld)
+        World world = new BukkitWorldFactory(configService, plugin.getLogger(), buildWorld)
                 .generate(BukkitWorldFactory.VersionCheck.REQUIRED);
         if (world == null) {
             return LoadResult.FAILED;

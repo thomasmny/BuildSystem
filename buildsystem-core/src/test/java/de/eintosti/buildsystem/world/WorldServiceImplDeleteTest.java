@@ -70,7 +70,8 @@ class WorldServiceImplDeleteTest {
         // The unload time string is parsed unconditionally in the WorldUnloader constructor.
         when(plugin.getConfigService().current().world().unload().timeUntilUnload())
                 .thenReturn("06:00:00");
-        worldService = new WorldServiceImpl(plugin, plugin.getMessages(), plugin::getSpawnService);
+        worldService = new WorldServiceImpl(
+                plugin, plugin.getConfigService(), plugin.getMessages(), plugin::getSpawnService, plugin::getPrompts);
         when(plugin.getWorldService()).thenReturn(worldService);
     }
 
