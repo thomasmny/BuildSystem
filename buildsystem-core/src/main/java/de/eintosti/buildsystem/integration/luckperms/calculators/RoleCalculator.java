@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.integration.luckperms.calculators;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -37,8 +36,8 @@ public class RoleCalculator implements ContextCalculator<Player> {
 
     private final WorldStorageImpl worldStorage;
 
-    public RoleCalculator(BuildSystemPlugin plugin) {
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public RoleCalculator(WorldStorageImpl worldStorage) {
+        this.worldStorage = worldStorage;
     }
 
     @Override

@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.yaml.YamlSpawnStorage;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import io.papermc.lib.PaperLib;
 import java.util.concurrent.CompletableFuture;
 import org.bukkit.Bukkit;
@@ -42,9 +43,9 @@ public class SpawnService {
     private @Nullable String spawnName;
     private @Nullable Location spawn;
 
-    public SpawnService(BuildSystemPlugin plugin) {
+    public SpawnService(BuildSystemPlugin plugin, WorldServiceImpl worldService) {
         this.plugin = plugin;
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+        this.worldStorage = worldService.getWorldStorage();
         this.spawnStorage = new YamlSpawnStorage(plugin);
         load();
     }

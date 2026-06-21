@@ -17,14 +17,15 @@
  */
 package de.eintosti.buildsystem.world.creation;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.WorldImporter;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
+import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import java.io.File;
 import java.util.Map;
@@ -39,9 +40,9 @@ public class WorldImporterImpl extends AbstractWorldCreator implements WorldImpo
 
     private final WorldDataVersionGuard versionGuard;
 
-    public WorldImporterImpl(BuildSystemPlugin plugin, String worldName) {
-        super(plugin, worldName, BuildWorldType.IMPORTED);
-        this.versionGuard = new WorldDataVersionGuard(plugin.getLogger(), worldName);
+    public WorldImporterImpl(WorldContext context, WorldStorageImpl worldStorage, String worldName) {
+        super(context, worldStorage, worldName, BuildWorldType.IMPORTED);
+        this.versionGuard = new WorldDataVersionGuard(context.logger(), worldName);
         this.creationDate = FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName));
     }
 

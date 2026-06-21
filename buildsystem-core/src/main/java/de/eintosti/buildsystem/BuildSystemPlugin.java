@@ -23,26 +23,11 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.command.CommandRegistrar;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.integration.Integrations;
 import de.eintosti.buildsystem.listener.ListenerRegistrar;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.navigator.NavigatorEditorService;
-import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocation;
-import de.eintosti.buildsystem.player.PlayerLookupService;
-import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
-import de.eintosti.buildsystem.player.noclip.NoClipService;
-import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.UpdateChecker;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
-import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
-import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
-import de.eintosti.buildsystem.world.display.CustomizableIcons;
-import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
-import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -84,24 +69,26 @@ public class BuildSystemPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         this.services.initClasses();
-
-        new CommandRegistrar(this).registerAll();
-        new ListenerRegistrar(this).registerAll();
-        (this.integrations = new Integrations(this)).activate();
-
+        this.updateChecker = new UpdateChecker(this, SPIGOT_ID);
         performUpdateCheck();
 
-        this.api = new BuildSystemApi(this);
+        new CommandRegistrar(this, services).registerAll();
+        new ListenerRegistrar(this, services).registerAll();
+        (this.integrations = new Integrations(
+                        this, services.messages(), services.settings(), services.player(), services.world()))
+                .activate();
+
+        this.api = new BuildSystemApi(services);
         getServer().getServicesManager().register(BuildSystem.class, api, this, ServicePriority.Normal);
 
         Bukkit.getOnlinePlayers().forEach(pl -> {
-            BuildPlayer buildPlayer = getPlayerService().getPlayerStorage().createBuildPlayer(pl);
+            BuildPlayer buildPlayer = services.player().getPlayerStorage().createBuildPlayer(pl);
             Settings settings = buildPlayer.getSettings();
-            getNoClipService().startNoClip(pl, settings);
-            getSettingsService().displayScoreboard(pl);
+            services.noClip().startNoClip(pl, settings);
+            services.settings().displayScoreboard(pl);
         });
 
-        new BuildSystemMetrics(this).register();
+        new BuildSystemMetrics(this, services.config(), services.player()).register();
 
         this.configSaveTask = Bukkit.getScheduler()
                 .runTaskTimerAsynchronously(
@@ -116,18 +103,18 @@ public class BuildSystemPlugin extends JavaPlugin {
     public void onDisable() {
         Bukkit.getOnlinePlayers().forEach(pl -> {
             BuildPlayerImpl buildPlayer =
-                    BuildPlayerImpl.of(getPlayerService().getPlayerStorage().getBuildPlayer(pl));
+                    BuildPlayerImpl.of(services.player().getPlayerStorage().getBuildPlayer(pl));
             buildPlayer.getCachedValues().resetCachedValues(pl);
             buildPlayer.setLogoutLocation(new LogoutLocation(pl.getWorld().getName(), pl.getLocation()));
 
-            getSettingsService().hideScoreboard(pl);
-            getNoClipService().stopNoClip(pl.getUniqueId());
-            getNavigatorService().closeNewNavigator(pl);
+            services.settings().hideScoreboard(pl);
+            services.noClip().stopNoClip(pl.getUniqueId());
+            services.navigator().closeNewNavigator(pl);
         });
-        getNavigatorEditorService().restoreAll();
+        services.navigatorEditor().restoreAll();
 
-        getBackupService().close();
-        getWorldService().cancelAllUnloadTasks();
+        services.backup().close();
+        services.world().cancelAllUnloadTasks();
 
         reloadConfigData(false);
         saveConfig();
@@ -154,8 +141,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     }
 
     private void performUpdateCheck() {
-        this.updateChecker = new UpdateChecker(this, SPIGOT_ID);
-        if (!getConfigService().current().settings().updateChecker()) {
+        if (!services.config().current().settings().updateChecker()) {
             return;
         }
 
@@ -189,9 +175,9 @@ public class BuildSystemPlugin extends JavaPlugin {
     }
 
     private CompletableFuture<Void> saveBuildConfig() {
-        CompletableFuture<Void> worldSave = getWorldService().save();
-        CompletableFuture<Void> playerSave = getPlayerService().save();
-        CompletableFuture<Void> spawnSave = getSpawnService().save();
+        CompletableFuture<Void> worldSave = services.world().save();
+        CompletableFuture<Void> playerSave = services.player().save();
+        CompletableFuture<Void> spawnSave = services.spawn().save();
         return CompletableFuture.allOf(worldSave, playerSave, spawnSave);
     }
 
@@ -202,87 +188,23 @@ public class BuildSystemPlugin extends JavaPlugin {
      */
     public void reloadConfigData(boolean init) {
         for (Player pl : Bukkit.getOnlinePlayers()) {
-            getSettingsService().hideScoreboard(pl);
+            services.settings().hideScoreboard(pl);
         }
 
         reloadConfig();
-        getConfigService().load();
+        services.config().load();
         if (isEnabled()) {
-            getBackupService().reload();
+            services.backup().reload();
         }
 
         if (init) {
-            getWorldService().remanageAllUnloadTasks();
+            services.world().remanageAllUnloadTasks();
 
-            if (getConfigService().current().settings().scoreboard()) {
-                getSettingsService().displayScoreboard();
+            if (services.config().current().settings().scoreboard()) {
+                services.settings().displayScoreboard();
             } else {
-                getSettingsService().hideScoreboards();
+                services.settings().hideScoreboards();
             }
         }
-    }
-
-    public NavigatorService getNavigatorService() {
-        return services.navigator();
-    }
-
-    public NavigatorEditorService getNavigatorEditorService() {
-        return services.navigatorEditor();
-    }
-
-    public CustomBlockManager getCustomBlockManager() {
-        return services.customBlockManager();
-    }
-
-    public PlayerServiceImpl getPlayerService() {
-        return services.player();
-    }
-
-    public PlayerLookupService getPlayerLookupService() {
-        return services.playerLookup();
-    }
-
-    public NoClipService getNoClipService() {
-        return services.noClip();
-    }
-
-    public SettingsService getSettingsService() {
-        return services.settings();
-    }
-
-    public SpawnService getSpawnService() {
-        return services.spawn();
-    }
-
-    public WorldServiceImpl getWorldService() {
-        return services.world();
-    }
-
-    public BackupServiceImpl getBackupService() {
-        return services.backup();
-    }
-
-    public ConfigService getConfigService() {
-        return services.config();
-    }
-
-    public Messages getMessages() {
-        return services.messages();
-    }
-
-    public CustomizableIcons getCustomizableIcons() {
-        return services.customizableIcons();
-    }
-
-    public WorldStatusRegistryImpl getWorldStatusRegistry() {
-        return services.worldStatusRegistry();
-    }
-
-    public NavigatorCategoryRegistryImpl getNavigatorCategoryRegistry() {
-        return services.navigatorCategoryRegistry();
-    }
-
-    public MenuItems getMenuItems() {
-        return services.menuItems();
     }
 }

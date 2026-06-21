@@ -23,6 +23,8 @@ import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.access.WorldSetting;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.world.WorldContext;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
@@ -31,18 +33,18 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class WorldPermissionsImpl implements WorldPermissions {
 
-    private final BuildSystemPlugin plugin;
+    private final WorldContext context;
 
     private final @Nullable BuildWorld buildWorld;
 
-    private WorldPermissionsImpl(BuildSystemPlugin plugin, @Nullable BuildWorld buildWorld) {
-        this.plugin = plugin;
+    private WorldPermissionsImpl(WorldContext context, @Nullable BuildWorld buildWorld) {
+        this.context = context;
         this.buildWorld = buildWorld;
     }
 
     @Contract("_, _ -> new")
-    public static WorldPermissionsImpl of(BuildSystemPlugin plugin, @Nullable BuildWorld buildWorld) {
-        return new WorldPermissionsImpl(plugin, buildWorld);
+    public static WorldPermissionsImpl of(WorldContext context, @Nullable BuildWorld buildWorld) {
+        return new WorldPermissionsImpl(context, buildWorld);
     }
 
     @Override
@@ -60,7 +62,7 @@ public class WorldPermissionsImpl implements WorldPermissions {
             return true;
         }
 
-        String permission = buildWorld.getData().getPermission();
+        String permission = buildWorld.getData().get(WorldDataKey.PERMISSION);
         if (permission.equals("-")) {
             return true;
         }
@@ -87,7 +89,7 @@ public class WorldPermissionsImpl implements WorldPermissions {
             return true;
         }
 
-        if (!buildWorld.getData().getStatus().isBuildingAllowed()
+        if (!buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()
                 && !player.hasPermission("buildsystem.bypass.archive")) {
             return false;
         }
@@ -105,7 +107,7 @@ public class WorldPermissionsImpl implements WorldPermissions {
         return builders.isCreator(player)
                 || builders.isBuilder(player)
                 || player.hasPermission("buildsystem.bypass.builders")
-                || !buildWorld.getData().isBuildersEnabled();
+                || !buildWorld.getData().get(WorldDataKey.BUILDERS_ENABLED);
     }
 
     @Override
@@ -144,17 +146,17 @@ public class WorldPermissionsImpl implements WorldPermissions {
         }
 
         WorldData worldData = buildWorld.getData();
-        if (!worldData.getStatus().isBuildingAllowed()) {
+        if (!worldData.get(WorldDataKey.STATUS).isBuildingAllowed()) {
             return player.hasPermission("buildsystem.bypass.permission.archive");
         }
 
-        return worldData.getVisibility().isPrivate()
+        return worldData.get(WorldDataKey.VISIBILITY).isPrivate()
                 ? player.hasPermission("buildsystem.bypass.permission.private")
                 : player.hasPermission("buildsystem.bypass.permission.public");
     }
 
     @Override
     public boolean canBypassBuildRestriction(Player player) {
-        return plugin.getPlayerService().isInBuildMode(player);
+        return context.playerService().isInBuildMode(player);
     }
 }

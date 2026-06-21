@@ -23,9 +23,12 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.world.menu.EditMenu.ClickOutcome;
 import java.util.Map;
@@ -60,12 +63,17 @@ class EditMenuTest {
     private EditMenu menu() {
         Messages messages = mock(Messages.class);
         when(messages.getString(anyString(), any())).thenReturn("Title");
-        BuildSystemPlugin plugin = mock(BuildSystemPlugin.class);
-        when(plugin.getMessages()).thenReturn(messages);
-        when(plugin.getPlayerService()).thenReturn(mock(PlayerServiceImpl.class));
         BuildWorld buildWorld = mock(BuildWorld.class);
         Player player = server.addPlayer();
-        return new EditMenu(plugin, buildWorld, player);
+        return new EditMenu(
+                messages,
+                mock(PlayerServiceImpl.class),
+                mock(MenuItems.class),
+                mock(ConfigService.class),
+                mock(Prompts.class),
+                mock(Menus.class),
+                buildWorld,
+                player);
     }
 
     @Test

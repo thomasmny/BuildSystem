@@ -17,12 +17,14 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.util.ArgumentParser;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.Locale;
@@ -33,8 +35,17 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class ImportAllSubCommand extends AbstractSubCommand {
 
-    public ImportAllSubCommand(BuildSystemPlugin plugin) {
-        super(plugin);
+    private final PlayerLookupService playerLookupService;
+    private final TaskScheduler scheduler;
+
+    public ImportAllSubCommand(
+            Messages messages,
+            WorldServiceImpl worldService,
+            PlayerLookupService playerLookupService,
+            TaskScheduler scheduler) {
+        super(messages, worldService);
+        this.playerLookupService = playerLookupService;
+        this.scheduler = scheduler;
     }
 
     @Override
@@ -49,7 +60,6 @@ public class ImportAllSubCommand extends AbstractSubCommand {
             return;
         }
 
-        WorldServiceImpl worldService = plugin.getWorldService();
         if (worldService.isImportingAllWorlds()) {
             messages.sendMessage(player, "worlds_importall_already_started");
             return;
@@ -105,9 +115,9 @@ public class ImportAllSubCommand extends AbstractSubCommand {
 
         String creatorName = creatorArg;
         Generator resolvedGenerator = generator;
-        plugin.getPlayerLookupService()
+        playerLookupService
                 .lookupUniqueId(creatorName)
-                .thenAccept(creatorId -> Bukkit.getScheduler().runTask(plugin, () -> {
+                .thenAccept(creatorId -> scheduler.run(() -> {
                     if (creatorId == null) {
                         messages.sendMessage(player, "worlds_importall_player_not_found");
                         return;

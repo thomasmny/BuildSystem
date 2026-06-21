@@ -17,14 +17,15 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -36,16 +37,16 @@ public class PhysicsCommand extends CommandBase {
 
     private final WorldStorageImpl worldStorage;
 
-    public PhysicsCommand(BuildSystemPlugin plugin) {
-        super(plugin, true);
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public PhysicsCommand(Messages messages, Logger logger, WorldStorageImpl worldStorage) {
+        super(messages, logger, true);
+        this.worldStorage = worldStorage;
     }
 
     @Override
     protected void run(Player player, String label, String[] args) {
         String worldName = worldNameFromArgs(player, args, 0);
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
-        if (!WorldPermissionsImpl.of(plugin, buildWorld).canPerformCommand(player, "buildsystem.physics")) {
+        if (buildWorld != null && !buildWorld.getPermissions().canPerformCommand(player, "buildsystem.physics")) {
             messages.sendPermissionError(player);
             return;
         }
@@ -57,7 +58,7 @@ public class PhysicsCommand extends CommandBase {
                 if (args[0].equalsIgnoreCase("all") && !worldStorage.worldExists("all")) {
                     worldStorage
                             .getBuildWorlds()
-                            .forEach(world -> world.getData().setPhysics(true));
+                            .forEach(world -> world.getData().set(WorldDataKey.PHYSICS, true));
                     messages.sendMessage(player, "physics_activated_all");
                 } else {
                     togglePhysics(player, Bukkit.getWorld(args[0]));
@@ -91,11 +92,11 @@ public class PhysicsCommand extends CommandBase {
         }
 
         WorldData worldData = buildWorld.getData();
-        if (!worldData.isPhysics()) {
-            worldData.setPhysics(true);
+        if (!worldData.get(WorldDataKey.PHYSICS)) {
+            worldData.set(WorldDataKey.PHYSICS, true);
             messages.sendMessage(player, "physics_activated", Map.entry("%world%", buildWorld.getName()));
         } else {
-            worldData.setPhysics(false);
+            worldData.set(WorldDataKey.PHYSICS, false);
             messages.sendMessage(player, "physics_deactivated", Map.entry("%world%", buildWorld.getName()));
         }
     }

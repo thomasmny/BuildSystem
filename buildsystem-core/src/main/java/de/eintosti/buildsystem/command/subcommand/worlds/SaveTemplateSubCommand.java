@@ -18,18 +18,22 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
+import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -38,8 +42,23 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SaveTemplateSubCommand extends AbstractSubCommand {
 
-    public SaveTemplateSubCommand(BuildSystemPlugin plugin) {
-        super(plugin);
+    private final ConfigService configService;
+    private final File dataFolder;
+    private final Logger logger;
+    private final TaskScheduler scheduler;
+
+    public SaveTemplateSubCommand(
+            Messages messages,
+            WorldServiceImpl worldService,
+            ConfigService configService,
+            File dataFolder,
+            Logger logger,
+            TaskScheduler scheduler) {
+        super(messages, worldService);
+        this.configService = configService;
+        this.dataFolder = dataFolder;
+        this.logger = logger;
+        this.scheduler = scheduler;
     }
 
     @Override
@@ -51,13 +70,13 @@ public class SaveTemplateSubCommand extends AbstractSubCommand {
 
         String templateName = args.length == 3 ? args[2] : buildWorld.getName();
 
-        String invalidCharacters = plugin.getConfigService().current().world().invalidCharacters();
+        String invalidCharacters = configService.current().world().invalidCharacters();
         if (StringCleaner.firstInvalidChar(templateName, invalidCharacters) != null) {
             messages.sendMessage(player, "worlds_savetemplate_invalid_name");
             return;
         }
 
-        File templatesDir = new File(plugin.getDataFolder(), "templates");
+        File templatesDir = new File(dataFolder, "templates");
         File templateDir = new File(templatesDir, templateName);
         if (StringCleaner.isPathEscape(templatesDir, templateDir)) {
             messages.sendMessage(player, "worlds_savetemplate_invalid_name");
@@ -82,14 +101,12 @@ public class SaveTemplateSubCommand extends AbstractSubCommand {
                 Map.entry("%world%", buildWorld.getName()),
                 Map.entry("%template%", templateName));
         CompletableFuture.runAsync(() -> FileUtils.copy(worldDir, templateDir))
-                .whenComplete((ignored, throwable) -> Bukkit.getScheduler().runTask(plugin, () -> {
+                .whenComplete((ignored, throwable) -> scheduler.run(() -> {
                     if (throwable != null) {
-                        plugin.getLogger()
-                                .log(
-                                        Level.SEVERE,
-                                        "Failed to save template '" + templateName + "' from world "
-                                                + buildWorld.getName(),
-                                        throwable);
+                        logger.log(
+                                Level.SEVERE,
+                                "Failed to save template '" + templateName + "' from world " + buildWorld.getName(),
+                                throwable);
                         messages.sendMessage(
                                 player, "worlds_savetemplate_error", Map.entry("%template%", templateName));
                     } else {
@@ -105,7 +122,7 @@ public class SaveTemplateSubCommand extends AbstractSubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        WorldStorage ws = plugin.getWorldService().getWorldStorage();
+        WorldStorage ws = worldService.getWorldStorage();
         return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
     }
 

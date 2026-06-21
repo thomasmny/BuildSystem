@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.world.display;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Displayable;
 import java.util.Comparator;
 import java.util.List;
@@ -45,11 +46,10 @@ public final class DisplayOrdering {
     }
 
     private static Comparator<Displayable> floatToTop(Predicate<Displayable> flag) {
-        return Comparator.comparing((Displayable displayable) -> flag.test(displayable))
-                .reversed();
+        return Comparator.comparing(flag::test).reversed();
     }
 
     private static boolean isPinned(Displayable displayable) {
-        return displayable instanceof BuildWorld world && world.getData().isPinned();
+        return displayable instanceof BuildWorld world && world.getData().get(WorldDataKey.PINNED);
     }
 }

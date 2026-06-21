@@ -19,14 +19,12 @@ package de.eintosti.buildsystem.listener.settings;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XTag;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldSetting;
-import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.DirectionUtil;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -43,15 +41,13 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class InstantSignPlacementListener implements Listener {
 
-    private final CustomBlockManager customBlockManager;
     private final SettingsService settingsManager;
-    private final WorldStorageImpl worldStorage;
+    private final WorldStorage worldStorage;
     private final WorldProtectionPolicy policy;
 
-    public InstantSignPlacementListener(BuildSystemPlugin plugin) {
-        this.customBlockManager = plugin.getCustomBlockManager();
-        this.settingsManager = plugin.getSettingsService();
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public InstantSignPlacementListener(SettingsService settingsManager, WorldStorage worldStorage) {
+        this.settingsManager = settingsManager;
+        this.worldStorage = worldStorage;
         this.policy = new WorldProtectionPolicy();
     }
 
@@ -104,7 +100,7 @@ public class InstantSignPlacementListener implements Listener {
                     return;
                 }
                 adjacent.setType(material);
-                customBlockManager.rotateBlock(
+                DirectionUtil.rotateBlock(
                         adjacent, DirectionUtil.getPlayerDirection(player).getOppositeFace());
             }
             case DOWN -> {
@@ -112,14 +108,14 @@ public class InstantSignPlacementListener implements Listener {
                     return;
                 }
                 adjacent.setType(material);
-                customBlockManager.rotateBlock(adjacent, getHangingSignDirection(event));
+                DirectionUtil.rotateBlock(adjacent, getHangingSignDirection(event));
             }
             case NORTH, EAST, SOUTH, WEST -> {
                 String woodType = xMaterial.name().replace("_HANGING", "").replace("_SIGN", "");
                 String block = isHangingSign ? "_WALL_HANGING_SIGN" : "_WALL_SIGN";
                 BlockFace facing = isHangingSign ? getHangingSignDirection(event) : blockFace;
                 XMaterial.matchXMaterial(woodType + block).ifPresent(value -> adjacent.setType(value.get()));
-                customBlockManager.rotateBlock(adjacent, facing);
+                DirectionUtil.rotateBlock(adjacent, facing);
             }
         }
     }

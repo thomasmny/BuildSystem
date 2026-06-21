@@ -17,9 +17,9 @@
  */
 package de.eintosti.buildsystem.listener.world;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
@@ -32,8 +32,8 @@ public class EntitySpawnListener implements Listener {
 
     private final WorldStorage worldStorage;
 
-    public EntitySpawnListener(BuildSystemPlugin plugin) {
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public EntitySpawnListener(WorldStorage worldStorage) {
+        this.worldStorage = worldStorage;
     }
 
     @EventHandler
@@ -44,7 +44,7 @@ public class EntitySpawnListener implements Listener {
         }
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(bukkitWorld.getName());
-        if (buildWorld == null || buildWorld.getData().isMobAi()) {
+        if (buildWorld == null || buildWorld.getData().get(WorldDataKey.MOB_AI)) {
             return;
         }
 

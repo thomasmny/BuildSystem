@@ -18,17 +18,18 @@
 package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class SkullCommand extends CommandBase {
 
-    public SkullCommand(BuildSystemPlugin plugin) {
-        super(plugin, true);
+    public SkullCommand(Messages messages, Logger logger) {
+        super(messages, logger, true);
     }
 
     @Override

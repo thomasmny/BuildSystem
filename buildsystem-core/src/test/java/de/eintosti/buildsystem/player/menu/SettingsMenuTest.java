@@ -24,12 +24,15 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.menu.SettingsMenu.ClickOutcome;
+import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.Map;
-import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,11 +62,15 @@ class SettingsMenuTest {
     private SettingsMenu menu() {
         Messages messages = mock(Messages.class);
         when(messages.getString(anyString(), any())).thenReturn("Title");
-        BuildSystemPlugin plugin = mock(BuildSystemPlugin.class);
-        when(plugin.getMessages()).thenReturn(messages);
-        when(plugin.getSettingsService()).thenReturn(mock(SettingsService.class));
-        Player player = server.addPlayer();
-        return new SettingsMenu(plugin, player);
+        return new SettingsMenu(
+                messages,
+                mock(SettingsService.class),
+                mock(ConfigService.class),
+                mock(MenuItems.class),
+                mock(NavigatorService.class),
+                mock(NoClipService.class),
+                mock(Menus.class),
+                server.addPlayer());
     }
 
     @Test

@@ -18,9 +18,11 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Logger;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -28,8 +30,11 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class ConfigCommand extends CommandBase {
 
-    public ConfigCommand(BuildSystemPlugin plugin) {
-        super(plugin, false);
+    private final BuildSystemPlugin plugin;
+
+    public ConfigCommand(Messages messages, Logger logger, BuildSystemPlugin plugin) {
+        super(messages, logger, false);
+        this.plugin = plugin;
     }
 
     @Override

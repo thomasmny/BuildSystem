@@ -21,6 +21,8 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.BuildWorldRenameEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
@@ -52,36 +54,48 @@ public class WorldRenamer {
     private final BuildSystemPlugin plugin;
     private final WorldServiceImpl worldService;
     private final WorldStorageImpl worldStorage;
+    private final ConfigService configService;
+    private final Messages messages;
+    private final SpawnService spawnService;
 
-    public WorldRenamer(BuildSystemPlugin plugin, WorldServiceImpl worldService, WorldStorageImpl worldStorage) {
+    public WorldRenamer(
+            BuildSystemPlugin plugin,
+            WorldServiceImpl worldService,
+            WorldStorageImpl worldStorage,
+            ConfigService configService,
+            Messages messages,
+            SpawnService spawnService) {
         this.plugin = plugin;
         this.worldService = worldService;
         this.worldStorage = worldStorage;
+        this.configService = configService;
+        this.messages = messages;
+        this.spawnService = spawnService;
     }
 
     public void rename(Player player, BuildWorld buildWorld, String newName) {
         player.closeInventory();
 
         if (worldStorage.worldAndFolderExist(newName)) {
-            plugin.getMessages().sendMessage(player, "worlds_world_exists");
+            messages.sendMessage(player, "worlds_world_exists");
             XSound.ENTITY_ITEM_BREAK.play(player);
             return;
         }
 
         String oldName = buildWorld.getName();
         if (oldName.equalsIgnoreCase(newName)) {
-            plugin.getMessages().sendMessage(player, "worlds_rename_same_name");
+            messages.sendMessage(player, "worlds_rename_same_name");
             return;
         }
 
         if (StringCleaner.hasInvalidNameCharacters(
-                newName, plugin.getConfigService().current().world().invalidCharacters())) {
-            plugin.getMessages().sendMessage(player, "worlds_world_creation_invalid_characters");
+                newName, configService.current().world().invalidCharacters())) {
+            messages.sendMessage(player, "worlds_world_creation_invalid_characters");
         }
-        String sanitizedNewName = StringCleaner.sanitize(
-                newName, plugin.getConfigService().current().world().invalidCharacters());
+        String sanitizedNewName =
+                StringCleaner.sanitize(newName, configService.current().world().invalidCharacters());
         if (sanitizedNewName.isEmpty()) {
-            plugin.getMessages().sendMessage(player, "worlds_world_creation_name_bank");
+            messages.sendMessage(player, "worlds_world_creation_name_bank");
             return;
         }
 
@@ -91,7 +105,7 @@ public class WorldRenamer {
 
         World oldWorld = Bukkit.getWorld(oldName);
         if (oldWorld == null) {
-            plugin.getMessages().sendMessage(player, "worlds_rename_unknown_world");
+            messages.sendMessage(player, "worlds_rename_unknown_world");
             return;
         }
 
@@ -153,15 +167,15 @@ public class WorldRenamer {
                                 throwable);
             }
         });
-        World newWorld = new BukkitWorldFactory(plugin, buildWorld).generate(BukkitWorldFactory.VersionCheck.SKIP);
-        Location spawnLocation = oldSpawnLocation;
+        World newWorld = new BukkitWorldFactory(configService, plugin.getLogger(), buildWorld)
+                .generate(BukkitWorldFactory.VersionCheck.SKIP);
+        Location spawnLocation = oldSpawnLocation.clone();
         spawnLocation.setWorld(newWorld);
 
         removedPlayers.stream()
                 .filter(Objects::nonNull)
                 .forEach(pl -> PaperLib.teleportAsync(pl, spawnLocation.clone().add(0.5, 0, 0.5)));
 
-        SpawnService spawnService = plugin.getSpawnService();
         Location oldSpawn = spawnService.getSpawn();
         if (oldSpawn != null && Objects.equals(spawnService.getSpawnWorld(), oldWorld)) {
             Location newSpawn = new Location(
@@ -174,11 +188,7 @@ public class WorldRenamer {
             spawnService.set(newSpawn, sanitizedNewName);
         }
 
-        plugin.getMessages()
-                .sendMessage(
-                        player,
-                        "worlds_rename_set",
-                        Map.entry("%oldName%", oldName),
-                        Map.entry("%newName%", sanitizedNewName));
+        messages.sendMessage(
+                player, "worlds_rename_set", Map.entry("%oldName%", oldName), Map.entry("%newName%", sanitizedNewName));
     }
 }

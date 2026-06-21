@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Displayable;
@@ -39,17 +38,17 @@ public class FolderContentMenu extends DisplayablesMenu {
     private final DisplayablesMenu parentInventory;
 
     public FolderContentMenu(
-            BuildSystemPlugin plugin,
+            DisplayablesContext context,
             Player player,
             NavigatorCategory category,
             Folder folder,
             DisplayablesMenu parentInventory) {
         super(
-                plugin,
+                context,
                 player,
                 Options.builder()
                         .category(category)
-                        .title(plugin.getMessages()
+                        .title(context.messages()
                                 .getString("folder_title", player, new SimpleEntry<>("%folder%", folder.getName())))
                         .build());
         this.folder = folder;
@@ -96,13 +95,7 @@ public class FolderContentMenu extends DisplayablesMenu {
 
     @Override
     protected void beginWorldCreation() {
-        new CreateMenu(
-                        plugin,
-                        CreateMenu.Page.PREDEFINED,
-                        this.category.getPrimaryVisibility(),
-                        this.folder,
-                        this.player)
-                .open(this.player);
+        menus.openCreate(CreateMenu.Page.PREDEFINED, this.category.getPrimaryVisibility(), this.folder, this.player);
     }
 
     @Override

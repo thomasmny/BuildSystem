@@ -17,16 +17,17 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.util.color.ColorAPI;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.Location;
@@ -36,8 +37,8 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class InfoSubCommand extends AbstractSubCommand {
 
-    public InfoSubCommand(BuildSystemPlugin plugin) {
-        super(plugin);
+    public InfoSubCommand(Messages messages, WorldServiceImpl worldService) {
+        super(messages, worldService);
     }
 
     @Override
@@ -56,25 +57,27 @@ public class InfoSubCommand extends AbstractSubCommand {
                 Map.entry("%world%", buildWorld.getName()),
                 Map.entry("%uuid%", buildWorld.getUniqueId().toString()),
                 Map.entry("%creator%", getCreator(builders)),
-                Map.entry("%item%", worldData.getMaterial().name()),
+                Map.entry("%item%", worldData.get(WorldDataKey.MATERIAL).name()),
                 Map.entry("%type%", messages.getString(Messages.getMessageKey(buildWorld.getType()), player)),
-                Map.entry("%private%", worldData.getVisibility().isPrivate()),
-                Map.entry("%builders_enabled%", worldData.isBuildersEnabled()),
+                Map.entry("%private%", worldData.get(WorldDataKey.VISIBILITY).isPrivate()),
+                Map.entry("%builders_enabled%", worldData.get(WorldDataKey.BUILDERS_ENABLED)),
                 Map.entry("%builders%", builders.asPlaceholder(player)),
-                Map.entry("%block_breaking%", worldData.isBlockBreaking()),
-                Map.entry("%block_placement%", worldData.isBlockPlacement()),
-                Map.entry("%status%", ColorAPI.process(worldData.getStatus().getStyledName())),
-                Map.entry("%project%", worldData.getProject()),
-                Map.entry("%permission%", worldData.getPermission()),
+                Map.entry("%block_breaking%", worldData.get(WorldDataKey.BLOCK_BREAKING)),
+                Map.entry("%block_placement%", worldData.get(WorldDataKey.BLOCK_PLACEMENT)),
+                Map.entry(
+                        "%status%",
+                        ColorAPI.process(worldData.get(WorldDataKey.STATUS).getStyledName())),
+                Map.entry("%project%", worldData.get(WorldDataKey.PROJECT)),
+                Map.entry("%permission%", worldData.get(WorldDataKey.PERMISSION)),
                 Map.entry("%time%", buildWorld.getWorldTime()),
                 Map.entry("%creation%", messages.formatDate(buildWorld.getCreation())),
-                Map.entry("%physics%", worldData.isPhysics()),
-                Map.entry("%explosions%", worldData.isExplosions()),
-                Map.entry("%mobai%", worldData.isMobAi()),
+                Map.entry("%physics%", worldData.get(WorldDataKey.PHYSICS)),
+                Map.entry("%explosions%", worldData.get(WorldDataKey.EXPLOSIONS)),
+                Map.entry("%mobai%", worldData.get(WorldDataKey.MOB_AI)),
                 Map.entry("%custom_spawn%", getCustomSpawn(buildWorld)),
-                Map.entry("%lastedited%", messages.formatDate(worldData.getLastEdited())),
-                Map.entry("%lastloaded%", messages.formatDate(worldData.getLastLoaded())),
-                Map.entry("%lastunloaded%", messages.formatDate(worldData.getLastUnloaded())));
+                Map.entry("%lastedited%", messages.formatDate(worldData.get(WorldDataKey.LAST_EDITED))),
+                Map.entry("%lastloaded%", messages.formatDate(worldData.get(WorldDataKey.LAST_LOADED))),
+                Map.entry("%lastunloaded%", messages.formatDate(worldData.get(WorldDataKey.LAST_UNLOADED))));
     }
 
     private String getCreator(Builders builders) {
@@ -104,7 +107,7 @@ public class InfoSubCommand extends AbstractSubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        WorldStorage ws = plugin.getWorldService().getWorldStorage();
+        WorldStorage ws = worldService.getWorldStorage();
         return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
     }
 

@@ -18,10 +18,13 @@
 package de.eintosti.buildsystem.world.menu.setup;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.data.WorldStatusImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
@@ -44,16 +47,25 @@ public class StatusEditorMenu extends RegistryEditorMenu {
     private final WorldStatusRegistryImpl registry;
     private final WorldStatusImpl status;
 
-    public StatusEditorMenu(BuildSystemPlugin plugin, Player player, BuildWorldStatus status) {
+    public StatusEditorMenu(
+            Messages messages,
+            Prompts prompts,
+            Menus menus,
+            MenuItems menuItems,
+            WorldStatusRegistryImpl worldStatusRegistry,
+            Player player,
+            BuildWorldStatus status) {
         super(
-                plugin,
-                plugin.getMessages()
-                        .getString(
-                                "setup_status_editor_title",
-                                player,
-                                Map.entry("%status%", ColorAPI.process(status.getStyledName()))));
+                messages,
+                prompts,
+                menus,
+                menuItems,
+                messages.getString(
+                        "setup_status_editor_title",
+                        player,
+                        Map.entry("%status%", ColorAPI.process(status.getStyledName()))));
 
-        this.registry = plugin.getWorldStatusRegistry();
+        this.registry = worldStatusRegistry;
         this.status = (WorldStatusImpl) status;
 
         registerCentered(createPropertyButtons());
@@ -139,11 +151,11 @@ public class StatusEditorMenu extends RegistryEditorMenu {
     protected void reopen(Player player) {
         // A fresh instance rebuilds the title (which embeds the status's styled, coloured name) so a colour or name
         // change is reflected there too, not just in the buttons.
-        new StatusEditorMenu(plugin, player, status).open(player);
+        menus.openStatusEditor(status, player);
     }
 
     @Override
     protected void openManagement(Player player) {
-        new StatusLayoutMenu(plugin, player).open(player);
+        menus.openStatusLayout(player);
     }
 }

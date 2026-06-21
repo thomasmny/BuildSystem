@@ -25,8 +25,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.player.customblock.CustomBlockMenu.BlockEntry;
 import java.util.Map;
 import org.bukkit.entity.Player;
@@ -59,10 +59,8 @@ class CustomBlockMenuTest {
     private CustomBlockMenu menu() {
         Messages messages = mock(Messages.class);
         when(messages.getString(anyString(), any())).thenReturn("Title");
-        BuildSystemPlugin plugin = mock(BuildSystemPlugin.class);
-        when(plugin.getMessages()).thenReturn(messages);
         Player player = server.addPlayer();
-        return new CustomBlockMenu(plugin, player);
+        return new CustomBlockMenu(messages, mock(MenuItems.class), player);
     }
 
     @Test

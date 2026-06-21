@@ -18,12 +18,13 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.Prompts;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -31,8 +32,11 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class RenameSubCommand extends AbstractSubCommand {
 
-    public RenameSubCommand(BuildSystemPlugin plugin) {
-        super(plugin);
+    private final Prompts prompts;
+
+    public RenameSubCommand(Messages messages, WorldServiceImpl worldService, Prompts prompts) {
+        super(messages, worldService);
+        this.prompts = prompts;
     }
 
     @Override
@@ -42,9 +46,9 @@ public class RenameSubCommand extends AbstractSubCommand {
             return;
         }
 
-        new PlayerChatInput(plugin, player, "enter_world_name", input -> {
+        prompts.prompt(player).title("enter_world_name").request(input -> {
             player.closeInventory();
-            plugin.getWorldService().renameWorld(player, buildWorld, input.trim());
+            worldService.renameWorld(player, buildWorld, input.trim());
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
         });
     }
@@ -54,7 +58,7 @@ public class RenameSubCommand extends AbstractSubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        WorldStorage ws = plugin.getWorldService().getWorldStorage();
+        WorldStorage ws = worldService.getWorldStorage();
         return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
     }
 

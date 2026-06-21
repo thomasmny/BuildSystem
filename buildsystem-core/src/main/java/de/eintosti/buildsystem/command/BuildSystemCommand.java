@@ -18,8 +18,9 @@
 package de.eintosti.buildsystem.command;
 
 import com.google.common.collect.Lists;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
 import java.util.List;
+import java.util.logging.Logger;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -27,8 +28,8 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class BuildSystemCommand extends PagedCommand {
 
-    public BuildSystemCommand(BuildSystemPlugin plugin) {
-        super(plugin, "buildsystem_title_with_page", "buildsystem_permission");
+    public BuildSystemCommand(Messages messages, Logger logger) {
+        super(messages, logger, "buildsystem_title_with_page", "buildsystem_permission");
     }
 
     @Override

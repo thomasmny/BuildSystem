@@ -18,18 +18,24 @@
 package de.eintosti.buildsystem.listener.player;
 
 import com.cryptomorin.xseries.XPotion;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocation;
-import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.player.PlayerLookupService;
+import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import io.papermc.lib.PaperLib;
 import java.util.Map;
@@ -46,27 +52,48 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class PlayerJoinListener implements Listener {
 
-    private final BuildSystemPlugin plugin;
-    private final PlayerServiceImpl playerManager;
+    private final PlayerService playerManager;
     private final SettingsService settingsManager;
     private final NavigatorService navigatorService;
     private final SpawnService spawnService;
-    private final WorldStorageImpl worldStorage;
+    private final WorldStorage worldStorage;
+    private final PlayerLookupService playerLookupService;
+    private final NoClipService noClipService;
+    private final ConfigService configService;
+    private final Messages messages;
+    private final UpdateChecker updateChecker;
+    private final TaskScheduler scheduler;
 
-    public PlayerJoinListener(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        this.playerManager = plugin.getPlayerService();
-        this.settingsManager = plugin.getSettingsService();
-        this.navigatorService = plugin.getNavigatorService();
-        this.spawnService = plugin.getSpawnService();
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public PlayerJoinListener(
+            PlayerService playerManager,
+            SettingsService settingsManager,
+            NavigatorService navigatorService,
+            SpawnService spawnService,
+            WorldStorage worldStorage,
+            PlayerLookupService playerLookupService,
+            NoClipService noClipService,
+            ConfigService configService,
+            Messages messages,
+            UpdateChecker updateChecker,
+            TaskScheduler scheduler) {
+        this.playerManager = playerManager;
+        this.settingsManager = settingsManager;
+        this.navigatorService = navigatorService;
+        this.spawnService = spawnService;
+        this.worldStorage = worldStorage;
+        this.playerLookupService = playerLookupService;
+        this.noClipService = noClipService;
+        this.configService = configService;
+        this.messages = messages;
+        this.updateChecker = updateChecker;
+        this.scheduler = scheduler;
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void sendPlayerJoinMessage(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        String message = plugin.getConfigService().current().settings().joinQuitMessages()
-                ? plugin.getMessages().getString("player_join", player, Map.entry("%player%", player.getName()))
+        String message = configService.current().settings().joinQuitMessages()
+                ? messages.getString("player_join", player, Map.entry("%player%", player.getName()))
                 : null;
         event.setJoinMessage(message);
     }
@@ -75,7 +102,7 @@ public class PlayerJoinListener implements Listener {
     @SuppressWarnings("deprecation")
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        plugin.getPlayerLookupService().cacheUser(player.getUniqueId(), player.getName());
+        playerLookupService.cacheUser(player.getUniqueId(), player.getName());
 
         BuildPlayerImpl buildPlayer =
                 BuildPlayerImpl.of(playerManager.getPlayerStorage().createBuildPlayer(player));
@@ -88,13 +115,12 @@ public class PlayerJoinListener implements Listener {
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld != null) {
             WorldData worldData = buildWorld.getData();
-            if (!worldData.isPhysics() && player.hasPermission("buildsystem.physics.message")) {
-                plugin.getMessages()
-                        .sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", worldName));
+            if (!worldData.get(WorldDataKey.PHYSICS) && player.hasPermission("buildsystem.physics.message")) {
+                messages.sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", worldName));
             }
 
-            if (plugin.getConfigService().current().settings().archive().vanish()
-                    && !worldData.getStatus().isBuildingAllowed()) {
+            if (configService.current().settings().archive().vanish()
+                    && !worldData.get(WorldDataKey.STATUS).isBuildingAllowed()) {
                 player.addPotionEffect(
                         new PotionEffect(XPotion.INVISIBILITY.get(), PotionEffect.INFINITE_DURATION, 0, false, false),
                         false);
@@ -137,16 +163,14 @@ public class PlayerJoinListener implements Listener {
         }
 
         int delay = buildWorld.isLoaded() ? 0 : 20;
-        Bukkit.getScheduler()
-                .runTaskLater(
-                        plugin,
-                        () -> {
-                            Location location = logoutLocation.location();
-                            if (location != null) {
-                                PaperLib.teleportAsync(player, location);
-                            }
-                        },
-                        delay);
+        scheduler.runLater(
+                () -> {
+                    Location location = logoutLocation.location();
+                    if (location != null) {
+                        PaperLib.teleportAsync(player, location);
+                    }
+                },
+                delay);
     }
 
     @SuppressWarnings("deprecation")
@@ -173,12 +197,12 @@ public class PlayerJoinListener implements Listener {
      */
     private void manageSettings(Player player, Settings settings) {
         if (settings.isNoClip()) {
-            plugin.getNoClipService().startNoClip(player);
+            noClipService.startNoClip(player);
         }
 
         if (settings.isScoreboard()) {
             settingsManager.displayScoreboard(player);
-            plugin.getSettingsService().forceUpdateSidebar(player);
+            settingsManager.forceUpdateSidebar(player);
         }
 
         if (settings.isClearInventory()) {
@@ -187,20 +211,17 @@ public class PlayerJoinListener implements Listener {
     }
 
     private void performUpdateCheck(Player player) {
-        if (!plugin.getConfigService().current().settings().updateChecker()) {
+        if (!configService.current().settings().updateChecker()) {
             return;
         }
 
-        plugin.getUpdateChecker().requestUpdateCheck().whenComplete((result, e) -> {
+        updateChecker.requestUpdateCheck().whenComplete((result, e) -> {
             if (result.requiresUpdate()) {
                 StringBuilder stringBuilder = new StringBuilder();
-                plugin.getMessages()
-                        .getStringList("update_available", player)
+                messages.getStringList("update_available", player)
                         .forEach(line -> stringBuilder
                                 .append(line.replace("%new_version%", result.getNewestVersion())
-                                        .replace(
-                                                "%current_version%",
-                                                plugin.getDescription().getVersion()))
+                                        .replace("%current_version%", updateChecker.getCurrentVersion()))
                                 .append("\n"));
                 player.sendMessage(stringBuilder.toString());
             }

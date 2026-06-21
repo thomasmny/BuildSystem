@@ -17,14 +17,16 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -33,13 +35,20 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SpawnCommand extends CommandBase {
 
+    private final ConfigService configService;
     private final SpawnService spawnService;
     private final WorldStorageImpl worldStorage;
 
-    public SpawnCommand(BuildSystemPlugin plugin) {
-        super(plugin, true);
-        this.spawnService = plugin.getSpawnService();
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public SpawnCommand(
+            Messages messages,
+            Logger logger,
+            ConfigService configService,
+            SpawnService spawnService,
+            WorldStorageImpl worldStorage) {
+        super(messages, logger, true);
+        this.configService = configService;
+        this.spawnService = spawnService;
+        this.worldStorage = worldStorage;
     }
 
     @Override
@@ -48,7 +57,7 @@ public class SpawnCommand extends CommandBase {
             case 0 -> {
                 if (!spawnService.teleport(player)) {
                     messages.sendMessage(player, "spawn_unavailable");
-                } else if (plugin.getConfigService().current().settings().spawnTeleportMessage()) {
+                } else if (configService.current().settings().spawnTeleportMessage()) {
                     messages.sendMessage(player, "spawn_teleported");
                 }
             }

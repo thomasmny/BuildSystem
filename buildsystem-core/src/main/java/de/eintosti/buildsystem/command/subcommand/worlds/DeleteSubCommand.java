@@ -17,11 +17,13 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.world.menu.DeleteMenu;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -29,8 +31,14 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class DeleteSubCommand extends AbstractSubCommand {
 
-    public DeleteSubCommand(BuildSystemPlugin plugin) {
-        super(plugin);
+    private final ConfigService configService;
+    private final Menus menus;
+
+    public DeleteSubCommand(
+            Messages messages, WorldServiceImpl worldService, ConfigService configService, Menus menus) {
+        super(messages, worldService);
+        this.configService = configService;
+        this.menus = menus;
     }
 
     @Override
@@ -40,7 +48,7 @@ public class DeleteSubCommand extends AbstractSubCommand {
             return;
         }
 
-        if (plugin.getConfigService()
+        if (configService
                 .current()
                 .world()
                 .deletionBlacklist()
@@ -49,7 +57,7 @@ public class DeleteSubCommand extends AbstractSubCommand {
             return;
         }
 
-        new DeleteMenu(plugin, buildWorld, player).open(player);
+        menus.openDelete(buildWorld, player);
     }
 
     @Override
@@ -57,8 +65,7 @@ public class DeleteSubCommand extends AbstractSubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        return WorldsCompletions.deletableWorldNames(
-                player, plugin.getWorldService().getWorldStorage(), args[1]);
+        return WorldsCompletions.deletableWorldNames(player, worldService.getWorldStorage(), args[1]);
     }
 
     @Override

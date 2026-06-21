@@ -19,10 +19,11 @@ package de.eintosti.buildsystem.world.menu.setup;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.List;
 import java.util.function.Consumer;
@@ -77,15 +78,20 @@ public class DyePickerMenu extends ButtonMenu<MenuButton> {
     private static final int INVENTORY_SIZE = 45;
     private static final int SLOT_BACK = 36;
 
-    private final BuildSystemPlugin plugin;
+    private final MenuItems menuItems;
     private final String currentToken;
     private final Consumer<String> onPick;
     private final Runnable onBack;
 
     public DyePickerMenu(
-            BuildSystemPlugin plugin, Player player, String currentToken, Consumer<String> onPick, Runnable onBack) {
-        super(plugin.getMessages(), INVENTORY_SIZE, plugin.getMessages().getString("setup_color_picker_title", player));
-        this.plugin = plugin;
+            Messages messages,
+            MenuItems menuItems,
+            Player player,
+            String currentToken,
+            Consumer<String> onPick,
+            Runnable onBack) {
+        super(messages, INVENTORY_SIZE, messages.getString("setup_color_picker_title", player));
+        this.menuItems = menuItems;
         this.currentToken = currentToken;
         this.onPick = onPick;
         this.onBack = onBack;
@@ -141,7 +147,7 @@ public class DyePickerMenu extends ButtonMenu<MenuButton> {
 
     @Override
     protected void populate(Player player) {
-        plugin.getMenuItems().fillAll(player, getInventory());
+        menuItems.fillAll(player, getInventory());
         renderButtons(player);
     }
 

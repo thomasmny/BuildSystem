@@ -17,12 +17,13 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.world.menu.BuilderMenu;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -30,8 +31,11 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class BuildersSubCommand extends AbstractSubCommand {
 
-    public BuildersSubCommand(BuildSystemPlugin plugin) {
-        super(plugin);
+    private final Menus menus;
+
+    public BuildersSubCommand(Messages messages, WorldServiceImpl worldService, Menus menus) {
+        super(messages, worldService);
+        this.menus = menus;
     }
 
     @Override
@@ -41,7 +45,7 @@ public class BuildersSubCommand extends AbstractSubCommand {
             return;
         }
 
-        new BuilderMenu(plugin, buildWorld, player).open(player);
+        menus.openBuilder(buildWorld, player);
     }
 
     @Override
@@ -50,7 +54,7 @@ public class BuildersSubCommand extends AbstractSubCommand {
             return List.of();
         }
 
-        WorldStorage worldStorage = plugin.getWorldService().getWorldStorage();
+        WorldStorage worldStorage = worldService.getWorldStorage();
         return WorldsCompletions.permittedWorldNames(
                 player, worldStorage, getArgument().getPermission(), args[1]);
     }

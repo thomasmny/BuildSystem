@@ -17,9 +17,10 @@
  */
 package de.eintosti.buildsystem.world.backup.storage;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
+import de.eintosti.buildsystem.api.world.backup.BackupProfile;
+import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.backup.BackupImpl;
 import java.io.File;
@@ -31,7 +32,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.Function;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -46,25 +49,32 @@ import software.amazon.awssdk.services.s3.model.*;
 @NullMarked
 public class S3BackupStorage extends AbstractBackupStorage {
 
+    private final ConfigService configService;
+    private final Function<BuildWorld, BackupProfile> profileProvider;
     private final S3Client s3Client;
     private final String bucket;
     private final String pathPrefix;
     private final Path tmpDownloadDirectory;
 
     public S3BackupStorage(
-            BuildSystemPlugin plugin,
+            Logger logger,
             Executor executor,
+            File dataFolder,
+            ConfigService configService,
+            Function<BuildWorld, BackupProfile> profileProvider,
             @Nullable String url,
             String accessKey,
             String secretKey,
             String region,
             String bucket,
             String pathPrefix) {
-        super(plugin, executor);
+        super(logger, executor);
 
+        this.configService = configService;
+        this.profileProvider = profileProvider;
         this.bucket = bucket;
         this.pathPrefix = pathPrefix.endsWith("/") ? pathPrefix : pathPrefix + "/";
-        this.tmpDownloadDirectory = FileUtils.resolve(plugin.getDataFolder(), ".tmp_backup_downloads");
+        this.tmpDownloadDirectory = FileUtils.resolve(dataFolder, ".tmp_backup_downloads");
 
         S3ClientBuilder builder = S3Client.builder()
                 .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
@@ -83,8 +93,8 @@ public class S3BackupStorage extends AbstractBackupStorage {
 
     @Override
     protected List<Backup> doListBackups(BuildWorld buildWorld) {
-        List<Backup> backups = new ArrayList<>(
-                plugin.getConfigService().current().world().backup().maxBackupsPerWorld());
+        List<Backup> backups =
+                new ArrayList<>(configService.current().world().backup().maxBackupsPerWorld());
         try {
             ListObjectsV2Response response = s3Client.listObjectsV2(ListObjectsV2Request.builder()
                     .bucket(bucket)
@@ -94,7 +104,7 @@ public class S3BackupStorage extends AbstractBackupStorage {
             backups.addAll(response.contents().stream()
                     .filter(object -> object.key().endsWith(".zip"))
                     .map(object -> new BackupImpl(
-                            plugin.getBackupService().getProfile(buildWorld),
+                            profileProvider.apply(buildWorld),
                             object.lastModified().toEpochMilli(),
                             object.key()))
                     .toList());
@@ -120,7 +130,7 @@ public class S3BackupStorage extends AbstractBackupStorage {
             }
 
             logDuration(buildWorld, timestamp);
-            return new BackupImpl(plugin.getBackupService().getProfile(buildWorld), timestamp, key);
+            return new BackupImpl(profileProvider.apply(buildWorld), timestamp, key);
         });
     }
 
@@ -159,12 +169,12 @@ public class S3BackupStorage extends AbstractBackupStorage {
         try {
             s3Client.close();
         } catch (Exception e) {
-            plugin.getLogger().log(Level.SEVERE, "Error while closing S3 client", e);
+            logger.log(Level.SEVERE, "Error while closing S3 client", e);
         }
         try {
             FileUtils.deleteDirectory(tmpDownloadDirectory);
         } catch (IOException e) {
-            plugin.getLogger().log(Level.WARNING, "Failed to delete temporary download directory", e);
+            logger.log(Level.WARNING, "Failed to delete temporary download directory", e);
         }
     }
 }

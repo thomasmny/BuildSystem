@@ -20,16 +20,19 @@ package de.eintosti.buildsystem.world.menu;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Locale;
@@ -73,8 +76,11 @@ public class CreateMenu extends PaginatedMenu {
             BuildWorldType.END, "create_end_world",
             BuildWorldType.VOID, "create_void_world");
 
-    private final BuildSystemPlugin plugin;
+    private final MenuItems menuItems;
+    private final Menus menus;
     private final WorldServiceImpl worldService;
+    private final CustomizableIcons customizableIcons;
+    private final File dataFolder;
     private final Page currentPage;
     private final boolean createPrivateWorld;
 
@@ -85,10 +91,22 @@ public class CreateMenu extends PaginatedMenu {
     private File @Nullable [] templateFiles;
 
     public CreateMenu(
-            BuildSystemPlugin plugin, Page initialPage, Visibility visibility, @Nullable Folder folder, Player player) {
-        super(plugin.getMessages(), 45, plugin.getMessages().getString("create_title", player));
-        this.plugin = plugin;
-        this.worldService = plugin.getWorldService();
+            Messages messages,
+            MenuItems menuItems,
+            Menus menus,
+            WorldServiceImpl worldService,
+            CustomizableIcons customizableIcons,
+            File dataFolder,
+            Page initialPage,
+            Visibility visibility,
+            @Nullable Folder folder,
+            Player player) {
+        super(messages, 45, messages.getString("create_title", player));
+        this.menuItems = menuItems;
+        this.menus = menus;
+        this.worldService = worldService;
+        this.customizableIcons = customizableIcons;
+        this.dataFolder = dataFolder;
         this.currentPage = initialPage;
         this.createPrivateWorld = visibility == Visibility.ADDED_PLAYERS;
         this.folder = folder;
@@ -102,8 +120,8 @@ public class CreateMenu extends PaginatedMenu {
     @Override
     protected void populate(Player player) {
         clearButtons();
-        plugin.getMenuItems().fillRange(player, getInventory(), 0, 29);
-        plugin.getMenuItems().fillRange(player, getInventory(), 34, 45);
+        menuItems.fillRange(player, getInventory(), 0, 29);
+        menuItems.fillRange(player, getInventory(), 34, 45);
 
         registerTab(Page.PREDEFINED, PREDEFINED_TAB_PROFILE, "create_predefined_worlds");
         registerTab(Page.GENERATOR, GENERATOR_TAB_PROFILE, "create_generators");
@@ -128,7 +146,7 @@ public class CreateMenu extends PaginatedMenu {
                                 .into(inventory, slot))
                         .onClick((player, event) -> {
                             Visibility visibility = createPrivateWorld ? Visibility.ADDED_PLAYERS : Visibility.EVERYONE;
-                            new CreateMenu(plugin, page, visibility, folder, player).open(player);
+                            menus.openCreate(page, visibility, folder, player);
                             XSound.ENTITY_CHICKEN_EGG.play(player);
                         })
                         .build());
@@ -141,7 +159,7 @@ public class CreateMenu extends PaginatedMenu {
     private MenuButton predefinedButton(BuildWorldType worldType) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
-                    XMaterial material = plugin.getCustomizableIcons().getIcon(worldType);
+                    XMaterial material = customizableIcons.getIcon(worldType);
                     String displayName = messages.getString(PREDEFINED_MESSAGE_KEYS.get(worldType), player);
                     if (!canCreateType(player, worldType)) {
                         material = XMaterial.BARRIER;
@@ -168,7 +186,7 @@ public class CreateMenu extends PaginatedMenu {
     private void registerGenerator(Player player) {
         for (int slot = FIRST_PREDEFINED_SLOT; slot <= LAST_PREDEFINED_SLOT; slot++) {
             if (slot != SLOT_GENERATOR_CREATE) {
-                plugin.getMenuItems().addGlassPane(player, getInventory(), slot);
+                menuItems.addGlassPane(player, getInventory(), slot);
             }
         }
         register(
@@ -191,13 +209,13 @@ public class CreateMenu extends PaginatedMenu {
 
         // Listed once per menu instance so page flips do not repeat directory I/O on the main thread.
         if (this.templateFiles == null) {
-            this.templateFiles = FileUtils.resolve(plugin.getDataFolder(), "templates")
+            this.templateFiles = FileUtils.resolve(dataFolder, "templates")
                     .toFile()
                     .listFiles(file -> file.isDirectory() && !file.isHidden());
         }
         this.numTemplates = templateFiles != null ? templateFiles.length : 0;
 
-        plugin.getMenuItems().fillRange(player, getInventory(), FIRST_TEMPLATE_SLOT, SLOT_TEMPLATE_NEXT_PAGE);
+        menuItems.fillRange(player, getInventory(), FIRST_TEMPLATE_SLOT, SLOT_TEMPLATE_NEXT_PAGE);
 
         if (numTemplates == 0) {
             ItemStack barrier = ItemBuilder.of(XMaterial.BARRIER)

@@ -17,16 +17,15 @@
  */
 package de.eintosti.buildsystem.listener.player;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocation;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.UUID;
-import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
@@ -35,16 +34,20 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class AsyncPlayerPreLoginListener implements Listener {
 
-    private final BuildSystemPlugin plugin;
     private final PlayerStorage playerStorage;
     private final SpawnService spawnService;
-    private final WorldStorageImpl worldStorage;
+    private final WorldStorage worldStorage;
+    private final TaskScheduler scheduler;
 
-    public AsyncPlayerPreLoginListener(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        this.playerStorage = plugin.getPlayerService().getPlayerStorage();
-        this.spawnService = plugin.getSpawnService();
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public AsyncPlayerPreLoginListener(
+            PlayerStorage playerStorage,
+            SpawnService spawnService,
+            WorldStorage worldStorage,
+            TaskScheduler scheduler) {
+        this.playerStorage = playerStorage;
+        this.spawnService = spawnService;
+        this.worldStorage = worldStorage;
+        this.scheduler = scheduler;
     }
 
     @EventHandler
@@ -69,7 +72,7 @@ public class AsyncPlayerPreLoginListener implements Listener {
         if (buildWorld == null) {
             buildPlayer.setLogoutLocation(null);
         } else {
-            Bukkit.getScheduler().runTask(plugin, () -> buildWorld.getLoader().load());
+            scheduler.run(() -> buildWorld.getLoader().load());
         }
     }
 }

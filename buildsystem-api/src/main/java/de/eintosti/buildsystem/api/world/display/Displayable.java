@@ -59,8 +59,9 @@ public interface Displayable {
     /**
      * Sets the name of this displayable item.
      *
-     * <p><b>Note:</b> this only updates the in-memory name. Persisted storage is keyed by the name, so a durable rename
-     * additionally requires re-saving under the new key (delete the old storage entry, then save under the new name).
+     * <p><b>Note:</b> this only updates the in-memory name; a durable rename additionally requires re-saving the item.
+     * Persisted storage is keyed by UUID, so the re-save overwrites the existing entry in place — no old key needs to be
+     * removed.
      *
      * @param name The new name for this item
      * @throws IllegalArgumentException if the name is {@code null} or blank

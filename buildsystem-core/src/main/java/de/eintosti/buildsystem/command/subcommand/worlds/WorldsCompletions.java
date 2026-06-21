@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -39,7 +40,7 @@ final class WorldsCompletions {
             Player player, WorldStorage worldStorage, @Nullable String commandPermission, String input) {
         List<String> result = new ArrayList<>();
         for (BuildWorld world : worldStorage.getBuildWorlds()) {
-            String worldPerm = world.getData().getPermission();
+            String worldPerm = world.getData().get(WorldDataKey.PERMISSION);
             if ((player.hasPermission(worldPerm) || worldPerm.equalsIgnoreCase("-"))
                     && world.getPermissions().canPerformCommand(player, commandPermission)) {
                 addIfStartsWith(input, world.getName(), result);

@@ -21,14 +21,17 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlPlayerStorage;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -37,13 +40,18 @@ import org.jspecify.annotations.NullMarked;
 public class PlayerServiceImpl implements PlayerService {
 
     private final BuildSystemPlugin plugin;
+    private final ConfigService configService;
+    private final Supplier<WorldServiceImpl> worldService;
     private final PlayerStorageImpl playerStorage;
     private final MaxWorldsResolver maxWorldsResolver;
 
     private final Set<UUID> buildModePlayers;
 
-    public PlayerServiceImpl(BuildSystemPlugin plugin) {
+    public PlayerServiceImpl(
+            BuildSystemPlugin plugin, ConfigService configService, Supplier<WorldServiceImpl> worldService) {
         this.plugin = plugin;
+        this.configService = configService;
+        this.worldService = worldService;
         this.playerStorage = new YamlPlayerStorage(plugin);
         this.maxWorldsResolver = new MaxWorldsResolver(plugin.getLogger());
         this.buildModePlayers = new HashSet<>();
@@ -81,11 +89,11 @@ public class PlayerServiceImpl implements PlayerService {
     @Override
     public boolean canCreateWorld(Player player, Visibility visibility) {
         boolean showPrivateWorlds = visibility == Visibility.ADDED_PLAYERS;
-        WorldStorageImpl worldStorage = plugin.getWorldService().getWorldStorage();
+        WorldStorageImpl worldStorage = worldService.get().getWorldStorage();
 
         int maxWorldAmountConfig = showPrivateWorlds
-                ? plugin.getConfigService().current().world().limits().privateWorlds()
-                : plugin.getConfigService().current().world().limits().publicWorlds();
+                ? configService.current().world().limits().privateWorlds()
+                : configService.current().world().limits().publicWorlds();
         if (maxWorldAmountConfig >= 0 && worldStorage.getBuildWorlds().size() >= maxWorldAmountConfig) {
             return false;
         }

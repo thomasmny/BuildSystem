@@ -20,16 +20,20 @@ package de.eintosti.buildsystem.navigator;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
+import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.color.ColorAPI;
+import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.*;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.ArmorStand;
@@ -48,17 +52,35 @@ public class NavigatorService {
     private static final float RADIUS = 2.2f;
     private static final float SPREAD = 90.0f;
 
-    private final BuildSystemPlugin plugin;
+    private final NavigatorCategoryRegistryImpl navigatorCategoryRegistry;
+    private final ConfigService configService;
+    private final NavigatorItems navigatorItems;
+    private final PlayerServiceImpl playerService;
+    private final Messages messages;
+    private final TaskScheduler scheduler;
     private final NamespacedKey ownerKey;
     private final NamespacedKey categoryKey;
 
     private final Set<Player> openNavigator;
     private final Map<UUID, ArmorStand[]> armorStands;
 
-    public NavigatorService(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        this.ownerKey = new NamespacedKey(plugin, "owner");
-        this.categoryKey = new NamespacedKey(plugin, "category");
+    public NavigatorService(
+            NavigatorCategoryRegistryImpl navigatorCategoryRegistry,
+            ConfigService configService,
+            NavigatorItems navigatorItems,
+            PlayerServiceImpl playerService,
+            Messages messages,
+            TaskScheduler scheduler,
+            NamespacedKey ownerKey,
+            NamespacedKey categoryKey) {
+        this.navigatorCategoryRegistry = navigatorCategoryRegistry;
+        this.configService = configService;
+        this.navigatorItems = navigatorItems;
+        this.playerService = playerService;
+        this.messages = messages;
+        this.scheduler = scheduler;
+        this.ownerKey = ownerKey;
+        this.categoryKey = categoryKey;
         this.openNavigator = new HashSet<>();
         this.armorStands = new HashMap<>();
         initEntityChecker();
@@ -67,7 +89,7 @@ public class NavigatorService {
     public @Nullable NavigatorCategory matchNavigatorCategory(ArmorStand armorStand) {
         String categoryId = armorStand.getPersistentDataContainer().get(categoryKey, PersistentDataType.STRING);
         return categoryId != null
-                ? plugin.getNavigatorCategoryRegistry().getCategory(categoryId).orElse(null)
+                ? navigatorCategoryRegistry.getCategory(categoryId).orElse(null)
                 : null;
     }
 
@@ -77,7 +99,7 @@ public class NavigatorService {
     }
 
     public void spawnArmorStands(Player player) {
-        List<NavigatorCategory> shownCategories = plugin.getNavigatorCategoryRegistry().getCategories().stream()
+        List<NavigatorCategory> shownCategories = navigatorCategoryRegistry.getCategories().stream()
                 .filter(NavigatorCategory::isShownInNavigator)
                 .toList();
 
@@ -159,13 +181,13 @@ public class NavigatorService {
     }
 
     public void giveNavigator(Player player) {
-        if (!plugin.getConfigService().current().settings().navigator().giveItemOnJoin()
+        if (!configService.current().settings().navigator().giveItemOnJoin()
                 || !player.hasPermission("buildsystem.navigator.item")
-                || plugin.getMenuItems().hasNavigator(player)) {
+                || navigatorItems.has(player)) {
             return;
         }
 
-        ItemStack navigatorItem = plugin.getMenuItems().createNavigatorItem(player);
+        ItemStack navigatorItem = navigatorItems.create(player);
         PlayerInventory playerInventory = player.getInventory();
         ItemStack slot8 = playerInventory.getItem(8);
 
@@ -182,18 +204,14 @@ public class NavigatorService {
         }
 
         BuildPlayerImpl buildPlayer =
-                BuildPlayerImpl.of(plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player));
+                BuildPlayerImpl.of(playerService.getPlayerStorage().getBuildPlayer(player));
         buildPlayer.setLastLookedAt(null);
         removeArmorStands(player);
 
         XSound.ENTITY_ITEM_BREAK.play(player);
         displayActionBarMessage(player, "");
-        plugin.getMenuItems()
-                .replaceItem(
-                        player,
-                        plugin.getMessages().getString("barrier_item", player),
-                        XMaterial.BARRIER,
-                        plugin.getMenuItems().createNavigatorItem(player));
+        navigatorItems.replace(
+                player, messages.getString("barrier_item", player), XMaterial.BARRIER, navigatorItems.create(player));
 
         CachedValues cachedValues = buildPlayer.getCachedValues();
         cachedValues.resetWalkSpeedIfPresent(player);
@@ -205,7 +223,7 @@ public class NavigatorService {
     }
 
     private void initEntityChecker() {
-        Bukkit.getScheduler().runTaskTimer(plugin, this::checkForArmorStandNavigator, 0L, 2L);
+        scheduler.runTimer(this::checkForArmorStandNavigator, 0L, 2L);
     }
 
     private void checkForArmorStandNavigator() {
@@ -258,7 +276,7 @@ public class NavigatorService {
 
     private void sendTypeInfo(Player player, @Nullable NavigatorCategory category) {
         BuildPlayerImpl buildPlayer =
-                BuildPlayerImpl.of(plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player));
+                BuildPlayerImpl.of(playerService.getPlayerStorage().getBuildPlayer(player));
         if (category == null) {
             buildPlayer.setLastLookedAt(null);
             displayActionBarMessage(player, "§0");

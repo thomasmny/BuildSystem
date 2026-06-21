@@ -20,14 +20,13 @@ package de.eintosti.buildsystem.listener.settings;
 import com.cryptomorin.xseries.XBlock;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XTag;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldSetting;
-import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
+import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.DirectionUtil;
 import de.eintosti.buildsystem.util.MaterialUtils;
 import java.util.HashSet;
@@ -53,18 +52,17 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class DisabledInteractionsListener implements Listener {
 
-    private final BuildSystemPlugin plugin;
-    private final CustomBlockManager customBlockManager;
     private final SettingsService settingsManager;
-    private final WorldStorageImpl worldStorage;
+    private final WorldStorage worldStorage;
+    private final ConfigService configService;
     private final WorldProtectionPolicy policy;
     private final Set<UUID> cachePlayers;
 
-    public DisabledInteractionsListener(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        this.customBlockManager = plugin.getCustomBlockManager();
-        this.settingsManager = plugin.getSettingsService();
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public DisabledInteractionsListener(
+            SettingsService settingsManager, WorldStorage worldStorage, ConfigService configService) {
+        this.settingsManager = settingsManager;
+        this.worldStorage = worldStorage;
+        this.configService = configService;
         this.policy = new WorldProtectionPolicy();
         this.cachePlayers = new HashSet<>();
     }
@@ -92,8 +90,7 @@ public class DisabledInteractionsListener implements Listener {
 
         Material material = itemStack.getType();
         XMaterial xMaterial = XMaterial.matchXMaterial(material);
-        if (xMaterial
-                == plugin.getConfigService().current().settings().builder().worldEditWand()) {
+        if (xMaterial == configService.current().settings().builder().worldEditWand()) {
             return;
         }
 
@@ -120,7 +117,7 @@ public class DisabledInteractionsListener implements Listener {
         adjacent.setType(material);
         XBlock.setColor(adjacent, DyeColor.getByWoolData((byte) itemStack.getDurability()));
 
-        customBlockManager.rotateBlock(adjacent, DirectionUtil.getBlockDirection(player, false));
+        DirectionUtil.rotateBlock(adjacent, DirectionUtil.getBlockDirection(player, false));
 
         EquipmentSlot hand = event.getHand();
         if (hand == null) {

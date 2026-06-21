@@ -18,24 +18,23 @@
 package de.eintosti.buildsystem.menu;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.util.StringCleaner;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * A pending chat-input prompt: a player has been asked to type a value, and {@link #runWhenComplete} fires with the
- * first non-{@code cancel} line they send.
+ * A pending chat-input prompt: a player has been asked to type a value, and the {@link Request}'s completion callback
+ * fires with the first non-{@code cancel} line they send. Prompts are constructed through {@link Prompts} (via its
+ * {@link Prompts.Builder}), never directly.
  *
  * <p><strong>One listener, one registry.</strong> Active prompts live in a single shared {@link #ACTIVE} map keyed by
  * player, drained by the single {@link ChatInputListener} that is registered once at startup. Creating a prompt only
@@ -52,50 +51,26 @@ public final class PlayerChatInput {
     /** All currently-pending prompts, keyed by player UUID. Read on the async chat thread; written on the main thread. */
     private static final Map<UUID, PlayerChatInput> ACTIVE = new ConcurrentHashMap<>();
 
-    private final BuildSystemPlugin plugin;
+    private final Messages messages;
+    private final TaskScheduler scheduler;
     private final BukkitTask titleTask;
-    private final InputRunnable runWhenComplete;
-    private final Runnable onCancel;
-    private final UUID playerUuid;
+    private final Request request;
 
-    public PlayerChatInput(BuildSystemPlugin plugin, Player player, String titleKey, InputRunnable runWhenComplete) {
-        this(plugin, player, titleKey, runWhenComplete, () -> {});
-    }
+    PlayerChatInput(Messages messages, TaskScheduler scheduler, Request request) {
+        this.messages = messages;
+        this.scheduler = scheduler;
+        this.request = request;
 
-    /**
-     * Creates a prompt that runs {@code onCancel} when the player types {@code cancel}, instead of the completion
-     * callback — typically used to reopen the menu the prompt was launched from.
-     *
-     * @param plugin The plugin instance
-     * @param player The player to request input from
-     * @param titleKey The message key for the input prompt title
-     * @param runWhenComplete Receives the first non-{@code cancel} line the player sends
-     * @param onCancel Runs on the main thread when the player cancels the prompt
-     */
-    public PlayerChatInput(
-            BuildSystemPlugin plugin,
-            Player player,
-            String titleKey,
-            InputRunnable runWhenComplete,
-            Runnable onCancel) {
-        this.plugin = plugin;
-        this.playerUuid = player.getUniqueId();
-        this.runWhenComplete = runWhenComplete;
-        this.onCancel = onCancel;
-
-        String title = plugin.getMessages().getString(titleKey, player);
-        String subtitle = plugin.getMessages().getString("cancel_subtitle", player);
-        this.titleTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-                player.sendTitle(title, subtitle, 0, 30, 0);
-            }
-        }.runTaskTimer(plugin, 0L, 20L);
+        Player player = request.player();
+        String title = messages.getString(request.titleKey(), player);
+        String subtitle = messages.getString("cancel_subtitle", player);
+        this.titleTask = scheduler.runTimer(() -> player.sendTitle(title, subtitle, 0, 30, 0), 0L, 20L);
 
         player.closeInventory();
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
 
         // Replace any prompt the player already had, cancelling its title task so nothing is orphaned.
+        UUID playerUuid = request.player().getUniqueId();
         PlayerChatInput previous = ACTIVE.put(playerUuid, this);
         if (previous != null) {
             previous.titleTask.cancel();
@@ -103,62 +78,15 @@ public final class PlayerChatInput {
     }
 
     /**
-     * Requests a chat input that names a world or folder. The raw input is sanitized against the configured invalid
-     * characters before being handed to {@code onValidName}; the player is warned when characters were stripped and the
-     * input is rejected entirely when nothing survives sanitization.
+     * The immutable specification of a prompt: who to ask, the title to show, and what to do on completion or
+     * cancellation. Assembled by {@link Prompts.Builder} and consumed once to start a {@link PlayerChatInput}.
      *
-     * @param plugin The plugin instance
      * @param player The player to request input from
      * @param titleKey The message key for the input prompt title
-     * @param invalidCharactersMessageKey The message key sent when invalid characters were stripped
-     * @param emptyNameMessageKey The message key sent when the sanitized name is empty
-     * @param onValidName Receives the sanitized, non-empty name
-     */
-    public static void requestSanitizedName(
-            BuildSystemPlugin plugin,
-            Player player,
-            String titleKey,
-            String invalidCharactersMessageKey,
-            String emptyNameMessageKey,
-            InputRunnable onValidName) {
-        requestSanitizedName(
-                plugin, player, titleKey, invalidCharactersMessageKey, emptyNameMessageKey, onValidName, () -> {});
-    }
-
-    /**
-     * Variant of {@link #requestSanitizedName} that runs {@code onCancel} when the player cancels the prompt — typically
-     * used to reopen the menu the prompt was launched from.
-     *
+     * @param onComplete Receives the first non-{@code cancel} line the player sends
      * @param onCancel Runs on the main thread when the player cancels the prompt
      */
-    public static void requestSanitizedName(
-            BuildSystemPlugin plugin,
-            Player player,
-            String titleKey,
-            String invalidCharactersMessageKey,
-            String emptyNameMessageKey,
-            InputRunnable onValidName,
-            Runnable onCancel) {
-        String invalidCharacters = plugin.getConfigService().current().world().invalidCharacters();
-        new PlayerChatInput(
-                plugin,
-                player,
-                titleKey,
-                input -> {
-                    if (StringCleaner.hasInvalidNameCharacters(input, invalidCharacters)) {
-                        plugin.getMessages().sendMessage(player, invalidCharactersMessageKey);
-                    }
-
-                    String sanitizedName = StringCleaner.sanitize(input, invalidCharacters);
-                    if (sanitizedName.isEmpty()) {
-                        plugin.getMessages().sendMessage(player, emptyNameMessageKey);
-                        return;
-                    }
-
-                    onValidName.run(sanitizedName);
-                },
-                onCancel);
-    }
+    record Request(Player player, String titleKey, InputRunnable onComplete, Runnable onCancel) {}
 
     /**
      * Consumes a chat line for the player's pending prompt, if any. Cancels the chat event, hops to the main thread, and
@@ -176,14 +104,14 @@ public final class PlayerChatInput {
 
         String message = event.getMessage();
         boolean cancelled = message.equalsIgnoreCase("cancel");
-        Bukkit.getScheduler().runTask(input.plugin, () -> {
+        input.scheduler.run(() -> {
             player.resetTitle();
             if (cancelled) {
                 XSound.ENTITY_ITEM_BREAK.play(player);
-                input.plugin.getMessages().sendMessage(player, "input_cancelled");
-                input.onCancel.run();
+                input.messages.sendMessage(player, "input_cancelled");
+                input.request.onCancel().run();
             } else {
-                input.runWhenComplete.run(message);
+                input.request.onComplete().run(message);
             }
         });
     }

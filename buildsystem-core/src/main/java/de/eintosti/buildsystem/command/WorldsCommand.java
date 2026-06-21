@@ -19,48 +19,84 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.command.subcommand.worlds.*;
-import de.eintosti.buildsystem.world.menu.NavigatorMenu;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.NavigatorItems;
+import de.eintosti.buildsystem.menu.Prompts;
+import de.eintosti.buildsystem.player.PlayerLookupService;
+import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
+import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
+import java.io.File;
 import java.util.List;
+import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class WorldsCommand extends CommandBase {
 
+    // As the composition root for the worlds subcommands, WorldsCommand resolves each subcommand's collaborators from
+    // the service registry; the subcommands themselves no longer depend on the plugin.
+    private final Services services;
     private final SubCommandDispatcher dispatcher;
 
-    public WorldsCommand(BuildSystemPlugin plugin) {
-        super(plugin, true);
+    public WorldsCommand(BuildSystemPlugin plugin, Services services) {
+        super(services.messages(), plugin.getLogger(), true);
+        this.services = services;
+
+        Messages messages = services.messages();
+        WorldServiceImpl worldService = services.world();
+        Menus menus = services.menus();
+        Prompts prompts = services.prompts();
+        NavigatorItems navigatorItems = services.navigatorItems();
+        ConfigService configService = services.config();
+        SettingsService settingsService = services.settings();
+        PlayerLookupService playerLookupService = services.playerLookup();
+        NavigatorCategoryRegistryImpl navigatorCategoryRegistry = services.navigatorCategoryRegistry();
+        BackupServiceImpl backupService = services.backup();
+        Logger logger = plugin.getLogger();
+        File dataFolder = plugin.getDataFolder();
+        TaskScheduler scheduler = new TaskScheduler(plugin);
+
         this.dispatcher = new SubCommandDispatcher(
-                plugin.getMessages(),
+                messages,
                 List.of(
-                        new AddBuilderSubCommand(plugin),
-                        new BackupsSubCommand(plugin),
-                        new BuildersSubCommand(plugin),
-                        new DeleteSubCommand(plugin),
-                        new EditSubCommand(plugin),
-                        new FolderSubCommand(plugin),
-                        new HelpSubCommand(plugin),
-                        new ImportAllSubCommand(plugin),
-                        new ImportSubCommand(plugin),
-                        new InfoSubCommand(plugin),
-                        new ItemSubCommand(plugin),
-                        new RemoveBuilderSubCommand(plugin),
-                        new RemoveSpawnSubCommand(plugin),
-                        new RenameSubCommand(plugin),
-                        new SaveTemplateSubCommand(plugin),
-                        new SetCreatorSubCommand(plugin),
-                        new SetItemSubCommand(plugin),
-                        new SetPermissionSubCommand(plugin),
-                        new SetProjectSubCommand(plugin),
-                        new SetSpawnSubCommand(plugin),
-                        new SetStatusSubCommand(plugin),
-                        new TeleportSubCommand(plugin),
-                        new UnimportSubCommand(plugin)),
+                        new AddBuilderSubCommand(
+                                messages, worldService, menus, playerLookupService, prompts, scheduler),
+                        new BackupsSubCommand(messages, worldService, backupService, menus),
+                        new BuildersSubCommand(messages, worldService, menus),
+                        new DeleteSubCommand(messages, worldService, configService, menus),
+                        new EditSubCommand(messages, worldService, menus),
+                        new FolderSubCommand(messages, worldService, navigatorCategoryRegistry, prompts),
+                        new HelpSubCommand(messages, logger),
+                        new ImportAllSubCommand(messages, worldService, playerLookupService, scheduler),
+                        new ImportSubCommand(messages, worldService, configService, playerLookupService, scheduler),
+                        new InfoSubCommand(messages, worldService),
+                        new ItemSubCommand(messages, worldService, navigatorItems),
+                        new RemoveBuilderSubCommand(messages, worldService, playerLookupService, prompts, scheduler),
+                        new RemoveSpawnSubCommand(messages, worldService),
+                        new RenameSubCommand(messages, worldService, prompts),
+                        new SaveTemplateSubCommand(
+                                messages, worldService, configService, dataFolder, logger, scheduler),
+                        new SetCreatorSubCommand(
+                                messages, worldService, playerLookupService, prompts, settingsService, scheduler),
+                        new SetItemSubCommand(messages, worldService),
+                        new SetPermissionSubCommand(
+                                messages, worldService, configService, menus, prompts, settingsService),
+                        new SetProjectSubCommand(messages, worldService, menus, prompts, settingsService),
+                        new SetSpawnSubCommand(messages, worldService),
+                        new SetStatusSubCommand(messages, worldService, menus),
+                        new TeleportSubCommand(messages, worldService),
+                        new UnimportSubCommand(messages, worldService)),
                 // Category shortcuts (/worlds <category>) are derived from the navigator categories; the static
                 // subcommands above are registered first so a category named like a real subcommand never shadows it.
-                new CategoryShortcuts(plugin));
+                new CategoryShortcuts(services));
     }
 
     @Override
@@ -69,7 +105,7 @@ public class WorldsCommand extends CommandBase {
             if (!requirePermission(player, "buildsystem.navigator")) {
                 return;
             }
-            new NavigatorMenu(plugin, player).open(player);
+            services.menus().openNavigator(player);
             XSound.BLOCK_CHEST_OPEN.play(player);
             return;
         }

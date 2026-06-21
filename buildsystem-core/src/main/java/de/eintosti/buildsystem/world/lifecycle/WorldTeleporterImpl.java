@@ -18,9 +18,9 @@
 package de.eintosti.buildsystem.world.lifecycle;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
+import de.eintosti.buildsystem.world.WorldContext;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -35,30 +35,30 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class WorldTeleporterImpl implements WorldTeleporter {
 
-    private final BuildSystemPlugin plugin;
+    private final WorldContext context;
     private final BuildWorld buildWorld;
 
-    private WorldTeleporterImpl(BuildSystemPlugin plugin, BuildWorld buildWorld) {
-        this.plugin = plugin;
+    private WorldTeleporterImpl(WorldContext context, BuildWorld buildWorld) {
+        this.context = context;
         this.buildWorld = buildWorld;
     }
 
     @Contract("_, _ -> new")
-    public static WorldTeleporterImpl of(BuildSystemPlugin plugin, BuildWorld buildWorld) {
-        return new WorldTeleporterImpl(plugin, buildWorld);
+    public static WorldTeleporterImpl of(WorldContext context, BuildWorld buildWorld) {
+        return new WorldTeleporterImpl(context, buildWorld);
     }
 
     @Override
     public void teleport(Player player) {
         boolean hadToLoad = false;
-        if (plugin.getConfigService().current().world().unload().enabled() && !buildWorld.isLoaded()) {
+        if (context.configService().current().world().unload().enabled() && !buildWorld.isLoaded()) {
             buildWorld.getLoader().loadForPlayer(player);
             hadToLoad = true;
         }
 
         World bukkitWorld = Bukkit.getServer().getWorld(buildWorld.getName());
         if (bukkitWorld == null) {
-            plugin.getMessages().sendMessage(player, "worlds_tp_unknown_world");
+            context.messages().sendMessage(player, "worlds_tp_unknown_world");
             return;
         }
 
@@ -92,9 +92,8 @@ public class WorldTeleporterImpl implements WorldTeleporter {
         }
 
         Location finalLocation = location;
-        Bukkit.getScheduler()
-                .runTaskLater(
-                        plugin,
+        context.scheduler()
+                .runLater(
                         () -> PaperLib.teleportAsync(player, finalLocation).whenComplete((completed, throwable) -> {
                             if (!completed) {
                                 return;

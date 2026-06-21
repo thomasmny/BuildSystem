@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.CategorySubCommand;
 import de.eintosti.buildsystem.world.display.CategoryPermissions;
@@ -35,24 +35,33 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class CategoryShortcuts implements DynamicSubCommands {
 
-    private final BuildSystemPlugin plugin;
+    private final Services services;
 
-    public CategoryShortcuts(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+    public CategoryShortcuts(Services services) {
+        this.services = services;
     }
 
     @Override
     public Optional<SubCommand> resolve(String name) {
-        return plugin.getNavigatorCategoryRegistry()
+        return services.navigatorCategoryRegistry()
                 .getCategory(name.toLowerCase(Locale.ROOT))
-                .map(category -> new CategorySubCommand(plugin, category.getId()));
+                .map(category -> categoryCommand(category.getId()));
     }
 
     @Override
     public List<SubCommand> available(Player player) {
-        return plugin.getNavigatorCategoryRegistry().getCategories().stream()
+        return services.navigatorCategoryRegistry().getCategories().stream()
                 .filter(category -> CategoryPermissions.canAccess(player, category.getId()))
-                .<SubCommand>map(category -> new CategorySubCommand(plugin, category.getId()))
+                .<SubCommand>map(category -> categoryCommand(category.getId()))
                 .toList();
+    }
+
+    private CategorySubCommand categoryCommand(String categoryId) {
+        return new CategorySubCommand(
+                services.messages(),
+                services.world(),
+                services.navigatorCategoryRegistry(),
+                services.menus(),
+                categoryId);
     }
 }

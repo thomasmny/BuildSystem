@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.world;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.BuildWorldStatusChangeEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldPermissions;
@@ -29,6 +28,7 @@ import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
@@ -65,14 +65,14 @@ public final class BuildWorldImpl implements BuildWorld {
 
     private final long creation;
 
-    private final BuildSystemPlugin plugin;
+    private final WorldContext context;
     private final WorldLoaderImpl worldLoader;
     private final WorldUnloaderImpl worldUnloader;
     private final WorldPermissionsImpl worldPermissions;
     private final WorldTeleporterImpl worldTeleporter;
 
     public BuildWorldImpl(
-            BuildSystemPlugin plugin,
+            WorldContext context,
             String name,
             @Nullable Builder creator,
             BuildWorldType worldType,
@@ -81,11 +81,11 @@ public final class BuildWorldImpl implements BuildWorld {
             @Nullable CustomGenerator customGenerator,
             @Nullable Folder folder) {
         this(
-                plugin,
+                context,
                 UUID.randomUUID(),
                 name,
                 worldType,
-                defaultWorldData(plugin, name, worldType, privateWorld),
+                defaultWorldData(context, name, worldType, privateWorld),
                 creator,
                 new ArrayList<>(),
                 creation,
@@ -99,8 +99,8 @@ public final class BuildWorldImpl implements BuildWorld {
      * local instead of being re-walked for every field.
      */
     private static WorldDataImpl defaultWorldData(
-            BuildSystemPlugin plugin, String name, BuildWorldType worldType, boolean privateWorld) {
-        var defaults = plugin.getConfigService().current().world().defaults();
+            WorldContext context, String name, BuildWorldType worldType, boolean privateWorld) {
+        var defaults = context.configService().current().world().defaults();
         String permission = (privateWorld
                         ? defaults.permission().privatePermission()
                         : defaults.permission().publicPermission())
@@ -110,11 +110,11 @@ public final class BuildWorldImpl implements BuildWorld {
                 : defaults.buildersEnabled().publicBuilders();
         return new WorldDataBuilder(name)
                 .withVisibility(Visibility.matchVisibility(privateWorld))
-                .withStatus(plugin.getWorldStatusRegistry().getDefaultStatus())
+                .withStatus(context.statusRegistry().getDefaultStatus())
                 .withMaterial(
                         privateWorld
                                 ? XMaterial.PLAYER_HEAD
-                                : plugin.getCustomizableIcons().getIcon(worldType))
+                                : context.customizableIcons().getIcon(worldType))
                 .withPermission(permission)
                 .withDifficulty(defaults.difficulty())
                 .withBlockBreaking(defaults.blockBreaking())
@@ -125,14 +125,14 @@ public final class BuildWorldImpl implements BuildWorld {
                 .withPhysics(defaults.physics())
                 .withBuildersEnabled(buildersEnabled)
                 .withPermissionOverrideEnabled(
-                        () -> plugin.getConfigService().current().folder().overridePermissions())
+                        () -> context.configService().current().folder().overridePermissions())
                 .withProjectOverrideEnabled(
-                        () -> plugin.getConfigService().current().folder().overrideProjects())
+                        () -> context.configService().current().folder().overrideProjects())
                 .build();
     }
 
     public BuildWorldImpl(
-            BuildSystemPlugin plugin,
+            WorldContext context,
             UUID uuid,
             String name,
             BuildWorldType worldType,
@@ -142,26 +142,24 @@ public final class BuildWorldImpl implements BuildWorld {
             long creation,
             @Nullable CustomGenerator customGenerator,
             @Nullable Folder folder) {
-        this.plugin = plugin;
+        this.context = context;
         this.uuid = uuid;
         this.name = name;
         this.worldType = worldType;
         this.worldData = worldData;
-        this.builders = new BuildersImpl(plugin.getMessages(), creator, builders);
+        this.builders = new BuildersImpl(context.messages(), creator, builders);
         this.creation = creation;
         this.customGenerator = customGenerator;
         this.folder = folder;
 
         this.worldData.setFolderResolver(this::getFolder);
-        this.worldData.setStatusChangeListener((previousStatus, newStatus) -> {
-            Bukkit.getServer()
-                    .getPluginManager()
-                    .callEvent(new BuildWorldStatusChangeEvent(this, previousStatus, newStatus));
-        });
-        this.worldLoader = WorldLoaderImpl.of(plugin, this);
-        this.worldUnloader = WorldUnloaderImpl.of(plugin, this);
-        this.worldPermissions = WorldPermissionsImpl.of(plugin, this);
-        this.worldTeleporter = WorldTeleporterImpl.of(plugin, this);
+        this.worldData.setStatusChangeListener((previousStatus, newStatus) -> Bukkit.getServer()
+                .getPluginManager()
+                .callEvent(new BuildWorldStatusChangeEvent(this, previousStatus, newStatus)));
+        this.worldLoader = WorldLoaderImpl.of(context, this);
+        this.worldUnloader = WorldUnloaderImpl.of(context, this);
+        this.worldPermissions = WorldPermissionsImpl.of(context, this);
+        this.worldTeleporter = WorldTeleporterImpl.of(context, this);
         this.worldUnloader.manageUnload();
     }
 
@@ -192,29 +190,30 @@ public final class BuildWorldImpl implements BuildWorld {
 
     @Override
     public XMaterial getIcon() {
-        return this.worldData.getMaterial();
+        return this.worldData.get(WorldDataKey.MATERIAL);
     }
 
     @Override
     public void setIcon(XMaterial material) {
-        this.worldData.setMaterial(material);
+        this.worldData.set(WorldDataKey.MATERIAL, material);
     }
 
     @Override
     public @Nullable String getIconSkullTexture() {
-        return this.worldData.getIconSkullTexture();
+        String texture = this.worldData.get(WorldDataKey.ICON_SKULL_TEXTURE);
+        return texture.isBlank() ? null : texture;
     }
 
     @Override
     public void setIconSkullTexture(@Nullable String skullTexture) {
-        this.worldData.setIconSkullTexture(skullTexture);
+        this.worldData.set(WorldDataKey.ICON_SKULL_TEXTURE, skullTexture == null ? "" : skullTexture);
     }
 
     @Override
     public String getDisplayName(Player player) {
-        String title = plugin.getMessages().getString("world_item_title", player, Map.entry("%world%", this.name));
-        if (this.worldData.isPinned()) {
-            return plugin.getMessages().getString("world_item_pinned_prefix", player) + title;
+        String title = context.messages().getString("world_item_title", player, Map.entry("%world%", this.name));
+        if (this.worldData.get(WorldDataKey.PINNED)) {
+            return context.messages().getString("world_item_pinned_prefix", player) + title;
         }
         return title;
     }
@@ -223,21 +222,27 @@ public final class BuildWorldImpl implements BuildWorld {
     public List<String> getLore(Player player) {
         @SuppressWarnings("unchecked")
         Map.Entry<String, Object>[] placeholders = List.of(
-                        Map.entry("%status%", worldData.getStatus().getStyledName()),
-                        Map.entry("%project%", worldData.getProject()),
-                        Map.entry("%permission%", worldData.getPermission()),
+                        Map.entry("%status%", worldData.get(WorldDataKey.STATUS).getStyledName()),
+                        Map.entry("%project%", worldData.get(WorldDataKey.PROJECT)),
+                        Map.entry("%permission%", worldData.get(WorldDataKey.PERMISSION)),
                         Map.entry(
                                 "%creator%",
-                                builders.hasCreator() ? builders.getCreator().getName() : "-"),
-                        Map.entry("%creation%", plugin.getMessages().formatDate(getCreation())),
-                        Map.entry("%lastedited%", plugin.getMessages().formatDate(worldData.getLastEdited())),
-                        Map.entry("%lastloaded%", plugin.getMessages().formatDate(worldData.getLastLoaded())),
-                        Map.entry("%lastunloaded%", plugin.getMessages().formatDate(worldData.getLastUnloaded())))
+                                builders.getCreator() != null
+                                        ? builders.getCreator().getName()
+                                        : "-"),
+                        Map.entry("%creation%", context.messages().formatDate(getCreation())),
+                        Map.entry(
+                                "%lastedited%", context.messages().formatDate(worldData.get(WorldDataKey.LAST_EDITED))),
+                        Map.entry(
+                                "%lastloaded%", context.messages().formatDate(worldData.get(WorldDataKey.LAST_LOADED))),
+                        Map.entry(
+                                "%lastunloaded%",
+                                context.messages().formatDate(worldData.get(WorldDataKey.LAST_UNLOADED))))
                 .toArray(Map.Entry[]::new);
 
         List<String> messageList = getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())
-                ? plugin.getMessages().getStringList("world_item_lore_edit", player, placeholders)
-                : plugin.getMessages().getStringList("world_item_lore_normal", player, placeholders);
+                ? context.messages().getStringList("world_item_lore_edit", player, placeholders)
+                : context.messages().getStringList("world_item_lore_normal", player, placeholders);
 
         List<String> lore = new ArrayList<>();
 
@@ -260,7 +265,7 @@ public final class BuildWorldImpl implements BuildWorld {
 
     @Override
     public void addToInventory(Inventory inventory, int slot, Player player) {
-        plugin.getMenuItems().renderDisplayable(inventory, slot, this, player);
+        context.menuItems().renderDisplayable(inventory, slot, this, player);
     }
 
     /**
@@ -270,7 +275,7 @@ public final class BuildWorldImpl implements BuildWorld {
     @Override
     public Profileable getHeadProfile() {
         Builder creator = builders.getCreator();
-        if (worldData.getVisibility().isPrivate() && creator != null) {
+        if (worldData.get(WorldDataKey.VISIBILITY).isPrivate() && creator != null) {
             return Profileable.of(creator.getUniqueId());
         }
         return Profileable.username(name);
@@ -310,13 +315,13 @@ public final class BuildWorldImpl implements BuildWorld {
     @Override
     public Difficulty cycleDifficulty() {
         Difficulty newDifficulty =
-                switch (worldData.getDifficulty()) {
+                switch (worldData.get(WorldDataKey.DIFFICULTY)) {
                     case PEACEFUL -> Difficulty.EASY;
                     case EASY -> Difficulty.NORMAL;
                     case NORMAL -> Difficulty.HARD;
                     case HARD -> Difficulty.PEACEFUL;
                 };
-        worldData.setDifficulty(newDifficulty);
+        worldData.set(WorldDataKey.DIFFICULTY, newDifficulty);
         return newDifficulty;
     }
 

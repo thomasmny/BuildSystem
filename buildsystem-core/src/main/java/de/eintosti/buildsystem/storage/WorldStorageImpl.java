@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.storage;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import java.io.File;
 import java.util.Collection;
@@ -130,7 +131,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
     @Unmodifiable
     public List<BuildWorld> getBuildWorldsCreatedByPlayer(Player player, Visibility visibility) {
         return getBuildWorldsCreatedByPlayer(player).stream()
-                .filter(buildWorld -> buildWorld.getData().getVisibility() == visibility)
+                .filter(buildWorld -> buildWorld.getData().get(WorldDataKey.VISIBILITY) == visibility)
                 .toList();
     }
 }

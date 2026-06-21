@@ -17,14 +17,15 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -36,16 +37,16 @@ public class ExplosionsCommand extends CommandBase {
 
     private final WorldStorageImpl worldStorage;
 
-    public ExplosionsCommand(BuildSystemPlugin plugin) {
-        super(plugin, true);
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public ExplosionsCommand(Messages messages, Logger logger, WorldStorageImpl worldStorage) {
+        super(messages, logger, true);
+        this.worldStorage = worldStorage;
     }
 
     @Override
     protected void run(Player player, String label, String[] args) {
         String worldName = worldNameFromArgs(player, args, 0);
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
-        if (!WorldPermissionsImpl.of(plugin, buildWorld).canPerformCommand(player, "buildsystem.explosions")) {
+        if (buildWorld != null && !buildWorld.getPermissions().canPerformCommand(player, "buildsystem.explosions")) {
             messages.sendPermissionError(player);
             return;
         }
@@ -81,11 +82,11 @@ public class ExplosionsCommand extends CommandBase {
         }
 
         WorldData worldData = buildWorld.getData();
-        if (!worldData.isExplosions()) {
-            worldData.setExplosions(true);
+        if (!worldData.get(WorldDataKey.EXPLOSIONS)) {
+            worldData.set(WorldDataKey.EXPLOSIONS, true);
             messages.sendMessage(player, "explosions_activated", Map.entry("%world%", buildWorld.getName()));
         } else {
-            worldData.setExplosions(false);
+            worldData.set(WorldDataKey.EXPLOSIONS, false);
             messages.sendMessage(player, "explosions_deactivated", Map.entry("%world%", buildWorld.getName()));
         }
     }

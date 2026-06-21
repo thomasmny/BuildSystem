@@ -17,10 +17,9 @@
  */
 package de.eintosti.buildsystem.command.subcommand;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -31,12 +30,12 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public abstract class AbstractSubCommand implements SubCommand {
 
-    protected final BuildSystemPlugin plugin;
     protected final Messages messages;
+    protected final WorldServiceImpl worldService;
 
-    protected AbstractSubCommand(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        this.messages = plugin.getMessages();
+    protected AbstractSubCommand(Messages messages, WorldServiceImpl worldService) {
+        this.messages = messages;
+        this.worldService = worldService;
     }
 
     /**
@@ -53,9 +52,11 @@ public abstract class AbstractSubCommand implements SubCommand {
      */
     protected @Nullable BuildWorld requireWorld(
             Player player, String worldName, String[] args, int maxArgs, String messageKeyPrefix) {
-        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(worldName);
-        if (!WorldPermissionsImpl.of(plugin, buildWorld)
-                .canPerformCommand(player, getArgument().getPermission())) {
+        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
+        if (buildWorld != null
+                && !buildWorld
+                        .getPermissions()
+                        .canPerformCommand(player, getArgument().getPermission())) {
             messages.sendPermissionError(player);
             return null;
         }

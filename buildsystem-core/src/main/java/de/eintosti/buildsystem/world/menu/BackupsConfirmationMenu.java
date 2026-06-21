@@ -19,8 +19,9 @@ package de.eintosti.buildsystem.world.menu;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.backup.Backup;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
@@ -38,10 +39,10 @@ public class BackupsConfirmationMenu extends ButtonMenu<MenuButton> {
     private final Backup backup;
     private final String dateFormat;
 
-    public BackupsConfirmationMenu(BuildSystemPlugin plugin, Backup backup, Player player) {
-        super(plugin.getMessages(), 27, plugin.getMessages().getString("restore_backup_title", player));
+    public BackupsConfirmationMenu(Messages messages, ConfigService configService, Backup backup, Player player) {
+        super(messages, 27, messages.getString("restore_backup_title", player));
         this.backup = backup;
-        this.dateFormat = plugin.getConfigService().current().settings().dateFormat();
+        this.dateFormat = configService.current().settings().dateFormat();
 
         register(
                 SLOT_CONFIRM,

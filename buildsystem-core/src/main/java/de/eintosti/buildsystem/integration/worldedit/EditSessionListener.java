@@ -23,8 +23,8 @@ import com.sk89q.worldedit.event.extent.EditSessionEvent;
 import com.sk89q.worldedit.extension.platform.Actor;
 import com.sk89q.worldedit.extent.NullExtent;
 import com.sk89q.worldedit.util.eventbus.Subscribe;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -39,8 +39,8 @@ public class EditSessionListener implements Listener {
     private final WorldStorageImpl worldStorage;
     private final WorldProtectionPolicy policy;
 
-    public EditSessionListener(BuildSystemPlugin plugin) {
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public EditSessionListener(WorldStorageImpl worldStorage) {
+        this.worldStorage = worldStorage;
         this.policy = new WorldProtectionPolicy();
         WorldEdit.getInstance().getEventBus().register(this);
     }
@@ -67,11 +67,11 @@ public class EditSessionListener implements Listener {
         }
 
         if (buildWorld.getPermissions().hasAdminPermission(player)) {
-            buildWorld.getData().setLastEdited(System.currentTimeMillis());
+            buildWorld.getData().set(WorldDataKey.LAST_EDITED, System.currentTimeMillis());
             return;
         }
 
-        if (policy.checkArchive(player, buildWorld) == Denial.ARCHIVED) {
+        if (policy.checkStatus(player, buildWorld) == Denial.STATUS_LOCKED) {
             event.setExtent(new NullExtent());
             return;
         }
@@ -81,6 +81,6 @@ public class EditSessionListener implements Listener {
             return;
         }
 
-        buildWorld.getData().setLastEdited(System.currentTimeMillis());
+        buildWorld.getData().set(WorldDataKey.LAST_EDITED, System.currentTimeMillis());
     }
 }

@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.creation;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.WorldBuilder;
@@ -25,8 +24,10 @@ import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
+import de.eintosti.buildsystem.world.WorldContext;
 import java.io.File;
 import java.util.Map;
 import org.bukkit.Bukkit;
@@ -42,10 +43,12 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
 
     private static final String TEMPLATES_DIRECTORY = "templates";
 
+    private final File dataFolder;
     private @Nullable String template = null;
 
-    public WorldBuilderImpl(BuildSystemPlugin plugin, String worldName) {
-        super(plugin, worldName, BuildWorldType.NORMAL);
+    public WorldBuilderImpl(WorldContext context, WorldStorageImpl worldStorage, File dataFolder, String worldName) {
+        super(context, worldStorage, worldName, BuildWorldType.NORMAL);
+        this.dataFolder = dataFolder;
     }
 
     @Override
@@ -156,7 +159,7 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
             notifyAudience(
                     "worlds_world_creation_started",
                     Map.entry("%world%", worldName),
-                    Map.entry("%type%", plugin.getMessages().getString(Messages.getMessageKey(worldType), audience)));
+                    Map.entry("%type%", context.messages().getString(Messages.getMessageKey(worldType), audience)));
         }
         buildWorld = createAndRegisterBuildWorld();
         generateBukkitWorld(false);
@@ -168,8 +171,8 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
             throw new IllegalStateException("Attempted to create a template world without a template name");
         }
 
-        File templatesDir = new File(plugin.getDataFolder(), TEMPLATES_DIRECTORY);
-        File templateFile = new File(plugin.getDataFolder(), TEMPLATES_DIRECTORY + File.separator + template);
+        File templatesDir = new File(dataFolder, TEMPLATES_DIRECTORY);
+        File templateFile = new File(dataFolder, TEMPLATES_DIRECTORY + File.separator + template);
         if (StringCleaner.isPathEscape(templatesDir, templateFile)) {
             notifyAudience("worlds_template_does_not_exist");
             return false;

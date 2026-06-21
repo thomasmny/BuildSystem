@@ -21,9 +21,12 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.yaml.YamlStatusStorage;
 import de.eintosti.buildsystem.util.StringUtils;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -64,14 +68,20 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
             "archive", 14,
             "hidden", 15);
 
-    private final BuildSystemPlugin plugin;
     private final NavigatorCategoryRegistryImpl categoryRegistry;
+    private final Messages messages;
+    private final Supplier<WorldServiceImpl> worldService;
     private final YamlStatusStorage storage;
     private final Map<String, WorldStatusImpl> statuses = new LinkedHashMap<>();
 
-    public WorldStatusRegistryImpl(BuildSystemPlugin plugin, NavigatorCategoryRegistryImpl categoryRegistry) {
-        this.plugin = plugin;
+    public WorldStatusRegistryImpl(
+            BuildSystemPlugin plugin,
+            NavigatorCategoryRegistryImpl categoryRegistry,
+            Messages messages,
+            Supplier<WorldServiceImpl> worldService) {
         this.categoryRegistry = categoryRegistry;
+        this.messages = messages;
+        this.worldService = worldService;
         this.storage = new YamlStatusStorage(plugin);
 
         this.statuses.putAll(storage.load());
@@ -127,7 +137,7 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
      * colour and name separate. Falls back to the supplied defaults when no legacy key is present.
      */
     private String[] migrateLegacyName(String id, String defaultName, String defaultColor) {
-        Optional<String> legacy = plugin.getMessages().findRaw("status_" + id);
+        Optional<String> legacy = messages.findRaw("status_" + id);
         if (legacy.isEmpty() || legacy.get().isBlank()) {
             return new String[] {defaultColor, defaultName};
         }
@@ -283,8 +293,9 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
      * Lists the loaded worlds currently using the given status, for the deletion confirmation prompt.
      */
     public List<BuildWorld> worldsWithStatus(String id) {
-        return plugin.getWorldService().getWorldStorage().getBuildWorlds().stream()
-                .filter(world -> world.getData().getStatus().getId().equals(id))
+        return worldService.get().getWorldStorage().getBuildWorlds().stream()
+                .filter(world ->
+                        world.getData().get(WorldDataKey.STATUS).getId().equals(id))
                 .toList();
     }
 
@@ -297,15 +308,15 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
      * @return {@code true} if the status was deleted, {@code false} if it was unknown or the last remaining status
      */
     public boolean deleteStatus(String id) {
-        if (!this.statuses.containsKey(id) || this.statuses.size() <= 1) {
+        if (!this.statuses.containsKey(id) || this.statuses.size() == 1) {
             return false;
         }
 
         this.statuses.remove(id);
         BuildWorldStatus fallback = getDefaultStatus();
         for (BuildWorld world : worldsWithStatus(id)) {
-            world.getData().setStatus(fallback);
-            plugin.getWorldService().getWorldStorage().save(world);
+            world.getData().set(WorldDataKey.STATUS, fallback);
+            worldService.get().getWorldStorage().save(world);
         }
 
         clearDanglingProgression(id);

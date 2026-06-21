@@ -18,22 +18,34 @@
 package de.eintosti.buildsystem.test;
 
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Prompts;
+import de.eintosti.buildsystem.player.PlayerLookupService;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.data.WorldStatusImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
+import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
+import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
+import org.bukkit.plugin.Plugin;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -125,12 +137,11 @@ public final class TestData {
      * @param plugin The mocked plugin to wire
      * @return The mocked registry, for further stubbing if needed
      */
-    public static WorldStatusRegistryImpl stubStatusRegistry(BuildSystemPlugin plugin) {
+    public static WorldStatusRegistryImpl statusRegistry() {
         WorldStatusRegistryImpl registry = mock(WorldStatusRegistryImpl.class);
         lenient().when(registry.getStatuses()).thenReturn(List.copyOf(STATUSES));
         lenient().when(registry.getDefaultStatus()).thenReturn(NOT_STARTED);
         lenient().when(registry.getStatus(anyString())).thenAnswer(invocation -> byId(invocation.getArgument(0)));
-        when(plugin.getWorldStatusRegistry()).thenReturn(registry);
         return registry;
     }
 
@@ -141,15 +152,65 @@ public final class TestData {
      * @param plugin The mocked plugin to wire
      * @return The mocked registry, for further stubbing if needed
      */
-    public static NavigatorCategoryRegistryImpl stubCategoryRegistry(BuildSystemPlugin plugin) {
+    public static NavigatorCategoryRegistryImpl categoryRegistry() {
         NavigatorCategoryRegistryImpl registry = mock(NavigatorCategoryRegistryImpl.class);
         lenient().when(registry.getCategories()).thenReturn(List.copyOf(CATEGORIES));
         lenient().when(registry.getDefaultCategory()).thenReturn(PUBLIC);
         lenient()
                 .when(registry.getCategory(anyString()))
                 .thenAnswer(invocation -> categoryById(invocation.getArgument(0)));
-        when(plugin.getNavigatorCategoryRegistry()).thenReturn(registry);
         return registry;
+    }
+
+    /**
+     * A {@link WorldContext} wired with mocked collaborators, for tests that build {@link BuildWorldImpl}/
+     * {@code FolderImpl} or a codec/storage. The config returns a valid unload time so world construction does not
+     * throw, and the status registry resolves the built-in statuses.
+     *
+     * @return A ready-to-use mocked context
+     */
+    public static WorldContext worldContext() {
+        ConfigService configService = mock(ConfigService.class, RETURNS_DEEP_STUBS);
+        lenient()
+                .when(configService.current().world().unload().timeUntilUnload())
+                .thenReturn("06:00:00");
+        return new WorldContext(
+                mock(Messages.class, RETURNS_DEEP_STUBS),
+                mock(MenuItems.class),
+                configService,
+                mock(PlayerServiceImpl.class),
+                mock(SpawnService.class),
+                statusRegistry(),
+                mock(CustomizableIcons.class),
+                new TaskScheduler(mock(Plugin.class)),
+                Logger.getLogger("BuildSystemTest"));
+    }
+
+    /**
+     * A mocked {@link Services} registry wired with the {@link #worldContext()} and the collaborators the storages and
+     * world service resolve from it, so a test can construct those without standing up the real service graph.
+     *
+     * @return A ready-to-use mocked registry
+     */
+    public static Services mockServices() {
+        // Build every collaborator (some of which stub themselves) into locals first: creating or stubbing a mock
+        // inside a thenReturn(...) argument, while the outer when(...) is still open, dangles that nested stubbing and
+        // trips Mockito's UnfinishedStubbingException.
+        WorldContext context = worldContext();
+        NavigatorCategoryRegistryImpl categoryRegistry = categoryRegistry();
+        PlayerLookupService playerLookup = mock(PlayerLookupService.class);
+        Prompts prompts = mock(Prompts.class);
+        Services services = mock(Services.class);
+        lenient().when(services.worldContext()).thenReturn(context);
+        lenient().when(services.config()).thenReturn(context.configService());
+        lenient().when(services.messages()).thenReturn(context.messages());
+        lenient().when(services.player()).thenReturn(context.playerService());
+        lenient().when(services.spawn()).thenReturn(context.spawnService());
+        lenient().when(services.worldStatusRegistry()).thenReturn((WorldStatusRegistryImpl) context.statusRegistry());
+        lenient().when(services.navigatorCategoryRegistry()).thenReturn(categoryRegistry);
+        lenient().when(services.playerLookup()).thenReturn(playerLookup);
+        lenient().when(services.prompts()).thenReturn(prompts);
+        return services;
     }
 
     private static Optional<BuildWorldStatus> byId(String id) {

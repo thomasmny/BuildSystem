@@ -18,16 +18,17 @@
 package de.eintosti.buildsystem.world.creation;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.WorldBuilder;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
+import java.util.function.Supplier;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -39,12 +40,14 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class WorldCreationPrompts {
 
-    private final BuildSystemPlugin plugin;
     private final WorldServiceImpl worldService;
+    private final Supplier<Prompts> prompts;
+    private final Messages messages;
 
-    public WorldCreationPrompts(BuildSystemPlugin plugin, WorldServiceImpl worldService) {
-        this.plugin = plugin;
+    public WorldCreationPrompts(WorldServiceImpl worldService, Supplier<Prompts> prompts, Messages messages) {
         this.worldService = worldService;
+        this.prompts = prompts;
+        this.messages = messages;
     }
 
     public void startWorldNameInput(
@@ -54,13 +57,11 @@ public class WorldCreationPrompts {
             boolean privateWorld,
             @Nullable Folder folder) {
         player.closeInventory();
-        PlayerChatInput.requestSanitizedName(
-                plugin,
-                player,
-                "enter_world_name",
-                "worlds_world_creation_invalid_characters",
-                "worlds_world_creation_name_bank",
-                worldName -> {
+        prompts.get()
+                .prompt(player)
+                .title("enter_world_name")
+                .sanitizeName("worlds_world_creation_invalid_characters", "worlds_world_creation_name_bank")
+                .request(worldName -> {
                     if (worldType == BuildWorldType.CUSTOM) {
                         startCustomGeneratorInput(player, worldName, template, privateWorld, folder);
                     } else {
@@ -78,20 +79,20 @@ public class WorldCreationPrompts {
 
     private void startCustomGeneratorInput(
             Player player, String worldName, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
-        new PlayerChatInput(plugin, player, "enter_generator_name", input -> {
+        prompts.get().prompt(player).title("enter_generator_name").request(input -> {
             // Generator names are dynamic and cannot be pre-registered in plugin.yml, so default-allow is emulated: a
             // generator is permitted unless an admin has explicitly denied its specific node.
             String generatorNode = "buildsystem.create.generator." + input.trim();
             boolean allowed = !player.isPermissionSet(generatorNode) || player.hasPermission(generatorNode);
             if (!allowed) {
-                plugin.getMessages().sendPermissionError(player);
+                messages.sendPermissionError(player);
                 XSound.ENTITY_ITEM_BREAK.play(player);
                 return;
             }
 
             CustomGenerator customGenerator = CustomGeneratorImpl.of(input, worldName);
             if (customGenerator == null) {
-                plugin.getMessages().sendMessage(player, "worlds_import_unknown_generator");
+                messages.sendMessage(player, "worlds_import_unknown_generator");
                 XSound.ENTITY_ITEM_BREAK.play(player);
                 return;
             }

@@ -19,13 +19,17 @@ package de.eintosti.buildsystem.world.menu.setup;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.color.ColorAPI;
+import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.List;
@@ -49,23 +53,31 @@ public class CategoryStatusesMenu extends PaginatedMenu {
     private static final int SLOT_PREVIOUS_PAGE = 52;
     private static final int SLOT_NEXT_PAGE = 53;
 
-    private final BuildSystemPlugin plugin;
+    private final MenuItems menuItems;
+    private final Menus menus;
     private final NavigatorCategoryRegistryImpl registry;
+    private final WorldStatusRegistryImpl worldStatusRegistry;
     private final NavigatorCategoryImpl category;
 
-    public CategoryStatusesMenu(BuildSystemPlugin plugin, Player player, NavigatorCategoryImpl category) {
-        super(
-                plugin.getMessages(),
-                INVENTORY_SIZE,
-                plugin.getMessages().getString("setup_category_statuses_title", player));
-        this.plugin = plugin;
-        this.registry = plugin.getNavigatorCategoryRegistry();
-        this.category = category;
+    public CategoryStatusesMenu(
+            Messages messages,
+            MenuItems menuItems,
+            Menus menus,
+            NavigatorCategoryRegistryImpl navigatorCategoryRegistry,
+            WorldStatusRegistryImpl worldStatusRegistry,
+            Player player,
+            NavigatorCategory category) {
+        super(messages, INVENTORY_SIZE, messages.getString("setup_category_statuses_title", player));
+        this.menuItems = menuItems;
+        this.menus = menus;
+        this.registry = navigatorCategoryRegistry;
+        this.worldStatusRegistry = worldStatusRegistry;
+        this.category = (NavigatorCategoryImpl) category;
     }
 
     @Override
     protected int totalItems() {
-        return plugin.getWorldStatusRegistry().getStatuses().size();
+        return worldStatusRegistry.getStatuses().size();
     }
 
     @Override
@@ -73,10 +85,9 @@ public class CategoryStatusesMenu extends PaginatedMenu {
         clearButtons();
 
         // Top + bottom glass border with a hollow middle, matching the status/category management menus.
-        plugin.getMenuItems().fillWithGlass(getInventory(), player);
+        menuItems.fillWithGlass(getInventory(), player);
 
-        List<BuildWorldStatus> statuses =
-                List.copyOf(plugin.getWorldStatusRegistry().getStatuses());
+        List<BuildWorldStatus> statuses = List.copyOf(worldStatusRegistry.getStatuses());
         registerPageItems(FIRST_CONTENT_SLOT, ITEMS_PER_PAGE, statuses, this::createStatusToggle);
 
         register(SLOT_BACK, createBackButton());
@@ -123,7 +134,7 @@ public class CategoryStatusesMenu extends PaginatedMenu {
                         .into(inventory, slot))
                 .onClick((player, event) -> {
                     XSound.BLOCK_CHEST_OPEN.play(player);
-                    new CategoryEditorMenu(plugin, player, category).open(player);
+                    menus.openCategoryEditor(category, player);
                 })
                 .build();
     }

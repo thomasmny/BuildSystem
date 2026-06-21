@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.test.TestData;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
@@ -39,22 +40,39 @@ class WorldDataAccessorTest {
     void valueAccessor_roundTrips() {
         WorldDataImpl data = worldData();
 
-        data.setStatus(TestData.FINISHED);
-        assertEquals(TestData.FINISHED, data.getStatus());
+        data.set(WorldDataKey.STATUS, TestData.FINISHED);
+        assertEquals(TestData.FINISHED, data.get(WorldDataKey.STATUS));
 
-        data.setStatus(TestData.ARCHIVE_STATUS);
-        assertEquals(TestData.ARCHIVE_STATUS, data.getStatus());
+        data.set(WorldDataKey.STATUS, TestData.ARCHIVE_STATUS);
+        assertEquals(TestData.ARCHIVE_STATUS, data.get(WorldDataKey.STATUS));
     }
 
     @Test
     void booleanAccessor_roundTrips() {
         WorldDataImpl data = worldData();
 
-        data.setPhysics(false);
-        assertFalse(data.isPhysics());
+        data.set(WorldDataKey.PHYSICS, false);
+        assertFalse(data.get(WorldDataKey.PHYSICS));
 
-        data.setPhysics(true);
-        assertTrue(data.isPhysics());
+        data.set(WorldDataKey.PHYSICS, true);
+        assertTrue(data.get(WorldDataKey.PHYSICS));
+    }
+
+    @Test
+    void get_returnsTheKeyTypedValue() {
+        WorldDataImpl data = worldData();
+
+        data.set(WorldDataKey.PERMISSION, "buildsystem.test");
+        // The key's type parameter carries through, so no cast is needed at the call site.
+        String permission = data.get(WorldDataKey.PERMISSION);
+        assertEquals("buildsystem.test", permission);
+    }
+
+    @Test
+    void unknownKey_isRejected() {
+        WorldDataImpl data = worldData();
+        WorldDataKey<String> unknown = WorldDataKey.of("not-a-real-key", String.class);
+        assertThrows(IllegalArgumentException.class, () -> data.get(unknown));
     }
 
     @Test

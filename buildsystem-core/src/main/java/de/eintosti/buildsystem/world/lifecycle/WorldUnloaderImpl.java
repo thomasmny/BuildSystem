@@ -17,12 +17,13 @@
  */
 package de.eintosti.buildsystem.world.lifecycle;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostUnloadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldUnloadEvent;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldUnloader;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.WorldContext;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
@@ -38,19 +39,19 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class WorldUnloaderImpl implements WorldUnloader {
 
-    private final BuildSystemPlugin plugin;
+    private final WorldContext context;
     private final BuildWorldImpl buildWorld;
 
     private final long secondsUntilUnload;
 
     private @Nullable BukkitTask unloadTask;
 
-    private WorldUnloaderImpl(BuildSystemPlugin plugin, BuildWorldImpl buildWorld) {
-        this.plugin = plugin;
+    private WorldUnloaderImpl(WorldContext context, BuildWorldImpl buildWorld) {
+        this.context = context;
         this.buildWorld = buildWorld;
 
         this.secondsUntilUnload = calculateSecondsUntilUnload(
-                plugin.getConfigService().current().world().unload().timeUntilUnload());
+                context.configService().current().world().unload().timeUntilUnload());
     }
 
     private static final long DEFAULT_SECONDS_UNTIL_UNLOAD = 3600;
@@ -76,20 +77,20 @@ public class WorldUnloaderImpl implements WorldUnloader {
     }
 
     private long warnAndFallBack(String timeString) {
-        plugin.getLogger()
+        context.logger()
                 .warning("Invalid world.unload.time-until-unload value \"" + timeString
                         + "\" (expected HH:mm:ss). Falling back to 01:00:00.");
         return DEFAULT_SECONDS_UNTIL_UNLOAD;
     }
 
     @Contract("_, _ -> new")
-    public static WorldUnloaderImpl of(BuildSystemPlugin plugin, BuildWorldImpl buildWorld) {
-        return new WorldUnloaderImpl(plugin, buildWorld);
+    public static WorldUnloaderImpl of(WorldContext context, BuildWorldImpl buildWorld) {
+        return new WorldUnloaderImpl(context, buildWorld);
     }
 
     @Override
     public void manageUnload() {
-        if (!plugin.getConfigService().current().world().unload().enabled()) {
+        if (!context.configService().current().world().unload().enabled()) {
             buildWorld.setLoaded(true);
             return;
         }
@@ -100,11 +101,11 @@ public class WorldUnloaderImpl implements WorldUnloader {
 
     @Override
     public void startUnloadTask() {
-        if (!plugin.getConfigService().current().world().unload().enabled()) {
+        if (!context.configService().current().world().unload().enabled()) {
             return;
         }
 
-        this.unloadTask = Bukkit.getScheduler().runTaskLater(plugin, this::unload, 20L * secondsUntilUnload);
+        this.unloadTask = context.scheduler().runLater(this::unload, 20L * secondsUntilUnload);
     }
 
     @Override
@@ -133,7 +134,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
             return;
         }
 
-        if (plugin.getConfigService()
+        if (context.configService()
                         .current()
                         .world()
                         .unload()
@@ -155,7 +156,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
             return;
         }
 
-        this.buildWorld.getData().setLastUnloaded(System.currentTimeMillis());
+        this.buildWorld.getData().set(WorldDataKey.LAST_UNLOADED, System.currentTimeMillis());
         this.buildWorld.setLoaded(false);
         this.unloadTask = null;
 
@@ -171,7 +172,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
         }
 
         if (!Bukkit.unloadWorld(bukkitWorld, save)) {
-            plugin.getLogger()
+            context.logger()
                     .warning("Failed to unload world \"" + this.buildWorld.getName()
                             + "\". It may still be loaded in memory.");
             return;
@@ -180,11 +181,11 @@ public class WorldUnloaderImpl implements WorldUnloader {
         Bukkit.getWorlds().remove(bukkitWorld);
 
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostUnloadEvent(this.buildWorld));
-        plugin.getLogger().info("*** Unloaded world \"" + this.buildWorld.getName() + "\" ***");
+        context.logger().info("*** Unloaded world \"" + this.buildWorld.getName() + "\" ***");
     }
 
     private boolean isSpawnWorld(World bukkitWorld) {
-        Location spawn = plugin.getSpawnService().getSpawn();
+        Location spawn = context.spawnService().getSpawn();
         if (spawn == null) {
             return false;
         }

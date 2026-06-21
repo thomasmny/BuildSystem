@@ -21,18 +21,22 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.inventory.XInventoryView;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import de.eintosti.buildsystem.world.menu.*;
 import java.util.Objects;
 import java.util.UUID;
 import org.bukkit.Material;
@@ -60,18 +64,32 @@ public class NavigatorListener implements Listener {
     private static final double MAX_HEIGHT = 2.074631929397583;
     private static final double MIN_HEIGHT = 1.4409877061843872;
 
-    private final BuildSystemPlugin plugin;
-
     private final NavigatorService navigatorService;
     private final SettingsService settingsManager;
     private final WorldStorage worldStorage;
+    private final NavigatorItems navigatorItems;
+    private final Messages messages;
+    private final Menus menus;
+    private final ConfigService configService;
+    private final PlayerService playerService;
 
-    public NavigatorListener(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-
-        this.navigatorService = plugin.getNavigatorService();
-        this.settingsManager = plugin.getSettingsService();
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public NavigatorListener(
+            NavigatorService navigatorService,
+            SettingsService settingsManager,
+            WorldStorage worldStorage,
+            NavigatorItems navigatorItems,
+            Messages messages,
+            Menus menus,
+            ConfigService configService,
+            PlayerService playerService) {
+        this.navigatorService = navigatorService;
+        this.settingsManager = settingsManager;
+        this.worldStorage = worldStorage;
+        this.navigatorItems = navigatorItems;
+        this.messages = messages;
+        this.menus = menus;
+        this.configService = configService;
+        this.playerService = playerService;
     }
 
     /**
@@ -91,10 +109,10 @@ public class NavigatorListener implements Listener {
             return;
         }
 
-        if (plugin.getMenuItems().isNavigator(itemStack)) {
+        if (navigatorItems.is(itemStack)) {
             event.setCancelled(true);
             if (!player.hasPermission("buildsystem.navigator.item")) {
-                plugin.getMessages().sendPermissionError(player);
+                messages.sendPermissionError(player);
                 return;
             }
             openNavigator(player);
@@ -108,37 +126,32 @@ public class NavigatorListener implements Listener {
         Settings settings = settingsManager.getSettings(player);
         switch (settings.getNavigatorType()) {
             case OLD -> {
-                new NavigatorMenu(plugin, player).open(player);
+                menus.openNavigator(player);
                 XSound.BLOCK_CHEST_OPEN.play(player);
             }
             case NEW -> {
                 if (navigatorService.isNavigatorOpen(player)) {
-                    plugin.getMessages().sendMessage(player, "worlds_navigator_open");
+                    messages.sendMessage(player, "worlds_navigator_open");
                     return;
                 }
 
                 summonNewNavigator(player);
-                String findItemName = plugin.getMessages().getString("navigator_item", player);
+                String findItemName = messages.getString("navigator_item", player);
                 ItemStack replaceItem = ItemBuilder.of(XMaterial.BARRIER)
-                        .name(plugin.getMessages().getString("barrier_item", player))
+                        .name(messages.getString("barrier_item", player))
                         .build();
-                plugin.getMenuItems()
-                        .replaceItem(
-                                player,
-                                findItemName,
-                                plugin.getConfigService()
-                                        .current()
-                                        .settings()
-                                        .navigator()
-                                        .item(),
-                                replaceItem);
+                navigatorItems.replace(
+                        player,
+                        findItemName,
+                        configService.current().settings().navigator().item(),
+                        replaceItem);
             }
         }
     }
 
     private void summonNewNavigator(Player player) {
         CachedValues cachedValues = BuildPlayerImpl.of(
-                        plugin.getPlayerService().getPlayerStorage().getBuildPlayer(player))
+                        playerService.getPlayerStorage().getBuildPlayer(player))
                 .getCachedValues();
         cachedValues.saveWalkSpeed(player.getWalkSpeed());
         cachedValues.saveFlySpeed(player.getFlySpeed());
@@ -192,7 +205,7 @@ public class NavigatorListener implements Listener {
             }
 
             XSound.BLOCK_CHEST_OPEN.play(player);
-            new CategoryWorldsMenu(plugin, player, category).open(player);
+            menus.openCategoryWorlds(category, player);
         }
     }
 
@@ -204,11 +217,11 @@ public class NavigatorListener implements Listener {
      */
     private void disableArchivedWorlds(Player player, Cancellable cancellable) {
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        if (buildWorld == null || buildWorld.getData().getStatus().isBuildingAllowed()) {
+        if (buildWorld == null || buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
             return;
         }
 
-        if (!plugin.getPlayerService().isInBuildMode(player)) {
+        if (!playerService.isInBuildMode(player)) {
             cancellable.setCancelled(true);
         }
     }
@@ -267,6 +280,6 @@ public class NavigatorListener implements Listener {
             return false;
         }
 
-        return itemMeta.getDisplayName().equals(plugin.getMessages().getString("barrier_item", player));
+        return itemMeta.getDisplayName().equals(messages.getString("barrier_item", player));
     }
 }

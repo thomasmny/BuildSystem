@@ -17,8 +17,9 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
 import java.util.*;
+import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
@@ -27,8 +28,8 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class GamemodeCommand extends CommandBase {
 
-    public GamemodeCommand(BuildSystemPlugin plugin) {
-        super(plugin, true);
+    public GamemodeCommand(Messages messages, Logger logger) {
+        super(messages, logger, true);
     }
 
     @Override

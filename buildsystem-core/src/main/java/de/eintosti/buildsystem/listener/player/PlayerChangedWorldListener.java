@@ -19,16 +19,18 @@ package de.eintosti.buildsystem.listener.player;
 
 import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.player.PlayerService;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
-import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -45,18 +47,26 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class PlayerChangedWorldListener implements Listener {
 
-    private final BuildSystemPlugin plugin;
     private final NavigatorService navigatorService;
-    private final PlayerServiceImpl playerManager;
+    private final PlayerService playerManager;
     private final SettingsService settingsManager;
-    private final WorldStorageImpl worldStorage;
+    private final WorldStorage worldStorage;
+    private final ConfigService configService;
+    private final Messages messages;
 
-    public PlayerChangedWorldListener(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        this.navigatorService = plugin.getNavigatorService();
-        this.playerManager = plugin.getPlayerService();
-        this.settingsManager = plugin.getSettingsService();
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public PlayerChangedWorldListener(
+            NavigatorService navigatorService,
+            PlayerService playerManager,
+            SettingsService settingsManager,
+            WorldStorage worldStorage,
+            ConfigService configService,
+            Messages messages) {
+        this.navigatorService = navigatorService;
+        this.playerManager = playerManager;
+        this.settingsManager = settingsManager;
+        this.worldStorage = worldStorage;
+        this.configService = configService;
+        this.messages = messages;
     }
 
     @EventHandler
@@ -67,17 +77,15 @@ public class PlayerChangedWorldListener implements Listener {
         event.getPlayer().setAllowFlight(true);
 
         BuildWorld oldWorld = worldStorage.getBuildWorld(event.getFrom());
-        if (oldWorld != null
-                && plugin.getConfigService().current().world().unload().enabled()) {
+        if (oldWorld != null && configService.current().world().unload().enabled()) {
             oldWorld.getUnloader().resetUnloadTask();
         }
 
         BuildWorld newWorld = worldStorage.getBuildWorld(worldName);
         if (newWorld != null
-                && !newWorld.getData().isPhysics()
+                && !newWorld.getData().get(WorldDataKey.PHYSICS)
                 && player.hasPermission("buildsystem.physics.message")) {
-            plugin.getMessages()
-                    .sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", newWorld.getName()));
+            messages.sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", newWorld.getName()));
         }
 
         removeOldNavigator(player);
@@ -106,13 +114,13 @@ public class PlayerChangedWorldListener implements Listener {
         cachedValues.resetGameModeIfPresent(player);
         cachedValues.resetInventoryIfPresent(player);
         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
-        plugin.getMessages().sendMessage(player, "build_deactivated_self");
+        messages.sendMessage(player, "build_deactivated_self");
     }
 
     private void setGoldBlock(@Nullable BuildWorld buildWorld) {
         if (buildWorld == null
                 || buildWorld.getType() != BuildWorldType.VOID
-                || !buildWorld.getData().getStatus().getId().equals(WorldStatusRegistry.NOT_STARTED_ID)) {
+                || !buildWorld.getData().get(WorldDataKey.STATUS).getId().equals(WorldStatusRegistry.NOT_STARTED_ID)) {
             return;
         }
 
@@ -136,14 +144,14 @@ public class PlayerChangedWorldListener implements Listener {
                 .getCachedValues();
         cachedValues.resetArchiveStateIfPresent(player);
 
-        if (!buildWorld.getData().getStatus().isBuildingAllowed()) {
+        if (!buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
             cachedValues.saveArchiveState(player);
 
             removeArmorContent(player);
             player.getInventory().clear();
             setSpectatorMode(player);
 
-            if (plugin.getConfigService().current().settings().archive().vanish()) {
+            if (configService.current().settings().archive().vanish()) {
                 player.addPotionEffect(
                         new PotionEffect(XPotion.INVISIBILITY.get(), PotionEffect.INFINITE_DURATION, 0, false, false),
                         false);
@@ -158,9 +166,8 @@ public class PlayerChangedWorldListener implements Listener {
     }
 
     private void setSpectatorMode(Player player) {
-        if (plugin.getConfigService().current().settings().archive().changeGamemode()) {
-            player.setGameMode(
-                    plugin.getConfigService().current().settings().archive().worldGameMode());
+        if (configService.current().settings().archive().changeGamemode()) {
+            player.setGameMode(configService.current().settings().archive().worldGameMode());
         }
         player.setSaturation(20);
         player.setHealth(20);

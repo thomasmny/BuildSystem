@@ -18,6 +18,10 @@
 package de.eintosti.buildsystem.listener;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
+import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.integration.axiom.WorldManipulateByAxiomListener;
 import de.eintosti.buildsystem.integration.worldedit.EditSessionListener;
 import de.eintosti.buildsystem.listener.color.AsyncPlayerChatListener;
@@ -29,7 +33,20 @@ import de.eintosti.buildsystem.listener.player.*;
 import de.eintosti.buildsystem.listener.settings.*;
 import de.eintosti.buildsystem.listener.world.*;
 import de.eintosti.buildsystem.menu.MenuListener;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
+import de.eintosti.buildsystem.navigator.NavigatorEditorService;
+import de.eintosti.buildsystem.navigator.NavigatorService;
+import de.eintosti.buildsystem.player.PlayerLookupService;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.player.noclip.NoClipService;
+import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.util.UpdateChecker;
+import de.eintosti.buildsystem.world.spawn.SpawnService;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.PluginManager;
 import org.jspecify.annotations.NullMarked;
 
@@ -37,52 +54,111 @@ import org.jspecify.annotations.NullMarked;
 public final class ListenerRegistrar {
 
     private final BuildSystemPlugin plugin;
+    private final Services services;
     private final PluginManager pluginManager;
 
-    public ListenerRegistrar(BuildSystemPlugin plugin) {
+    public ListenerRegistrar(BuildSystemPlugin plugin, Services services) {
         this.plugin = plugin;
+        this.services = services;
         this.pluginManager = plugin.getServer().getPluginManager();
     }
 
     public void registerAll() {
-        pluginManager.registerEvents(new AsyncPlayerChatListener(), plugin);
-        pluginManager.registerEvents(new AsyncPlayerPreLoginListener(plugin), plugin);
-        pluginManager.registerEvents(new BlockPhysicsListener(plugin), plugin);
-        pluginManager.registerEvents(new BuildModePreventationListener(plugin), plugin);
-        pluginManager.registerEvents(new BuildWorldResetUnloadListener(plugin), plugin);
-        pluginManager.registerEvents(new DisabledInteractionsListener(plugin), plugin);
-        pluginManager.registerEvents(new EntityDamageListener(plugin), plugin);
-        pluginManager.registerEvents(new EntitySpawnListener(plugin), plugin);
-        pluginManager.registerEvents(new FoodLevelChangeListener(plugin), plugin);
-        pluginManager.registerEvents(new InstantSignPlacementListener(plugin), plugin);
-        pluginManager.registerEvents(new InventoryCreativeListener(plugin), plugin);
-        pluginManager.registerEvents(new IronDoorListener(plugin), plugin);
-        pluginManager.registerEvents(new MenuListener(), plugin);
-        pluginManager.registerEvents(new PlayerChatInput.ChatInputListener(), plugin);
-        pluginManager.registerEvents(new NavigatorListener(plugin), plugin);
-        pluginManager.registerEvents(new PlayerChangedWorldListener(plugin), plugin);
-        pluginManager.registerEvents(new PlayerCommandPreprocessListener(plugin), plugin);
-        pluginManager.registerEvents(new PlayerInventoryClearListener(plugin), plugin);
-        pluginManager.registerEvents(new PlayerJoinListener(plugin), plugin);
-        pluginManager.registerEvents(new PlayerMoveListener(plugin), plugin);
-        pluginManager.registerEvents(new PlayerQuitListener(plugin), plugin);
-        pluginManager.registerEvents(new PlayerRespawnListener(plugin), plugin);
-        pluginManager.registerEvents(new PlayerTeleportListener(plugin), plugin);
-        pluginManager.registerEvents(new PlantPlacementListener(plugin), plugin);
-        pluginManager.registerEvents(new SignChangeListener(), plugin);
-        pluginManager.registerEvents(new SlabListener(plugin), plugin);
-        pluginManager.registerEvents(new WeatherChangeListener(plugin), plugin);
-        pluginManager.registerEvents(new WorldManipulateListener(plugin), plugin);
+        WorldStorageImpl worldStorage = services.world().getWorldStorage();
+        ConfigService configService = services.config();
+        SettingsService settingsService = services.settings();
+        WorldStatusRegistry worldStatusRegistry = services.worldStatusRegistry();
+        NavigatorItems navigatorItems = services.navigatorItems();
+        Menus menus = services.menus();
+        Messages messages = services.messages();
+        PlayerServiceImpl playerService = services.player();
+        NavigatorService navigatorService = services.navigator();
+        NavigatorEditorService navigatorEditorService = services.navigatorEditor();
+        NoClipService noClipService = services.noClip();
+        SpawnService spawnService = services.spawn();
+        TaskScheduler scheduler = new TaskScheduler(plugin);
+        PlayerLookupService playerLookupService = services.playerLookup();
+        UpdateChecker updateChecker = plugin.getUpdateChecker();
 
+        register(new AsyncPlayerChatListener());
+        register(new AsyncPlayerPreLoginListener(
+                playerService.getPlayerStorage(), spawnService, worldStorage, scheduler));
+        register(new BlockPhysicsListener(worldStorage, configService));
+        register(new BuildModePreventationListener(playerService, configService));
+        register(new BuildWorldResetUnloadListener(worldStorage));
+        register(new DisabledInteractionsListener(settingsService, worldStorage, configService));
+        register(new EntityDamageListener(configService, worldStorage));
+        register(new EntitySpawnListener(worldStorage));
+        register(new FoodLevelChangeListener(worldStorage));
+        register(new InstantSignPlacementListener(settingsService, worldStorage));
+        register(new InventoryCreativeListener(navigatorItems, scheduler));
+        register(new IronDoorListener(settingsService, worldStorage));
+        register(new MenuListener());
+        register(new PlayerChatInput.ChatInputListener());
+        register(new NavigatorListener(
+                navigatorService,
+                settingsService,
+                worldStorage,
+                navigatorItems,
+                messages,
+                menus,
+                configService,
+                playerService));
+        register(new PlayerChangedWorldListener(
+                navigatorService, playerService, settingsService, worldStorage, configService, messages));
+        register(new PlayerCommandPreprocessListener(
+                settingsService, worldStorage, navigatorItems, configService, messages, scheduler));
+        register(new PlayerInventoryClearListener(settingsService, navigatorItems));
+        register(new PlayerJoinListener(
+                playerService,
+                settingsService,
+                navigatorService,
+                spawnService,
+                worldStorage,
+                playerLookupService,
+                noClipService,
+                configService,
+                messages,
+                updateChecker,
+                scheduler));
+        register(new PlayerMoveListener(navigatorService, settingsService, scheduler));
+        register(new PlayerQuitListener(
+                playerService,
+                navigatorService,
+                navigatorEditorService,
+                noClipService,
+                settingsService,
+                configService,
+                messages));
+        register(new PlayerRespawnListener(settingsService, spawnService));
+        register(new PlayerTeleportListener(messages, playerService.getPlayerStorage(), worldStorage));
+        register(new PlantPlacementListener(settingsService, worldStorage));
+        register(new SignChangeListener());
+        register(new SlabListener(settingsService, worldStorage));
+        register(new WeatherChangeListener(configService));
+        register(new WorldManipulateListener(worldStorage, configService, worldStatusRegistry, settingsService));
+
+        registerIntegrations(configService);
+    }
+
+    private void register(Listener listener) {
+        pluginManager.registerEvents(listener, plugin);
+    }
+
+    /**
+     * Registers listeners that back optional third-party integrations, each guarded by the presence of the integrated
+     * plugin. {@link EditSessionListener} hooks WorldEdit's own event bus from its constructor, so it is created rather
+     * than registered through the {@link PluginManager}.
+     */
+    private void registerIntegrations(ConfigService configService) {
         if (pluginManager.getPlugin("AxiomPaper") != null) {
-            pluginManager.registerEvents(new WorldManipulateByAxiomListener(plugin), plugin);
+            register(new WorldManipulateByAxiomListener(services.world().getWorldStorage(), plugin.getLogger()));
         }
 
         boolean isWorldEdit =
                 pluginManager.getPlugin("WorldEdit") != null || pluginManager.getPlugin("FastAsyncWorldEdit") != null;
-        if (isWorldEdit
-                && plugin.getConfigService().current().settings().builder().blockWorldEditNonBuilder()) {
-            new EditSessionListener(plugin);
+        if (isWorldEdit && configService.current().settings().builder().blockWorldEditNonBuilder()) {
+            new EditSessionListener(services.world().getWorldStorage());
         }
     }
 }

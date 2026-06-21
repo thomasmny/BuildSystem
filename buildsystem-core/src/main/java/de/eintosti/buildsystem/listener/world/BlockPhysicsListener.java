@@ -18,9 +18,10 @@
 package de.eintosti.buildsystem.listener.world;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.util.DirectionUtil;
 import java.util.List;
 import org.bukkit.World;
@@ -40,17 +41,17 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class BlockPhysicsListener implements Listener {
 
-    private final BuildSystemPlugin plugin;
-    private final WorldStorageImpl worldStorage;
+    private final WorldStorage worldStorage;
+    private final ConfigService configService;
 
-    public BlockPhysicsListener(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public BlockPhysicsListener(WorldStorage worldStorage, ConfigService configService) {
+        this.worldStorage = worldStorage;
+        this.configService = configService;
     }
 
     private boolean physicsAllowed(World world) {
         BuildWorld buildWorld = worldStorage.getBuildWorld(world);
-        return buildWorld == null || buildWorld.getData().isPhysics();
+        return buildWorld == null || buildWorld.getData().get(WorldDataKey.PHYSICS);
     }
 
     @EventHandler
@@ -60,7 +61,7 @@ public class BlockPhysicsListener implements Listener {
             return;
         }
 
-        if (!plugin.getConfigService().current().world().disabledPhysics().preventConnections()) {
+        if (!configService.current().world().disabledPhysics().preventConnections()) {
             boolean canConnect =
                     switch (block.getBlockData()) {
                         case Fence fence -> true;
@@ -129,11 +130,7 @@ public class BlockPhysicsListener implements Listener {
         }
 
         if (event.getBlock().isLiquid()
-                && !plugin.getConfigService()
-                        .current()
-                        .world()
-                        .disabledPhysics()
-                        .preventFluidFlow()) {
+                && !configService.current().world().disabledPhysics().preventFluidFlow()) {
             event.setCancelled(false);
             return;
         }
@@ -164,7 +161,7 @@ public class BlockPhysicsListener implements Listener {
         }
 
         if (event.getEntityType() == EntityType.FALLING_BLOCK
-                && plugin.getConfigService().current().world().disabledPhysics().preventFallingBlocks()) {
+                && configService.current().world().disabledPhysics().preventFallingBlocks()) {
             event.setCancelled(true);
             event.getBlock().getState().update(false, false);
         }

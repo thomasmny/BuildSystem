@@ -19,11 +19,13 @@ package de.eintosti.buildsystem.world.menu.setup;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.Prompts;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BooleanSupplier;
@@ -46,11 +48,15 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
     private static final int MIDDLE_ROW_START_SLOT = 9;
     private static final int ITEMS_PER_ROW = 9;
 
-    protected final BuildSystemPlugin plugin;
+    protected final Prompts prompts;
+    protected final Menus menus;
+    protected final MenuItems menuItems;
 
-    protected RegistryEditorMenu(BuildSystemPlugin plugin, String title) {
-        super(plugin.getMessages(), INVENTORY_SIZE, title);
-        this.plugin = plugin;
+    protected RegistryEditorMenu(Messages messages, Prompts prompts, Menus menus, MenuItems menuItems, String title) {
+        super(messages, INVENTORY_SIZE, title);
+        this.prompts = prompts;
+        this.menus = menus;
+        this.menuItems = menuItems;
     }
 
     /**
@@ -86,17 +92,14 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
         return labelled(
                 XMaterial.NAME_TAG,
                 nameKey,
-                (player, event) -> PlayerChatInput.requestSanitizedName(
-                        plugin,
-                        player,
-                        promptKey,
-                        "setup_name_invalid_characters",
-                        "setup_name_empty",
-                        name -> {
+                (player, event) -> prompts.prompt(player)
+                        .title(promptKey)
+                        .sanitizeName("setup_name_invalid_characters", "setup_name_empty")
+                        .onCancel(() -> reopen(player))
+                        .request(name -> {
                             apply.accept(name);
                             save(player);
-                        },
-                        () -> reopen(player)));
+                        }));
     }
 
     protected final MenuButton colorButton(String nameKey, Supplier<String> current, Consumer<String> apply) {
@@ -105,16 +108,14 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
                         .name(messages.getString(nameKey, player))
                         .lore(messages.getStringList(nameKey + "_lore", player))
                         .into(inventory, slot))
-                .onClick((player, event) -> new DyePickerMenu(
-                                plugin,
-                                player,
-                                current.get(),
-                                token -> {
-                                    apply.accept(token);
-                                    save(player);
-                                },
-                                () -> reopen(player))
-                        .open(player))
+                .onClick((player, event) -> menus.openDyePicker(
+                        player,
+                        current.get(),
+                        token -> {
+                            apply.accept(token);
+                            save(player);
+                        },
+                        () -> reopen(player)))
                 .build();
     }
 
@@ -124,15 +125,13 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
                         .name(messages.getString(nameKey, player))
                         .lore(messages.getStringList("setup_icon_lore", player))
                         .into(inventory, slot))
-                .onClick((player, event) -> new MaterialPickerMenu(
-                                plugin,
-                                player,
-                                material -> {
-                                    setter.accept(material);
-                                    save(player);
-                                },
-                                () -> reopen(player))
-                        .open(player))
+                .onClick((player, event) -> menus.openMaterialPicker(
+                        player,
+                        material -> {
+                            setter.accept(material);
+                            save(player);
+                        },
+                        () -> reopen(player)))
                 .build();
     }
 
@@ -216,7 +215,7 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
 
     @Override
     protected void populate(Player player) {
-        plugin.getMenuItems().fillAll(player, getInventory());
+        menuItems.fillAll(player, getInventory());
         renderButtons(player);
     }
 

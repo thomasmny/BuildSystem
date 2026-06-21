@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -119,7 +120,7 @@ class PlaceholderApiExpansionTest {
 
     @Test
     void world_permission_returnsValue() {
-        when(worldData.getPermission()).thenReturn("buildsystem.world.test");
+        when(worldData.get(WorldDataKey.PERMISSION)).thenReturn("buildsystem.world.test");
         assertEquals("buildsystem.world.test", expansion.onPlaceholderRequest(player, "permission"));
     }
 

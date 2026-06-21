@@ -22,12 +22,15 @@ import static org.mockito.Mockito.*;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
 import java.io.File;
@@ -52,21 +55,19 @@ class YamlWorldStorageRoundTripTest {
     File dataFolder;
 
     private BuildSystemPlugin plugin;
+    private Services services;
+    private WorldContext context;
 
     @BeforeEach
     void setUp() {
         plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
-        // Deep stubs return false for world().unload().enabled(), so BuildWorldImpl construction
-        // never touches the Bukkit scheduler (manageUnload short-circuits). The unload time string
-        // is parsed unconditionally in the WorldUnloader constructor, so it must be a real value.
-        when(plugin.getConfigService().current().world().unload().timeUntilUnload())
-                .thenReturn("06:00:00");
-        TestData.stubStatusRegistry(plugin);
+        services = TestData.mockServices();
+        context = services.worldContext();
     }
 
     private YamlWorldStorage newStorage() {
-        return new YamlWorldStorage(plugin);
+        return new YamlWorldStorage(plugin, services);
     }
 
     private BuildWorldImpl sampleWorld(UUID uuid, String name) {
@@ -86,7 +87,7 @@ class YamlWorldStorageRoundTripTest {
                 .withProjectOverrideEnabled(() -> false)
                 .build();
         return new BuildWorldImpl(
-                plugin,
+                context,
                 uuid,
                 name,
                 BuildWorldType.NORMAL,
@@ -117,13 +118,13 @@ class YamlWorldStorageRoundTripTest {
         newStorage().save(sampleWorld(UUID.randomUUID(), "DataWorld")).join();
 
         BuildWorld world = newStorage().load().join().iterator().next();
-        assertEquals(TestData.FINISHED, world.getData().getStatus());
-        assertEquals("MyProject", world.getData().getProject());
-        assertEquals("buildsystem.test", world.getData().getPermission());
-        assertEquals(Difficulty.NORMAL, world.getData().getDifficulty());
-        assertTrue(world.getData().getVisibility().isPrivate());
-        assertTrue(world.getData().isBlockBreaking());
-        assertEquals(42, world.getData().getTimeSinceBackup());
+        assertEquals(TestData.FINISHED, world.getData().get(WorldDataKey.STATUS));
+        assertEquals("MyProject", world.getData().get(WorldDataKey.PROJECT));
+        assertEquals("buildsystem.test", world.getData().get(WorldDataKey.PERMISSION));
+        assertEquals(Difficulty.NORMAL, world.getData().get(WorldDataKey.DIFFICULTY));
+        assertTrue(world.getData().get(WorldDataKey.VISIBILITY).isPrivate());
+        assertTrue(world.getData().get(WorldDataKey.BLOCK_BREAKING));
+        assertEquals(42, world.getData().get(WorldDataKey.TIME_SINCE_BACKUP));
     }
 
     @Test
@@ -136,8 +137,44 @@ class YamlWorldStorageRoundTripTest {
     }
 
     @Test
+    void roundTrip_preservesCustomSpawn() {
+        BuildWorldImpl world = sampleWorld(UUID.randomUUID(), "SpawnWorld");
+        world.getData().set(WorldDataKey.CUSTOM_SPAWN, "1.0;64.0;2.0;90.0;0.0");
+        newStorage().save(world).join();
+
+        BuildWorld loaded = newStorage().load().join().iterator().next();
+        assertEquals("1.0;64.0;2.0;90.0;0.0", loaded.getData().get(WorldDataKey.CUSTOM_SPAWN));
+    }
+
+    @Test
+    void load_legacyTopLevelSpawn_isReadAsFallback() throws Exception {
+        // Pre-property-map files stored the custom spawn at the top-level "spawn" key, not under "data".
+        YamlConfiguration yaml = new YamlConfiguration();
+        yaml.set("worlds.Legacy.uuid", UUID.randomUUID().toString());
+        yaml.set("worlds.Legacy.type", "NORMAL");
+        yaml.set("worlds.Legacy.date", 1L);
+        yaml.set("worlds.Legacy.data.status", "FINISHED");
+        yaml.set("worlds.Legacy.spawn", "5.0;70.0;5.0;0.0;0.0");
+        yaml.save(new File(dataFolder, "worlds.yml"));
+
+        BuildWorld loaded = newStorage().load().join().iterator().next();
+        assertEquals("5.0;70.0;5.0;0.0;0.0", loaded.getData().get(WorldDataKey.CUSTOM_SPAWN));
+    }
+
+    @Test
     void load_emptyFile_returnsEmptyCollection() {
         assertTrue(newStorage().load().join().isEmpty());
+    }
+
+    @Test
+    void construction_doesNotResolveServices() {
+        // Worlds are loaded during plugin enable, before services such as MenuItems/SpawnService exist. Constructing
+        // the storage must not resolve any service (the codec is built lazily on first load); otherwise startup throws.
+        Services strict = mock(Services.class);
+        when(strict.worldContext()).thenThrow(new IllegalStateException("service not initialized yet"));
+        when(strict.playerLookup()).thenThrow(new IllegalStateException("service not initialized yet"));
+
+        assertDoesNotThrow(() -> new YamlWorldStorage(plugin, strict));
     }
 
     @Test
@@ -165,7 +202,7 @@ class YamlWorldStorageRoundTripTest {
 
         Collection<BuildWorld> loaded = newStorage().load().join();
         assertEquals(1, loaded.size());
-        assertEquals(TestData.NOT_STARTED, loaded.iterator().next().getData().getStatus());
+        assertEquals(TestData.NOT_STARTED, loaded.iterator().next().getData().get(WorldDataKey.STATUS));
     }
 
     @Test

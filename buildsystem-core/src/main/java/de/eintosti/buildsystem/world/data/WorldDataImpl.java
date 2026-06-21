@@ -21,12 +21,12 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.world.data.type.Bypassable;
 import de.eintosti.buildsystem.world.data.type.ConfigurableProperty;
 import de.eintosti.buildsystem.world.data.type.Overridable;
 import de.eintosti.buildsystem.world.data.type.PersistentProperty;
-import de.eintosti.buildsystem.world.data.type.Property;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,77 +45,56 @@ import org.jspecify.annotations.Nullable;
 public class WorldDataImpl implements WorldData {
 
     private final Map<String, PersistentProperty<?>> data = new HashMap<>();
+
     private String worldName;
-
     private @Nullable Supplier<@Nullable Folder> folderResolver;
-
-    private final Property<String> customSpawn;
-    private final Property<String> permission;
-    private final Property<String> project;
-
-    private final Property<Difficulty> difficulty;
-    private final Property<XMaterial> material;
-    private final Property<String> iconSkullTexture;
-    private final Property<BuildWorldStatus> status;
-
-    private final Property<Boolean> blockBreaking;
-    private final Property<Boolean> blockInteractions;
-    private final Property<Boolean> blockPlacement;
-    private final Property<Boolean> buildersEnabled;
-    private final Property<Boolean> explosions;
-    private final Property<Boolean> mobAi;
-    private final Property<Boolean> physics;
-    private final Property<Boolean> pinned;
-    private final Property<Visibility> visibility;
-
-    private final Property<Integer> timeSinceBackup;
-    private final Property<Long> lastEdited;
-    private final Property<Long> lastLoaded;
-    private final Property<Long> lastUnloaded;
 
     private WorldDataImpl(WorldDataBuilder builder) {
         this.worldName = builder.worldName;
 
-        this.customSpawn = register("spawn", new ConfigurableProperty<>(builder.customSpawn));
-        this.permission = register(
-                "permission",
+        register(WorldDataKey.CUSTOM_SPAWN, new ConfigurableProperty<>(builder.customSpawn));
+        register(
+                WorldDataKey.PERMISSION,
                 new ConfigurableProperty<>(builder.permission)
                         .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.permission"))
                         .withCapability(
                                 Overridable.class,
                                 folderOverride(builder.permissionOverrideEnabled, Folder::getPermission)));
-        this.project = register(
-                "project",
+        register(
+                WorldDataKey.PROJECT,
                 new ConfigurableProperty<>(builder.project)
                         .withCapability(
                                 Overridable.class, folderOverride(builder.projectOverrideEnabled, Folder::getProject)));
 
-        this.difficulty = register(
-                "difficulty", new ConfigurableProperty<>(builder.difficulty).withConfigFormatter(Difficulty::name));
-        this.material =
-                register("material", new ConfigurableProperty<>(builder.material).withConfigFormatter(XMaterial::name));
-        this.iconSkullTexture = register("icon-skull-texture", new ConfigurableProperty<>(builder.iconSkullTexture));
-        this.status = register(
-                "status",
+        register(
+                WorldDataKey.DIFFICULTY,
+                new ConfigurableProperty<>(builder.difficulty).withConfigFormatter(Difficulty::name));
+        register(
+                WorldDataKey.MATERIAL,
+                new ConfigurableProperty<>(builder.material).withConfigFormatter(XMaterial::name));
+        register(WorldDataKey.ICON_SKULL_TEXTURE, new ConfigurableProperty<>(builder.iconSkullTexture));
+        register(
+                WorldDataKey.STATUS,
                 new ConfigurableProperty<>(Objects.requireNonNull(builder.status, "status"))
                         .withConfigFormatter(BuildWorldStatus::getId)
                         .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.archive")));
 
-        this.blockBreaking = register("block-breaking", settingsBypassable(builder.blockBreaking));
-        this.blockInteractions = register("block-interactions", settingsBypassable(builder.blockInteractions));
-        this.blockPlacement = register("block-placement", settingsBypassable(builder.blockPlacement));
-        this.buildersEnabled = register("builders-enabled", new ConfigurableProperty<>(builder.buildersEnabled));
-        this.explosions = register("explosions", new ConfigurableProperty<>(builder.explosions));
-        this.mobAi = register("mob-ai", new ConfigurableProperty<>(builder.mobAi));
-        this.physics = register("physics", new ConfigurableProperty<>(builder.physics));
-        this.pinned = register("pinned", new ConfigurableProperty<>(builder.pinned));
-        this.visibility = register(
-                "visibility", new ConfigurableProperty<>(builder.visibility).withConfigFormatter(Visibility::name));
+        register(WorldDataKey.BLOCK_BREAKING, settingsBypassable(builder.blockBreaking));
+        register(WorldDataKey.BLOCK_INTERACTIONS, settingsBypassable(builder.blockInteractions));
+        register(WorldDataKey.BLOCK_PLACEMENT, settingsBypassable(builder.blockPlacement));
+        register(WorldDataKey.BUILDERS_ENABLED, new ConfigurableProperty<>(builder.buildersEnabled));
+        register(WorldDataKey.EXPLOSIONS, new ConfigurableProperty<>(builder.explosions));
+        register(WorldDataKey.MOB_AI, new ConfigurableProperty<>(builder.mobAi));
+        register(WorldDataKey.PHYSICS, new ConfigurableProperty<>(builder.physics));
+        register(WorldDataKey.PINNED, new ConfigurableProperty<>(builder.pinned));
+        register(
+                WorldDataKey.VISIBILITY,
+                new ConfigurableProperty<>(builder.visibility).withConfigFormatter(Visibility::name));
 
-        this.timeSinceBackup = register("time-since-backup", new ConfigurableProperty<>(builder.timeSinceBackup));
-        this.lastEdited = register("last-edited", new ConfigurableProperty<>(builder.lastEdited));
-        this.lastLoaded = register("last-loaded", new ConfigurableProperty<>(builder.lastLoaded));
-        this.lastUnloaded = register("last-unloaded", new ConfigurableProperty<>(builder.lastUnloaded));
+        register(WorldDataKey.TIME_SINCE_BACKUP, new ConfigurableProperty<>(builder.timeSinceBackup));
+        register(WorldDataKey.LAST_EDITED, new ConfigurableProperty<>(builder.lastEdited));
+        register(WorldDataKey.LAST_LOADED, new ConfigurableProperty<>(builder.lastLoaded));
+        register(WorldDataKey.LAST_UNLOADED, new ConfigurableProperty<>(builder.lastUnloaded));
     }
 
     public void setFolderResolver(Supplier<@Nullable Folder> resolver) {
@@ -124,7 +103,7 @@ public class WorldDataImpl implements WorldData {
 
     @SuppressWarnings("unchecked")
     public void setStatusChangeListener(BiConsumer<BuildWorldStatus, BuildWorldStatus> listener) {
-        ((ConfigurableProperty<BuildWorldStatus>) this.status).setChangeListener(listener);
+        ((ConfigurableProperty<BuildWorldStatus>) property(WorldDataKey.STATUS)).setChangeListener(listener);
     }
 
     private @Nullable Folder getAssignedFolder() {
@@ -132,8 +111,15 @@ public class WorldDataImpl implements WorldData {
         return resolver != null ? resolver.get() : null;
     }
 
-    private <T> ConfigurableProperty<T> register(String key, ConfigurableProperty<T> property) {
-        this.data.put(key, property);
+    private void register(WorldDataKey<?> key, ConfigurableProperty<?> property) {
+        this.data.put(key.id(), property);
+    }
+
+    private PersistentProperty<?> property(WorldDataKey<?> key) {
+        PersistentProperty<?> property = this.data.get(key.id());
+        if (property == null) {
+            throw new IllegalArgumentException("Unknown world data key: " + key.id());
+        }
         return property;
     }
 
@@ -157,209 +143,19 @@ public class WorldDataImpl implements WorldData {
     }
 
     @Override
-    public String getCustomSpawn() {
-        return customSpawn.get();
+    public <T> T get(WorldDataKey<T> key) {
+        return key.type().cast(property(key).get());
     }
 
     @Override
-    public void setCustomSpawn(String customSpawn) {
-        this.customSpawn.set(customSpawn);
+    @SuppressWarnings("unchecked")
+    public <T> void set(WorldDataKey<T> key, T value) {
+        ((PersistentProperty<T>) property(key)).set(value);
     }
 
     @Override
     public @Nullable Location getCustomSpawnLocation() {
-        return CustomSpawn.parse(Bukkit.getWorld(worldName), customSpawn.get());
-    }
-
-    @Override
-    public String getPermission() {
-        return permission.get();
-    }
-
-    @Override
-    public void setPermission(String permission) {
-        this.permission.set(permission);
-    }
-
-    @Override
-    public String getProject() {
-        return project.get();
-    }
-
-    @Override
-    public void setProject(String project) {
-        this.project.set(project);
-    }
-
-    @Override
-    public Difficulty getDifficulty() {
-        return difficulty.get();
-    }
-
-    @Override
-    public void setDifficulty(Difficulty difficulty) {
-        this.difficulty.set(difficulty);
-    }
-
-    @Override
-    public XMaterial getMaterial() {
-        return material.get();
-    }
-
-    @Override
-    public void setMaterial(XMaterial material) {
-        this.material.set(material);
-    }
-
-    @Override
-    public @Nullable String getIconSkullTexture() {
-        String value = iconSkullTexture.get();
-        return value.isBlank() ? null : value;
-    }
-
-    @Override
-    public void setIconSkullTexture(@Nullable String skullTexture) {
-        this.iconSkullTexture.set(skullTexture == null ? "" : skullTexture);
-    }
-
-    @Override
-    public BuildWorldStatus getStatus() {
-        return status.get();
-    }
-
-    @Override
-    public void setStatus(BuildWorldStatus status) {
-        this.status.set(status);
-    }
-
-    @Override
-    public boolean isBlockBreaking() {
-        return blockBreaking.get();
-    }
-
-    @Override
-    public void setBlockBreaking(boolean blockBreaking) {
-        this.blockBreaking.set(blockBreaking);
-    }
-
-    @Override
-    public boolean isBlockInteractions() {
-        return blockInteractions.get();
-    }
-
-    @Override
-    public void setBlockInteractions(boolean blockInteractions) {
-        this.blockInteractions.set(blockInteractions);
-    }
-
-    @Override
-    public boolean isBlockPlacement() {
-        return blockPlacement.get();
-    }
-
-    @Override
-    public void setBlockPlacement(boolean blockPlacement) {
-        this.blockPlacement.set(blockPlacement);
-    }
-
-    @Override
-    public boolean isBuildersEnabled() {
-        return buildersEnabled.get();
-    }
-
-    @Override
-    public void setBuildersEnabled(boolean buildersEnabled) {
-        this.buildersEnabled.set(buildersEnabled);
-    }
-
-    @Override
-    public boolean isExplosions() {
-        return explosions.get();
-    }
-
-    @Override
-    public void setExplosions(boolean explosions) {
-        this.explosions.set(explosions);
-    }
-
-    @Override
-    public boolean isMobAi() {
-        return mobAi.get();
-    }
-
-    @Override
-    public void setMobAi(boolean mobAi) {
-        this.mobAi.set(mobAi);
-    }
-
-    @Override
-    public boolean isPhysics() {
-        return physics.get();
-    }
-
-    @Override
-    public void setPhysics(boolean physics) {
-        this.physics.set(physics);
-    }
-
-    @Override
-    public boolean isPinned() {
-        return pinned.get();
-    }
-
-    @Override
-    public void setPinned(boolean pinned) {
-        this.pinned.set(pinned);
-    }
-
-    @Override
-    public Visibility getVisibility() {
-        return visibility.get();
-    }
-
-    @Override
-    public void setVisibility(Visibility visibility) {
-        this.visibility.set(visibility);
-    }
-
-    @Override
-    public int getTimeSinceBackup() {
-        return timeSinceBackup.get();
-    }
-
-    @Override
-    public void setTimeSinceBackup(int timeSinceBackup) {
-        this.timeSinceBackup.set(timeSinceBackup);
-    }
-
-    @Override
-    public long getLastEdited() {
-        return lastEdited.get();
-    }
-
-    @Override
-    public void setLastEdited(long lastEdited) {
-        this.lastEdited.set(lastEdited);
-    }
-
-    @Override
-    public long getLastLoaded() {
-        return lastLoaded.get();
-    }
-
-    @Override
-    public void setLastLoaded(long lastLoaded) {
-        this.lastLoaded.set(lastLoaded);
-    }
-
-    @Override
-    public long getLastUnloaded() {
-        return lastUnloaded.get();
-    }
-
-    @Override
-    public void setLastUnloaded(long lastUnloaded) {
-        this.lastUnloaded.set(lastUnloaded);
+        return CustomSpawn.parse(Bukkit.getWorld(worldName), get(WorldDataKey.CUSTOM_SPAWN));
     }
 
     public void setWorldName(String worldName) {

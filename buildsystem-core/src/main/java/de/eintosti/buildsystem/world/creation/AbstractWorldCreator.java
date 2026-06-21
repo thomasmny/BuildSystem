@@ -17,16 +17,17 @@
  */
 package de.eintosti.buildsystem.world.creation;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.BuildWorldCreateEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostCreateEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.WorldContext;
 import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
@@ -42,7 +43,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 abstract class AbstractWorldCreator {
 
-    protected final BuildSystemPlugin plugin;
+    protected final WorldContext context;
     protected final WorldStorageImpl worldStorage;
     protected final String worldName;
 
@@ -61,16 +62,16 @@ abstract class AbstractWorldCreator {
 
     protected @Nullable BuildWorld buildWorld;
 
-    protected AbstractWorldCreator(BuildSystemPlugin plugin, String worldName, BuildWorldType worldType) {
-        this.plugin = plugin;
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    protected AbstractWorldCreator(
+            WorldContext context, WorldStorageImpl worldStorage, String worldName, BuildWorldType worldType) {
+        this.context = context;
+        this.worldStorage = worldStorage;
         this.worldName = worldName;
         this.worldType = worldType;
-        this.difficulty = plugin.getConfigService().current().world().defaults().difficulty();
-        this.time =
-                plugin.getConfigService().current().world().defaults().time().noon();
+        this.difficulty = context.configService().current().world().defaults().difficulty();
+        this.time = context.configService().current().world().defaults().time().noon();
         this.worldBorderSize =
-                plugin.getConfigService().current().world().defaults().worldBorderSize();
+                context.configService().current().world().defaults().worldBorderSize();
     }
 
     /**
@@ -90,17 +91,17 @@ abstract class AbstractWorldCreator {
     }
 
     protected BuildWorld createAndRegisterBuildWorld() {
-        BuildWorldImpl bw = new BuildWorldImpl(
-                plugin, worldName, creator, worldType, creationDate, privateWorld, customGenerator, folder);
+        BuildWorldImpl newBuildWorld = new BuildWorldImpl(
+                context, worldName, creator, worldType, creationDate, privateWorld, customGenerator, folder);
 
         if (folder != null) {
-            folder.addWorld(bw);
+            folder.addWorld(newBuildWorld);
         }
 
-        bw.getData().setLastLoaded(System.currentTimeMillis());
-        worldStorage.addBuildWorld(bw);
-        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostCreateEvent(bw, isImport()));
-        return bw;
+        newBuildWorld.getData().set(WorldDataKey.LAST_LOADED, System.currentTimeMillis());
+        worldStorage.addBuildWorld(newBuildWorld);
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostCreateEvent(newBuildWorld, isImport()));
+        return newBuildWorld;
     }
 
     protected @Nullable World generateBukkitWorld(boolean checkVersion) {
@@ -108,7 +109,15 @@ abstract class AbstractWorldCreator {
             throw new IllegalStateException("BuildWorld must be set before generating the Bukkit world.");
         }
 
-        return new BukkitWorldFactory(plugin, worldName, worldType, customGenerator, difficulty, time, worldBorderSize)
+        return new BukkitWorldFactory(
+                        context.configService(),
+                        context.logger(),
+                        worldName,
+                        worldType,
+                        customGenerator,
+                        difficulty,
+                        time,
+                        worldBorderSize)
                 .generate(
                         checkVersion ? BukkitWorldFactory.VersionCheck.REQUIRED : BukkitWorldFactory.VersionCheck.SKIP);
     }
@@ -116,7 +125,7 @@ abstract class AbstractWorldCreator {
     @SafeVarargs
     protected final void notifyAudience(String key, Map.Entry<String, Object>... placeholders) {
         if (audience != null) {
-            plugin.getMessages().sendMessage(audience, key, placeholders);
+            context.messages().sendMessage(audience, key, placeholders);
         }
     }
 }

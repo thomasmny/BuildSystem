@@ -18,6 +18,8 @@
 package de.eintosti.buildsystem;
 
 import de.eintosti.buildsystem.api.player.settings.NavigatorType;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.bstats.bukkit.Metrics;
@@ -32,9 +34,13 @@ import org.jspecify.annotations.NullMarked;
 final class BuildSystemMetrics {
 
     private final BuildSystemPlugin plugin;
+    private final ConfigService configService;
+    private final PlayerServiceImpl playerService;
 
-    BuildSystemMetrics(BuildSystemPlugin plugin) {
+    BuildSystemMetrics(BuildSystemPlugin plugin, ConfigService configService, PlayerServiceImpl playerService) {
         this.plugin = plugin;
+        this.configService = configService;
+        this.playerService = playerService;
     }
 
     void register() {
@@ -42,47 +48,39 @@ final class BuildSystemMetrics {
         metrics.addCustomChart(new SimplePie(
                 "archive_vanish",
                 () -> String.valueOf(
-                        plugin.getConfigService().current().settings().archive().vanish())));
+                        configService.current().settings().archive().vanish())));
         metrics.addCustomChart(new SimplePie(
                 "block_world_edit",
                 () -> String.valueOf(
-                        plugin.getConfigService().current().settings().builder().blockWorldEditNonBuilder())));
+                        configService.current().settings().builder().blockWorldEditNonBuilder())));
         metrics.addCustomChart(new SimplePie(
                 "join_quit_messages",
-                () -> String.valueOf(
-                        plugin.getConfigService().current().settings().joinQuitMessages())));
+                () -> String.valueOf(configService.current().settings().joinQuitMessages())));
         metrics.addCustomChart(new SimplePie(
                 "lock_weather",
-                () -> String.valueOf(plugin.getConfigService().current().world().lockWeather())));
+                () -> String.valueOf(configService.current().world().lockWeather())));
         metrics.addCustomChart(new SimplePie(
                 "scoreboard",
-                () -> String.valueOf(
-                        plugin.getConfigService().current().settings().scoreboard())));
+                () -> String.valueOf(configService.current().settings().scoreboard())));
         metrics.addCustomChart(new SimplePie(
                 "update_checker",
-                () -> String.valueOf(
-                        plugin.getConfigService().current().settings().updateChecker())));
+                () -> String.valueOf(configService.current().settings().updateChecker())));
         metrics.addCustomChart(new SimplePie(
                 "unload_worlds",
-                () -> String.valueOf(
-                        plugin.getConfigService().current().world().unload().enabled())));
+                () -> String.valueOf(configService.current().world().unload().enabled())));
         metrics.addCustomChart(new AdvancedPie("navigator_type", () -> {
-            Map<NavigatorType, Long> countsByType =
-                    plugin.getPlayerService().getPlayerStorage().getBuildPlayers().stream()
-                            .collect(Collectors.groupingBy(
-                                    buildPlayer -> buildPlayer.getSettings().getNavigatorType(),
-                                    Collectors.counting()));
+            Map<NavigatorType, Long> countsByType = playerService.getPlayerStorage().getBuildPlayers().stream()
+                    .collect(Collectors.groupingBy(
+                            buildPlayer -> buildPlayer.getSettings().getNavigatorType(), Collectors.counting()));
             int oldCount = countsByType.getOrDefault(NavigatorType.OLD, 0L).intValue();
             int newCount = countsByType.getOrDefault(NavigatorType.NEW, 0L).intValue();
             return Map.of("Old", oldCount, "New", newCount);
         }));
         metrics.addCustomChart(new SimplePie(
                 "folder_override_permissions",
-                () -> String.valueOf(
-                        plugin.getConfigService().current().folder().overridePermissions())));
+                () -> String.valueOf(configService.current().folder().overridePermissions())));
         metrics.addCustomChart(new SimplePie(
                 "folder_override_projects",
-                () -> String.valueOf(
-                        plugin.getConfigService().current().folder().overrideProjects())));
+                () -> String.valueOf(configService.current().folder().overrideProjects())));
     }
 }

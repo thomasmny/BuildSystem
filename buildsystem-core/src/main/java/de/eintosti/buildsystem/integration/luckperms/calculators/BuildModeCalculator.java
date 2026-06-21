@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.integration.luckperms.calculators;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.context.ContextConsumer;
@@ -33,8 +32,8 @@ public class BuildModeCalculator implements ContextCalculator<Player> {
 
     private final PlayerServiceImpl playerManager;
 
-    public BuildModeCalculator(BuildSystemPlugin plugin) {
-        this.playerManager = plugin.getPlayerService();
+    public BuildModeCalculator(PlayerServiceImpl playerManager) {
+        this.playerManager = playerManager;
     }
 
     @Override

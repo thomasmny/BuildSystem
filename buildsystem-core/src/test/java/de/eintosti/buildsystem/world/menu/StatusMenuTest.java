@@ -25,14 +25,16 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.test.TestData;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
@@ -66,20 +68,22 @@ class StatusMenuTest {
     private StatusMenu menu() {
         Messages messages = mock(Messages.class);
         when(messages.getString(anyString(), any(), any())).thenReturn("Title");
-
-        BuildSystemPlugin plugin = mock(BuildSystemPlugin.class);
-        when(plugin.getMessages()).thenReturn(messages);
-        when(plugin.getMenuItems()).thenReturn(mock(MenuItems.class));
-        TestData.stubStatusRegistry(plugin);
+        WorldStatusRegistry registry = TestData.statusRegistry();
 
         WorldData data = mock(WorldData.class);
-        when(data.getStatus()).thenReturn(TestData.NOT_STARTED);
+        when(data.get(WorldDataKey.STATUS)).thenReturn(TestData.NOT_STARTED);
         BuildWorld buildWorld = mock(BuildWorld.class);
         when(buildWorld.getName()).thenReturn("world");
         when(buildWorld.getData()).thenReturn(data);
 
-        Player player = server.addPlayer();
-        return new StatusMenu(plugin, buildWorld, player);
+        return new StatusMenu(
+                messages,
+                registry,
+                mock(SettingsService.class),
+                mock(MenuItems.class),
+                mock(Menus.class),
+                buildWorld,
+                server.addPlayer());
     }
 
     @Test

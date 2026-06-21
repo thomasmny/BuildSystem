@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.world;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.event.world.BuildWorldDeleteEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostDeleteEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldUnimportEvent;
@@ -35,11 +36,13 @@ import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlFolderStorage;
 import de.eintosti.buildsystem.storage.yaml.YamlWorldStorage;
 import de.eintosti.buildsystem.util.FileUtils;
+import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.creation.WorldBuilderImpl;
 import de.eintosti.buildsystem.world.creation.WorldCreationPrompts;
 import de.eintosti.buildsystem.world.creation.WorldImportCoordinator;
@@ -51,7 +54,9 @@ import de.eintosti.buildsystem.world.lifecycle.WorldUnloaderImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
@@ -68,6 +73,8 @@ import org.jspecify.annotations.Nullable;
 public class WorldServiceImpl implements WorldService {
 
     private final BuildSystemPlugin plugin;
+    private final Services services;
+    private final Messages messages;
     private final FolderStorageImpl folderStorage;
     private final WorldStorageImpl worldStorage;
 
@@ -75,13 +82,16 @@ public class WorldServiceImpl implements WorldService {
     private final WorldCreationPrompts creationPrompts;
     private final WorldImportCoordinator importCoordinator;
 
-    public WorldServiceImpl(BuildSystemPlugin plugin) {
+    public WorldServiceImpl(BuildSystemPlugin plugin, Services services) {
         this.plugin = plugin;
-        this.worldStorage = new YamlWorldStorage(plugin);
-        this.folderStorage = new YamlFolderStorage(plugin, this.worldStorage);
-        this.loadBootstrap = new WorldLoadBootstrap(plugin, this.folderStorage, this.worldStorage);
-        this.creationPrompts = new WorldCreationPrompts(plugin, this);
-        this.importCoordinator = new WorldImportCoordinator(plugin, this, this.worldStorage);
+        this.services = services;
+        this.messages = services.messages();
+        this.worldStorage = new YamlWorldStorage(plugin, services);
+        this.folderStorage = new YamlFolderStorage(plugin, this.worldStorage, services);
+        this.loadBootstrap = new WorldLoadBootstrap(plugin, this.folderStorage, this.worldStorage, services.config());
+        this.creationPrompts = new WorldCreationPrompts(this, services::prompts, services.messages());
+        this.importCoordinator =
+                new WorldImportCoordinator(plugin, this, this.worldStorage, services.config(), services.messages());
     }
 
     public void init() {
@@ -102,13 +112,19 @@ public class WorldServiceImpl implements WorldService {
     @Override
     @Contract("_ -> new")
     public WorldBuilder newWorld(String name) {
-        return new WorldBuilderImpl(plugin, name);
+        // Defense-in-depth: the menus sanitize names before they reach here, but this is public API. Reject any name
+        // that would resolve outside the world container so a caller cannot create a directory in, say, plugins/.
+        File worldDirectory = new File(Bukkit.getWorldContainer(), name);
+        if (StringCleaner.isPathEscape(Bukkit.getWorldContainer(), worldDirectory)) {
+            throw new IllegalArgumentException("World name '" + name + "' resolves outside the world container");
+        }
+        return new WorldBuilderImpl(services.worldContext(), worldStorage, plugin.getDataFolder(), name);
     }
 
     @Override
     @Contract("_ -> new")
     public WorldImporter importWorld(String name) {
-        return new WorldImporterImpl(plugin, name);
+        return new WorldImporterImpl(services.worldContext(), worldStorage, name);
     }
 
     public void startWorldNameInput(
@@ -132,12 +148,12 @@ public class WorldServiceImpl implements WorldService {
         if (generator == Generator.CUSTOM) {
             customGenerator = CustomGeneratorImpl.of(generatorData, worldName);
             if (customGenerator == null) {
-                plugin.getMessages().sendMessage(player, "worlds_import_unknown_generator");
+                messages.sendMessage(player, "worlds_import_unknown_generator");
                 return false;
             }
         }
 
-        WorldImporterImpl worldImporter = new WorldImporterImpl(plugin, worldName)
+        WorldImporterImpl worldImporter = new WorldImporterImpl(services.worldContext(), worldStorage, worldName)
                 .type(worldType)
                 .creator(creator)
                 .customGenerator(
@@ -148,8 +164,7 @@ public class WorldServiceImpl implements WorldService {
 
         if (worldImporter.isDataVersionTooHigh()) {
             String key = single ? "import" : "importall";
-            plugin.getMessages()
-                    .sendMessage(player, "worlds_" + key + "_newer_version", Map.entry("%world%", worldName));
+            messages.sendMessage(player, "worlds_" + key + "_newer_version", Map.entry("%world%", worldName));
             return false;
         }
 
@@ -187,22 +202,21 @@ public class WorldServiceImpl implements WorldService {
 
     public void deleteWorld(Player player, BuildWorld buildWorld) {
         String worldName = buildWorld.getName();
-        plugin.getMessages().sendMessage(player, "worlds_delete_started", Map.entry("%world%", worldName));
+        messages.sendMessage(player, "worlds_delete_started", Map.entry("%world%", worldName));
         deleteWorld(buildWorld)
-                .thenRun(() -> plugin.getMessages().sendMessage(player, "worlds_delete_finished"))
+                .thenRun(() -> messages.sendMessage(player, "worlds_delete_finished"))
                 .exceptionally(e -> {
                     Throwable cause = e.getCause() != null ? e.getCause() : e;
                     switch (cause) {
                         case WorldNotFoundException ignored ->
-                            plugin.getMessages().sendMessage(player, "worlds_delete_unknown_world");
+                            messages.sendMessage(player, "worlds_delete_unknown_world");
                         case WorldDirectoryNotFoundException ignored ->
-                            plugin.getMessages().sendMessage(player, "worlds_delete_unknown_directory");
+                            messages.sendMessage(player, "worlds_delete_unknown_directory");
                         case WorldDeletionCancelledException ignored -> {
                             // The cancelling listener is responsible for messaging the player.
                         }
                         default -> {
-                            plugin.getMessages()
-                                    .sendMessage(player, "worlds_delete_error", Map.entry("%world%", worldName));
+                            messages.sendMessage(player, "worlds_delete_error", Map.entry("%world%", worldName));
                             plugin.getLogger()
                                     .log(
                                             Level.SEVERE,
@@ -222,7 +236,8 @@ public class WorldServiceImpl implements WorldService {
         }
 
         File deleteFolder = new File(Bukkit.getWorldContainer(), worldName);
-        if (!deleteFolder.exists()) {
+        // Never recursively delete outside the world container, even if a legacy entry carries a traversal name.
+        if (StringCleaner.isPathEscape(Bukkit.getWorldContainer(), deleteFolder) || !deleteFolder.exists()) {
             return CompletableFuture.failedFuture(
                     new WorldDirectoryNotFoundException(worldName, deleteFolder.getAbsolutePath()));
         }
@@ -265,7 +280,8 @@ public class WorldServiceImpl implements WorldService {
      * @param newName The name the world should be renamed to
      */
     public void renameWorld(Player player, BuildWorld buildWorld, String newName) {
-        new WorldRenamer(plugin, this, worldStorage).rename(player, buildWorld, newName);
+        new WorldRenamer(plugin, this, worldStorage, services.config(), services.messages(), services.spawn())
+                .rename(player, buildWorld, newName);
     }
 
     public List<Player> removePlayersFromWorld(String worldName, String messageKey) {
@@ -284,7 +300,7 @@ public class WorldServiceImpl implements WorldService {
                 .getLocation()
                 .add(0.5, 1, 0.5);
 
-        SpawnService spawnService = plugin.getSpawnService();
+        SpawnService spawnService = services.spawn();
         List<Player> affectedPlayers = new ArrayList<>();
 
         Bukkit.getOnlinePlayers().forEach(player -> {
@@ -305,11 +321,11 @@ public class WorldServiceImpl implements WorldService {
             if (!teleported) {
                 // No valid spawn and fallback world is the one being deleted -> kick
                 spawnService.remove();
-                player.kickPlayer(plugin.getMessages().getString(messageKey, player));
+                player.kickPlayer(messages.getString(messageKey, player));
                 return;
             }
 
-            plugin.getMessages().sendMessage(player, messageKey);
+            messages.sendMessage(player, messageKey);
             affectedPlayers.add(player);
         });
 

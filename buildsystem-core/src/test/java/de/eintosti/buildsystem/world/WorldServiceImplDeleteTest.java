@@ -22,6 +22,7 @@ import static org.mockito.Mockito.*;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.exception.WorldDirectoryNotFoundException;
 import de.eintosti.buildsystem.api.exception.WorldNotFoundException;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -61,17 +62,15 @@ class WorldServiceImplDeleteTest {
     Path worldContainer;
 
     private BuildSystemPlugin plugin;
+    private Services services;
     private WorldServiceImpl worldService;
 
     @BeforeEach
     void setUp() {
         plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
-        // The unload time string is parsed unconditionally in the WorldUnloader constructor.
-        when(plugin.getConfigService().current().world().unload().timeUntilUnload())
-                .thenReturn("06:00:00");
-        worldService = new WorldServiceImpl(plugin);
-        when(plugin.getWorldService()).thenReturn(worldService);
+        services = TestData.mockServices();
+        worldService = new WorldServiceImpl(plugin, services);
     }
 
     private BuildWorldImpl registeredWorld(String name) {
@@ -86,7 +85,7 @@ class WorldServiceImplDeleteTest {
                 .withProjectOverrideEnabled(() -> false)
                 .build();
         BuildWorldImpl buildWorld = new BuildWorldImpl(
-                plugin,
+                services.worldContext(),
                 UUID.randomUUID(),
                 name,
                 BuildWorldType.NORMAL,
@@ -150,5 +149,16 @@ class WorldServiceImplDeleteTest {
         assertFalse(Files.exists(worldDirectory), "world directory must be deleted");
         assertNull(worldService.getWorldStorage().getBuildWorld("doomed"), "registry entry must be removed");
         assertFalse(buildWorld.isLoaded());
+    }
+
+    @Test
+    void newWorld_pathEscapingName_isRejected() {
+        // Guards issue #481: a name resolving outside the world container must never be accepted, even through the API.
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            bukkit.when(Bukkit::getWorldContainer).thenReturn(worldContainer.toFile());
+
+            assertThrows(IllegalArgumentException.class, () -> worldService.newWorld("../escape"));
+            assertThrows(IllegalArgumentException.class, () -> worldService.newWorld("../../plugins/evil"));
+        }
     }
 }

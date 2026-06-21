@@ -18,13 +18,16 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
-import de.eintosti.buildsystem.world.menu.EditMenu;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.Prompts;
+import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.entity.Player;
@@ -33,8 +36,20 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SetProjectSubCommand extends AbstractSubCommand {
 
-    public SetProjectSubCommand(BuildSystemPlugin plugin) {
-        super(plugin);
+    private final Menus menus;
+    private final Prompts prompts;
+    private final SettingsService settingsService;
+
+    public SetProjectSubCommand(
+            Messages messages,
+            WorldServiceImpl worldService,
+            Menus menus,
+            Prompts prompts,
+            SettingsService settingsService) {
+        super(messages, worldService);
+        this.menus = menus;
+        this.prompts = prompts;
+        this.settingsService = settingsService;
     }
 
     @Override
@@ -48,9 +63,9 @@ public class SetProjectSubCommand extends AbstractSubCommand {
     }
 
     public void getProjectInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
-        new PlayerChatInput(plugin, player, "enter_world_project", input -> {
-            buildWorld.getData().setProject(input.trim());
-            plugin.getSettingsService().forceUpdateSidebar(buildWorld);
+        prompts.prompt(player).title("enter_world_project").request(input -> {
+            buildWorld.getData().set(WorldDataKey.PROJECT, input.trim());
+            settingsService.forceUpdateSidebar(buildWorld);
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
             messages.sendMessage(player, "worlds_setproject_set", Map.entry("%world%", buildWorld.getName()));
@@ -58,7 +73,7 @@ public class SetProjectSubCommand extends AbstractSubCommand {
             if (closeInventory) {
                 player.closeInventory();
             } else {
-                new EditMenu(plugin, buildWorld, player).open(player);
+                menus.openEdit(buildWorld, player);
             }
         });
     }
@@ -68,7 +83,7 @@ public class SetProjectSubCommand extends AbstractSubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        WorldStorage ws = plugin.getWorldService().getWorldStorage();
+        WorldStorage ws = worldService.getWorldStorage();
         return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
     }
 

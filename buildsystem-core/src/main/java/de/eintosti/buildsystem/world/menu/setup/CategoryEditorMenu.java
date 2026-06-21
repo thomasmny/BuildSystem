@@ -18,14 +18,17 @@
 package de.eintosti.buildsystem.world.menu.setup;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.PlayerChatInput;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.util.color.ColorAPI;
+import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.ArrayList;
@@ -47,19 +50,31 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
     private static final int SLOT_BACK = 18;
 
     private final NavigatorCategoryRegistryImpl registry;
+    private final WorldStatusRegistryImpl worldStatusRegistry;
     private final NavigatorCategoryImpl category;
     private final SkullStateProcessor skullProcessor;
 
-    public CategoryEditorMenu(BuildSystemPlugin plugin, Player player, NavigatorCategory category) {
+    public CategoryEditorMenu(
+            Messages messages,
+            Prompts prompts,
+            Menus menus,
+            MenuItems menuItems,
+            NavigatorCategoryRegistryImpl navigatorCategoryRegistry,
+            WorldStatusRegistryImpl worldStatusRegistry,
+            Player player,
+            NavigatorCategory category) {
         super(
-                plugin,
-                plugin.getMessages()
-                        .getString(
-                                "setup_category_editor_title",
-                                player,
-                                Map.entry("%category%", ColorAPI.process(category.getStyledName()))));
+                messages,
+                prompts,
+                menus,
+                menuItems,
+                messages.getString(
+                        "setup_category_editor_title",
+                        player,
+                        Map.entry("%category%", ColorAPI.process(category.getStyledName()))));
 
-        this.registry = plugin.getNavigatorCategoryRegistry();
+        this.registry = navigatorCategoryRegistry;
+        this.worldStatusRegistry = worldStatusRegistry;
         this.category = (NavigatorCategoryImpl) category;
         this.skullProcessor = new SkullStateProcessor();
 
@@ -111,29 +126,25 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                         promptSkullTexture(player);
                         return;
                     }
-                    new MaterialPickerMenu(
-                                    plugin,
-                                    player,
-                                    material -> {
-                                        category.setIcon(material);
-                                        save(player);
-                                    },
-                                    () -> reopen(player))
-                            .open(player);
+                    menus.openMaterialPicker(
+                            player,
+                            material -> {
+                                category.setIcon(material);
+                                save(player);
+                            },
+                            () -> reopen(player));
                 })
                 .build();
     }
 
     private void promptSkullTexture(Player player) {
-        new PlayerChatInput(
-                plugin,
-                player,
-                "setup_category_skull_prompt",
-                input -> {
+        prompts.prompt(player)
+                .title("setup_category_skull_prompt")
+                .onCancel(() -> reopen(player))
+                .request(input -> {
                     skullProcessor.applyTextureFromInput(input);
                     save(player);
-                },
-                () -> reopen(player));
+                });
     }
 
     private MenuButton visibilityButton(Visibility visibility, XMaterial icon, String nameKey) {
@@ -168,9 +179,7 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                         lore.add(messages.getString("setup_category_statuses_none", player));
                     } else {
                         category.getStatusIds().stream()
-                                .map(id -> plugin.getWorldStatusRegistry()
-                                        .getStatus(id)
-                                        .orElse(null))
+                                .map(id -> worldStatusRegistry.getStatus(id).orElse(null))
                                 .filter(Objects::nonNull)
                                 .sorted(Comparator.comparingInt(BuildWorldStatus::getOrder))
                                 .map(status -> messages.getString(
@@ -188,7 +197,7 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                             .lore(lore)
                             .into(inventory, slot);
                 })
-                .onClick((player, event) -> new CategoryStatusesMenu(plugin, player, category).open(player))
+                .onClick((player, event) -> menus.openCategoryStatuses(category, player))
                 .build();
     }
 
@@ -199,12 +208,12 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
 
     @Override
     protected void reopen(Player player) {
-        new CategoryEditorMenu(plugin, player, category).open(player);
+        menus.openCategoryEditor(category, player);
     }
 
     @Override
     protected void openManagement(Player player) {
-        new NavigatorLayoutMenu(plugin, player).open(player);
+        menus.openNavigatorLayout(player);
     }
 
     /**

@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,7 +50,9 @@ class NavigatorCategoryRegistryImplTest {
     void setUp() {
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
-        registry = new NavigatorCategoryRegistryImpl(plugin);
+        // The delete/reset cascades re-home folders via worldService.getFolderStorage().getFolders(); a deep-stub
+        // mock yields an empty folder list so those cascades are no-ops rather than NPEs.
+        registry = new NavigatorCategoryRegistryImpl(plugin, () -> mock(WorldServiceImpl.class, RETURNS_DEEP_STUBS));
     }
 
     @Test

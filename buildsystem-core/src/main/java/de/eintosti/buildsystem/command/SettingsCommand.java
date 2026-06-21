@@ -17,16 +17,20 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.player.menu.SettingsMenu;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.Menus;
+import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class SettingsCommand extends CommandBase {
 
-    public SettingsCommand(BuildSystemPlugin plugin) {
-        super(plugin, true);
+    private final Menus menus;
+
+    public SettingsCommand(Messages messages, Logger logger, Menus menus) {
+        super(messages, logger, true);
+        this.menus = menus;
     }
 
     @Override
@@ -35,6 +39,6 @@ public class SettingsCommand extends CommandBase {
             return;
         }
 
-        new SettingsMenu(plugin, player).open(player);
+        menus.openSettings(player);
     }
 }

@@ -17,26 +17,25 @@
  */
 package de.eintosti.buildsystem.storage.yaml;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
+import de.eintosti.buildsystem.storage.codec.FolderCodec;
+import de.eintosti.buildsystem.storage.migration.StorageMigration;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -45,104 +44,97 @@ import org.jspecify.annotations.Nullable;
 public class YamlFolderStorage extends FolderStorageImpl {
 
     private static final String FOLDERS_KEY = "folders";
+    private static final int LEGACY_VERSION = 1;
 
-    private final BuildSystemPlugin plugin;
-    private final File file;
+    private final Services services;
+    private final YamlStore store;
     private final FileConfiguration config;
+    private @Nullable FolderCodec codec;
 
-    public YamlFolderStorage(BuildSystemPlugin plugin, WorldStorage worldStorage) {
+    public YamlFolderStorage(BuildSystemPlugin plugin, WorldStorage worldStorage, Services services) {
         super(plugin.getLogger(), worldStorage);
-        this.plugin = plugin;
-        this.file = new File(plugin.getDataFolder(), "folders.yml");
-        this.config = YamlConfiguration.loadConfiguration(file);
+        this.services = services;
+        this.store = new YamlStore(plugin.getDataFolder(), "folders.yml", plugin.getLogger());
+        this.config = store.config();
+    }
+
+    /**
+     * The codec, built lazily on first use. Folders are loaded during plugin enable, before some of the services the
+     * {@code WorldContext} bundles exist; deferring construction to first load (after enable completes the service
+     * graph) keeps startup from resolving a not-yet-created service.
+     */
+    private FolderCodec codec() {
+        if (codec == null) {
+            codec = new FolderCodec(services.worldContext(), services.navigatorCategoryRegistry());
+        }
+        return codec;
     }
 
     @Override
     protected Folder newFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
-        return new FolderImpl(plugin, name, category, parent, creator);
+        return new FolderImpl(services.worldContext(), name, category, parent, creator);
     }
 
     @Override
     public CompletableFuture<Void> save(Folder folder) {
-        return CompletableFuture.runAsync(() -> {
-            config.set(FOLDERS_KEY + "." + folder.getName(), serializeFolder(folder));
-            saveFile();
-        });
+        return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
+            config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
+            config.set(FOLDERS_KEY + "." + codec().key(folder), codec().serialize(folder));
+        }));
     }
 
     @Override
     public CompletableFuture<Void> save(Collection<Folder> folders) {
-        return CompletableFuture.runAsync(() -> {
-            folders.forEach(folder -> config.set(FOLDERS_KEY + "." + folder.getName(), serializeFolder(folder)));
-            saveFile();
-        });
-    }
-
-    private void saveFile() {
-        try {
-            config.save(file);
-        } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not save folders.yml file", e);
-        }
-    }
-
-    public Map<String, @Nullable Object> serializeFolder(Folder folder) {
-        Map<String, @Nullable Object> serializedFolder = new HashMap<>();
-
-        serializedFolder.put("uuid", folder.getUniqueId().toString());
-        serializedFolder.put("creator", folder.getCreator().toString());
-        serializedFolder.put("creation", folder.getCreation());
-        serializedFolder.put("category", folder.getCategory().getId());
-        serializedFolder.put("parent", folder.hasParent() ? folder.getParent().getName() : null);
-        serializedFolder.put("material", folder.getIcon().name());
-        serializedFolder.put("icon-skull-texture", folder.getIconSkullTexture());
-        serializedFolder.put("permission", folder.getPermission());
-        serializedFolder.put("project", folder.getProject());
-        serializedFolder.put(
-                "worlds", folder.getWorldUUIDs().stream().map(UUID::toString).toList());
-
-        return serializedFolder;
+        return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
+            config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
+            folders.forEach(folder -> config.set(FOLDERS_KEY + "." + codec().key(folder), codec().serialize(folder)));
+        }));
     }
 
     @Override
     @Contract("-> new")
     public CompletableFuture<Collection<Folder>> load() {
-        return CompletableFuture.supplyAsync(() -> {
-            Set<String> folders = loadFolderKeys();
+        return CompletableFuture.supplyAsync(() -> store.locked(() -> {
+            Set<String> folderKeys = loadFolderKeys();
 
-            // First pass: Create all folders without parent references
-            Map<String, Folder> loadedFolders = folders.stream()
-                    .map(this::loadFolder)
-                    .collect(Collectors.toMap(Folder::getName, Function.identity()));
+            // First pass: load each folder by its key (UUID) without its parent reference.
+            Map<String, Folder> loadedByKey = new HashMap<>();
+            for (String folderKey : folderKeys) {
+                ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY + "." + folderKey);
+                if (section == null) {
+                    continue;
+                }
+                try {
+                    loadedByKey.put(folderKey, codec().deserialize(folderKey, section));
+                } catch (Exception e) {
+                    logger.log(Level.WARNING, "Skipping folder \"" + folderKey + "\": could not be loaded", e);
+                }
+            }
 
-            // Second pass: Set up parent references
-            for (String folderName : folders) {
-                String parentName = config.getString(FOLDERS_KEY + "." + folderName + ".parent");
-                if (parentName != null) {
-                    Folder folder = loadedFolders.get(folderName);
-                    Folder parent = loadedFolders.get(parentName);
-                    if (folder != null && parent != null) {
-                        folder.setParent(parent);
+            // Second pass: link parents (referenced by UUID) now that every folder exists.
+            for (Map.Entry<String, Folder> entry : loadedByKey.entrySet()) {
+                ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY + "." + entry.getKey());
+                if (section == null) {
+                    continue;
+                }
+                String parentKey = codec().parentReference(section);
+                if (parentKey != null) {
+                    Folder parent = loadedByKey.get(parentKey);
+                    if (parent != null) {
+                        entry.getValue().setParent(parent);
                     }
                 }
             }
 
-            return new ArrayList<>(loadedFolders.values());
-        });
+            return new ArrayList<>(loadedByKey.values());
+        }));
     }
 
     private Set<String> loadFolderKeys() {
-        if (!file.exists()) {
-            config.options().copyDefaults(true);
-            saveFile();
+        if (!store.reload()) {
             return Set.of();
         }
-
-        try {
-            config.load(file);
-        } catch (IOException | InvalidConfigurationException e) {
-            logger.log(Level.SEVERE, "Could not load folders.yml file", e);
-        }
+        migrateIfNeeded();
 
         ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY);
         if (section == null) {
@@ -152,67 +144,28 @@ public class YamlFolderStorage extends FolderStorageImpl {
         return section.getKeys(false);
     }
 
-    @Contract("_ -> new")
-    private Folder loadFolder(String folderName) {
-        final String path = FOLDERS_KEY + "." + folderName;
-
-        UUID uuid =
-                config.isString(path + ".uuid") ? UUID.fromString(config.getString(path + ".uuid")) : UUID.randomUUID();
-        Builder creator = Objects.requireNonNull(
-                Builder.deserialize(config.getString(path + ".creator")),
-                "Creator cannot be null for folder: " + folderName);
-        long creation = config.getLong(path + ".creation", System.currentTimeMillis());
-        NavigatorCategory category = resolveCategory(path);
-        XMaterial defaultMaterial = XMaterial.CHEST;
-        XMaterial material = XMaterial.matchXMaterial(config.getString(path + ".material", defaultMaterial.name()))
-                .orElse(defaultMaterial);
-        String permission = config.getString(path + ".permission", "-");
-        String project = config.getString(path + ".project", "-");
-        List<UUID> worlds = config.getStringList(path + ".worlds").stream()
-                .map(UUID::fromString)
-                .toList();
-
-        FolderImpl folder = new FolderImpl(
-                plugin,
-                uuid,
-                folderName,
-                creation,
-                category,
-                null, // Parent will be set in second pass
-                creator,
-                material,
-                permission,
-                project,
-                worlds,
-                new ArrayList<>());
-        folder.setIconSkullTexture(config.getString(path + ".icon-skull-texture"));
-        return folder;
-    }
-
-    /**
-     * Resolves a folder's {@link NavigatorCategory} from its stored {@code category} id. Pre-4.0 stored this as an
-     * upper-case enum name ({@code PUBLIC}/{@code ARCHIVE}/{@code PRIVATE}), which lower-casing normalises to the
-     * built-in category id. Falls back to the default category when the key is missing or unknown.
-     */
-    private NavigatorCategory resolveCategory(String path) {
-        NavigatorCategoryRegistry registry = plugin.getNavigatorCategoryRegistry();
-        String categoryId = config.getString(path + ".category");
-        categoryId = categoryId != null ? categoryId.toLowerCase(Locale.ROOT) : null;
-        return categoryId != null
-                ? registry.getCategory(categoryId).orElseGet(registry::getDefaultCategory)
-                : registry.getDefaultCategory();
+    /** Brings a legacy (name-keyed) {@code folders.yml} up to the current UUID-keyed format, once, before parsing. */
+    private void migrateIfNeeded() {
+        if (config.getInt(StorageMigration.VERSION_KEY, LEGACY_VERSION) >= StorageMigration.CURRENT_VERSION) {
+            return;
+        }
+        ConfigurationSection section = config.getConfigurationSection(FOLDERS_KEY);
+        if (section != null && !section.getKeys(false).isEmpty()) {
+            store.backupOnce(StorageMigration.BACKUP_SUFFIX);
+            StorageMigration.migrateFolders(config, logger);
+        }
+        config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
+        store.save();
     }
 
     @Override
     public CompletableFuture<Void> delete(Folder folder) {
-        return delete(folder.getName());
+        return delete(folder.getUniqueId().toString());
     }
 
     @Override
     public CompletableFuture<Void> delete(String folderKey) {
-        return CompletableFuture.runAsync(() -> {
-            config.set(FOLDERS_KEY + "." + folderKey, null);
-            saveFile();
-        });
+        return CompletableFuture.runAsync(
+                () -> store.atomicSave(() -> config.set(FOLDERS_KEY + "." + folderKey, null)));
     }
 }
