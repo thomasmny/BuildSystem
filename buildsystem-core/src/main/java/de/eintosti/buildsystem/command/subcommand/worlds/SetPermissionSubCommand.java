@@ -23,7 +23,6 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
-import de.eintosti.buildsystem.world.menu.EditMenu;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.entity.Player;
@@ -59,7 +58,7 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
                 if (closeInventory) {
                     player.closeInventory();
                 } else {
-                    new EditMenu(plugin, buildWorld, player).open(player);
+                    plugin.getMenus().openEdit(buildWorld, player);
                 }
                 return;
             }
@@ -73,7 +72,7 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
             if (closeInventory) {
                 player.closeInventory();
             } else {
-                new EditMenu(plugin, buildWorld, player).open(player);
+                plugin.getMenus().openEdit(buildWorld, player);
             }
         });
     }

@@ -25,6 +25,9 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
+import de.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand;
+import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
 import de.eintosti.buildsystem.player.customblock.CustomBlockMenu;
 import de.eintosti.buildsystem.player.menu.DesignMenu;
 import de.eintosti.buildsystem.player.menu.SettingsMenu;
@@ -32,6 +35,7 @@ import de.eintosti.buildsystem.player.menu.SpeedMenu;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.menu.BackupsConfirmationMenu;
 import de.eintosti.buildsystem.world.menu.BackupsMenu;
+import de.eintosti.buildsystem.world.menu.BuilderMenu;
 import de.eintosti.buildsystem.world.menu.CategoryWorldsMenu;
 import de.eintosti.buildsystem.world.menu.CreateMenu;
 import de.eintosti.buildsystem.world.menu.DeleteMenu;
@@ -54,6 +58,7 @@ import de.eintosti.buildsystem.world.menu.setup.StatusEditorMenu;
 import de.eintosti.buildsystem.world.menu.setup.StatusLayoutMenu;
 import java.util.List;
 import java.util.function.Consumer;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -70,10 +75,12 @@ public final class Menus {
 
     private final BuildSystemPlugin plugin;
     private final TaskScheduler scheduler;
+    private final NamespacedKey builderNameKey;
 
     public Menus(BuildSystemPlugin plugin) {
         this.plugin = plugin;
         this.scheduler = new TaskScheduler(plugin);
+        this.builderNameKey = new NamespacedKey(plugin, "builder_name");
     }
 
     public void openSpeed(Player player) {
@@ -121,7 +128,48 @@ public final class Menus {
     }
 
     public void openEdit(BuildWorld buildWorld, Player player) {
-        new EditMenu(plugin, buildWorld, player).open(player);
+        new EditMenu(
+                        plugin.getMessages(),
+                        plugin.getPlayerService(),
+                        plugin.getMenuItems(),
+                        plugin.getConfigService(),
+                        plugin.getPrompts(),
+                        this,
+                        buildWorld,
+                        player)
+                .open(player);
+    }
+
+    public void openBuilder(BuildWorld buildWorld, Player player) {
+        new BuilderMenu(
+                        plugin.getMessages(),
+                        plugin.getMenuItems(),
+                        this,
+                        plugin.getPlayerLookupService(),
+                        scheduler,
+                        plugin.getLogger(),
+                        builderNameKey,
+                        buildWorld,
+                        player)
+                .open(player);
+    }
+
+    /**
+     * Opens the world-project chat prompt. A transitional bridge that reuses the subcommand's input flow so the editor
+     * menu need not depend on the plugin; folds into the command layer once that is constructor-injected.
+     */
+    public void promptWorldProject(BuildWorld buildWorld, Player player) {
+        new SetProjectSubCommand(plugin).getProjectInput(player, buildWorld, false);
+    }
+
+    /** Opens the world-permission chat prompt; transitional bridge, see {@link #promptWorldProject}. */
+    public void promptWorldPermission(BuildWorld buildWorld, Player player) {
+        new SetPermissionSubCommand(plugin).getPermissionInput(player, buildWorld, false);
+    }
+
+    /** Opens the add-builder chat prompt; transitional bridge, see {@link #promptWorldProject}. */
+    public void promptAddBuilder(BuildWorld buildWorld, Player player) {
+        new AddBuilderSubCommand(plugin).getAddBuilderInput(player, buildWorld, false);
     }
 
     public void openNavigator(Player player) {

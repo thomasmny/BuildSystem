@@ -28,11 +28,14 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.*;
@@ -254,14 +257,28 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         }
     }
 
-    private final BuildSystemPlugin plugin;
     private final PlayerServiceImpl playerManager;
+    private final MenuItems menuItems;
+    private final ConfigService configService;
+    private final Prompts prompts;
+    private final Menus menus;
     private final BuildWorld buildWorld;
 
-    public EditMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
-        super(plugin.getMessages(), 54, plugin.getMessages().getString("worldeditor_title", player));
-        this.plugin = plugin;
-        this.playerManager = plugin.getPlayerService();
+    public EditMenu(
+            Messages messages,
+            PlayerServiceImpl playerService,
+            MenuItems menuItems,
+            ConfigService configService,
+            Prompts prompts,
+            Menus menus,
+            BuildWorld buildWorld,
+            Player player) {
+        super(messages, 54, messages.getString("worldeditor_title", player));
+        this.playerManager = playerService;
+        this.menuItems = menuItems;
+        this.configService = configService;
+        this.prompts = prompts;
+        this.menus = menus;
         this.buildWorld = buildWorld;
         buildButtons();
     }
@@ -346,7 +363,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                         .onClick((player, event) -> {
                             if (requirePermission(player, "buildsystem.edit.gamerules")) {
                                 XSound.BLOCK_CHEST_OPEN.play(player);
-                                plugin.getMenus().openGameRules(buildWorld, player);
+                                menus.openGameRules(buildWorld, player);
                             }
                         })
                         .build());
@@ -374,7 +391,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                         .onClick((player, event) -> {
                             if (requirePermission(player, "buildsystem.edit.status")) {
                                 XSound.ENTITY_CHICKEN_EGG.play(player);
-                                plugin.getMenus().openStatus(buildWorld, player);
+                                menus.openStatus(buildWorld, player);
                             }
                         })
                         .build());
@@ -388,7 +405,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                         .onClick((player, event) -> {
                             if (requirePermission(player, "buildsystem.edit.project")) {
                                 XSound.ENTITY_CHICKEN_EGG.play(player);
-                                new SetProjectSubCommand(plugin).getProjectInput(player, buildWorld, false);
+                                menus.promptWorldProject(buildWorld, player);
                             }
                         })
                         .build());
@@ -402,7 +419,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                         .onClick((player, event) -> {
                             if (requirePermission(player, "buildsystem.edit.permission")) {
                                 XSound.ENTITY_CHICKEN_EGG.play(player);
-                                new SetPermissionSubCommand(plugin).getPermissionInput(player, buildWorld, false);
+                                menus.promptWorldPermission(buildWorld, player);
                             }
                         })
                         .build());
@@ -410,16 +427,15 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
     @Override
     protected void populate(Player player) {
-        plugin.getMenuItems().fillAll(player, getInventory());
+        menuItems.fillAll(player, getInventory());
         renderButtons(player);
     }
 
     private void renderToggle(Player player, Inventory inventory, int slot, Toggle toggle) {
         WorldData worldData = buildWorld.getData();
         boolean enabled = toggle.getter().test(worldData);
-        plugin.getMenuItems()
-                .addToggleItem(
-                        player, inventory, slot, toggle.iconFor(enabled), enabled, toggle.itemKey(), toggle.loreKey());
+        menuItems.addToggleItem(
+                player, inventory, slot, toggle.iconFor(enabled), enabled, toggle.itemKey(), toggle.loreKey());
     }
 
     private void renderWorldInfo(Player player, Inventory inventory) {
@@ -447,19 +463,17 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
             return;
         }
         XSound.BLOCK_CHEST_OPEN.play(player);
-        plugin.getMenus()
-                .openMaterialPicker(
-                        player,
-                        material -> {
-                            buildWorld.setIcon(material);
-                            reopen(player);
-                        },
-                        () -> reopen(player));
+        menus.openMaterialPicker(
+                player,
+                material -> {
+                    buildWorld.setIcon(material);
+                    reopen(player);
+                },
+                () -> reopen(player));
     }
 
     private void promptIconTexture(Player player) {
-        plugin.getPrompts()
-                .prompt(player)
+        prompts.prompt(player)
                 .title("worldeditor_world_skull_prompt")
                 .onCancel(() -> reopen(player))
                 .request(input -> {
@@ -523,15 +537,14 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
     private void renderBuilders(Player player, Inventory inventory) {
         if (buildWorld.getBuilders().isCreator(player) || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
-            plugin.getMenuItems()
-                    .addToggleItem(
-                            player,
-                            inventory,
-                            SLOT_BUILDERS,
-                            XMaterial.IRON_PICKAXE,
-                            buildWorld.getData().isBuildersEnabled(),
-                            "worldeditor_builders_item",
-                            "worldeditor_builders_lore");
+            menuItems.addToggleItem(
+                    player,
+                    inventory,
+                    SLOT_BUILDERS,
+                    XMaterial.IRON_PICKAXE,
+                    buildWorld.getData().isBuildersEnabled(),
+                    "worldeditor_builders_item",
+                    "worldeditor_builders_lore");
         } else {
             ItemBuilder.of(XMaterial.BARRIER)
                     .name(messages.getString("worldeditor_builders_not_creator_item", player))
@@ -647,7 +660,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         }
         if (event.isRightClick()) {
             XSound.BLOCK_CHEST_OPEN.play(player);
-            new BuilderMenu(plugin, buildWorld, player).open(player);
+            menus.openBuilder(buildWorld, player);
             return;
         }
 
@@ -707,11 +720,11 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
     private void reopen(Player player) {
         XSound.ENTITY_CHICKEN_EGG.play(player);
-        new EditMenu(plugin, buildWorld, player).open(player);
+        menus.openEdit(buildWorld, player);
     }
 
     private void changeTime(Player player) {
-        var defaultTime = plugin.getConfigService().current().world().defaults().time();
+        var defaultTime = configService.current().world().defaults().time();
         int time =
                 switch (getWorldTime()) {
                     case SUNRISE -> defaultTime.noon();
@@ -723,8 +736,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
     private TimeOfDay getWorldTime() {
         int worldTime = (int) buildWorld.getWorld().orElseThrow().getTime();
-        int noonTime =
-                plugin.getConfigService().current().world().defaults().time().noon();
+        int noonTime = configService.current().world().defaults().time().noon();
         return TimeOfDay.fromTicks(worldTime, noonTime);
     }
 

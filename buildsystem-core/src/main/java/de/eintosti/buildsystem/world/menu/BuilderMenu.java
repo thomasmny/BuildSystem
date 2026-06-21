@@ -23,16 +23,20 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
+import de.eintosti.buildsystem.player.PlayerLookupService;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.bukkit.Bukkit;
+import java.util.logging.Logger;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -52,15 +56,32 @@ public class BuilderMenu extends PaginatedMenu {
     private static final int SLOT_ADD_BUILDER = 22;
     private static final int SLOT_NEXT_PAGE = 26;
 
-    private final BuildSystemPlugin plugin;
+    private final MenuItems menuItems;
+    private final Menus menus;
+    private final PlayerLookupService playerLookupService;
+    private final TaskScheduler scheduler;
+    private final Logger logger;
     private final BuildWorld buildWorld;
     private final NamespacedKey builderNameKey;
 
-    public BuilderMenu(BuildSystemPlugin plugin, BuildWorld buildWorld, Player player) {
-        super(plugin.getMessages(), 27, plugin.getMessages().getString("worldeditor_builders_title", player));
-        this.plugin = plugin;
+    public BuilderMenu(
+            Messages messages,
+            MenuItems menuItems,
+            Menus menus,
+            PlayerLookupService playerLookupService,
+            TaskScheduler scheduler,
+            Logger logger,
+            NamespacedKey builderNameKey,
+            BuildWorld buildWorld,
+            Player player) {
+        super(messages, 27, messages.getString("worldeditor_builders_title", player));
+        this.menuItems = menuItems;
+        this.menus = menus;
+        this.playerLookupService = playerLookupService;
+        this.scheduler = scheduler;
+        this.logger = logger;
+        this.builderNameKey = builderNameKey;
         this.buildWorld = buildWorld;
-        this.builderNameKey = new NamespacedKey(plugin, "builder_name");
     }
 
     @Override
@@ -73,9 +94,9 @@ public class BuilderMenu extends PaginatedMenu {
         clearButtons();
         Inventory inv = getInventory();
 
-        plugin.getMenuItems().fillRange(player, inv, 0, 9);
-        plugin.getMenuItems().fillRange(player, inv, 18, 27);
-        plugin.getMenuItems().fillRange(player, inv, FIRST_BUILDER_SLOT, FIRST_BUILDER_SLOT + MAX_BUILDERS_PER_PAGE);
+        menuItems.fillRange(player, inv, 0, 9);
+        menuItems.fillRange(player, inv, 18, 27);
+        menuItems.fillRange(player, inv, FIRST_BUILDER_SLOT, FIRST_BUILDER_SLOT + MAX_BUILDERS_PER_PAGE);
 
         register(SLOT_CREATOR_INFO, creatorInfoButton());
         register(SLOT_ADD_BUILDER, addBuilderButton());
@@ -121,7 +142,7 @@ public class BuilderMenu extends PaginatedMenu {
                     } else {
                         inventory.setItem(
                                 slot,
-                                ItemBuilder.of(plugin.getMenuItems().getColoredGlassPane(player))
+                                ItemBuilder.of(menuItems.getColoredGlassPane(player))
                                         .build());
                     }
                 })
@@ -132,7 +153,7 @@ public class BuilderMenu extends PaginatedMenu {
                         return;
                     }
                     XSound.ENTITY_CHICKEN_EGG.play(player);
-                    new AddBuilderSubCommand(plugin).getAddBuilderInput(player, buildWorld, false);
+                    menus.promptAddBuilder(buildWorld, player);
                 })
                 .build();
     }
@@ -168,18 +189,18 @@ public class BuilderMenu extends PaginatedMenu {
     private void returnToEditor(Player player) {
         if (buildWorld.getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())) {
             XSound.BLOCK_CHEST_OPEN.play(player);
-            new EditMenu(plugin, buildWorld, player).open(player);
+            menus.openEdit(buildWorld, player);
         }
     }
 
     private void removeBuilder(Player player, String builderName) {
-        plugin.getPlayerLookupService()
+        playerLookupService
                 .lookupUniqueId(builderName)
-                .thenAccept(builderId -> Bukkit.getScheduler().runTask(plugin, () -> {
+                .thenAccept(builderId -> scheduler.run(() -> {
                     if (builderId == null) {
                         player.closeInventory();
                         messages.sendMessage(player, "worlds_removebuilder_error");
-                        plugin.getLogger().warning("Could not find UUID for " + builderName);
+                        logger.warning("Could not find UUID for " + builderName);
                         return;
                     }
 

@@ -25,7 +25,6 @@ import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
-import de.eintosti.buildsystem.world.menu.BuilderMenu;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -122,7 +121,7 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
         if (closeInventory) {
             player.closeInventory();
         } else {
-            new BuilderMenu(plugin, buildWorld, player).open(player);
+            plugin.getMenus().openBuilder(buildWorld, player);
         }
     }
 
