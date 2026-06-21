@@ -151,13 +151,14 @@ public final class ListenerRegistrar {
      */
     private void registerIntegrations(ConfigService configService) {
         if (pluginManager.getPlugin("AxiomPaper") != null) {
-            register(new WorldManipulateByAxiomListener(plugin));
+            register(
+                    new WorldManipulateByAxiomListener(plugin.getWorldService().getWorldStorage(), plugin.getLogger()));
         }
 
         boolean isWorldEdit =
                 pluginManager.getPlugin("WorldEdit") != null || pluginManager.getPlugin("FastAsyncWorldEdit") != null;
         if (isWorldEdit && configService.current().settings().builder().blockWorldEditNonBuilder()) {
-            new EditSessionListener(plugin);
+            new EditSessionListener(plugin.getWorldService().getWorldStorage());
         }
     }
 }

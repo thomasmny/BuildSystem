@@ -42,12 +42,16 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
     private final WorldStorageImpl worldStorage;
     private final Messages messages;
 
-    public PlaceholderApiExpansion(BuildSystemPlugin plugin) {
+    public PlaceholderApiExpansion(
+            BuildSystemPlugin plugin,
+            SettingsService settingsService,
+            WorldStorageImpl worldStorage,
+            Messages messages) {
         this.author = plugin.getDescription().getAuthors().toString();
         this.version = plugin.getDescription().getVersion();
-        this.settingsService = plugin.getSettingsService();
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
-        this.messages = plugin.getMessages();
+        this.settingsService = settingsService;
+        this.worldStorage = worldStorage;
+        this.messages = messages;
         plugin.getLogger().info("PlaceholderAPI expansion initialized");
     }
 

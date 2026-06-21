@@ -23,7 +23,6 @@ import com.sk89q.worldedit.event.extent.EditSessionEvent;
 import com.sk89q.worldedit.extension.platform.Actor;
 import com.sk89q.worldedit.extent.NullExtent;
 import com.sk89q.worldedit.util.eventbus.Subscribe;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
@@ -39,8 +38,8 @@ public class EditSessionListener implements Listener {
     private final WorldStorageImpl worldStorage;
     private final WorldProtectionPolicy policy;
 
-    public EditSessionListener(BuildSystemPlugin plugin) {
-        this.worldStorage = plugin.getWorldService().getWorldStorage();
+    public EditSessionListener(WorldStorageImpl worldStorage) {
+        this.worldStorage = worldStorage;
         this.policy = new WorldProtectionPolicy();
         WorldEdit.getInstance().getEventBus().register(this);
     }

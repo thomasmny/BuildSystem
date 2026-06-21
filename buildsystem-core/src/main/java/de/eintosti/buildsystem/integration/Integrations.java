@@ -22,6 +22,9 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.integration.luckperms.LuckPermsExpansion;
 import de.eintosti.buildsystem.integration.placeholderapi.PapiTextResolver;
 import de.eintosti.buildsystem.integration.placeholderapi.PlaceholderApiExpansion;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import org.bukkit.plugin.PluginManager;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -35,26 +38,38 @@ public final class Integrations {
 
     private final BuildSystemPlugin plugin;
     private final Messages messages;
+    private final SettingsService settingsService;
+    private final PlayerServiceImpl playerService;
+    private final WorldServiceImpl worldService;
 
     private @Nullable PlaceholderApiExpansion placeholderApi;
     private @Nullable LuckPermsExpansion luckPerms;
 
-    public Integrations(BuildSystemPlugin plugin, Messages messages) {
+    public Integrations(
+            BuildSystemPlugin plugin,
+            Messages messages,
+            SettingsService settingsService,
+            PlayerServiceImpl playerService,
+            WorldServiceImpl worldService) {
         this.plugin = plugin;
         this.messages = messages;
+        this.settingsService = settingsService;
+        this.playerService = playerService;
+        this.worldService = worldService;
     }
 
     public void activate() {
         PluginManager pluginManager = plugin.getServer().getPluginManager();
 
         if (pluginManager.getPlugin("PlaceholderAPI") != null) {
-            this.placeholderApi = new PlaceholderApiExpansion(plugin);
+            this.placeholderApi =
+                    new PlaceholderApiExpansion(plugin, settingsService, worldService.getWorldStorage(), messages);
             this.placeholderApi.register();
             messages.setPlaceholderResolver(new PapiTextResolver());
         }
 
         if (pluginManager.getPlugin("LuckPerms") != null) {
-            this.luckPerms = new LuckPermsExpansion(plugin);
+            this.luckPerms = new LuckPermsExpansion(plugin, playerService, worldService.getWorldStorage());
             this.luckPerms.registerAll();
         }
     }

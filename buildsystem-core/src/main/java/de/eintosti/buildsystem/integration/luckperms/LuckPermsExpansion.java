@@ -20,6 +20,8 @@ package de.eintosti.buildsystem.integration.luckperms;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.integration.luckperms.calculators.BuildModeCalculator;
 import de.eintosti.buildsystem.integration.luckperms.calculators.RoleCalculator;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -33,23 +35,28 @@ import org.jspecify.annotations.NullMarked;
 public class LuckPermsExpansion {
 
     private final BuildSystemPlugin plugin;
+    private final PlayerServiceImpl playerService;
+    private final WorldStorageImpl worldStorage;
     private final ContextManager contextManager;
     private final List<ContextCalculator<Player>> registeredCalculators;
 
-    public LuckPermsExpansion(BuildSystemPlugin plugin) {
+    public LuckPermsExpansion(
+            BuildSystemPlugin plugin, PlayerServiceImpl playerService, WorldStorageImpl worldStorage) {
         LuckPerms luckPerms = plugin.getServer().getServicesManager().load(LuckPerms.class);
         if (luckPerms == null) {
             throw new IllegalStateException("LuckPerms API not loaded.");
         }
 
         this.plugin = plugin;
+        this.playerService = playerService;
+        this.worldStorage = worldStorage;
         this.contextManager = luckPerms.getContextManager();
         this.registeredCalculators = new ArrayList<>();
     }
 
     public void registerAll() {
-        register("build-mode", () -> new BuildModeCalculator(plugin));
-        register("role", () -> new RoleCalculator(plugin));
+        register("build-mode", () -> new BuildModeCalculator(playerService));
+        register("role", () -> new RoleCalculator(worldStorage));
         plugin.getLogger().info("LuckPerms expansion initialized");
     }
 
