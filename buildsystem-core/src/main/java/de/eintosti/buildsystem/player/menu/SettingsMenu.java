@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.player.menu;
 
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.NavigatorType;
@@ -39,11 +38,9 @@ import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.potion.PotionEffect;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -132,8 +129,7 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
     private final SettingsService settingsManager;
     private final ConfigService configService;
     private final MenuItems menuItems;
-    private final NavigatorService navigatorService;
-    private final NoClipService noClipService;
+    private final SettingToggles toggles;
     private final Menus menus;
 
     public SettingsMenu(
@@ -149,8 +145,7 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
         this.settingsManager = settingsManager;
         this.configService = configService;
         this.menuItems = menuItems;
-        this.navigatorService = navigatorService;
-        this.noClipService = noClipService;
+        this.toggles = new SettingToggles(settingsManager, navigatorService, noClipService);
         this.menus = menus;
         buildButtons();
     }
@@ -195,7 +190,7 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
                         Settings::isHidePlayers,
                         (player, s) -> {
                             s.setHidePlayers(!s.isHidePlayers());
-                            toggleHidePlayers(player, s);
+                            toggles.toggleHidePlayers(player, s);
                         }));
         register(
                 15,
@@ -223,7 +218,7 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
                         "settings_new_navigator_lore",
                         s -> configService.current().settings().navigator().item(),
                         s -> s.getNavigatorType() == NavigatorType.NEW,
-                        this::toggleNavigatorType));
+                        toggles::toggleNavigatorType));
         register(
                 22,
                 toggleButton(
@@ -232,7 +227,7 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
                         "settings_nightvision_lore",
                         XMaterial.GOLDEN_CARROT,
                         Settings::isNightVision,
-                        this::toggleNightVision));
+                        toggles::toggleNightVision));
         register(
                 23,
                 toggleButton(
@@ -241,7 +236,7 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
                         "settings_no_clip_lore",
                         XMaterial.BRICKS,
                         Settings::isNoClip,
-                        this::toggleNoClip));
+                        toggles::toggleNoClip));
         register(
                 24,
                 toggleButton(
@@ -347,7 +342,8 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
                     handleToggle(
                             player,
                             "scoreboard",
-                            () -> toggleScoreboard(player, settingsManager.getSettings(player), scoreboardEnabled));
+                            () -> toggles.toggleScoreboard(
+                                    player, settingsManager.getSettings(player), scoreboardEnabled));
                 })
                 .build();
     }
@@ -414,61 +410,5 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
         Map<Integer, ClickOutcome> outcomes = new LinkedHashMap<>();
         buttons().forEach((slot, button) -> outcomes.put(slot, button.outcome()));
         return outcomes;
-    }
-
-    private void toggleNavigatorType(Player player, Settings settings) {
-        if (settings.getNavigatorType() == NavigatorType.OLD) {
-            settings.setNavigatorType(NavigatorType.NEW);
-        } else {
-            settings.setNavigatorType(NavigatorType.OLD);
-            navigatorService.removeArmorStands(player);
-            player.removePotionEffect(XPotion.BLINDNESS.get());
-        }
-    }
-
-    private void toggleNightVision(Player player, Settings settings) {
-        if (settings.isNightVision()) {
-            settings.setNightVision(false);
-            player.removePotionEffect(XPotion.NIGHT_VISION.get());
-        } else {
-            settings.setNightVision(true);
-            player.addPotionEffect(
-                    new PotionEffect(XPotion.NIGHT_VISION.get(), PotionEffect.INFINITE_DURATION, 0, false, false));
-        }
-    }
-
-    private void toggleNoClip(Player player, Settings settings) {
-        if (settings.isNoClip()) {
-            settings.setNoClip(false);
-            noClipService.stopNoClip(player.getUniqueId());
-        } else {
-            settings.setNoClip(true);
-            noClipService.startNoClip(player);
-        }
-    }
-
-    private boolean toggleScoreboard(Player player, Settings settings, boolean scoreboardEnabled) {
-        if (!scoreboardEnabled) {
-            return false;
-        }
-
-        if (settings.isScoreboard()) {
-            settings.setScoreboard(false);
-            settingsManager.hideScoreboard(player);
-        } else {
-            settings.setScoreboard(true);
-            settingsManager.displayScoreboard(player);
-            settingsManager.forceUpdateSidebar(player);
-        }
-        return true;
-    }
-
-    @SuppressWarnings("deprecation")
-    private void toggleHidePlayers(Player player, Settings settings) {
-        if (settings.isHidePlayers()) {
-            Bukkit.getOnlinePlayers().forEach(player::hidePlayer);
-        } else {
-            Bukkit.getOnlinePlayers().forEach(player::showPlayer);
-        }
     }
 }
