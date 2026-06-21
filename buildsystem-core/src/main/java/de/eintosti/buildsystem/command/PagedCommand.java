@@ -17,10 +17,11 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -37,8 +38,8 @@ public abstract class PagedCommand extends CommandBase {
 
     private final String title, permissionTemplate;
 
-    protected PagedCommand(BuildSystemPlugin plugin, String title, String permissionTemplate) {
-        super(plugin, true);
+    protected PagedCommand(Messages messages, Logger logger, String title, String permissionTemplate) {
+        super(messages, logger, true);
         this.title = title;
         this.permissionTemplate = permissionTemplate;
     }

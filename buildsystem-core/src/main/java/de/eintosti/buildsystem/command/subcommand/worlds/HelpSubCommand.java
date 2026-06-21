@@ -31,7 +31,7 @@ import org.jspecify.annotations.NullMarked;
 public class HelpSubCommand extends PagedCommand implements SubCommand {
 
     public HelpSubCommand(BuildSystemPlugin plugin) {
-        super(plugin, "worlds_help_title_with_page", "worlds_help_permission");
+        super(plugin.getMessages(), plugin.getLogger(), "worlds_help_title_with_page", "worlds_help_permission");
     }
 
     @Override

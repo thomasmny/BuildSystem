@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.i18n.Messages;
 import java.util.List;
 import java.util.logging.Logger;
@@ -31,15 +30,13 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public abstract class CommandBase implements CommandExecutor, TabCompleter {
 
-    protected final BuildSystemPlugin plugin;
     protected final Messages messages;
     protected final Logger logger;
     private final boolean playerOnly;
 
-    protected CommandBase(BuildSystemPlugin plugin, boolean playerOnly) {
-        this.plugin = plugin;
-        this.messages = plugin.getMessages();
-        this.logger = plugin.getLogger();
+    protected CommandBase(Messages messages, Logger logger, boolean playerOnly) {
+        this.messages = messages;
+        this.logger = logger;
         this.playerOnly = playerOnly;
     }
 

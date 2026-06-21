@@ -17,14 +17,15 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.access.WorldPermissions;
-import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -33,8 +34,13 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class TimeCommand extends CommandBase {
 
-    public TimeCommand(BuildSystemPlugin plugin) {
-        super(plugin, true);
+    private final ConfigService configService;
+    private final WorldStorageImpl worldStorage;
+
+    public TimeCommand(Messages messages, Logger logger, ConfigService configService, WorldStorageImpl worldStorage) {
+        super(messages, logger, true);
+        this.configService = configService;
+        this.worldStorage = worldStorage;
     }
 
     @Override
@@ -46,19 +52,18 @@ public class TimeCommand extends CommandBase {
             return;
         }
 
-        BuildWorld buildWorld = plugin.getWorldService().getWorldStorage().getBuildWorld(world);
-        WorldPermissions permissions = WorldPermissionsImpl.of(plugin, buildWorld);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(world);
 
         switch (label.toLowerCase(Locale.ROOT)) {
             case "day" -> {
-                if (!permissions.canPerformCommand(player, "buildsystem.day")) {
+                if (buildWorld != null && !buildWorld.getPermissions().canPerformCommand(player, "buildsystem.day")) {
                     messages.sendPermissionError(player);
                     return;
                 }
 
                 switch (args.length) {
                     case 0, 1 -> {
-                        world.setTime(plugin.getConfigService()
+                        world.setTime(configService
                                 .current()
                                 .world()
                                 .defaults()
@@ -71,14 +76,14 @@ public class TimeCommand extends CommandBase {
             }
 
             case "night" -> {
-                if (!permissions.canPerformCommand(player, "buildsystem.night")) {
+                if (buildWorld != null && !buildWorld.getPermissions().canPerformCommand(player, "buildsystem.night")) {
                     messages.sendPermissionError(player);
                     return;
                 }
 
                 switch (args.length) {
                     case 0, 1 -> {
-                        world.setTime(plugin.getConfigService()
+                        world.setTime(configService
                                 .current()
                                 .world()
                                 .defaults()
@@ -99,7 +104,7 @@ public class TimeCommand extends CommandBase {
         switch (lc) {
             case "day":
             case "night":
-                plugin.getWorldService().getWorldStorage().getBuildWorlds().stream()
+                worldStorage.getBuildWorlds().stream()
                         .filter(world -> world.getPermissions().canPerformCommand(player, "buildsystem." + lc))
                         .forEach(world -> addArgument(args[0], world.getName(), list));
                 break;

@@ -18,7 +18,11 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import java.util.Objects;
+import java.util.logging.Logger;
 import org.bukkit.command.PluginCommand;
 import org.jspecify.annotations.NullMarked;
 
@@ -32,24 +36,33 @@ public final class CommandRegistrar {
     }
 
     public void registerAll() {
-        register("back", new BackCommand(plugin));
-        register("blocks", new BlocksCommand(plugin));
-        register("build", new BuildCommand(plugin));
-        register("buildsystem", new BuildSystemCommand(plugin));
-        register("config", new ConfigCommand(plugin));
-        register("explosions", new ExplosionsCommand(plugin));
-        register("gamemode", new GamemodeCommand(plugin));
-        register("noai", new NoAICommand(plugin));
-        register("physics", new PhysicsCommand(plugin));
-        register("settings", new SettingsCommand(plugin));
-        register("setup", new SetupCommand(plugin));
-        register("skull", new SkullCommand(plugin));
-        register("spawn", new SpawnCommand(plugin));
-        register("speed", new SpeedCommand(plugin));
-        TimeCommand timeCommand = new TimeCommand(plugin);
+        Messages messages = plugin.getMessages();
+        Logger logger = plugin.getLogger();
+        Menus menus = plugin.getMenus();
+        WorldStorageImpl worldStorage = plugin.getWorldService().getWorldStorage();
+
+        register(
+                "back",
+                new BackCommand(messages, logger, plugin.getPlayerService().getPlayerStorage()));
+        register("blocks", new BlocksCommand(messages, logger, menus));
+        register("build", new BuildCommand(messages, logger, plugin.getPlayerService()));
+        register("buildsystem", new BuildSystemCommand(messages, logger));
+        register("config", new ConfigCommand(messages, logger, plugin));
+        register("explosions", new ExplosionsCommand(messages, logger, worldStorage));
+        register("gamemode", new GamemodeCommand(messages, logger));
+        register("noai", new NoAICommand(messages, logger, worldStorage));
+        register("physics", new PhysicsCommand(messages, logger, worldStorage));
+        register("settings", new SettingsCommand(messages, logger, menus));
+        register("setup", new SetupCommand(messages, logger, menus));
+        register("skull", new SkullCommand(messages, logger));
+        register(
+                "spawn",
+                new SpawnCommand(messages, logger, plugin.getConfigService(), plugin.getSpawnService(), worldStorage));
+        register("speed", new SpeedCommand(messages, logger, menus));
+        TimeCommand timeCommand = new TimeCommand(messages, logger, plugin.getConfigService(), worldStorage);
         register("day", timeCommand);
         register("night", timeCommand);
-        register("top", new TopCommand(plugin));
+        register("top", new TopCommand(messages, logger));
         register("worlds", new WorldsCommand(plugin));
     }
 

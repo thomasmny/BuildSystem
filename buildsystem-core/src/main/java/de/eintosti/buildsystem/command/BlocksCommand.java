@@ -18,15 +18,20 @@
 package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.Menus;
+import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class BlocksCommand extends CommandBase {
 
-    public BlocksCommand(BuildSystemPlugin plugin) {
-        super(plugin, true);
+    private final Menus menus;
+
+    public BlocksCommand(Messages messages, Logger logger, Menus menus) {
+        super(messages, logger, true);
+        this.menus = menus;
     }
 
     @Override
@@ -36,6 +41,6 @@ public class BlocksCommand extends CommandBase {
         }
 
         XSound.BLOCK_CHEST_OPEN.play(player);
-        plugin.getMenus().openBlocks(player);
+        menus.openBlocks(player);
     }
 }

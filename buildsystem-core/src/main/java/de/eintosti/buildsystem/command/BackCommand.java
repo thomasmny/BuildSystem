@@ -18,10 +18,11 @@
 package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import io.papermc.lib.PaperLib;
+import java.util.logging.Logger;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -31,9 +32,9 @@ public class BackCommand extends CommandBase {
 
     private final PlayerStorage playerStorage;
 
-    public BackCommand(BuildSystemPlugin plugin) {
-        super(plugin, true);
-        this.playerStorage = plugin.getPlayerService().getPlayerStorage();
+    public BackCommand(Messages messages, Logger logger, PlayerStorage playerStorage) {
+        super(messages, logger, true);
+        this.playerStorage = playerStorage;
     }
 
     @Override

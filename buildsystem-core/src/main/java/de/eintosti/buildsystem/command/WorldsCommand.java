@@ -27,10 +27,13 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class WorldsCommand extends CommandBase {
 
+    // Retains the plugin transitionally to build the (not-yet-injected) subcommands; drops away with the command layer.
+    private final BuildSystemPlugin plugin;
     private final SubCommandDispatcher dispatcher;
 
     public WorldsCommand(BuildSystemPlugin plugin) {
-        super(plugin, true);
+        super(plugin.getMessages(), plugin.getLogger(), true);
+        this.plugin = plugin;
         this.dispatcher = new SubCommandDispatcher(
                 plugin.getMessages(),
                 List.of(

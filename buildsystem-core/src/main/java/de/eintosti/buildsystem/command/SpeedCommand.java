@@ -17,10 +17,12 @@
  */
 package de.eintosti.buildsystem.command;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.Menus;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -29,8 +31,11 @@ public class SpeedCommand extends CommandBase {
 
     private static final float INVALID_SPEED = -1.0f;
 
-    public SpeedCommand(BuildSystemPlugin plugin) {
-        super(plugin, true);
+    private final Menus menus;
+
+    public SpeedCommand(Messages messages, Logger logger, Menus menus) {
+        super(messages, logger, true);
+        this.menus = menus;
     }
 
     @Override
@@ -41,7 +46,7 @@ public class SpeedCommand extends CommandBase {
 
         switch (args.length) {
             case 0:
-                plugin.getMenus().openSpeed(player);
+                menus.openSpeed(player);
                 break;
             case 1:
                 String speedString = args[0];
