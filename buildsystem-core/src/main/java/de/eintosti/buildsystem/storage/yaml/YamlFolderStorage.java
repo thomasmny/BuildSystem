@@ -49,14 +49,25 @@ public class YamlFolderStorage extends FolderStorageImpl {
     private final BuildSystemPlugin plugin;
     private final YamlStore store;
     private final FileConfiguration config;
-    private final FolderCodec codec;
+    private @Nullable FolderCodec codec;
 
     public YamlFolderStorage(BuildSystemPlugin plugin, WorldStorage worldStorage) {
         super(plugin.getLogger(), worldStorage);
         this.plugin = plugin;
         this.store = new YamlStore(plugin.getDataFolder(), "folders.yml", plugin.getLogger());
         this.config = store.config();
-        this.codec = new FolderCodec(WorldContext.fromPlugin(plugin), plugin.getNavigatorCategoryRegistry());
+    }
+
+    /**
+     * The codec, built lazily on first use. Folders are loaded during plugin enable, before some of the services a
+     * {@link WorldContext} bundles exist; deferring construction to first load (after enable completes the service
+     * graph) keeps startup from resolving a not-yet-created service.
+     */
+    private FolderCodec codec() {
+        if (codec == null) {
+            codec = new FolderCodec(WorldContext.fromPlugin(plugin), plugin.getNavigatorCategoryRegistry());
+        }
+        return codec;
     }
 
     @Override
@@ -68,7 +79,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
     public CompletableFuture<Void> save(Folder folder) {
         return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
             config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
-            config.set(FOLDERS_KEY + "." + codec.key(folder), codec.serialize(folder));
+            config.set(FOLDERS_KEY + "." + codec().key(folder), codec().serialize(folder));
         }));
     }
 
@@ -76,7 +87,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
     public CompletableFuture<Void> save(Collection<Folder> folders) {
         return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
             config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
-            folders.forEach(folder -> config.set(FOLDERS_KEY + "." + codec.key(folder), codec.serialize(folder)));
+            folders.forEach(folder -> config.set(FOLDERS_KEY + "." + codec().key(folder), codec().serialize(folder)));
         }));
     }
 
@@ -94,7 +105,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
                     continue;
                 }
                 try {
-                    loadedByKey.put(folderKey, codec.deserialize(folderKey, section));
+                    loadedByKey.put(folderKey, codec().deserialize(folderKey, section));
                 } catch (Exception e) {
                     logger.log(Level.WARNING, "Skipping folder \"" + folderKey + "\": could not be loaded", e);
                 }
@@ -106,7 +117,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
                 if (section == null) {
                     continue;
                 }
-                String parentKey = codec.parentReference(section);
+                String parentKey = codec().parentReference(section);
                 if (parentKey != null) {
                     Folder parent = loadedByKey.get(parentKey);
                     if (parent != null) {

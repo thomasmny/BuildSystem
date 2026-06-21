@@ -105,7 +105,7 @@ final class Services {
         (this.playerService = new PlayerServiceImpl(plugin, config(), this::world)).init();
         this.navigatorEditorService = new NavigatorEditorService();
         this.noClipService = new NoClipService(plugin);
-        (this.worldService = new WorldServiceImpl(plugin, messages(), this::spawn)).init();
+        this.worldService = new WorldServiceImpl(plugin, messages(), this::spawn);
         this.backupService = new BackupServiceImpl(plugin);
         this.settingsService = new SettingsService(plugin, config(), messages(), player(), world());
         this.spawnService = new SpawnService(plugin, world());
@@ -122,6 +122,10 @@ final class Services {
                 new NamespacedKey(plugin, "category"));
         this.menus = new Menus(plugin);
         this.prompts = new Prompts(messages(), config(), new TaskScheduler(plugin));
+
+        // Load persisted worlds/folders last: world entities pull collaborators from a WorldContext that bundles
+        // services created above (e.g. MenuItems, SpawnService), so the whole service graph must exist before loading.
+        this.worldService.init();
     }
 
     private <T> T checkNotNull(@Nullable T service, String serviceName) {

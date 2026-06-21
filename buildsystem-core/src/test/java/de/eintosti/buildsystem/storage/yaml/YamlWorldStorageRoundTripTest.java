@@ -167,6 +167,18 @@ class YamlWorldStorageRoundTripTest {
     }
 
     @Test
+    void construction_doesNotResolveServices() {
+        // Worlds are loaded during plugin enable, before services such as MenuItems/SpawnService exist. Constructing
+        // the storage must not resolve any service (the codec is built lazily on first load); otherwise startup throws.
+        BuildSystemPlugin shallow = mock(BuildSystemPlugin.class);
+        when(shallow.getDataFolder()).thenReturn(dataFolder);
+        when(shallow.getMenuItems()).thenThrow(new IllegalStateException("service not initialized yet"));
+        when(shallow.getSpawnService()).thenThrow(new IllegalStateException("service not initialized yet"));
+
+        assertDoesNotThrow(() -> new YamlWorldStorage(shallow));
+    }
+
+    @Test
     void load_invalidTypeEnum_defaultsToUnknown() throws Exception {
         YamlConfiguration yaml = new YamlConfiguration();
         yaml.set("worlds.Bad.uuid", UUID.randomUUID().toString());

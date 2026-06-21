@@ -31,6 +31,7 @@ import java.util.logging.Level;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class YamlWorldStorage extends WorldStorageImpl {
@@ -38,22 +39,35 @@ public class YamlWorldStorage extends WorldStorageImpl {
     private static final String WORLDS_KEY = "worlds";
     private static final int LEGACY_VERSION = 1;
 
+    private final BuildSystemPlugin plugin;
     private final YamlStore store;
     private final FileConfiguration config;
-    private final WorldCodec codec;
+    private @Nullable WorldCodec codec;
 
     public YamlWorldStorage(BuildSystemPlugin plugin) {
         super(plugin.getLogger());
+        this.plugin = plugin;
         this.store = new YamlStore(plugin.getDataFolder(), "worlds.yml", plugin.getLogger());
         this.config = store.config();
-        this.codec = new WorldCodec(WorldContext.fromPlugin(plugin), plugin.getPlayerLookupService());
+    }
+
+    /**
+     * The codec, built lazily on first use. Worlds are loaded during plugin enable, before some of the services a
+     * {@link WorldContext} bundles exist; deferring construction to first load (after enable completes the service
+     * graph) keeps startup from resolving a not-yet-created service.
+     */
+    private WorldCodec codec() {
+        if (codec == null) {
+            codec = new WorldCodec(WorldContext.fromPlugin(plugin), plugin.getPlayerLookupService());
+        }
+        return codec;
     }
 
     @Override
     public CompletableFuture<Void> save(BuildWorld buildWorld) {
         return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
             config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
-            config.set(WORLDS_KEY + "." + codec.key(buildWorld), codec.serialize(buildWorld));
+            config.set(WORLDS_KEY + "." + codec().key(buildWorld), codec().serialize(buildWorld));
         }));
     }
 
@@ -61,8 +75,8 @@ public class YamlWorldStorage extends WorldStorageImpl {
     public CompletableFuture<Void> save(Collection<BuildWorld> buildWorlds) {
         return CompletableFuture.runAsync(() -> store.atomicSave(() -> {
             config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
-            buildWorlds.forEach(
-                    buildWorld -> config.set(WORLDS_KEY + "." + codec.key(buildWorld), codec.serialize(buildWorld)));
+            buildWorlds.forEach(buildWorld ->
+                    config.set(WORLDS_KEY + "." + codec().key(buildWorld), codec().serialize(buildWorld)));
         }));
     }
 
@@ -76,7 +90,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
                     if (section == null) {
                         continue;
                     }
-                    worlds.add(codec.deserialize(worldKey, section));
+                    worlds.add(codec().deserialize(worldKey, section));
                 } catch (Exception e) {
                     logger.log(Level.WARNING, "Skipping world \"" + worldKey + "\": could not be loaded", e);
                 }
