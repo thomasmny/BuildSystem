@@ -42,6 +42,7 @@ import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlFolderStorage;
 import de.eintosti.buildsystem.storage.yaml.YamlWorldStorage;
 import de.eintosti.buildsystem.util.FileUtils;
+import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.creation.WorldBuilderImpl;
 import de.eintosti.buildsystem.world.creation.WorldCreationPrompts;
 import de.eintosti.buildsystem.world.creation.WorldImportCoordinator;
@@ -111,6 +112,12 @@ public class WorldServiceImpl implements WorldService {
     @Override
     @Contract("_ -> new")
     public WorldBuilder newWorld(String name) {
+        // Defense-in-depth: the menus sanitize names before they reach here, but this is public API. Reject any name
+        // that would resolve outside the world container so a caller cannot create a directory in, say, plugins/.
+        File worldDirectory = new File(Bukkit.getWorldContainer(), name);
+        if (StringCleaner.isPathEscape(Bukkit.getWorldContainer(), worldDirectory)) {
+            throw new IllegalArgumentException("World name '" + name + "' resolves outside the world container");
+        }
         return new WorldBuilderImpl(services.worldContext(), worldStorage, plugin.getDataFolder(), name);
     }
 
@@ -229,7 +236,8 @@ public class WorldServiceImpl implements WorldService {
         }
 
         File deleteFolder = new File(Bukkit.getWorldContainer(), worldName);
-        if (!deleteFolder.exists()) {
+        // Never recursively delete outside the world container, even if a legacy entry carries a traversal name.
+        if (StringCleaner.isPathEscape(Bukkit.getWorldContainer(), deleteFolder) || !deleteFolder.exists()) {
             return CompletableFuture.failedFuture(
                     new WorldDirectoryNotFoundException(worldName, deleteFolder.getAbsolutePath()));
         }

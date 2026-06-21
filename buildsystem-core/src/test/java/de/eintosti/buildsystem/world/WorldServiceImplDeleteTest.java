@@ -150,4 +150,15 @@ class WorldServiceImplDeleteTest {
         assertNull(worldService.getWorldStorage().getBuildWorld("doomed"), "registry entry must be removed");
         assertFalse(buildWorld.isLoaded());
     }
+
+    @Test
+    void newWorld_pathEscapingName_isRejected() {
+        // Guards issue #481: a name resolving outside the world container must never be accepted, even through the API.
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            bukkit.when(Bukkit::getWorldContainer).thenReturn(worldContainer.toFile());
+
+            assertThrows(IllegalArgumentException.class, () -> worldService.newWorld("../escape"));
+            assertThrows(IllegalArgumentException.class, () -> worldService.newWorld("../../plugins/evil"));
+        }
+    }
 }
