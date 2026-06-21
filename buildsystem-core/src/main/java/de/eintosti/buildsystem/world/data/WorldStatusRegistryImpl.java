@@ -310,7 +310,7 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
      * @return {@code true} if the status was deleted, {@code false} if it was unknown or the last remaining status
      */
     public boolean deleteStatus(String id) {
-        if (!this.statuses.containsKey(id) || this.statuses.size() <= 1) {
+        if (!this.statuses.containsKey(id) || this.statuses.size() == 1) {
             return false;
         }
 

@@ -120,6 +120,6 @@ public final class SubCommandDispatcher {
     }
 
     private static boolean matchesPrefix(String name, String prefix) {
-        return prefix.isEmpty() || name.toLowerCase(Locale.ROOT).startsWith(prefix);
+        return name.toLowerCase(Locale.ROOT).startsWith(prefix);
     }
 }

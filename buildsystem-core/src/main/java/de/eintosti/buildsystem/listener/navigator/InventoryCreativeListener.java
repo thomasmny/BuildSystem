@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.listener.navigator;
 
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
-import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -34,11 +34,11 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class InventoryCreativeListener implements Listener {
 
-    private final MenuItems menuItems;
+    private final NavigatorItems navigatorItems;
     private final TaskScheduler scheduler;
 
-    public InventoryCreativeListener(MenuItems menuItems, TaskScheduler scheduler) {
-        this.menuItems = menuItems;
+    public InventoryCreativeListener(NavigatorItems navigatorItems, TaskScheduler scheduler) {
+        this.navigatorItems = navigatorItems;
         this.scheduler = scheduler;
     }
 
@@ -51,7 +51,7 @@ public class InventoryCreativeListener implements Listener {
         }
 
         Player player = (Player) event.getWhoClicked();
-        List<Integer> navigatorSlots = menuItems.getNavigatorSlots(player);
+        List<Integer> navigatorSlots = navigatorItems.slots(player);
 
         scheduler.runLater(
                 () -> Bukkit.getServer()

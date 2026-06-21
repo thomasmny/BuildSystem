@@ -24,7 +24,7 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
@@ -54,7 +54,7 @@ public class NavigatorService {
 
     private final NavigatorCategoryRegistryImpl navigatorCategoryRegistry;
     private final ConfigService configService;
-    private final MenuItems menuItems;
+    private final NavigatorItems navigatorItems;
     private final PlayerServiceImpl playerService;
     private final Messages messages;
     private final TaskScheduler scheduler;
@@ -67,7 +67,7 @@ public class NavigatorService {
     public NavigatorService(
             NavigatorCategoryRegistryImpl navigatorCategoryRegistry,
             ConfigService configService,
-            MenuItems menuItems,
+            NavigatorItems navigatorItems,
             PlayerServiceImpl playerService,
             Messages messages,
             TaskScheduler scheduler,
@@ -75,7 +75,7 @@ public class NavigatorService {
             NamespacedKey categoryKey) {
         this.navigatorCategoryRegistry = navigatorCategoryRegistry;
         this.configService = configService;
-        this.menuItems = menuItems;
+        this.navigatorItems = navigatorItems;
         this.playerService = playerService;
         this.messages = messages;
         this.scheduler = scheduler;
@@ -183,11 +183,11 @@ public class NavigatorService {
     public void giveNavigator(Player player) {
         if (!configService.current().settings().navigator().giveItemOnJoin()
                 || !player.hasPermission("buildsystem.navigator.item")
-                || menuItems.hasNavigator(player)) {
+                || navigatorItems.has(player)) {
             return;
         }
 
-        ItemStack navigatorItem = menuItems.createNavigatorItem(player);
+        ItemStack navigatorItem = navigatorItems.create(player);
         PlayerInventory playerInventory = player.getInventory();
         ItemStack slot8 = playerInventory.getItem(8);
 
@@ -210,11 +210,8 @@ public class NavigatorService {
 
         XSound.ENTITY_ITEM_BREAK.play(player);
         displayActionBarMessage(player, "");
-        menuItems.replaceItem(
-                player,
-                messages.getString("barrier_item", player),
-                XMaterial.BARRIER,
-                menuItems.createNavigatorItem(player));
+        navigatorItems.replace(
+                player, messages.getString("barrier_item", player), XMaterial.BARRIER, navigatorItems.create(player));
 
         CachedValues cachedValues = buildPlayer.getCachedValues();
         cachedValues.resetWalkSpeedIfPresent(player);

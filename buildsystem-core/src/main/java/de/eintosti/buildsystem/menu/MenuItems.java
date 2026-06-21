@@ -24,25 +24,18 @@ import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.OptionalInt;
 import java.util.logging.Level;
 import java.util.stream.IntStream;
 import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -54,19 +47,13 @@ import org.jspecify.annotations.Nullable;
 public final class MenuItems {
 
     private final JavaPlugin plugin;
-    private final ConfigService configService;
     private final Messages messages;
     private final SettingsService settingsService;
 
-    public final NamespacedKey navigatorKey;
-
-    public MenuItems(
-            JavaPlugin plugin, ConfigService configService, Messages messages, SettingsService settingsService) {
+    public MenuItems(JavaPlugin plugin, Messages messages, SettingsService settingsService) {
         this.plugin = plugin;
-        this.configService = configService;
         this.messages = messages;
         this.settingsService = settingsService;
-        this.navigatorKey = new NamespacedKey(plugin, "navigator");
     }
 
     /**
@@ -182,109 +169,6 @@ public final class MenuItems {
                 ? Profileable.detect(viewer.getName())
                 : Profileable.detect(texture);
         applyHeadProfileAsync(inventory, slot, profile, null, name, lore);
-    }
-
-    /**
-     * Checks if an {@link ItemStack} is a navigator item.
-     *
-     * @param itemStack The item to check
-     * @return true if the item is a navigator, false otherwise
-     */
-    public boolean isNavigator(@Nullable ItemStack itemStack) {
-        if (itemStack == null
-                || itemStack.getType()
-                        != configService.current().settings().navigator().item().get()) {
-            return false;
-        }
-
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null) {
-            return false;
-        }
-
-        return Boolean.TRUE.equals(itemMeta.getPersistentDataContainer().get(navigatorKey, PersistentDataType.BOOLEAN));
-    }
-
-    @Contract("_ -> new")
-    public ItemStack createNavigatorItem(Player player) {
-        ItemStack itemStack = ItemBuilder.of(
-                        configService.current().settings().navigator().item())
-                .name(messages.getString("navigator_item", player))
-                .build();
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null) {
-            return itemStack;
-        }
-
-        itemMeta.getPersistentDataContainer().set(navigatorKey, PersistentDataType.BOOLEAN, true);
-        itemStack.setItemMeta(itemMeta);
-        return itemStack;
-    }
-
-    /**
-     * Gets all slots containing a navigator item in a player's inventory.
-     *
-     * @param player The player to check
-     * @return A list of slot numbers containing navigator items
-     */
-    @Unmodifiable
-    public List<Integer> getNavigatorSlots(Player player) {
-        PlayerInventory playerInventory = player.getInventory();
-        return IntStream.range(0, playerInventory.getSize())
-                .filter(i -> isNavigator(playerInventory.getItem(i)))
-                .boxed()
-                .toList();
-    }
-
-    /**
-     * Checks if a player's inventory contains a navigator item.
-     *
-     * @param player The player to check
-     * @return true if the inventory contains a navigator, false otherwise
-     */
-    public boolean hasNavigator(Player player) {
-        for (ItemStack itemStack : player.getInventory().getContents()) {
-            if (isNavigator(itemStack)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Replaces an {@link ItemStack} in a player's inventory with another {@link ItemStack}.
-     *
-     * @param player The player whose inventory to modify
-     * @param findItemName The name of the item to find
-     * @param findItemType The type of the item to find
-     * @param replaceItem The item to replace with
-     */
-    public void replaceItem(Player player, String findItemName, XMaterial findItemType, ItemStack replaceItem) {
-        PlayerInventory inventory = player.getInventory();
-
-        OptionalInt slot = IntStream.range(0, inventory.getSize())
-                .filter(i -> {
-                    ItemStack currentItem = inventory.getItem(i);
-                    if (currentItem == null || currentItem.getType() != findItemType.get()) {
-                        return false;
-                    }
-
-                    ItemMeta itemMeta = currentItem.getItemMeta();
-                    return itemMeta != null && itemMeta.getDisplayName().equals(findItemName);
-                })
-                .findFirst();
-
-        if (slot.isPresent()) {
-            inventory.setItem(slot.getAsInt(), replaceItem);
-            return;
-        }
-
-        ItemStack slot8 = inventory.getItem(8);
-        if (slot8 == null || slot8.getType() == XMaterial.AIR.get()) {
-            inventory.setItem(8, replaceItem);
-        } else {
-            inventory.addItem(replaceItem);
-        }
     }
 
     /**

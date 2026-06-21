@@ -32,9 +32,9 @@ import de.eintosti.buildsystem.listener.navigator.PlayerMoveListener;
 import de.eintosti.buildsystem.listener.player.*;
 import de.eintosti.buildsystem.listener.settings.*;
 import de.eintosti.buildsystem.listener.world.*;
-import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.MenuListener;
 import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.menu.PlayerChatInput;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.navigator.NavigatorService;
@@ -68,7 +68,7 @@ public final class ListenerRegistrar {
         ConfigService configService = services.config();
         SettingsService settingsService = services.settings();
         WorldStatusRegistry worldStatusRegistry = services.worldStatusRegistry();
-        MenuItems menuItems = services.menuItems();
+        NavigatorItems navigatorItems = services.navigatorItems();
         Menus menus = services.menus();
         Messages messages = services.messages();
         PlayerServiceImpl playerService = services.player();
@@ -91,7 +91,7 @@ public final class ListenerRegistrar {
         register(new EntitySpawnListener(worldStorage));
         register(new FoodLevelChangeListener(worldStorage));
         register(new InstantSignPlacementListener(settingsService, worldStorage));
-        register(new InventoryCreativeListener(menuItems, scheduler));
+        register(new InventoryCreativeListener(navigatorItems, scheduler));
         register(new IronDoorListener(settingsService, worldStorage));
         register(new MenuListener());
         register(new PlayerChatInput.ChatInputListener());
@@ -99,7 +99,7 @@ public final class ListenerRegistrar {
                 navigatorService,
                 settingsService,
                 worldStorage,
-                menuItems,
+                navigatorItems,
                 messages,
                 menus,
                 configService,
@@ -107,8 +107,8 @@ public final class ListenerRegistrar {
         register(new PlayerChangedWorldListener(
                 navigatorService, playerService, settingsService, worldStorage, configService, messages));
         register(new PlayerCommandPreprocessListener(
-                settingsService, worldStorage, menuItems, configService, messages, scheduler));
-        register(new PlayerInventoryClearListener(settingsService, menuItems));
+                settingsService, worldStorage, navigatorItems, configService, messages, scheduler));
+        register(new PlayerInventoryClearListener(settingsService, navigatorItems));
         register(new PlayerJoinListener(
                 playerService,
                 settingsService,

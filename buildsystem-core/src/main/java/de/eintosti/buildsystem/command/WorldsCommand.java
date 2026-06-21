@@ -23,8 +23,8 @@ import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.command.subcommand.worlds.*;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
@@ -54,7 +54,7 @@ public class WorldsCommand extends CommandBase {
         WorldServiceImpl worldService = services.world();
         Menus menus = services.menus();
         Prompts prompts = services.prompts();
-        MenuItems menuItems = services.menuItems();
+        NavigatorItems navigatorItems = services.navigatorItems();
         ConfigService configService = services.config();
         SettingsService settingsService = services.settings();
         PlayerLookupService playerLookupService = services.playerLookup();
@@ -78,7 +78,7 @@ public class WorldsCommand extends CommandBase {
                         new ImportAllSubCommand(messages, worldService, playerLookupService, scheduler),
                         new ImportSubCommand(messages, worldService, configService, playerLookupService, scheduler),
                         new InfoSubCommand(messages, worldService),
-                        new ItemSubCommand(messages, worldService, menuItems),
+                        new ItemSubCommand(messages, worldService, navigatorItems),
                         new RemoveBuilderSubCommand(messages, worldService, playerLookupService, prompts, scheduler),
                         new RemoveSpawnSubCommand(messages, worldService),
                         new RenameSubCommand(messages, worldService, prompts),

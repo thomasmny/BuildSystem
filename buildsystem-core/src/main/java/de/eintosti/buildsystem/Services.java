@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.navigator.NavigatorService;
@@ -68,6 +69,7 @@ public final class Services {
     private @Nullable NavigatorCategoryRegistryImpl navigatorCategoryRegistry;
     private @Nullable WorldStatusRegistryImpl worldStatusRegistry;
     private @Nullable MenuItems menuItems;
+    private @Nullable NavigatorItems navigatorItems;
     private @Nullable Menus menus;
     private @Nullable Prompts prompts;
     private @Nullable WorldContext worldContext;
@@ -112,12 +114,12 @@ public final class Services {
         this.backupService = new BackupServiceImpl(plugin, config(), messages(), world(), this::spawn);
         this.settingsService = new SettingsService(plugin, config(), messages(), player(), world());
         this.spawnService = new SpawnService(plugin, world());
-        this.menuItems = new MenuItems(plugin, config(), messages(), settings());
-        // Created after MenuItems (which it needs); nothing constructed earlier depends on it.
+        this.menuItems = new MenuItems(plugin, messages(), settings());
+        this.navigatorItems = new NavigatorItems(plugin, config(), messages());
         this.navigatorService = new NavigatorService(
                 navigatorCategoryRegistry(),
                 config(),
-                menuItems(),
+                navigatorItems(),
                 player(),
                 messages(),
                 new TaskScheduler(plugin),
@@ -200,6 +202,10 @@ public final class Services {
 
     public MenuItems menuItems() {
         return checkNotNull(menuItems, "MenuItems");
+    }
+
+    public NavigatorItems navigatorItems() {
+        return checkNotNull(navigatorItems, "NavigatorItems");
     }
 
     public Menus menus() {

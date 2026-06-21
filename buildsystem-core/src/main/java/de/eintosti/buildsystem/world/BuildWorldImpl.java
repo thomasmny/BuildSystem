@@ -153,11 +153,9 @@ public final class BuildWorldImpl implements BuildWorld {
         this.folder = folder;
 
         this.worldData.setFolderResolver(this::getFolder);
-        this.worldData.setStatusChangeListener((previousStatus, newStatus) -> {
-            Bukkit.getServer()
-                    .getPluginManager()
-                    .callEvent(new BuildWorldStatusChangeEvent(this, previousStatus, newStatus));
-        });
+        this.worldData.setStatusChangeListener((previousStatus, newStatus) -> Bukkit.getServer()
+                .getPluginManager()
+                .callEvent(new BuildWorldStatusChangeEvent(this, previousStatus, newStatus)));
         this.worldLoader = WorldLoaderImpl.of(context, this);
         this.worldUnloader = WorldUnloaderImpl.of(context, this);
         this.worldPermissions = WorldPermissionsImpl.of(context, this);
@@ -229,7 +227,9 @@ public final class BuildWorldImpl implements BuildWorld {
                         Map.entry("%permission%", worldData.get(WorldDataKey.PERMISSION)),
                         Map.entry(
                                 "%creator%",
-                                builders.hasCreator() ? builders.getCreator().getName() : "-"),
+                                builders.getCreator() != null
+                                        ? builders.getCreator().getName()
+                                        : "-"),
                         Map.entry("%creation%", context.messages().formatDate(getCreation())),
                         Map.entry(
                                 "%lastedited%", context.messages().formatDate(worldData.get(WorldDataKey.LAST_EDITED))),

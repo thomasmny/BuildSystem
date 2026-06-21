@@ -17,8 +17,9 @@
  */
 package de.eintosti.buildsystem.world.display;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
@@ -81,7 +82,7 @@ class DisplayOrderingTest {
                 DisplayOrdering.withPriorities(WorldSort.NAME_A_TO_Z.getComparator()));
 
         // The pinned world floats to the top even though the folder name sorts first alphabetically.
-        assertEquals("alpha", result.get(0));
+        assertEquals("alpha", result.getFirst());
         assertEquals(List.of("alpha", "aaa-folder", "zulu"), result);
     }
 

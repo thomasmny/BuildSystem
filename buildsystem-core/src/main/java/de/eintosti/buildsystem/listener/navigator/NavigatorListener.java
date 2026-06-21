@@ -31,13 +31,12 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import de.eintosti.buildsystem.world.menu.*;
 import java.util.Objects;
 import java.util.UUID;
 import org.bukkit.Material;
@@ -68,7 +67,7 @@ public class NavigatorListener implements Listener {
     private final NavigatorService navigatorService;
     private final SettingsService settingsManager;
     private final WorldStorage worldStorage;
-    private final MenuItems menuItems;
+    private final NavigatorItems navigatorItems;
     private final Messages messages;
     private final Menus menus;
     private final ConfigService configService;
@@ -78,7 +77,7 @@ public class NavigatorListener implements Listener {
             NavigatorService navigatorService,
             SettingsService settingsManager,
             WorldStorage worldStorage,
-            MenuItems menuItems,
+            NavigatorItems navigatorItems,
             Messages messages,
             Menus menus,
             ConfigService configService,
@@ -86,7 +85,7 @@ public class NavigatorListener implements Listener {
         this.navigatorService = navigatorService;
         this.settingsManager = settingsManager;
         this.worldStorage = worldStorage;
-        this.menuItems = menuItems;
+        this.navigatorItems = navigatorItems;
         this.messages = messages;
         this.menus = menus;
         this.configService = configService;
@@ -110,7 +109,7 @@ public class NavigatorListener implements Listener {
             return;
         }
 
-        if (menuItems.isNavigator(itemStack)) {
+        if (navigatorItems.is(itemStack)) {
             event.setCancelled(true);
             if (!player.hasPermission("buildsystem.navigator.item")) {
                 messages.sendPermissionError(player);
@@ -141,7 +140,7 @@ public class NavigatorListener implements Listener {
                 ItemStack replaceItem = ItemBuilder.of(XMaterial.BARRIER)
                         .name(messages.getString("barrier_item", player))
                         .build();
-                menuItems.replaceItem(
+                navigatorItems.replace(
                         player,
                         findItemName,
                         configService.current().settings().navigator().item(),

@@ -20,7 +20,7 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -28,11 +28,11 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class ItemSubCommand extends AbstractSubCommand {
 
-    private final MenuItems menuItems;
+    private final NavigatorItems navigatorItems;
 
-    public ItemSubCommand(Messages messages, WorldServiceImpl worldService, MenuItems menuItems) {
+    public ItemSubCommand(Messages messages, WorldServiceImpl worldService, NavigatorItems navigatorItems) {
         super(messages, worldService);
-        this.menuItems = menuItems;
+        this.navigatorItems = navigatorItems;
     }
 
     @Override
@@ -42,7 +42,7 @@ public class ItemSubCommand extends AbstractSubCommand {
             return;
         }
 
-        player.getInventory().addItem(menuItems.createNavigatorItem(player));
+        player.getInventory().addItem(navigatorItems.create(player));
         messages.sendMessage(player, "worlds_item_receive");
     }
 

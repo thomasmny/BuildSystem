@@ -46,8 +46,7 @@ public final class DisplayOrdering {
     }
 
     private static Comparator<Displayable> floatToTop(Predicate<Displayable> flag) {
-        return Comparator.comparing((Displayable displayable) -> flag.test(displayable))
-                .reversed();
+        return Comparator.comparing(flag::test).reversed();
     }
 
     private static boolean isPinned(Displayable displayable) {

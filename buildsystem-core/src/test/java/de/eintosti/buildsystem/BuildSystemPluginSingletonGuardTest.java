@@ -71,18 +71,16 @@ class BuildSystemPluginSingletonGuardTest {
                         dis.readFully(bytes);
                         pool[i] = new String(bytes, StandardCharsets.UTF_8);
                     }
-                    case 3, 4 -> dis.readInt();
+                    case 3, 4, 17, 18, 9, 10, 11, 12 -> dis.readInt();
                     case 5, 6 -> {
                         dis.readLong();
                         i++;
                     } // long/double occupy two slots
                     case 7, 8, 16, 19, 20 -> dis.readUnsignedShort();
-                    case 9, 10, 11, 12 -> dis.readInt();
                     case 15 -> {
                         dis.readUnsignedByte();
                         dis.readUnsignedShort();
                     }
-                    case 17, 18 -> dis.readInt();
                     default -> throw new IllegalStateException("Unknown constant pool tag: " + tag + " at index " + i);
                 }
             }

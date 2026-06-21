@@ -23,7 +23,7 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.integration.worldedit.WorldEditCommands;
-import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
@@ -43,7 +43,7 @@ public class PlayerCommandPreprocessListener implements Listener {
 
     private final SettingsService settingsManager;
     private final WorldStorage worldStorage;
-    private final MenuItems menuItems;
+    private final NavigatorItems navigatorItems;
     private final ConfigService configService;
     private final Messages messages;
     private final TaskScheduler scheduler;
@@ -52,13 +52,13 @@ public class PlayerCommandPreprocessListener implements Listener {
     public PlayerCommandPreprocessListener(
             SettingsService settingsManager,
             WorldStorage worldStorage,
-            MenuItems menuItems,
+            NavigatorItems navigatorItems,
             ConfigService configService,
             Messages messages,
             TaskScheduler scheduler) {
         this.settingsManager = settingsManager;
         this.worldStorage = worldStorage;
-        this.menuItems = menuItems;
+        this.navigatorItems = navigatorItems;
         this.configService = configService;
         this.messages = messages;
         this.scheduler = scheduler;
@@ -75,13 +75,13 @@ public class PlayerCommandPreprocessListener implements Listener {
         Player player = event.getPlayer();
 
         if (command.equalsIgnoreCase("/clear")) {
-            ItemStack navigatorItem = menuItems.createNavigatorItem(player);
+            ItemStack navigatorItem = navigatorItems.create(player);
             if (!player.getInventory().contains(navigatorItem)) {
                 return;
             }
 
             if (settingsManager.getSettings(player).isKeepNavigator()) {
-                List<Integer> navigatorSlots = menuItems.getNavigatorSlots(player);
+                List<Integer> navigatorSlots = navigatorItems.slots(player);
                 scheduler.runLater(
                         () -> Bukkit.getServer()
                                 .getPluginManager()
