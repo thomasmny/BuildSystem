@@ -49,7 +49,7 @@ class NavigatorCategoryRegistryImplTest {
     void setUp() {
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
-        registry = new NavigatorCategoryRegistryImpl(plugin);
+        registry = new NavigatorCategoryRegistryImpl(plugin, plugin::getWorldService);
     }
 
     @Test

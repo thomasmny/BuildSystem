@@ -95,8 +95,9 @@ final class Services {
      * {@code onEnable}.
      */
     void initClasses() {
-        this.navigatorCategoryRegistry = new NavigatorCategoryRegistryImpl(plugin);
-        this.worldStatusRegistry = new WorldStatusRegistryImpl(plugin, navigatorCategoryRegistry());
+        this.navigatorCategoryRegistry = new NavigatorCategoryRegistryImpl(plugin, this::world);
+        this.worldStatusRegistry =
+                new WorldStatusRegistryImpl(plugin, navigatorCategoryRegistry(), messages(), this::world);
         this.customizableIcons = new CustomizableIcons(plugin);
 
         this.customBlockManager = new CustomBlockManager(plugin);

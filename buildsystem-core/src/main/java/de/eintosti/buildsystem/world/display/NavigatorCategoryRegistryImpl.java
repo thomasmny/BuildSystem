@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.storage.yaml.YamlCategoryStorage;
 import de.eintosti.buildsystem.util.StringUtils;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,6 +40,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -58,12 +60,14 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
     public static final int DEFAULT_SETTINGS_SLOT = 15;
 
     private final BuildSystemPlugin plugin;
+    private final Supplier<WorldServiceImpl> worldService;
     private final YamlCategoryStorage storage;
     private final Map<String, NavigatorCategoryImpl> categories = new LinkedHashMap<>();
     private int settingsSlot;
 
-    public NavigatorCategoryRegistryImpl(BuildSystemPlugin plugin) {
+    public NavigatorCategoryRegistryImpl(BuildSystemPlugin plugin, Supplier<WorldServiceImpl> worldService) {
         this.plugin = plugin;
+        this.worldService = worldService;
         this.storage = new YamlCategoryStorage(plugin);
 
         this.categories.putAll(storage.load());
@@ -301,7 +305,7 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
      */
     private void rehomeFolders(String deletedId) {
         NavigatorCategory fallback = getDefaultCategory();
-        var folderStorage = plugin.getWorldService().getFolderStorage();
+        var folderStorage = worldService.get().getFolderStorage();
         List<Folder> rehomed = new ArrayList<>();
         for (Folder folder : folderStorage.getFolders()) {
             if (folder.getCategory().getId().equals(deletedId)) {

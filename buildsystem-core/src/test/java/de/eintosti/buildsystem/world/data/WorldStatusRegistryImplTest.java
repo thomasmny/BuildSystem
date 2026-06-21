@@ -49,8 +49,8 @@ class WorldStatusRegistryImplTest {
     void setUp() {
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
-        NavigatorCategoryRegistryImpl categories = new NavigatorCategoryRegistryImpl(plugin);
-        registry = new WorldStatusRegistryImpl(plugin, categories);
+        NavigatorCategoryRegistryImpl categories = new NavigatorCategoryRegistryImpl(plugin, plugin::getWorldService);
+        registry = new WorldStatusRegistryImpl(plugin, categories, plugin.getMessages(), plugin::getWorldService);
     }
 
     @Test
@@ -188,6 +188,10 @@ class WorldStatusRegistryImplTest {
     private WorldStatusRegistryImpl reloadRegistry() {
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
-        return new WorldStatusRegistryImpl(plugin, new NavigatorCategoryRegistryImpl(plugin));
+        return new WorldStatusRegistryImpl(
+                plugin,
+                new NavigatorCategoryRegistryImpl(plugin, plugin::getWorldService),
+                plugin.getMessages(),
+                plugin::getWorldService);
     }
 }
