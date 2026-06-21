@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.storage.codec;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
@@ -59,10 +58,12 @@ public final class FolderCodec implements Codec<Folder> {
     private static final String PROJECT = "project";
     private static final String WORLDS = "worlds";
 
-    private final BuildSystemPlugin plugin;
+    private final WorldContext context;
+    private final NavigatorCategoryRegistry categoryRegistry;
 
-    public FolderCodec(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+    public FolderCodec(WorldContext context, NavigatorCategoryRegistry categoryRegistry) {
+        this.context = context;
+        this.categoryRegistry = categoryRegistry;
     }
 
     @Override
@@ -107,7 +108,7 @@ public final class FolderCodec implements Codec<Folder> {
                 section.getStringList(WORLDS).stream().map(UUID::fromString).toList();
 
         FolderImpl folder = new FolderImpl(
-                WorldContext.fromPlugin(plugin),
+                context,
                 uuid,
                 name,
                 creation,
@@ -124,10 +125,10 @@ public final class FolderCodec implements Codec<Folder> {
     }
 
     /**
-     * Returns the stored parent-folder reference (the parent's name) for the storage to link in its second load pass.
+     * Returns the stored parent-folder reference (the parent's UUID) for the storage to link in its second load pass.
      *
      * @param section The folder's configuration section
-     * @return The parent folder's name, or {@code null} when the folder has no parent
+     * @return The parent folder's UUID, or {@code null} when the folder has no parent
      */
     public @Nullable String parentReference(ConfigurationSection section) {
         return section.getString(PARENT);
@@ -139,11 +140,10 @@ public final class FolderCodec implements Codec<Folder> {
      * built-in category id. Falls back to the default category when the key is missing or unknown.
      */
     private NavigatorCategory resolveCategory(ConfigurationSection section) {
-        NavigatorCategoryRegistry registry = plugin.getNavigatorCategoryRegistry();
         String categoryId = section.getString(CATEGORY);
         categoryId = categoryId != null ? categoryId.toLowerCase(Locale.ROOT) : null;
         return categoryId != null
-                ? registry.getCategory(categoryId).orElseGet(registry::getDefaultCategory)
-                : registry.getDefaultCategory();
+                ? categoryRegistry.getCategory(categoryId).orElseGet(categoryRegistry::getDefaultCategory)
+                : categoryRegistry.getDefaultCategory();
     }
 }

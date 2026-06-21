@@ -56,7 +56,7 @@ public class YamlFolderStorage extends FolderStorageImpl {
         this.plugin = plugin;
         this.store = new YamlStore(plugin.getDataFolder(), "folders.yml", plugin.getLogger());
         this.config = store.config();
-        this.codec = new FolderCodec(plugin);
+        this.codec = new FolderCodec(WorldContext.fromPlugin(plugin), plugin.getNavigatorCategoryRegistry());
     }
 
     @Override

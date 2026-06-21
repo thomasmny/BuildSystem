@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.codec.WorldCodec;
 import de.eintosti.buildsystem.storage.migration.StorageMigration;
+import de.eintosti.buildsystem.world.WorldContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -45,7 +46,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         super(plugin.getLogger());
         this.store = new YamlStore(plugin.getDataFolder(), "worlds.yml", plugin.getLogger());
         this.config = store.config();
-        this.codec = new WorldCodec(plugin);
+        this.codec = new WorldCodec(WorldContext.fromPlugin(plugin), plugin.getPlayerLookupService());
     }
 
     @Override

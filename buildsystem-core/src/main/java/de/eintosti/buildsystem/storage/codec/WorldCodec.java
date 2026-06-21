@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.storage.codec;
 
 import com.cryptomorin.xseries.XMaterial;
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
@@ -26,6 +25,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
+import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
@@ -87,10 +87,12 @@ public final class WorldCodec implements Codec<BuildWorld> {
     private static final String DATA_LAST_UNLOADED = "last-unloaded";
     private static final String DATA_LAST_EDITED = "last-edited";
 
-    private final BuildSystemPlugin plugin;
+    private final WorldContext context;
+    private final PlayerLookupService playerLookup;
 
-    public WorldCodec(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+    public WorldCodec(WorldContext context, PlayerLookupService playerLookup) {
+        this.context = context;
+        this.playerLookup = playerLookup;
     }
 
     @Override
@@ -140,7 +142,7 @@ public final class WorldCodec implements Codec<BuildWorld> {
                 generatorName != null ? CustomGeneratorImpl.of(generatorName, name) : null;
 
         return new BuildWorldImpl(
-                WorldContext.fromPlugin(plugin),
+                context,
                 uuid,
                 name,
                 worldType,
@@ -177,9 +179,9 @@ public final class WorldCodec implements Codec<BuildWorld> {
                 .withLastUnloaded(section.getLong(DATA + "." + DATA_LAST_UNLOADED))
                 .withLastEdited(section.getLong(DATA + "." + DATA_LAST_EDITED))
                 .withPermissionOverrideEnabled(
-                        () -> plugin.getConfigService().current().folder().overridePermissions())
+                        () -> context.configService().current().folder().overridePermissions())
                 .withProjectOverrideEnabled(
-                        () -> plugin.getConfigService().current().folder().overrideProjects())
+                        () -> context.configService().current().folder().overrideProjects())
                 .build();
     }
 
@@ -200,7 +202,7 @@ public final class WorldCodec implements Codec<BuildWorld> {
         try {
             return BuildWorldType.valueOf(raw);
         } catch (IllegalArgumentException e) {
-            plugin.getLogger()
+            context.logger()
                     .warning("Unknown world type \"" + raw + "\" for \"" + worldName + "\". Defaulting to UNKNOWN.");
             return BuildWorldType.UNKNOWN;
         }
@@ -211,14 +213,14 @@ public final class WorldCodec implements Codec<BuildWorld> {
      * equivalent lower-case status id. Falls back to the registry default when the id is unknown.
      */
     private BuildWorldStatus parseStatus(ConfigurationSection section, String worldName) {
-        WorldStatusRegistry registry = plugin.getWorldStatusRegistry();
+        WorldStatusRegistry registry = context.statusRegistry();
         String raw = section.getString(DATA + "." + DATA_STATUS);
         if (raw == null) {
             return registry.getDefaultStatus();
         }
         String id = raw.toLowerCase(Locale.ROOT);
         return registry.getStatus(id).orElseGet(() -> {
-            plugin.getLogger()
+            context.logger()
                     .warning("Unknown status \"" + raw + "\" for \"" + worldName + "\". Defaulting to "
                             + registry.getDefaultStatus().getId() + ".");
             return registry.getDefaultStatus();
@@ -245,15 +247,15 @@ public final class WorldCodec implements Codec<BuildWorld> {
         String itemString = section.getString(DATA + "." + DATA_MATERIAL);
         if (itemString == null) {
             itemString = XMaterial.BEDROCK.name();
-            plugin.getLogger().warning("Could not find material for \"" + worldName + "\". Defaulting to BEDROCK.");
+            context.logger().warning("Could not find material for \"" + worldName + "\". Defaulting to BEDROCK.");
         }
 
         Optional<XMaterial> xMaterial = XMaterial.matchXMaterial(itemString);
         if (xMaterial.isPresent()) {
             return xMaterial.get();
         } else {
-            plugin.getLogger().warning("Unknown material found for \"" + worldName + "\" (" + itemString + ").");
-            plugin.getLogger().warning("Defaulting back to BEDROCK.");
+            context.logger().warning("Unknown material found for \"" + worldName + "\" (" + itemString + ").");
+            context.logger().warning("Defaulting back to BEDROCK.");
             return XMaterial.BEDROCK;
         }
     }
@@ -273,7 +275,7 @@ public final class WorldCodec implements Codec<BuildWorld> {
             }
 
             // Runs inside load()'s supplyAsync, so this off-main blocking lookup is safe.
-            UUID creatorId = plugin.getPlayerLookupService().lookupUniqueIdBlocking(creator);
+            UUID creatorId = playerLookup.lookupUniqueIdBlocking(creator);
             if (creatorId == null) {
                 return null;
             }
