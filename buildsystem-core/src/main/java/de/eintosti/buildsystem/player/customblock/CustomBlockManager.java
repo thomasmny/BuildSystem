@@ -21,22 +21,10 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
-import de.eintosti.buildsystem.util.DirectionUtil;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.function.Supplier;
-import org.bukkit.Axis;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
-import org.bukkit.block.Furnace;
-import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.Lightable;
-import org.bukkit.block.data.MultipleFacing;
-import org.bukkit.block.data.Orientable;
-import org.bukkit.block.data.type.HangingSign;
-import org.bukkit.block.data.type.Sign;
-import org.bukkit.block.data.type.Slab;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -51,6 +39,7 @@ public class CustomBlockManager implements Listener {
 
     private final BuildSystemPlugin plugin;
     private final Supplier<WorldServiceImpl> worldService;
+    private final CustomBlockPlacer placer = new CustomBlockPlacer();
 
     public CustomBlockManager(BuildSystemPlugin plugin, Supplier<WorldServiceImpl> worldService) {
         this.plugin = plugin;
@@ -79,6 +68,8 @@ public class CustomBlockManager implements Listener {
             return;
         }
 
+        // Placing a custom block fires physics updates; toggle physics on for the placement if the world disables it,
+        // otherwise the block (e.g. a portal or piston head) would pop off.
         boolean hadToDisablePhysics = false;
         if (isBuildWorld && !buildWorld.getData().get(WorldDataKey.PHYSICS)) {
             hadToDisablePhysics = true;
@@ -93,126 +84,27 @@ public class CustomBlockManager implements Listener {
     }
 
     /**
-     * Sets a custom block based on the provided {@link CustomBlock}.
+     * Replaces the placed player head with the custom block on the next tick, cancelling the original placement once the
+     * block is in. The block data must be applied a tick later, after Bukkit finishes placing the head.
      *
-     * @param event The {@link BlockPlaceEvent} triggered by the player
-     * @param customBlock The custom block to be placed
+     * @param event The placement that dropped the custom-block head
+     * @param customBlock The custom block to materialize
      */
     public void setBlock(BlockPlaceEvent event, CustomBlock customBlock) {
         Player player = event.getPlayer();
         Block block = event.getBlockPlaced();
 
         Bukkit.getScheduler().runTask(plugin, () -> {
-            switch (customBlock) {
-                case FULL_OAK_BARCH:
-                    block.setType(Material.OAK_WOOD);
-                    break;
-                case FULL_SPRUCE_BARCH:
-                    block.setType(Material.SPRUCE_WOOD);
-                    break;
-                case FULL_BIRCH_BARCH:
-                    block.setType(Material.BIRCH_WOOD);
-                    break;
-                case FULL_JUNGLE_BARCH:
-                    block.setType(Material.JUNGLE_WOOD);
-                    break;
-                case FULL_ACACIA_BARCH:
-                    block.setType(Material.ACACIA_WOOD);
-                    break;
-                case FULL_DARK_OAK_BARCH:
-                    block.setType(Material.DARK_OAK_WOOD);
-                    break;
-                case RED_MUSHROOM:
-                    block.setType(Material.RED_MUSHROOM_BLOCK);
-                    break;
-                case BROWN_MUSHROOM:
-                    block.setType(Material.BROWN_MUSHROOM_BLOCK);
-                    break;
-                case FULL_MUSHROOM_STEM:
-                    block.setType(Material.MUSHROOM_STEM);
-                    break;
-                case MUSHROOM_STEM:
-                    block.setType(Material.MUSHROOM_STEM);
-                    MultipleFacing mushroomStem = (MultipleFacing) block.getBlockData();
-                    mushroomStem.setFace(BlockFace.UP, false);
-                    mushroomStem.setFace(BlockFace.DOWN, false);
-                    block.setBlockData(mushroomStem);
-                    break;
-                case MUSHROOM_BLOCK:
-                    block.setType(Material.MUSHROOM_STEM);
-                    MultipleFacing mushroomBlock = (MultipleFacing) block.getBlockData();
-                    for (BlockFace blockFace : DirectionUtil.BLOCK_SIDES) {
-                        mushroomBlock.setFace(blockFace, false);
-                    }
-                    block.setBlockData(mushroomBlock);
-                    break;
-                case SMOOTH_STONE:
-                    block.setType(Material.SMOOTH_STONE);
-                    break;
-                case DOUBLE_STONE_SLAB:
-                    block.setType(Material.SMOOTH_STONE_SLAB);
-                    Slab slab = (Slab) block.getBlockData();
-                    slab.setType(Slab.Type.DOUBLE);
-                    block.setBlockData(slab);
-                    break;
-                case SMOOTH_SANDSTONE:
-                    block.setType(Material.SMOOTH_SANDSTONE);
-                    break;
-                case SMOOTH_RED_SANDSTONE:
-                    block.setType(Material.SMOOTH_RED_SANDSTONE);
-                    break;
-                case POWERED_REDSTONE_LAMP:
-                    block.setType(Material.REDSTONE_LAMP);
-                    Lightable lightable = (Lightable) block.getBlockData();
-                    lightable.setLit(true);
-                    block.setBlockData(lightable);
-                    break;
-                case BURNING_FURNACE:
-                    block.setType(Material.FURNACE);
-                    Furnace furnace = (Furnace) block.getState();
-                    furnace.setBurnTime(Short.MAX_VALUE);
-                    furnace.update();
-                    rotateBlock(block, DirectionUtil.getBlockDirection(player, false));
-                    break;
-                case PISTON_HEAD:
-                    block.setType(Material.PISTON_HEAD);
-                    rotateBlock(block, DirectionUtil.getBlockDirection(player, true));
-                    break;
-                case COMMAND_BLOCK:
-                    block.setType(Material.COMMAND_BLOCK);
-                    rotateBlock(block, DirectionUtil.getBlockDirection(player, true));
-                    break;
-                case BARRIER:
-                    block.setType(Material.BARRIER);
-                    break;
-                case INVISIBLE_ITEM_FRAME:
-                    // Handled below
-                    return;
-                case MOB_SPAWNER:
-                    block.setType(Material.SPAWNER);
-                    break;
-                case NETHER_PORTAL:
-                    block.setType(Material.NETHER_PORTAL);
-                    rotateBlock(block, DirectionUtil.getBlockDirection(player, false));
-                    break;
-                case END_PORTAL:
-                    block.setType(Material.END_PORTAL);
-                    break;
-                case DRAGON_EGG:
-                    block.setType(Material.DRAGON_EGG);
-                    break;
-                default:
-                    return;
+            if (placer.place(customBlock, block, player)) {
+                event.setCancelled(true);
             }
-
-            event.setCancelled(true);
         });
     }
 
     /**
-     * Handles the placement of an invisible item frame, making it invisible.
+     * Makes an {@link CustomBlock#INVISIBLE_ITEM_FRAME} invisible on placement.
      *
-     * @param event The {@link HangingPlaceEvent} triggered when an item frame is placed
+     * @param event The item-frame placement
      */
     @EventHandler
     public void onInvisibleItemFramePlacement(HangingPlaceEvent event) {
@@ -225,39 +117,5 @@ public class CustomBlockManager implements Listener {
         }
 
         itemFrame.setVisible(false);
-    }
-
-    /**
-     * Rotates a block based on the provided {@link BlockFace} direction.
-     *
-     * @param block The block to rotate
-     * @param direction The {@link BlockFace} representing the new direction or axis
-     */
-    public void rotateBlock(Block block, BlockFace direction) {
-        switch (block.getBlockData()) {
-            case Directional directional -> {
-                directional.setFacing(direction);
-                block.setBlockData(directional);
-            }
-            case Orientable orientable -> {
-                Axis axis =
-                        switch (direction) {
-                            case UP, DOWN -> Axis.Y;
-                            case EAST, WEST -> Axis.X;
-                            default -> Axis.Z;
-                        };
-                orientable.setAxis(axis);
-                block.setBlockData(orientable);
-            }
-            case Sign sign -> {
-                sign.setRotation(direction);
-                block.setBlockData(sign);
-            }
-            case HangingSign hangingSign -> {
-                hangingSign.setRotation(direction);
-                block.setBlockData(hangingSign);
-            }
-            default -> {}
-        }
     }
 }

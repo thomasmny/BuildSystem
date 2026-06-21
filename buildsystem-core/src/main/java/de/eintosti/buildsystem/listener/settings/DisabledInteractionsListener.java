@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldSetting;
 import de.eintosti.buildsystem.config.ConfigService;
-import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
@@ -53,7 +52,6 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class DisabledInteractionsListener implements Listener {
 
-    private final CustomBlockManager customBlockManager;
     private final SettingsService settingsManager;
     private final WorldStorage worldStorage;
     private final ConfigService configService;
@@ -61,11 +59,7 @@ public class DisabledInteractionsListener implements Listener {
     private final Set<UUID> cachePlayers;
 
     public DisabledInteractionsListener(
-            CustomBlockManager customBlockManager,
-            SettingsService settingsManager,
-            WorldStorage worldStorage,
-            ConfigService configService) {
-        this.customBlockManager = customBlockManager;
+            SettingsService settingsManager, WorldStorage worldStorage, ConfigService configService) {
         this.settingsManager = settingsManager;
         this.worldStorage = worldStorage;
         this.configService = configService;
@@ -123,7 +117,7 @@ public class DisabledInteractionsListener implements Listener {
         adjacent.setType(material);
         XBlock.setColor(adjacent, DyeColor.getByWoolData((byte) itemStack.getDurability()));
 
-        customBlockManager.rotateBlock(adjacent, DirectionUtil.getBlockDirection(player, false));
+        DirectionUtil.rotateBlock(adjacent, DirectionUtil.getBlockDirection(player, false));
 
         EquipmentSlot hand = event.getHand();
         if (hand == null) {

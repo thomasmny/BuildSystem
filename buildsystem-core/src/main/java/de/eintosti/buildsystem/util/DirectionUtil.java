@@ -17,7 +17,13 @@
  */
 package de.eintosti.buildsystem.util;
 
+import org.bukkit.Axis;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Directional;
+import org.bukkit.block.data.Orientable;
+import org.bukkit.block.data.type.HangingSign;
+import org.bukkit.block.data.type.Sign;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -92,5 +98,40 @@ public final class DirectionUtil {
             case 11, 12, 13, 14 -> BlockFace.WEST;
             default -> BlockFace.NORTH;
         };
+    }
+
+    /**
+     * Orients a block towards the given face. Directional and sign blocks face it directly; orientable blocks (logs,
+     * portals) snap to the matching {@link Axis}. Blocks that carry no orientation are left untouched.
+     *
+     * @param block The block to orient
+     * @param direction The face (or axis) to orient towards
+     */
+    public static void rotateBlock(Block block, BlockFace direction) {
+        switch (block.getBlockData()) {
+            case Directional directional -> {
+                directional.setFacing(direction);
+                block.setBlockData(directional);
+            }
+            case Orientable orientable -> {
+                Axis axis =
+                        switch (direction) {
+                            case UP, DOWN -> Axis.Y;
+                            case EAST, WEST -> Axis.X;
+                            default -> Axis.Z;
+                        };
+                orientable.setAxis(axis);
+                block.setBlockData(orientable);
+            }
+            case Sign sign -> {
+                sign.setRotation(direction);
+                block.setBlockData(sign);
+            }
+            case HangingSign hangingSign -> {
+                hangingSign.setRotation(direction);
+                block.setBlockData(hangingSign);
+            }
+            default -> {}
+        }
     }
 }

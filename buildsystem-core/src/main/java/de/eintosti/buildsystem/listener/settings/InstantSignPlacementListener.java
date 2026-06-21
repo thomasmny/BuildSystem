@@ -22,7 +22,6 @@ import com.cryptomorin.xseries.XTag;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldSetting;
-import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
@@ -42,14 +41,11 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class InstantSignPlacementListener implements Listener {
 
-    private final CustomBlockManager customBlockManager;
     private final SettingsService settingsManager;
     private final WorldStorage worldStorage;
     private final WorldProtectionPolicy policy;
 
-    public InstantSignPlacementListener(
-            CustomBlockManager customBlockManager, SettingsService settingsManager, WorldStorage worldStorage) {
-        this.customBlockManager = customBlockManager;
+    public InstantSignPlacementListener(SettingsService settingsManager, WorldStorage worldStorage) {
         this.settingsManager = settingsManager;
         this.worldStorage = worldStorage;
         this.policy = new WorldProtectionPolicy();
@@ -104,7 +100,7 @@ public class InstantSignPlacementListener implements Listener {
                     return;
                 }
                 adjacent.setType(material);
-                customBlockManager.rotateBlock(
+                DirectionUtil.rotateBlock(
                         adjacent, DirectionUtil.getPlayerDirection(player).getOppositeFace());
             }
             case DOWN -> {
@@ -112,14 +108,14 @@ public class InstantSignPlacementListener implements Listener {
                     return;
                 }
                 adjacent.setType(material);
-                customBlockManager.rotateBlock(adjacent, getHangingSignDirection(event));
+                DirectionUtil.rotateBlock(adjacent, getHangingSignDirection(event));
             }
             case NORTH, EAST, SOUTH, WEST -> {
                 String woodType = xMaterial.name().replace("_HANGING", "").replace("_SIGN", "");
                 String block = isHangingSign ? "_WALL_HANGING_SIGN" : "_WALL_SIGN";
                 BlockFace facing = isHangingSign ? getHangingSignDirection(event) : blockFace;
                 XMaterial.matchXMaterial(woodType + block).ifPresent(value -> adjacent.setType(value.get()));
-                customBlockManager.rotateBlock(adjacent, facing);
+                DirectionUtil.rotateBlock(adjacent, facing);
             }
         }
     }
