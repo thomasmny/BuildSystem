@@ -259,20 +259,27 @@ public class WorldServiceImpl implements WorldService {
         // Bukkit statics from a pool thread.
         BukkitScheduler scheduler = Bukkit.getScheduler();
 
-        // Registry removal and metadata persistence are awaited before folder deletion
-        // so a crash mid-delete leaves an orphaned folder (re-importable) rather than
-        // an orphaned registry entry pointing at a deleted folder.
-        return unimportWorld(buildWorld, SaveBehavior.DISCARD).thenRunAsync(() -> {
-            try {
-                FileUtils.deleteDirectory(deleteFolder);
-            } catch (IOException e) {
-                throw new CompletionException(new WorldDeletionException(
-                        "An unexpected error occurred during directory deletion for world: " + worldName, e));
-            }
-            scheduler.runTask(
-                    plugin,
-                    () -> Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostDeleteEvent(buildWorld)));
-        });
+        // Registry removal and metadata persistence are awaited before folder deletion so a crash mid-delete leaves an
+        // orphaned folder (re-importable) rather than an orphaned registry entry pointing at a deleted folder. The
+        // directory delete is disk I/O, so it runs on the shared background pool.
+        return unimportWorld(buildWorld, SaveBehavior.DISCARD)
+                .thenRunAsync(
+                        () -> {
+                            try {
+                                FileUtils.deleteDirectory(deleteFolder);
+                            } catch (IOException e) {
+                                throw new CompletionException(new WorldDeletionException(
+                                        "An unexpected error occurred during directory deletion for world: "
+                                                + worldName,
+                                        e));
+                            }
+                            scheduler.runTask(
+                                    plugin,
+                                    () -> Bukkit.getServer()
+                                            .getPluginManager()
+                                            .callEvent(new BuildWorldPostDeleteEvent(buildWorld)));
+                        },
+                        services.scheduler().background());
     }
 
     /**
