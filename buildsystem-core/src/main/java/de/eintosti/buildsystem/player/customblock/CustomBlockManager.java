@@ -39,7 +39,6 @@ public class CustomBlockManager implements Listener {
 
     private final BuildSystemPlugin plugin;
     private final Supplier<WorldServiceImpl> worldService;
-    private final CustomBlockPlacer placer = new CustomBlockPlacer();
 
     public CustomBlockManager(BuildSystemPlugin plugin, Supplier<WorldServiceImpl> worldService) {
         this.plugin = plugin;
@@ -95,7 +94,7 @@ public class CustomBlockManager implements Listener {
         Block block = event.getBlockPlaced();
 
         Bukkit.getScheduler().runTask(plugin, () -> {
-            if (placer.place(customBlock, block, player)) {
+            if (customBlock.place(block, player)) {
                 event.setCancelled(true);
             }
         });
