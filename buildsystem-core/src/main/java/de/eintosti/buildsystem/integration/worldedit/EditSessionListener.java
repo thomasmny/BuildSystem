@@ -71,7 +71,7 @@ public class EditSessionListener implements Listener {
             return;
         }
 
-        if (policy.checkArchive(player, buildWorld) == Denial.ARCHIVED) {
+        if (policy.checkStatus(player, buildWorld) == Denial.STATUS_LOCKED) {
             event.setExtent(new NullExtent());
             return;
         }

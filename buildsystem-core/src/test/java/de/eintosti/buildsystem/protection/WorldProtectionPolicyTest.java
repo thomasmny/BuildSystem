@@ -73,29 +73,29 @@ class WorldProtectionPolicyTest {
         when(data.get(WorldDataKey.STATUS)).thenReturn(TestData.ARCHIVE_STATUS);
         when(data.get(WorldDataKey.BUILDERS_ENABLED)).thenReturn(true);
 
-        assertEquals(Denial.NONE, policy.checkArchive(player, world));
+        assertEquals(Denial.NONE, policy.checkStatus(player, world));
         assertEquals(Denial.NONE, policy.checkBuilders(player, world));
         assertEquals(Denial.NONE, policy.mayModify(player, world));
     }
 
     @Test
-    void archiveBypassPermission_shortCircuitsArchiveCheck() {
+    void archiveBypassPermission_shortCircuitsStatusCheck() {
         when(player.hasPermission("buildsystem.bypass.archive")).thenReturn(true);
         when(data.get(WorldDataKey.STATUS)).thenReturn(TestData.ARCHIVE_STATUS);
 
-        assertEquals(Denial.NONE, policy.checkArchive(player, world));
+        assertEquals(Denial.NONE, policy.checkStatus(player, world));
     }
 
     @Test
-    void archivedWorld_noBypass_returnsArchived() {
+    void archivedWorld_noBypass_returnsStatusLocked() {
         when(data.get(WorldDataKey.STATUS)).thenReturn(TestData.ARCHIVE_STATUS);
 
-        assertEquals(Denial.ARCHIVED, policy.checkArchive(player, world));
+        assertEquals(Denial.STATUS_LOCKED, policy.checkStatus(player, world));
     }
 
     @Test
     void nonArchivedWorld_returnsNone() {
-        assertEquals(Denial.NONE, policy.checkArchive(player, world));
+        assertEquals(Denial.NONE, policy.checkStatus(player, world));
     }
 
     @Test
@@ -152,7 +152,7 @@ class WorldProtectionPolicyTest {
         when(data.get(WorldDataKey.BUILDERS_ENABLED)).thenReturn(true);
 
         // Archive denial takes precedence over builder denial
-        assertEquals(Denial.ARCHIVED, policy.mayModify(player, world));
+        assertEquals(Denial.STATUS_LOCKED, policy.mayModify(player, world));
     }
 
     @Test
@@ -168,7 +168,7 @@ class WorldProtectionPolicyTest {
         when(data.get(WorldDataKey.STATUS)).thenReturn(TestData.ARCHIVE_STATUS);
         when(data.get(WorldDataKey.BLOCK_PLACEMENT)).thenReturn(false);
 
-        assertEquals(Denial.ARCHIVED, policy.mayModify(player, world, WorldSetting.BLOCK_PLACEMENT));
+        assertEquals(Denial.STATUS_LOCKED, policy.mayModify(player, world, WorldSetting.BLOCK_PLACEMENT));
     }
 
     @Test

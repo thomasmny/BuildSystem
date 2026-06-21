@@ -101,7 +101,7 @@ public class PlayerCommandPreprocessListener implements Listener {
                 return;
             }
 
-            if (policy.checkArchive(player, buildWorld) == Denial.ARCHIVED) {
+            if (policy.checkStatus(player, buildWorld) == Denial.STATUS_LOCKED) {
                 event.setCancelled(true);
                 messages.sendMessage(player, "command_archive_world");
                 return;
