@@ -1,7 +1,6 @@
 rootProject.name = "BuildSystem"
 
 include("buildsystem-api")
-include("buildsystem-api-test")
 include("buildsystem-core")
 
 pluginManagement {
