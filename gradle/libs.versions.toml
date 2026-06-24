@@ -7,7 +7,7 @@ paperlib = "1.0.8"
 # Test
 junit = "6.1.0"
 mockito = "5.23.0"
-mockbukkit = "4.113.2"
+mockbukkit = "4.113.3"
 
 # Plugins
 luckperms = "5.5"
