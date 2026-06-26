@@ -5,7 +5,7 @@ applyCoreConfiguration()
 
 plugins {
     id("java-library")
-    id("com.gradleup.shadow") version "9.4.2"
+    id("com.gradleup.shadow") version "9.4.3"
     id("de.eldoria.plugin-yml.bukkit") version "0.9.0"
     id("xyz.jpenilla.run-paper") version "3.0.2"
 }
