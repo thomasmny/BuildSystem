@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.creation;
 
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import java.io.File;
 import java.io.IOException;
@@ -39,11 +40,9 @@ public class GenerationDataStore {
     private static final String CUSTOM_GENERATOR_PREFIX = "GENERATOR:";
 
     private final Logger logger;
-    private final File worldContainer;
 
-    public GenerationDataStore(Logger logger, File worldContainer) {
+    public GenerationDataStore(Logger logger) {
         this.logger = logger;
-        this.worldContainer = worldContainer;
     }
 
     /**
@@ -87,7 +86,7 @@ public class GenerationDataStore {
     public WorldGenerationData load(String worldName) {
         BuildWorldType defaultType = BuildWorldType.NORMAL;
 
-        Path filePath = Path.of(worldContainer.getAbsolutePath(), worldName, WORLD_TYPE_FILE_NAME);
+        Path filePath = new File(FileUtils.worldFolder(worldName), WORLD_TYPE_FILE_NAME).toPath();
         if (!filePath.toFile().exists()) {
             return new WorldGenerationData.PredefinedGeneratorData(defaultType);
         }

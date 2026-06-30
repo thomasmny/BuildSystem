@@ -19,6 +19,10 @@ package de.eintosti.buildsystem.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -26,12 +30,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedStatic;
 
 /**
  * Characterization tests for the file primitives that world deletion, renaming and backups are built on.
@@ -156,5 +164,72 @@ class FileUtilsTest {
 
         // Failure must surface instead of producing a silently-truncated archive.
         assertThrows(IOException.class, () -> FileUtils.zipDirectoryToMemory(missing));
+    }
+
+    /** A running server with {@code level-name=world} whose container is the temp dir. */
+    private MockedStatic<Bukkit> mockServer() {
+        MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class);
+        bukkit.when(Bukkit::getWorldContainer).thenReturn(tempDir.toFile());
+        World main = mock(World.class);
+        when(main.getName()).thenReturn("world");
+        bukkit.when(Bukkit::getWorlds).thenReturn(List.of(main));
+        bukkit.when(() -> Bukkit.getWorld(anyString())).thenReturn(null);
+        return bukkit;
+    }
+
+    private File dimensions() {
+        return new File(tempDir.toFile(), "world" + File.separator + "dimensions" + File.separator + "minecraft");
+    }
+
+    @Test
+    void worldFolder_loadedWorld_usesItsReportedFolder() {
+        File reported = tempDir.resolve("wherever").resolve("custom").toFile();
+        World loaded = mock(World.class);
+        when(loaded.getWorldFolder()).thenReturn(reported);
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            bukkit.when(() -> Bukkit.getWorld("Loaded")).thenReturn(loaded);
+            assertEquals(reported, FileUtils.worldFolder("Loaded"));
+        }
+    }
+
+    @Test
+    void worldFolder_unloadedWorld_resolvesLowercasedDimensionFolder() throws IOException {
+        File dimension = new File(dimensions(), "myworld");
+        Files.createDirectories(dimension.toPath());
+        try (MockedStatic<Bukkit> bukkit = mockServer()) {
+            assertEquals(dimension, FileUtils.worldFolder("MyWorld"));
+        }
+    }
+
+    @Test
+    void worldFolder_notYetCreated_returnsLowercasedDimensionTarget() {
+        // Template/rename destinations: nothing exists yet, so the derived dimension path is returned for the copy.
+        try (MockedStatic<Bukkit> bukkit = mockServer()) {
+            assertEquals(new File(dimensions(), "fresh"), FileUtils.worldFolder("Fresh"));
+        }
+    }
+
+    @Test
+    void worldFolder_legacyFlatFolder_isUsedWhenNotMigrated() throws IOException {
+        File legacy = tempDir.resolve("Old").toFile();
+        Files.createDirectories(legacy.toPath());
+        try (MockedStatic<Bukkit> bukkit = mockServer()) {
+            assertEquals(legacy, FileUtils.worldFolder("Old"));
+        }
+    }
+
+    @Test
+    void isWorldDirectory_acceptsDataFolder_rejectsVanillaAndEmpty() throws IOException {
+        File arena = new File(dimensions(), "arena");
+        Files.createDirectories(arena.toPath().resolve("region"));
+        assertTrue(FileUtils.isWorldDirectory(arena));
+
+        File overworld = new File(dimensions(), "overworld");
+        Files.createDirectories(overworld.toPath().resolve("region"));
+        assertFalse(FileUtils.isWorldDirectory(overworld), "vanilla dimensions must not be importable");
+
+        File empty = new File(dimensions(), "empty");
+        Files.createDirectories(empty.toPath());
+        assertFalse(FileUtils.isWorldDirectory(empty), "a folder without world data is not a world");
     }
 }

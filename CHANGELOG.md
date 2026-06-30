@@ -13,7 +13,7 @@ config toggles. `config.yml` and `messages.yml` migrate automatically.
 ### Requirements
 
 - Java 25. Older runtimes will not start the plugin.
-- Minecraft 1.21 minimum.
+- Minecraft 26.1 minimum.
 
 ### Added
 

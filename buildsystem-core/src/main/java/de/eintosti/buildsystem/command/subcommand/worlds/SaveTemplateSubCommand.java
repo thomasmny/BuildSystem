@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -88,7 +87,7 @@ public class SaveTemplateSubCommand extends AbstractSubCommand {
             return;
         }
 
-        File worldDir = new File(Bukkit.getWorldContainer(), buildWorld.getName());
+        File worldDir = FileUtils.worldFolder(buildWorld.getName());
         if (!worldDir.exists()) {
             messages.sendMessage(player, "worlds_savetemplate_no_directory");
             return;

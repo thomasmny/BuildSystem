@@ -19,7 +19,9 @@ package de.eintosti.buildsystem.world.creation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
@@ -29,12 +31,16 @@ import de.eintosti.buildsystem.world.creation.GenerationDataStore.WorldGeneratio
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.logging.Logger;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedStatic;
 
 @NullMarked
 class GenerationDataStoreTest {
@@ -43,10 +49,22 @@ class GenerationDataStoreTest {
     File tempDir;
 
     private GenerationDataStore store;
+    private MockedStatic<Bukkit> bukkit;
 
     @BeforeEach
     void setUp() {
-        store = new GenerationDataStore(Logger.getLogger("test"), tempDir);
+        store = new GenerationDataStore(Logger.getLogger("test"));
+        // load() resolves the world folder via FileUtils.worldFolder. With no main world, that falls back to the
+        // world container, so point the container at tempDir to keep the flat per-world layout these tests use.
+        bukkit = mockStatic(Bukkit.class);
+        bukkit.when(Bukkit::getWorldContainer).thenReturn(tempDir);
+        bukkit.when(Bukkit::getWorlds).thenReturn(List.of());
+        bukkit.when(() -> Bukkit.getWorld(anyString())).thenReturn(null);
+    }
+
+    @AfterEach
+    void tearDown() {
+        bukkit.close();
     }
 
     @Test

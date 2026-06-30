@@ -239,7 +239,7 @@ public class WorldServiceImpl implements WorldService {
             return CompletableFuture.failedFuture(new WorldNotFoundException(worldName));
         }
 
-        File deleteFolder = new File(Bukkit.getWorldContainer(), worldName);
+        File deleteFolder = FileUtils.worldFolder(worldName);
         // Never recursively delete outside the world container, even if a legacy entry carries a traversal name.
         if (StringCleaner.isPathEscape(Bukkit.getWorldContainer(), deleteFolder) || !deleteFolder.exists()) {
             return CompletableFuture.failedFuture(

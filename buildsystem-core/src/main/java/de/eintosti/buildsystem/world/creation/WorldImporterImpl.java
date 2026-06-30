@@ -27,9 +27,7 @@ import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
-import java.io.File;
 import java.util.Map;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
@@ -43,7 +41,7 @@ public class WorldImporterImpl extends AbstractWorldCreator implements WorldImpo
     public WorldImporterImpl(WorldContext context, WorldStorageImpl worldStorage, String worldName) {
         super(context, worldStorage, worldName, BuildWorldType.IMPORTED);
         this.versionGuard = new WorldDataVersionGuard(context.logger(), worldName);
-        this.creationDate = FileUtils.getDirectoryCreation(new File(Bukkit.getWorldContainer(), worldName));
+        this.creationDate = FileUtils.getDirectoryCreation(FileUtils.worldFolder(worldName));
     }
 
     @Override

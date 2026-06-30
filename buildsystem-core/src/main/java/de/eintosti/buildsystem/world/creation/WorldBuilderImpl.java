@@ -30,7 +30,6 @@ import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.WorldContext;
 import java.io.File;
 import java.util.Map;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
 import org.bukkit.entity.Player;
@@ -193,7 +192,7 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
         notifyAudience(
                 "worlds_template_creation_started", Map.entry("%world%", worldName), Map.entry("%template%", template));
 
-        File worldFile = new File(Bukkit.getWorldContainer(), worldName);
+        File worldFile = FileUtils.worldFolder(worldName);
         FileUtils.copy(templateFile, worldFile);
 
         buildWorld = createAndRegisterBuildWorld();

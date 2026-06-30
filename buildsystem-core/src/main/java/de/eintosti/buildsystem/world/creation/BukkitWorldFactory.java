@@ -67,7 +67,7 @@ public class BukkitWorldFactory {
         this.worldBorderSize = null;
         this.seed = null;
         this.versionGuard = new WorldDataVersionGuard(logger, worldName);
-        this.generationDataStore = new GenerationDataStore(logger, Bukkit.getWorldContainer());
+        this.generationDataStore = new GenerationDataStore(logger);
     }
 
     /**
@@ -93,7 +93,7 @@ public class BukkitWorldFactory {
         this.worldBorderSize = worldBorderSize;
         this.seed = seed;
         this.versionGuard = new WorldDataVersionGuard(logger, worldName);
-        this.generationDataStore = new GenerationDataStore(logger, Bukkit.getWorldContainer());
+        this.generationDataStore = new GenerationDataStore(logger);
     }
 
     public @Nullable World generate(VersionCheck versionCheck) {

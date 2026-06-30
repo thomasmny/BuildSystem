@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.world.creation;
 
+import de.eintosti.buildsystem.util.FileUtils;
 import dev.dewy.nbt.Nbt;
 import dev.dewy.nbt.io.CompressionType;
 import dev.dewy.nbt.tags.collection.CompoundTag;
@@ -55,7 +56,7 @@ public class WorldDataVersionGuard {
     }
 
     public int parseDataVersion() {
-        File levelFile = new File(new File(Bukkit.getWorldContainer(), worldName), LEVEL_DAT_FILE_NAME);
+        File levelFile = new File(FileUtils.worldFolder(worldName), LEVEL_DAT_FILE_NAME);
         if (!levelFile.exists()) {
             return -1;
         }
@@ -72,7 +73,7 @@ public class WorldDataVersionGuard {
     }
 
     public void updateWorldDataVersion() {
-        File levelFile = new File(new File(Bukkit.getWorldContainer(), worldName), LEVEL_DAT_FILE_NAME);
+        File levelFile = new File(FileUtils.worldFolder(worldName), LEVEL_DAT_FILE_NAME);
         if (!levelFile.exists()) {
             return;
         }

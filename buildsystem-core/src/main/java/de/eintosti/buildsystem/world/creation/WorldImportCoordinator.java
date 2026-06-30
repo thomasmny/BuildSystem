@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
@@ -32,7 +33,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jspecify.annotations.NullMarked;
@@ -182,12 +182,9 @@ public class WorldImportCoordinator {
     }
 
     private String[] scanImportableDirectories() {
-        String[] directories = Bukkit.getWorldContainer().list((dir, name) -> {
-            File worldFolder = new File(dir, name);
-            return worldFolder.isDirectory()
-                    && new File(worldFolder, "level.dat").exists()
-                    && !worldStorage.worldExists(name);
-        });
+        String[] directories = FileUtils.worldDimensionsRoot()
+                .list((dir, name) ->
+                        FileUtils.isWorldDirectory(new File(dir, name)) && !worldStorage.worldExists(name));
         return directories != null ? directories : new String[0];
     }
 }

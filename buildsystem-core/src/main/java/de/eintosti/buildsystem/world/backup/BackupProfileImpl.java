@@ -184,14 +184,16 @@ public class BackupProfileImpl implements BackupProfile {
         boolean isSpawn = spawn != null && Objects.equals(spawn.getWorld(), world);
 
         this.buildWorld.getUnloader().forceUnload(SaveBehavior.DISCARD);
+        File targetDirectory = FileUtils.worldFolder(worldName);
         try {
-            FileUtils.deleteDirectory(new File(Bukkit.getWorldContainer(), worldName));
+            FileUtils.deleteDirectory(targetDirectory);
         } catch (IOException e) {
             plugin.getLogger().log(Level.SEVERE, "Error while deleting world directory before restore", e);
         }
 
-        File targetDirectory =
-                FileUtils.resolve(Bukkit.getWorldContainer(), worldName).toFile();
+        if (!targetDirectory.isDirectory() && !targetDirectory.mkdirs()) {
+            throw new IOException("Failed to create world directory for restore: " + targetDirectory.getAbsolutePath());
+        }
         extractBackup(backupFile, targetDirectory);
 
         this.buildWorld.getLoader().load();

@@ -126,8 +126,8 @@ public class WorldRenamer {
         Location oldSpawnLocation = oldWorld.getSpawnLocation();
         Bukkit.unloadWorld(oldWorld, true);
 
-        File oldWorldFile = new File(Bukkit.getWorldContainer(), oldName);
-        File newWorldFile = new File(Bukkit.getWorldContainer(), sanitizedNewName);
+        File oldWorldFile = FileUtils.worldFolder(oldName);
+        File newWorldFile = FileUtils.worldFolder(sanitizedNewName);
         CompletableFuture.runAsync(
                         () -> {
                             try {

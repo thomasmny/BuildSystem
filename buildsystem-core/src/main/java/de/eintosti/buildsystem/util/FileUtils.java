@@ -26,6 +26,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,6 +37,7 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.ExcludeFileFilter;
 import net.lingala.zip4j.model.ZipParameters;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -44,8 +46,56 @@ public final class FileUtils {
 
     private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
     private static final Set<String> IGNORE_FILES = Sets.newHashSet("uid.dat", "session.lock");
+    private static final Set<String> VANILLA_DIMENSIONS = Set.of("overworld", "the_nether", "the_end");
 
     private FileUtils() {}
+
+    /**
+     * Resolves a world's on-disk folder.
+     *
+     * <p>Since Paper 26.1 every Bukkit world is stored as a dimension under the main world, keyed by the lowercased
+     * world name ({@code <level-name>/dimensions/minecraft/<name>}). A loaded world reports its real folder directly,
+     * which stays correct even if Paper's key derivation ever changes; an unloaded or not-yet-created world is resolved
+     * from that layout, falling back to the pre-26.1 flat location for a world not yet migrated.
+     */
+    public static File worldFolder(String worldName) {
+        World loaded = Bukkit.getWorld(worldName);
+        if (loaded != null) {
+            return loaded.getWorldFolder();
+        }
+        File dimension = new File(worldDimensionsRoot(), worldName.toLowerCase(Locale.ROOT));
+        if (dimension.isDirectory()) {
+            return dimension;
+        }
+        File legacy = new File(Bukkit.getWorldContainer(), worldName);
+        return legacy.isDirectory() ? legacy : dimension;
+    }
+
+    /**
+     * The {@code <level-name>/dimensions/minecraft} directory under which Paper 26.1+ stores every world as a dimension.
+     * Resolved live from the running server, so it tracks the world container even after the server is moved or copied.
+     */
+    public static File worldDimensionsRoot() {
+        List<World> worlds = Bukkit.getWorlds();
+        if (worlds == null || worlds.isEmpty()) {
+            // No main world yet (very early startup) — callers fall back to the flat container layout.
+            return Bukkit.getWorldContainer();
+        }
+        String levelName = worlds.getFirst().getName();
+        return new File(
+                Bukkit.getWorldContainer(), levelName + File.separator + "dimensions" + File.separator + "minecraft");
+    }
+
+    /**
+     * Whether {@code folder} is an importable world directory: a non-vanilla dimension folder that holds world data.
+     */
+    public static boolean isWorldDirectory(File folder) {
+        if (!folder.isDirectory()
+                || VANILLA_DIMENSIONS.contains(folder.getName().toLowerCase(Locale.ROOT))) {
+            return false;
+        }
+        return new File(folder, "region").isDirectory() || new File(folder, "level.dat").isFile();
+    }
 
     public static Path resolve(File file, final String child) {
         return resolve(file.toPath(), child);
@@ -185,7 +235,7 @@ public final class FileUtils {
 
     public static @Nullable File zipWorld(File storage, BuildWorld buildWorld) {
         try (ZipFile zipFile = new ZipFile(storage.getAbsolutePath())) {
-            File worldContainer = new File(Bukkit.getWorldContainer(), buildWorld.getName());
+            File worldContainer = worldFolder(buildWorld.getName());
 
             ExcludeFileFilter excludeFileFilter = Sets.newHashSet(
                     new File(worldContainer, "uid.dat"), new File(worldContainer, "session.lock"))::contains;
@@ -201,7 +251,7 @@ public final class FileUtils {
     }
 
     public static byte[] zipWorldToMemory(BuildWorld buildWorld) throws IOException {
-        Path worldPath = Path.of(new File(Bukkit.getWorldContainer(), buildWorld.getName()).getPath());
+        Path worldPath = worldFolder(buildWorld.getName()).toPath();
         return zipDirectoryToMemory(worldPath);
     }
 

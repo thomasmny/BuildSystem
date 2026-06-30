@@ -24,11 +24,11 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.util.ArgumentParser;
+import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.Locale;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -65,19 +65,9 @@ public class ImportAllSubCommand extends AbstractSubCommand {
             return;
         }
 
-        File worldContainer = Bukkit.getWorldContainer();
-        String[] directories = worldContainer.list((dir, name) -> {
-            File worldFolder = new File(dir, name);
-            if (!worldFolder.isDirectory()) {
-                return false;
-            }
-
-            if (!new File(worldFolder, "level.dat").exists()) {
-                return false;
-            }
-
-            return !worldService.getWorldStorage().worldExists(name);
-        });
+        String[] directories = FileUtils.worldDimensionsRoot()
+                .list((dir, name) -> FileUtils.isWorldDirectory(new File(dir, name))
+                        && !worldService.getWorldStorage().worldExists(name));
 
         if (directories == null || directories.length == 0) {
             messages.sendMessage(player, "worlds_importall_no_worlds");

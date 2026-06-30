@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.util.ArgumentParser;
+import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -87,11 +88,9 @@ public class ImportSubCommand extends AbstractSubCommand {
             return;
         }
 
-        File worldFolder = new File(Bukkit.getWorldContainer(), args[1]);
-        File levelFile = new File(worldFolder, "level.dat");
+        File worldFolder = FileUtils.worldFolder(worldName);
         if (StringCleaner.isPathEscape(Bukkit.getWorldContainer(), worldFolder)
-                || !worldFolder.isDirectory()
-                || !levelFile.exists()) {
+                || !FileUtils.isWorldDirectory(worldFolder)) {
             messages.sendMessage(player, "worlds_import_unknown_world");
             return;
         }
@@ -183,19 +182,13 @@ public class ImportSubCommand extends AbstractSubCommand {
     public List<String> complete(Player player, String[] args) {
         List<String> result = new ArrayList<>();
         if (args.length == 2) {
-            String[] directories = Bukkit.getWorldContainer().list((dir, name) -> {
+            String[] directories = FileUtils.worldDimensionsRoot().list((dir, name) -> {
                 if (StringCleaner.hasInvalidNameCharacters(
                         name, configService.current().world().invalidCharacters())) {
                     return false;
                 }
-                File worldFolder = new File(dir, name);
-                if (!worldFolder.isDirectory()) {
-                    return false;
-                }
-                if (!new File(worldFolder, "level.dat").exists()) {
-                    return false;
-                }
-                return !worldService.getWorldStorage().worldExists(name);
+                return FileUtils.isWorldDirectory(new File(dir, name))
+                        && !worldService.getWorldStorage().worldExists(name);
             });
             if (directories != null) {
                 for (String dir : directories) {

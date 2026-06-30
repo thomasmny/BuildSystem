@@ -22,14 +22,13 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import java.io.File;
+import de.eintosti.buildsystem.util.FileUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
@@ -128,8 +127,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
             return false;
         }
 
-        File worldFile = new File(Bukkit.getWorldContainer(), worldName);
-        return worldFile.exists();
+        return FileUtils.worldFolder(worldName).isDirectory();
     }
 
     @Override
