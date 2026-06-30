@@ -49,10 +49,19 @@ dependencies {
     compileOnlyApi(libs.jspecify)
 
     compileOnly(libs.spigot)
-    compileOnly(libs.authlib)
+    // authlib and worldedit strictly pin Guava/Gson to versions older than spigot-api ships ("Mojang provides
+    // Guava"). All three are compileOnly and the server provides these libs at runtime, so drop the stale pins
+    // and let spigot-api's versions resolve.
+    compileOnly(libs.authlib) {
+        exclude(group = "com.google.guava")
+        exclude(group = "com.google.code.gson")
+    }
     compileOnly(libs.luckperms)
     compileOnly(libs.placeholderapi)
-    compileOnly(libs.worldedit)
+    compileOnly(libs.worldedit) {
+        exclude(group = "com.google.guava")
+        exclude(group = "com.google.code.gson")
+    }
     compileOnly(libs.axiompaper)
 
     implementation(libs.bouncycastle)
@@ -115,7 +124,8 @@ tasks.named<ShadowJar>("shadowJar") {
 }
 
 tasks.runServer {
-    minecraftVersion("26.1.2")
+    // Strip the "-R0.1-SNAPSHOT" qualifier to get the bare MC version run-paper expects.
+    minecraftVersion(libs.versions.spigot.get().substringBefore("-"))
 }
 
 tasks.named<Jar>("jar") {

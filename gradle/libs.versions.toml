@@ -1,6 +1,7 @@
 [versions]
 # Platform expectations
-spigot = "26.1.2-R0.1-SNAPSHOT"
+spigot = "26.2-R0.1-SNAPSHOT"
+# Test-only; must match mockbukkit's MC version, so it lags spigot until mockbukkit-v<MC> ships.
 paperapi = "26.1.2.build.+"
 paperlib = "1.0.8"
 
