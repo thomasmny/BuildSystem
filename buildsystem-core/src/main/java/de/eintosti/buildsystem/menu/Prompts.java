@@ -22,6 +22,8 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.PlayerChatInput.InputRunnable;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -56,6 +58,42 @@ public final class Prompts {
      */
     public Builder prompt(Player player) {
         return new Builder(player);
+    }
+
+    /**
+     * Begins assembling a multi-step chat-input flow for the given player. Each step validates its input and, on
+     * failure, is re-prompted; the flow advances only once a step accepts.
+     *
+     * @param player The player to request input from
+     * @return A fresh flow for this player
+     */
+    public PromptFlow flow(Player player) {
+        return new PromptFlow(player);
+    }
+
+    /**
+     * Sanitizes a typed name against the configured invalid characters: warns the player when characters were stripped
+     * and rejects the input entirely when nothing survives. Shared by single-prompt name sanitization and {@link
+     * PromptFlow} name steps.
+     *
+     * @param player The player who typed the name
+     * @param input The raw input
+     * @param invalidCharsKey The message key sent when invalid characters were stripped
+     * @param emptyNameKey The message key sent when the sanitized name is empty
+     * @return The sanitized name, or {@code null} if nothing survived (a message has already been sent)
+     */
+    public @Nullable String sanitizeName(Player player, String input, String invalidCharsKey, String emptyNameKey) {
+        String invalidCharacters = configService.current().world().invalidCharacters();
+        if (StringCleaner.hasInvalidNameCharacters(input, invalidCharacters)) {
+            messages.sendMessage(player, invalidCharsKey);
+        }
+
+        String sanitized = StringCleaner.sanitize(input, invalidCharacters);
+        if (sanitized.isEmpty()) {
+            messages.sendMessage(player, emptyNameKey);
+            return null;
+        }
+        return sanitized;
     }
 
     /**
@@ -129,22 +167,92 @@ public final class Prompts {
 
         /** Wraps {@code onValidName} so it only fires for input that survives name sanitization. */
         private InputRunnable sanitizing(InputRunnable onValidName) {
-            String invalidCharacters = configService.current().world().invalidCharacters();
             String invalidCharactersKey = Objects.requireNonNull(invalidCharactersMessageKey);
             String emptyNameKey = Objects.requireNonNull(emptyNameMessageKey);
             return input -> {
-                if (StringCleaner.hasInvalidNameCharacters(input, invalidCharacters)) {
-                    messages.sendMessage(player, invalidCharactersKey);
+                String sanitizedName = Prompts.this.sanitizeName(player, input, invalidCharactersKey, emptyNameKey);
+                if (sanitizedName != null) {
+                    onValidName.run(sanitizedName);
                 }
-
-                String sanitizedName = StringCleaner.sanitize(input, invalidCharacters);
-                if (sanitizedName.isEmpty()) {
-                    messages.sendMessage(player, emptyNameKey);
-                    return;
-                }
-
-                onValidName.run(sanitizedName);
             };
+        }
+    }
+
+    /**
+     * A sequence of chat-input steps run one after another, obtained from {@link Prompts#flow(Player)}. Each step
+     * validates the line the player types; returning {@code false} re-prompts the same step (keeping earlier answers),
+     * returning {@code true} advances. Each step reuses {@link Builder}, so cancellation, the pending-title task, and
+     * sounds behave exactly like a single prompt.
+     */
+    public final class PromptFlow {
+
+        @FunctionalInterface
+        public interface StepValidator {
+
+            /**
+             * @param input The line the player typed
+             * @return {@code true} to advance to the next step, {@code false} to re-prompt this step
+             */
+            boolean validate(String input);
+        }
+
+        private record Step(String titleKey, StepValidator validator) {}
+
+        private final Player player;
+        private final List<Step> steps = new ArrayList<>();
+        private Runnable onCancel = () -> {};
+
+        private PromptFlow(Player player) {
+            this.player = player;
+        }
+
+        /**
+         * Appends a step to the flow.
+         *
+         * @param titleKey The message key shown as the prompt title while this step is pending
+         * @param validator Validates the typed input, returning whether to advance
+         * @return This flow
+         */
+        public PromptFlow step(String titleKey, StepValidator validator) {
+            steps.add(new Step(titleKey, validator));
+            return this;
+        }
+
+        /**
+         * Runs {@code onCancel} when the player types {@code cancel} at any step. Defaults to doing nothing.
+         *
+         * @param onCancel Runs on the main thread when the player cancels the flow
+         * @return This flow
+         */
+        public PromptFlow onCancel(Runnable onCancel) {
+            this.onCancel = onCancel;
+            return this;
+        }
+
+        /**
+         * Opens the first step. {@code onComplete} runs once the final step has advanced.
+         *
+         * @param onComplete Runs on the main thread after all steps accept
+         */
+        public void start(Runnable onComplete) {
+            runStep(0, onComplete);
+        }
+
+        private void runStep(int index, Runnable onComplete) {
+            if (index >= steps.size()) {
+                onComplete.run();
+                return;
+            }
+
+            Step step = steps.get(index);
+            // request() returns after registering the listener, so re-prompting on failure does not grow the stack.
+            prompt(player).title(step.titleKey()).onCancel(onCancel).request(input -> {
+                if (step.validator().validate(input)) {
+                    runStep(index + 1, onComplete);
+                } else {
+                    runStep(index, onComplete);
+                }
+            });
         }
     }
 }

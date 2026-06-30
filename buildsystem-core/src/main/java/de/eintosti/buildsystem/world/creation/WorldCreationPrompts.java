@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
+import java.util.Objects;
 import java.util.function.Supplier;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -58,51 +59,90 @@ public class WorldCreationPrompts {
             boolean promptSeed,
             @Nullable Folder folder) {
         player.closeInventory();
-        prompts.get()
-                .prompt(player)
-                .title("enter_world_name")
-                .sanitizeName("worlds_world_creation_invalid_characters", "worlds_world_creation_name_bank")
-                .request(worldName -> {
-                    if (worldType == BuildWorldType.CUSTOM) {
-                        startCustomGeneratorInput(player, worldName, template, privateWorld, folder);
-                    } else if (promptSeed) {
-                        startSeedInput(player, worldName, worldType, template, privateWorld, folder);
-                    } else {
-                        buildAndTeleport(
-                                player,
-                                worldService
-                                        .newWorld(worldName)
-                                        .type(worldType)
-                                        .template(template)
-                                        .privateWorld(privateWorld)
-                                        .folder(folder));
-                    }
-                });
+        Prompts promptsInstance = prompts.get();
+        Selection selection = new Selection();
+
+        Prompts.PromptFlow flow = promptsInstance
+                .flow(player)
+                .step("enter_world_name", input -> nameStep(promptsInstance, player, selection, input));
+
+        if (worldType == BuildWorldType.CUSTOM) {
+            flow.step("enter_generator_name", input -> generatorStep(player, selection, input));
+        } else if (promptSeed) {
+            flow.step("enter_world_seed", input -> seedStep(selection, input));
+        }
+
+        flow.start(() -> build(player, selection, worldType, template, privateWorld, folder));
     }
 
-    private void startSeedInput(
+    private boolean nameStep(Prompts promptsInstance, Player player, Selection selection, String input) {
+        String name = promptsInstance.sanitizeName(
+                player, input, "worlds_world_creation_invalid_characters", "worlds_world_creation_name_bank");
+        if (name == null) {
+            return false;
+        }
+
+        if (worldService.getWorldStorage().worldAndFolderExist(name)) {
+            messages.sendMessage(player, "worlds_world_exists");
+            XSound.ENTITY_ITEM_BREAK.play(player);
+            return false;
+        }
+
+        selection.name = name;
+        return true;
+    }
+
+    private boolean seedStep(Selection selection, String input) {
+        // Vanilla seed semantics: numeric input is the literal seed, other text hashes to a long, and a blank entry
+        // falls through to Bukkit's random seed.
+        String trimmed = input.trim();
+        if (!trimmed.isEmpty()) {
+            selection.seed = parseSeed(trimmed);
+        }
+        return true;
+    }
+
+    private boolean generatorStep(Player player, Selection selection, String input) {
+        // Generator names are dynamic and cannot be pre-registered in plugin.yml, so default-allow is emulated: a
+        // generator is permitted unless an admin has explicitly denied its specific node.
+        String generatorNode = "buildsystem.create.generator." + input.trim();
+        boolean allowed = !player.isPermissionSet(generatorNode) || player.hasPermission(generatorNode);
+        if (!allowed) {
+            messages.sendPermissionError(player);
+            XSound.ENTITY_ITEM_BREAK.play(player);
+            return false;
+        }
+
+        CustomGenerator generator = CustomGeneratorImpl.of(input, selection.name());
+        if (generator == null) {
+            messages.sendMessage(player, "worlds_import_unknown_generator");
+            XSound.ENTITY_ITEM_BREAK.play(player);
+            return false;
+        }
+
+        selection.generator = generator;
+        return true;
+    }
+
+    private void build(
             Player player,
-            String worldName,
+            Selection selection,
             BuildWorldType worldType,
             @Nullable String template,
             boolean privateWorld,
             @Nullable Folder folder) {
-        prompts.get().prompt(player).title("enter_world_seed").request(input -> {
-            WorldBuilder worldBuilder = worldService
-                    .newWorld(worldName)
-                    .type(worldType)
-                    .template(template)
-                    .privateWorld(privateWorld)
-                    .folder(folder);
-
-            // Vanilla seed semantics: numeric input is the literal seed, other text hashes to a long, and a blank entry
-            // falls through to Bukkit's random seed.
-            String trimmed = input.trim();
-            if (!trimmed.isEmpty()) {
-                worldBuilder.seed(parseSeed(trimmed));
-            }
-            buildAndTeleport(player, worldBuilder);
-        });
+        WorldBuilder builder = worldService
+                .newWorld(selection.name())
+                .type(worldType)
+                .template(template)
+                .privateWorld(privateWorld)
+                .folder(folder)
+                .customGenerator(selection.generator);
+        Long seed = selection.seed;
+        if (seed != null) {
+            builder.seed(seed);
+        }
+        buildAndTeleport(player, builder);
     }
 
     private static long parseSeed(String seed) {
@@ -113,43 +153,27 @@ public class WorldCreationPrompts {
         }
     }
 
-    private void startCustomGeneratorInput(
-            Player player, String worldName, @Nullable String template, boolean privateWorld, @Nullable Folder folder) {
-        prompts.get().prompt(player).title("enter_generator_name").request(input -> {
-            // Generator names are dynamic and cannot be pre-registered in plugin.yml, so default-allow is emulated: a
-            // generator is permitted unless an admin has explicitly denied its specific node.
-            String generatorNode = "buildsystem.create.generator." + input.trim();
-            boolean allowed = !player.isPermissionSet(generatorNode) || player.hasPermission(generatorNode);
-            if (!allowed) {
-                messages.sendPermissionError(player);
-                XSound.ENTITY_ITEM_BREAK.play(player);
-                return;
-            }
-
-            CustomGenerator customGenerator = CustomGeneratorImpl.of(input, worldName);
-            if (customGenerator == null) {
-                messages.sendMessage(player, "worlds_import_unknown_generator");
-                XSound.ENTITY_ITEM_BREAK.play(player);
-                return;
-            }
-
-            buildAndTeleport(
-                    player,
-                    worldService
-                            .newWorld(worldName)
-                            .type(BuildWorldType.CUSTOM)
-                            .template(template)
-                            .privateWorld(privateWorld)
-                            .customGenerator(customGenerator)
-                            .folder(folder));
-        });
-    }
-
     private void buildAndTeleport(Player player, WorldBuilder worldBuilder) {
         BuildWorld world =
                 worldBuilder.creator(Builder.of(player)).notify(player).build();
         if (world != null) {
             world.getTeleporter().teleport(player);
+        }
+    }
+
+    /**
+     * The values collected across the creation steps; the builder is assembled from them once all steps accept.
+     */
+    private static final class Selection {
+        private @Nullable String name;
+        private @Nullable Long seed;
+        private @Nullable CustomGenerator generator;
+
+        /**
+         * {@return the name validated by the name step} The flow only reaches later steps once it is set.
+         */
+        private String name() {
+            return Objects.requireNonNull(name, "name step must accept before later steps run");
         }
     }
 }
