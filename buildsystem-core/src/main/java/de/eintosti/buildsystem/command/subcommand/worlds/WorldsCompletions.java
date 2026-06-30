@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -50,12 +51,17 @@ final class WorldsCompletions {
     }
 
     /**
-     * Returns world names the player can delete (no world-level access check, only command permission), matching the
-     * original delete completion branch.
+     * Returns world names the player can delete: those they hold {@code buildsystem.delete} for and that are not on the
+     * deletion blacklist. Mirrors the checks {@code /worlds delete} enforces, so the completion never suggests a world
+     * the command would refuse.
      */
-    static List<String> deletableWorldNames(Player player, WorldStorage worldStorage, String input) {
+    static List<String> deletableWorldNames(
+            Player player, WorldStorage worldStorage, Set<String> deletionBlacklist, String input) {
         List<String> result = new ArrayList<>();
         for (BuildWorld world : worldStorage.getBuildWorlds()) {
+            if (deletionBlacklist.contains(world.getName().toLowerCase(Locale.ROOT))) {
+                continue;
+            }
             if (world.getPermissions().canPerformCommand(player, "buildsystem.delete")) {
                 addIfStartsWith(input, world.getName(), result);
             }

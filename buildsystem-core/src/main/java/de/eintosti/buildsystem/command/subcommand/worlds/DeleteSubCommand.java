@@ -65,7 +65,11 @@ public class DeleteSubCommand extends AbstractSubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        return WorldsCompletions.deletableWorldNames(player, worldService.getWorldStorage(), args[1]);
+        return WorldsCompletions.deletableWorldNames(
+                player,
+                worldService.getWorldStorage(),
+                configService.current().world().deletionBlacklist(),
+                args[1]);
     }
 
     @Override
