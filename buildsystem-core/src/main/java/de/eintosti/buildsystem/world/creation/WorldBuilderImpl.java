@@ -95,6 +95,13 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
 
     @Override
     @Contract("_ -> this")
+    public WorldBuilderImpl seed(long seed) {
+        this.seed = seed;
+        return this;
+    }
+
+    @Override
+    @Contract("_ -> this")
     public WorldBuilderImpl creator(@Nullable Builder creator) {
         this.creator = creator;
         return this;

@@ -55,6 +55,7 @@ public class WorldCreationPrompts {
             BuildWorldType worldType,
             @Nullable String template,
             boolean privateWorld,
+            boolean promptSeed,
             @Nullable Folder folder) {
         player.closeInventory();
         prompts.get()
@@ -64,6 +65,8 @@ public class WorldCreationPrompts {
                 .request(worldName -> {
                     if (worldType == BuildWorldType.CUSTOM) {
                         startCustomGeneratorInput(player, worldName, template, privateWorld, folder);
+                    } else if (promptSeed) {
+                        startSeedInput(player, worldName, worldType, template, privateWorld, folder);
                     } else {
                         buildAndTeleport(
                                 player,
@@ -75,6 +78,39 @@ public class WorldCreationPrompts {
                                         .folder(folder));
                     }
                 });
+    }
+
+    private void startSeedInput(
+            Player player,
+            String worldName,
+            BuildWorldType worldType,
+            @Nullable String template,
+            boolean privateWorld,
+            @Nullable Folder folder) {
+        prompts.get().prompt(player).title("enter_world_seed").request(input -> {
+            WorldBuilder worldBuilder = worldService
+                    .newWorld(worldName)
+                    .type(worldType)
+                    .template(template)
+                    .privateWorld(privateWorld)
+                    .folder(folder);
+
+            // Vanilla seed semantics: numeric input is the literal seed, other text hashes to a long, and a blank entry
+            // falls through to Bukkit's random seed.
+            String trimmed = input.trim();
+            if (!trimmed.isEmpty()) {
+                worldBuilder.seed(parseSeed(trimmed));
+            }
+            buildAndTeleport(player, worldBuilder);
+        });
+    }
+
+    private static long parseSeed(String seed) {
+        try {
+            return Long.parseLong(seed);
+        } catch (NumberFormatException e) {
+            return seed.hashCode();
+        }
     }
 
     private void startCustomGeneratorInput(

@@ -159,20 +159,25 @@ public class CreateMenu extends PaginatedMenu {
     private MenuButton predefinedButton(BuildWorldType worldType) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
-                    XMaterial material = customizableIcons.getIcon(worldType);
+                    boolean canCreate = canCreateType(player, worldType);
+                    XMaterial material = canCreate ? customizableIcons.getIcon(worldType) : XMaterial.BARRIER;
                     String displayName = messages.getString(PREDEFINED_MESSAGE_KEYS.get(worldType), player);
-                    if (!canCreateType(player, worldType)) {
-                        material = XMaterial.BARRIER;
+                    if (!canCreate) {
                         displayName = "§c§m" + ChatColor.stripColor(displayName);
                     }
-                    ItemBuilder.of(material).name(displayName).into(inventory, slot);
+                    ItemBuilder itemBuilder = ItemBuilder.of(material).name(displayName);
+                    if (canCreate) {
+                        itemBuilder.lore(messages.getString("create_predefined_seed_lore", player));
+                    }
+                    itemBuilder.into(inventory, slot);
                 })
                 .onClick((player, event) -> {
                     if (!canCreateType(player, worldType)) {
                         XSound.ENTITY_ITEM_BREAK.play(player);
                         return;
                     }
-                    worldService.startWorldNameInput(player, worldType, null, createPrivateWorld, folder);
+                    worldService.startWorldNameInput(
+                            player, worldType, null, createPrivateWorld, event.isShiftClick(), folder);
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                 })
                 .build();
@@ -197,7 +202,7 @@ public class CreateMenu extends PaginatedMenu {
                                 .into(inventory, slot))
                         .onClick((p, event) -> {
                             worldService.startWorldNameInput(
-                                    p, BuildWorldType.CUSTOM, null, createPrivateWorld, folder);
+                                    p, BuildWorldType.CUSTOM, null, createPrivateWorld, false, folder);
                             XSound.ENTITY_CHICKEN_EGG.play(p);
                         })
                         .build());
@@ -255,6 +260,7 @@ public class CreateMenu extends PaginatedMenu {
                             BuildWorldType.TEMPLATE,
                             itemStack.getItemMeta().getDisplayName(),
                             createPrivateWorld,
+                            false,
                             folder);
                 })
                 .build();

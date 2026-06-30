@@ -57,6 +57,7 @@ abstract class AbstractWorldCreator {
     protected @Nullable Difficulty difficulty;
     protected @Nullable Integer time;
     protected @Nullable Integer worldBorderSize;
+    protected @Nullable Long seed;
 
     protected @Nullable Player audience;
 
@@ -117,7 +118,8 @@ abstract class AbstractWorldCreator {
                         customGenerator,
                         difficulty,
                         time,
-                        worldBorderSize)
+                        worldBorderSize,
+                        seed)
                 .generate(
                         checkVersion ? BukkitWorldFactory.VersionCheck.REQUIRED : BukkitWorldFactory.VersionCheck.SKIP);
     }

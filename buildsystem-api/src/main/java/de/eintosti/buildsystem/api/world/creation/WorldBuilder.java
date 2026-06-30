@@ -102,6 +102,15 @@ public interface WorldBuilder {
     WorldBuilder worldBorderSize(int worldBorderSize);
 
     /**
+     * Sets the seed used to generate the world's terrain. When unset, Bukkit picks a random seed.
+     *
+     * @param seed The world seed
+     * @return This builder
+     * @since 4.0.0
+     */
+    WorldBuilder seed(long seed);
+
+    /**
      * Sets the creator (owner) of the world. When {@code null} the world has no recorded creator.
      *
      * @param creator The creator, or {@code null}

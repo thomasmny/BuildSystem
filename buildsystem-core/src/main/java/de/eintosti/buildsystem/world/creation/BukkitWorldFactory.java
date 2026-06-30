@@ -48,6 +48,7 @@ public class BukkitWorldFactory {
     private final @Nullable Difficulty difficulty;
     private final @Nullable Integer time;
     private final @Nullable Integer worldBorderSize;
+    private final @Nullable Long seed;
 
     private final WorldDataVersionGuard versionGuard;
     private final GenerationDataStore generationDataStore;
@@ -64,6 +65,7 @@ public class BukkitWorldFactory {
         this.difficulty = null;
         this.time = null;
         this.worldBorderSize = null;
+        this.seed = null;
         this.versionGuard = new WorldDataVersionGuard(logger, worldName);
         this.generationDataStore = new GenerationDataStore(logger, Bukkit.getWorldContainer());
     }
@@ -79,7 +81,8 @@ public class BukkitWorldFactory {
             @Nullable CustomGenerator customGenerator,
             @Nullable Difficulty difficulty,
             @Nullable Integer time,
-            @Nullable Integer worldBorderSize) {
+            @Nullable Integer worldBorderSize,
+            @Nullable Long seed) {
         this.configService = configService;
         this.logger = logger;
         this.worldName = worldName;
@@ -88,6 +91,7 @@ public class BukkitWorldFactory {
         this.difficulty = difficulty;
         this.time = time;
         this.worldBorderSize = worldBorderSize;
+        this.seed = seed;
         this.versionGuard = new WorldDataVersionGuard(logger, worldName);
         this.generationDataStore = new GenerationDataStore(logger, Bukkit.getWorldContainer());
     }
@@ -114,6 +118,9 @@ public class BukkitWorldFactory {
 
     private WorldCreator createWorldCreator() {
         WorldCreator worldCreator = new WorldCreator(worldName);
+        if (seed != null) {
+            worldCreator.seed(seed);
+        }
         BuildWorldType type = this.worldType;
 
         if (type == BuildWorldType.IMPORTED && this.customGenerator != null) {

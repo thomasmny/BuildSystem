@@ -135,8 +135,9 @@ public class WorldServiceImpl implements WorldService {
             BuildWorldType worldType,
             @Nullable String template,
             boolean privateWorld,
+            boolean promptSeed,
             @Nullable Folder folder) {
-        this.creationPrompts.startWorldNameInput(player, worldType, template, privateWorld, folder);
+        this.creationPrompts.startWorldNameInput(player, worldType, template, privateWorld, promptSeed, folder);
     }
 
     public boolean importWorld(
