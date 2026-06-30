@@ -5,7 +5,7 @@ paperapi = "26.1.2.build.+"
 paperlib = "1.0.8"
 
 # Test
-junit = "6.1.0"
+junit = "6.1.1"
 mockito = "5.23.0"
 mockbukkit = "4.113.3"
 
