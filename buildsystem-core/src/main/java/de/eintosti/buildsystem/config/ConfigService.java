@@ -21,12 +21,14 @@ import com.cryptomorin.xseries.XGameRule;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
+import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -147,6 +149,8 @@ public class ConfigService {
     }
 
     private static PluginConfig.World parseWorld(FileConfiguration config, Logger logger) {
+        PluginConfig.World.VoidBlock voidBlock = parseVoidBlock(config, logger);
+
         PluginConfig.World.Limits limits = new PluginConfig.World.Limits(
                 config.getInt("world.limits.public", -1), config.getInt("world.limits.private", -1));
 
@@ -212,10 +216,23 @@ public class ConfigService {
                 Objects.requireNonNullElse(config.getString("world.invalid-characters"), "^\b$"),
                 config.getInt("world.import-all-delay", 30),
                 deletionBlacklist,
+                voidBlock,
                 limits,
                 defaults,
                 unload,
                 backup);
+    }
+
+    private static PluginConfig.World.VoidBlock parseVoidBlock(FileConfiguration config, Logger logger) {
+        boolean enabled = config.getBoolean("world.void-block.enabled", true);
+        String raw = Objects.requireNonNullElse(config.getString("world.void-block.material"), "GOLD_BLOCK");
+        Material material = Optional.ofNullable(MaterialUtils.match(raw))
+                .filter(Material::isBlock)
+                .orElseGet(() -> {
+                    logger.warning("Invalid void-block material \"" + raw + "\". Defaulting to GOLD_BLOCK.");
+                    return Material.GOLD_BLOCK;
+                });
+        return new PluginConfig.World.VoidBlock(enabled, material);
     }
 
     private static List<GameRuleEntry<?>> parseGameRules(FileConfiguration config, Logger logger) {

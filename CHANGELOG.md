@@ -17,6 +17,7 @@ config toggles. `config.yml` and `messages.yml` migrate automatically.
 
 ### Added
 
+<<<<<<< HEAD
 - **Per-world physics exceptions.** Physics control is no longer all-or-nothing:
   while a world's physics are disabled, nine behavior categories (block updates,
   connections, falling blocks, fluid flow, leaf decay, growth, spreading, block
@@ -26,6 +27,14 @@ config toggles. `config.yml` and `messages.yml` migrate automatically.
   `world.disabled-physics` section is replaced by per-category defaults under
   `world.defaults.physics-exceptions` (`true` = still runs while physics are
   off); existing configs migrate automatically.
+=======
+- **Configurable void-world block.** The block placed at the spawn of newly
+  generated void worlds is configurable: `world.void-block.enabled` turns the
+  placement off entirely and `world.void-block.material` picks the block
+  (default `GOLD_BLOCK`). The block is now placed only when the world is first
+  generated — never on later loads, imports, or renames — and never overwrites
+  an existing block.
+>>>>>>> f6315827 (feat: configurable void-world block, placed only on initial generation)
 - **Custom world statuses.** Statuses are no longer a fixed enum — admins create,
   restyle, reorder, and delete them in-game (`/setup` → World Statuses). Each
   status has its own name, colour, icon, ordering, a building-allowed flag, and an

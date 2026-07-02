@@ -33,6 +33,10 @@ world:
     - world
     - world_nether
     - world_the_end
+  # The block placed at the spawn of newly generated void worlds. Only placed if the position is still empty.
+  void-block:
+    enabled: true
+    material: GOLD_BLOCK
   limits:
     public: -1
     private: -1

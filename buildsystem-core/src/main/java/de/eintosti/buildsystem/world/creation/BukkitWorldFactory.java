@@ -17,17 +17,18 @@
  */
 package de.eintosti.buildsystem.world.creation;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.world.creation.GenerationDataStore.WorldGenerationData;
 import de.eintosti.buildsystem.world.creation.generator.VoidGenerator;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.Locale;
 import java.util.logging.Logger;
 import org.bukkit.*;
+import org.bukkit.block.Block;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -49,6 +50,7 @@ public class BukkitWorldFactory {
     private final @Nullable Integer time;
     private final @Nullable Integer worldBorderSize;
     private final @Nullable Long seed;
+    private final boolean initialGeneration;
 
     private final WorldDataVersionGuard versionGuard;
     private final GenerationDataStore generationDataStore;
@@ -66,12 +68,15 @@ public class BukkitWorldFactory {
         this.time = null;
         this.worldBorderSize = null;
         this.seed = null;
+        this.initialGeneration = false;
         this.versionGuard = new WorldDataVersionGuard(logger, worldName);
         this.generationDataStore = new GenerationDataStore(logger);
     }
 
     /**
-     * Used when creating a new world with defaults from plugin config.
+     * Used when creating or importing a new world with defaults from plugin config. {@code initialGeneration} is
+     * {@code true} only when the world is generated from scratch (not imported), enabling one-time setup like the
+     * void-block placement.
      */
     BukkitWorldFactory(
             ConfigService configService,
@@ -82,7 +87,8 @@ public class BukkitWorldFactory {
             @Nullable Difficulty difficulty,
             @Nullable Integer time,
             @Nullable Integer worldBorderSize,
-            @Nullable Long seed) {
+            @Nullable Long seed,
+            boolean initialGeneration) {
         this.configService = configService;
         this.logger = logger;
         this.worldName = worldName;
@@ -92,6 +98,7 @@ public class BukkitWorldFactory {
         this.time = time;
         this.worldBorderSize = worldBorderSize;
         this.seed = seed;
+        this.initialGeneration = initialGeneration;
         this.versionGuard = new WorldDataVersionGuard(logger, worldName);
         this.generationDataStore = new GenerationDataStore(logger);
     }
@@ -204,11 +211,13 @@ public class BukkitWorldFactory {
         entry.rule().setValue(world, entry.value());
     }
 
-    private static void applyPostGenerationSettings(World bukkitWorld, BuildWorldType worldType) {
+    void applyPostGenerationSettings(World bukkitWorld, BuildWorldType worldType) {
         switch (worldType) {
             case VOID -> {
                 int voidBlockY = 64;
-                bukkitWorld.getBlockAt(0, voidBlockY, 0).setType(XMaterial.GOLD_BLOCK.get());
+                if (initialGeneration) {
+                    placeVoidBlock(bukkitWorld, voidBlockY);
+                }
                 bukkitWorld.setSpawnLocation(0, voidBlockY + 1, 0);
             }
             case FLAT -> {
@@ -217,6 +226,22 @@ public class BukkitWorldFactory {
             default -> {
                 // No special post-generation steps for other types
             }
+        }
+    }
+
+    /**
+     * Places the configured void-block at the world's spawn column, only when the world is generated for the first
+     * time. Only fills air — a block already there, e.g. from a pre-existing world folder, is never overwritten.
+     */
+    private void placeVoidBlock(World bukkitWorld, int voidBlockY) {
+        PluginConfig.World.VoidBlock voidBlock = configService.current().world().voidBlock();
+        if (!voidBlock.enabled()) {
+            return;
+        }
+
+        Block block = bukkitWorld.getBlockAt(0, voidBlockY, 0);
+        if (block.getType().isAir()) {
+            block.setType(voidBlock.material());
         }
     }
 }

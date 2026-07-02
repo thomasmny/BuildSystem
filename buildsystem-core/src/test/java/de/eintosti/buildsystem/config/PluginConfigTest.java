@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import java.util.logging.Logger;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 
@@ -102,6 +103,41 @@ class PluginConfigTest {
         assertTrue(cfg.world().defaults().physicsException(PhysicsCategory.FLUID_FLOW));
         assertTrue(cfg.world().defaults().physicsException(PhysicsCategory.LEAF_DECAY));
         assertFalse(cfg.world().defaults().physicsException(PhysicsCategory.CONNECTIONS));
+    }
+
+    @Test
+    void voidBlock_defaults_toEnabledGoldBlock() {
+        PluginConfig cfg = parse("");
+
+        assertTrue(cfg.world().voidBlock().enabled());
+        assertEquals(Material.GOLD_BLOCK, cfg.world().voidBlock().material());
+    }
+
+    @Test
+    void voidBlock_customValues_areParsed() {
+        PluginConfig cfg = parse("""
+                world:
+                  void-block:
+                    enabled: false
+                    material: DIAMOND_BLOCK
+                """);
+
+        assertFalse(cfg.world().voidBlock().enabled());
+        assertEquals(Material.DIAMOND_BLOCK, cfg.world().voidBlock().material());
+    }
+
+    @Test
+    void voidBlock_invalidOrNonBlockMaterial_fallsBackToGoldBlock() {
+        assertEquals(Material.GOLD_BLOCK, parse("""
+                        world:
+                          void-block:
+                            material: NOT_A_MATERIAL
+                        """).world().voidBlock().material());
+        assertEquals(Material.GOLD_BLOCK, parse("""
+                        world:
+                          void-block:
+                            material: DIAMOND_SWORD
+                        """).world().voidBlock().material());
     }
 
     // -----------------------------------------------------------------------

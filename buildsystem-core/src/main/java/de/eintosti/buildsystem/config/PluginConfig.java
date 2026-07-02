@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -60,6 +61,7 @@ public record PluginConfig(Settings settings, World world, Folder folder) {
             String invalidCharacters,
             int importAllDelay,
             Set<String> deletionBlacklist,
+            VoidBlock voidBlock,
             Limits limits,
             Defaults defaults,
             Unload unload,
@@ -68,6 +70,12 @@ public record PluginConfig(Settings settings, World world, Folder folder) {
         public World {
             deletionBlacklist = Set.copyOf(deletionBlacklist);
         }
+
+        /**
+         * The block placed at the spawn of newly generated void worlds, so players do not fall on first join. The
+         * material is resolved and validated at parse time, so it is always a placeable block.
+         */
+        public record VoidBlock(boolean enabled, Material material) {}
 
         public record Limits(int publicWorlds, int privateWorlds) {}
 
