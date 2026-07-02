@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.storage.yaml;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -40,6 +39,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.bukkit.Difficulty;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -78,7 +78,7 @@ class YamlWorldStorageRoundTripTest {
         WorldDataImpl data = new WorldDataBuilder(name)
                 .withStatus(TestData.FINISHED)
                 .withDifficulty(Difficulty.NORMAL)
-                .withMaterial(XMaterial.GRASS_BLOCK)
+                .withMaterial(Material.GRASS_BLOCK)
                 .withPermission("buildsystem.test")
                 .withProject("MyProject")
                 .withVisibility(Visibility.ADDED_PLAYERS)

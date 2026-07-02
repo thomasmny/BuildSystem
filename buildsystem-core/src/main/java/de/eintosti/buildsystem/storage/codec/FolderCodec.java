@@ -17,11 +17,11 @@
  */
 package de.eintosti.buildsystem.storage.codec;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
+import de.eintosti.buildsystem.util.Materials;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.ArrayList;
@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -99,9 +100,7 @@ public final class FolderCodec implements Codec<Folder> {
                 Builder.deserialize(section.getString(CREATOR)), "Creator cannot be null for folder: " + name);
         long creation = section.getLong(CREATION, System.currentTimeMillis());
         NavigatorCategory category = resolveCategory(section);
-        XMaterial defaultMaterial = XMaterial.CHEST;
-        XMaterial material = XMaterial.matchXMaterial(section.getString(MATERIAL, defaultMaterial.name()))
-                .orElse(defaultMaterial);
+        Material material = Materials.match(section.getString(MATERIAL), Material.CHEST);
         String permission = section.getString(PERMISSION, "-");
         String project = section.getString(PROJECT, "-");
         List<UUID> worlds =

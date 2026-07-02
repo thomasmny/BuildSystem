@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.folder;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.builder.Builder;
@@ -26,6 +25,7 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.*;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.Contract;
@@ -47,7 +47,7 @@ public class FolderImpl implements Folder {
 
     private @Nullable Folder parent;
 
-    private XMaterial material;
+    private Material material;
     private @Nullable String iconSkullTexture;
     private String permission;
     private String project;
@@ -62,7 +62,7 @@ public class FolderImpl implements Folder {
                 category,
                 parent,
                 creator,
-                XMaterial.CHEST,
+                Material.CHEST,
                 "-",
                 "-",
                 new ArrayList<>(),
@@ -77,7 +77,7 @@ public class FolderImpl implements Folder {
             NavigatorCategory category,
             @Nullable Folder parent,
             Builder creator,
-            XMaterial material,
+            Material material,
             String permission,
             String project,
             List<UUID> worlds,
@@ -133,12 +133,12 @@ public class FolderImpl implements Folder {
     }
 
     @Override
-    public XMaterial getIcon() {
+    public Material getIcon() {
         return this.material;
     }
 
     @Override
-    public void setIcon(XMaterial material) {
+    public void setIcon(Material material) {
         this.material = material;
     }
 

@@ -17,9 +17,9 @@
  */
 package de.eintosti.buildsystem.api.world.data;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.util.Optional;
+import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -73,7 +73,7 @@ public interface BuildWorldStatus {
      *
      * @return The icon material
      */
-    XMaterial getIcon();
+    Material getIcon();
 
     /**
      * Gets the display name prefixed with this status's {@link #getColor() colour}, with legacy colour codes still

@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world;
 
-import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.event.world.BuildWorldStatusChangeEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -33,6 +32,7 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
+import de.eintosti.buildsystem.menu.HeadProfileSource;
 import de.eintosti.buildsystem.world.builder.BuildersImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
@@ -43,6 +43,7 @@ import de.eintosti.buildsystem.world.lifecycle.WorldUnloaderImpl;
 import java.util.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -50,7 +51,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public final class BuildWorldImpl implements BuildWorld {
+public final class BuildWorldImpl implements BuildWorld, HeadProfileSource {
 
     private final UUID uuid;
     private String name;
@@ -114,8 +115,12 @@ public final class BuildWorldImpl implements BuildWorld {
                 .withStatus(context.statusRegistry().getDefaultStatus())
                 .withMaterial(
                         privateWorld
-                                ? XMaterial.PLAYER_HEAD
-                                : context.customizableIcons().getIcon(worldType))
+                                ? Material.PLAYER_HEAD
+                                : Objects.requireNonNullElse(
+                                        context.customizableIcons()
+                                                .getIcon(worldType)
+                                                .get(),
+                                        Material.FILLED_MAP))
                 .withPermission(permission)
                 .withDifficulty(defaults.difficulty())
                 .withBlockBreaking(defaults.blockBreaking())
@@ -193,12 +198,12 @@ public final class BuildWorldImpl implements BuildWorld {
     }
 
     @Override
-    public XMaterial getIcon() {
+    public Material getIcon() {
         return this.worldData.get(WorldDataKey.MATERIAL);
     }
 
     @Override
-    public void setIcon(XMaterial material) {
+    public void setIcon(Material material) {
         this.worldData.set(WorldDataKey.MATERIAL, material);
     }
 

@@ -17,10 +17,9 @@
  */
 package de.eintosti.buildsystem.api.world.display;
 
-import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.profiles.objects.Profileable;
 import java.util.List;
 import java.util.UUID;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -89,14 +88,14 @@ public interface Displayable {
      *
      * @return The material
      */
-    XMaterial getIcon();
+    Material getIcon();
 
     /**
      * Sets the icon for this displayable item.
      *
      * @param material The material to set as the icon
      */
-    void setIcon(XMaterial material);
+    void setIcon(Material material);
 
     /**
      * Gets the skull texture applied when this item's {@link #getIcon() icon} is a player head. Returns {@code null}
@@ -117,31 +116,6 @@ public interface Displayable {
     void setIconSkullTexture(@Nullable String skullTexture);
 
     /**
-     * Gets the profile used to render this displayable's head when its {@link #getIcon() icon} is a player head and no
-     * explicit {@link #getIconSkullTexture() skull texture} is configured. Returns {@code null} to render a plain,
-     * un-textured head. The renderer resolves this asynchronously, so implementations may return network-backed
-     * profiles (e.g. a world's creator) without blocking the inventory from opening.
-     *
-     * @return The default head profile, or {@code null} for a plain head
-     * @since 4.0.0
-     */
-    @Nullable default Profileable getHeadProfile() {
-        return null;
-    }
-
-    /**
-     * Gets the profile the renderer falls back to when this displayable's {@link #getHeadProfile() head profile} cannot
-     * be resolved (e.g. the primary profile is a player name that does not map to a real account). Returns {@code null}
-     * to leave a plain head when resolution fails. Like the head profile, this is resolved asynchronously.
-     *
-     * @return The fallback head profile, or {@code null} for none
-     * @since 4.0.0
-     */
-    @Nullable default Profileable getHeadFallbackProfile() {
-        return null;
-    }
-
-    /**
      * Gets the lore of this displayable item.
      *
      * @param player The player viewing the item
@@ -156,12 +130,7 @@ public interface Displayable {
      * @return The ItemStack representation
      */
     default ItemStack asItemStack(Player player) {
-        ItemStack itemStack = getIcon().parseItem();
-        if (itemStack == null) {
-            throw new IllegalStateException(
-                    "Icon material %s could not be parsed into an ItemStack.".formatted(getIcon()));
-        }
-
+        ItemStack itemStack = new ItemStack(getIcon());
         ItemMeta itemMeta = itemStack.getItemMeta();
         if (itemMeta == null) {
             throw new IllegalStateException("ItemMeta for %s is null. This should not happen.".formatted(getIcon()));

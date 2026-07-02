@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.display;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import java.util.ArrayList;
@@ -25,6 +24,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -42,7 +42,7 @@ public final class NavigatorCategoryImpl implements NavigatorCategory {
 
     private String displayName;
     private String color;
-    private XMaterial icon;
+    private Material icon;
     private @Nullable String iconSkullTexture;
     private boolean shownInNavigator;
     private int navigatorSlot;
@@ -94,11 +94,11 @@ public final class NavigatorCategoryImpl implements NavigatorCategory {
     }
 
     @Override
-    public XMaterial getIcon() {
+    public Material getIcon() {
         return icon;
     }
 
-    public void setIcon(XMaterial icon) {
+    public void setIcon(Material icon) {
         this.icon = icon;
     }
 
@@ -190,7 +190,7 @@ public final class NavigatorCategoryImpl implements NavigatorCategory {
 
         private String displayName;
         private String color = "&7";
-        private XMaterial icon = XMaterial.CHEST;
+        private Material icon = Material.CHEST;
         private @Nullable String iconSkullTexture = null;
         private Set<Visibility> visibilities = EnumSet.of(Visibility.EVERYONE);
         private boolean shownInNavigator = true;
@@ -213,7 +213,7 @@ public final class NavigatorCategoryImpl implements NavigatorCategory {
             return this;
         }
 
-        public Builder icon(XMaterial icon) {
+        public Builder icon(Material icon) {
             this.icon = icon;
             return this;
         }

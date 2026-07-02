@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.storage.codec;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
@@ -29,6 +28,7 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.player.PlayerLookupService;
+import de.eintosti.buildsystem.util.Materials;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
@@ -38,9 +38,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import org.bukkit.Difficulty;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -276,21 +276,19 @@ public final class WorldCodec implements Codec<BuildWorld> {
         return Visibility.matchVisibility(section.getBoolean(DATA + "." + LEGACY_PRIVATE));
     }
 
-    private XMaterial parseMaterial(ConfigurationSection section, String worldName) {
+    private Material parseMaterial(ConfigurationSection section, String worldName) {
         String itemString = section.getString(dataPath(WorldDataKey.MATERIAL));
         if (itemString == null) {
-            itemString = XMaterial.BEDROCK.name();
             context.logger().warning("Could not find material for \"" + worldName + "\". Defaulting to BEDROCK.");
+            return Material.BEDROCK;
         }
 
-        Optional<XMaterial> xMaterial = XMaterial.matchXMaterial(itemString);
-        if (xMaterial.isPresent()) {
-            return xMaterial.get();
-        } else {
+        Material material = Materials.match(itemString, Material.BEDROCK);
+        if (material == Material.BEDROCK && !itemString.equals(Material.BEDROCK.name())) {
             context.logger().warning("Unknown material found for \"" + worldName + "\" (" + itemString + ").");
             context.logger().warning("Defaulting back to BEDROCK.");
-            return XMaterial.BEDROCK;
         }
+        return material;
     }
 
     private @Nullable Builder parseCreator(String worldName, ConfigurationSection section) {

@@ -91,6 +91,13 @@ config toggles. `config.yml` and `messages.yml` migrate automatically.
   are gone.
 - API: the instance is registered through Bukkit's `ServicesManager`; obtain it
   via `BuildSystemProvider.get()`.
+- API: XSeries no longer appears in any public signature — icons are Bukkit
+  `Material` (`Displayable`/`NavigatorCategory`/`BuildWorldStatus.getIcon()`,
+  `WorldDataKey.MATERIAL`), and the XSeries dependency is dropped from the API
+  artifact. Head icons are configured through the plain
+  `Displayable.getIconSkullTexture()` string; the `Profileable`-based
+  `getHeadProfile()`/`getHeadFallbackProfile()` are gone. Legacy material names
+  in persisted data still load.
 
 ### Added (API)
 
@@ -108,8 +115,7 @@ config toggles. `config.yml` and `messages.yml` migrate automatically.
   `WorldDataKey`.
 - `WorldStatusRegistry` and `NavigatorCategoryRegistry`, exposed via
   `BuildSystem.getStatusRegistry()` / `getNavigatorCategoryRegistry()`.
-- `Displayable.getIconSkullTexture()` and `getHeadProfile()` for custom head
-  icons.
+- `Displayable.getIconSkullTexture()` for custom head icons.
 
 ### Removed
 
@@ -117,7 +123,7 @@ config toggles. `config.yml` and `messages.yml` migrate automatically.
 - API: `WorldData.getConfigFormat()` and `WorldData.getAllData()`.
 - API: `BuildSystemProvider.register()` / `unregister()` are no longer public.
 - API: `BuildWorld.asProfileable()` — head icons are now resolved through
-  `Displayable.getHeadProfile()` / `getIconSkullTexture()`.
+  `Displayable.getIconSkullTexture()`.
 
 ### Fixed
 

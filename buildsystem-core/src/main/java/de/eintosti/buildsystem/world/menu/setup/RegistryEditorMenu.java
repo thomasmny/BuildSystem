@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
@@ -119,7 +120,7 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
                 .build();
     }
 
-    protected final MenuButton iconButton(String nameKey, Supplier<XMaterial> getter, Consumer<XMaterial> setter) {
+    protected final MenuButton iconButton(String nameKey, Supplier<Material> getter, Consumer<Material> setter) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(getter.get())
                         .name(messages.getString(nameKey, player))

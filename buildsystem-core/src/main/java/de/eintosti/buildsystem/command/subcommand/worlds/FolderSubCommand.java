@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import static java.util.Map.entry;
 
-import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -220,7 +219,7 @@ public class FolderSubCommand extends AbstractSubCommand {
             return;
         }
 
-        folder.setIcon(XMaterial.matchXMaterial(itemStack));
+        folder.setIcon(itemStack.getType());
         messages.sendMessage(player, "worlds_folder_item_set", Map.entry("%folder%", folder.getName()));
     }
 

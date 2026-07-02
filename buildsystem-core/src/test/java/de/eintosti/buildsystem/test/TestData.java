@@ -22,7 +22,6 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
@@ -45,6 +44,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
+import org.bukkit.Material;
 import org.bukkit.plugin.Plugin;
 import org.jspecify.annotations.NullMarked;
 
@@ -73,12 +73,12 @@ public final class TestData {
             List.of("not_started", "in_progress", "almost_finished", "finished");
 
     public static final NavigatorCategoryImpl PUBLIC = category(
-            "public", "Worlds", "&b", XMaterial.FILLED_MAP, 11, EnumSet.of(Visibility.EVERYONE), ACTIVE_STATUS_IDS);
+            "public", "Worlds", "&b", Material.FILLED_MAP, 11, EnumSet.of(Visibility.EVERYONE), ACTIVE_STATUS_IDS);
     public static final NavigatorCategoryImpl ARCHIVE = category(
             "archive",
             "Archive",
             "&3",
-            XMaterial.CYAN_DYE,
+            Material.CYAN_DYE,
             12,
             EnumSet.of(Visibility.EVERYONE, Visibility.ADDED_PLAYERS),
             List.of("archive"));
@@ -86,7 +86,7 @@ public final class TestData {
             "private",
             "Private",
             "&a",
-            XMaterial.PLAYER_HEAD,
+            Material.PLAYER_HEAD,
             13,
             EnumSet.of(Visibility.ADDED_PLAYERS),
             ACTIVE_STATUS_IDS);
@@ -115,7 +115,7 @@ public final class TestData {
             String id,
             String name,
             String color,
-            XMaterial icon,
+            Material icon,
             int slot,
             EnumSet<Visibility> visibilities,
             List<String> statusIds) {

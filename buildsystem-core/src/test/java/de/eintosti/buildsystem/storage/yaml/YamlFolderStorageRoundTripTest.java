@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.storage.yaml;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
@@ -35,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -78,7 +78,7 @@ class YamlFolderStorageRoundTripTest {
                 category,
                 null,
                 creator,
-                XMaterial.CHEST,
+                Material.CHEST,
                 "perm.test",
                 "ProjectX",
                 worlds,
@@ -115,7 +115,7 @@ class YamlFolderStorageRoundTripTest {
         legacy.set(path + ".creator", Builder.of(UUID.randomUUID(), "Creator").toString());
         legacy.set(path + ".creation", 1_700_000_000_000L);
         legacy.set(path + ".category", TestData.PUBLIC.getId());
-        legacy.set(path + ".material", XMaterial.CHEST.name());
+        legacy.set(path + ".material", Material.CHEST.name());
         legacy.set(path + ".permission", "-");
         legacy.set(path + ".project", "-");
         legacy.set(path + ".worlds", List.of());

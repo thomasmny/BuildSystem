@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
@@ -52,7 +51,7 @@ public class SetItemSubCommand extends AbstractSubCommand {
             return;
         }
 
-        buildWorld.getData().set(WorldDataKey.MATERIAL, XMaterial.matchXMaterial(itemStack));
+        buildWorld.getData().set(WorldDataKey.MATERIAL, itemStack.getType());
         messages.sendMessage(player, "worlds_setitem_set", Map.entry("%world%", buildWorld.getName()));
     }
 

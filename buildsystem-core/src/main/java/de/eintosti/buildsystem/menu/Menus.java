@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.menu;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -60,6 +59,7 @@ import de.eintosti.buildsystem.world.menu.setup.StatusEditorMenu;
 import de.eintosti.buildsystem.world.menu.setup.StatusLayoutMenu;
 import java.util.List;
 import java.util.function.Consumer;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -244,7 +244,7 @@ public final class Menus {
         new PhysicsMenu(services.messages(), services.menuItems(), this, buildWorld, player).open(player);
     }
 
-    public void openMaterialPicker(Player player, Consumer<XMaterial> onPick, Runnable onBack) {
+    public void openMaterialPicker(Player player, Consumer<Material> onPick, Runnable onBack) {
         new MaterialPickerMenu(services.messages(), services.menuItems(), services.prompts(), player, onPick, onBack)
                 .open(player);
     }
