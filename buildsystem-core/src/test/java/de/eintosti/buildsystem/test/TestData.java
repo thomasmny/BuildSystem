@@ -174,6 +174,8 @@ public final class TestData {
         lenient()
                 .when(configService.current().world().unload().timeUntilUnload())
                 .thenReturn("06:00:00");
+        // The deep-stubbed defaults().physicsException(...) returns false, which matches the production default
+        // (all physics exceptions blocked).
         return new WorldContext(
                 mock(Messages.class, RETURNS_DEEP_STUBS),
                 mock(MenuItems.class),

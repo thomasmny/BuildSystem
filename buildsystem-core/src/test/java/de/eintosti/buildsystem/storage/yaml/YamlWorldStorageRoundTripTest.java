@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.test.TestData;
@@ -145,6 +146,49 @@ class YamlWorldStorageRoundTripTest {
 
         BuildWorld loaded = newStorage().load().join().iterator().next();
         assertEquals("1.0;64.0;2.0;90.0;0.0", loaded.getData().get(WorldDataKey.CUSTOM_SPAWN));
+    }
+
+    @Test
+    void roundTrip_preservesPhysicsCategories() {
+        BuildWorldImpl world = sampleWorld(UUID.randomUUID(), "PhysicsWorld");
+        world.getData().set(PhysicsCategory.FLUID_FLOW.key(), true);
+        newStorage().save(world).join();
+
+        BuildWorld loaded = newStorage().load().join().iterator().next();
+        assertTrue(loaded.getData().get(PhysicsCategory.FLUID_FLOW.key()));
+        assertFalse(loaded.getData().get(PhysicsCategory.LEAF_DECAY.key()));
+    }
+
+    @Test
+    void save_nestsPhysicsCategoriesUnderOneSection() throws Exception {
+        UUID uuid = UUID.randomUUID();
+        newStorage().save(sampleWorld(uuid, "NestedWorld")).join();
+
+        // The dotted key ids must land as a real nested section, not as literal "physics-exceptions.x" keys.
+        YamlConfiguration yaml = new YamlConfiguration();
+        yaml.load(new File(dataFolder, "worlds.yml"));
+        assertTrue(yaml.isConfigurationSection("worlds." + uuid + ".data.physics-exceptions"));
+        assertTrue(yaml.isBoolean("worlds." + uuid + ".data.physics-exceptions.fluid-flow"));
+    }
+
+    @Test
+    void load_missingPhysicsCategories_seedsFromConfigDefaults() throws Exception {
+        // A world without stored physics-exceptions must inherit the config-default exceptions.
+        when(context.configService().current().world().defaults().physicsException(any(PhysicsCategory.class)))
+                .thenAnswer(invocation -> invocation.<PhysicsCategory>getArgument(0) == PhysicsCategory.FLUID_FLOW);
+
+        YamlConfiguration yaml = new YamlConfiguration();
+        yaml.set("worlds.Legacy.uuid", UUID.randomUUID().toString());
+        yaml.set("worlds.Legacy.type", "NORMAL");
+        yaml.set("worlds.Legacy.date", 1L);
+        yaml.set("worlds.Legacy.data.status", "FINISHED");
+        yaml.save(new File(dataFolder, "worlds.yml"));
+
+        BuildWorld world = newStorage().load().join().iterator().next();
+        assertTrue(world.getData().get(PhysicsCategory.FLUID_FLOW.key()));
+        assertFalse(world.getData().get(PhysicsCategory.CONNECTIONS.key()));
+        assertFalse(world.getData().get(PhysicsCategory.FALLING_BLOCKS.key()));
+        assertFalse(world.getData().get(PhysicsCategory.LEAF_DECAY.key()));
     }
 
     @Test

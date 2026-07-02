@@ -52,6 +52,7 @@ import org.jspecify.annotations.Nullable;
 public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
     private static final int SLOT_WORLD_INFO = 3;
+    private static final int SLOT_PHYSICS = 22;
     private static final int SLOT_TIME = 23;
     private static final int SLOT_BUTCHER = 29;
     private static final int SLOT_BUILDERS = 30;
@@ -233,6 +234,22 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                                 removeEntities(player);
                             }
                         })
+                        .build());
+
+        register(
+                SLOT_PHYSICS,
+                EditButton.builder()
+                        .permission("buildsystem.edit.physics")
+                        .outcome(ClickOutcome.REOPEN)
+                        .render((player, inventory) -> menuItems.addToggleItem(
+                                player,
+                                inventory,
+                                SLOT_PHYSICS,
+                                XMaterial.SAND,
+                                buildWorld.getData().get(WorldDataKey.PHYSICS),
+                                "worldeditor_physics_item",
+                                "worldeditor_physics_lore"))
+                        .onClick(this::onPhysicsClick)
                         .build());
 
         register(
@@ -534,6 +551,25 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         }
 
         super.handleClick(event);
+    }
+
+    /**
+     * The physics button is dual-action: a left-click flips the master physics flag and re-opens, a right-click opens
+     * the {@link PhysicsMenu} with the per-category exceptions.
+     */
+    private void onPhysicsClick(Player player, InventoryClickEvent event) {
+        if (!requirePermission(player, "buildsystem.edit.physics")) {
+            return;
+        }
+        if (event.isRightClick()) {
+            XSound.BLOCK_CHEST_OPEN.play(player);
+            menus.openPhysics(buildWorld, player);
+            return;
+        }
+
+        WorldData worldData = buildWorld.getData();
+        worldData.set(WorldDataKey.PHYSICS, !worldData.get(WorldDataKey.PHYSICS));
+        reopen(player);
     }
 
     /**

@@ -83,7 +83,7 @@ public final class ListenerRegistrar {
         register(new AsyncPlayerChatListener());
         register(new AsyncPlayerPreLoginListener(
                 playerService.getPlayerStorage(), spawnService, worldStorage, scheduler));
-        register(new BlockPhysicsListener(worldStorage, configService));
+        register(new BlockPhysicsListener(worldStorage));
         register(new BuildModePreventationListener(playerService, configService));
         register(new BuildWorldResetUnloadListener(worldStorage));
         register(new DisabledInteractionsListener(settingsService, worldStorage, configService));

@@ -23,9 +23,11 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
@@ -38,7 +40,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.bukkit.Difficulty;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jspecify.annotations.NullMarked;
@@ -103,10 +104,26 @@ public final class WorldCodec implements Codec<BuildWorld> {
         return world;
     }
 
-    private Map<String, Object> serializeWorldData(WorldDataImpl worldData) {
-        return worldData.getAllData().entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey, entry -> entry.getValue().getConfigFormat()));
+    /**
+     * Serializes the property map, splitting dotted key ids (e.g. {@code physics-exceptions.fluid-flow}) into nested
+     * maps. The storage writes this map verbatim via {@code config.set}, which does not interpret dots inside map
+     * keys, so the nesting has to happen here for the file to gain real sections. Ids nest one section level deep,
+     * which is all the catalog uses.
+     */
+    private Map<String, @Nullable Object> serializeWorldData(WorldDataImpl worldData) {
+        Map<String, @Nullable Object> data = new HashMap<>();
+        Map<String, Map<String, @Nullable Object>> sections = new HashMap<>();
+        worldData.getAllData().forEach((id, property) -> {
+            int dot = id.indexOf('.');
+            if (dot < 0) {
+                data.put(id, property.getConfigFormat());
+                return;
+            }
+            sections.computeIfAbsent(id.substring(0, dot), section -> new HashMap<>())
+                    .put(id.substring(dot + 1), property.getConfigFormat());
+        });
+        data.putAll(sections);
+        return data;
     }
 
     @Override
@@ -138,7 +155,7 @@ public final class WorldCodec implements Codec<BuildWorld> {
     }
 
     private WorldDataImpl parseWorldData(String worldName, ConfigurationSection section) {
-        return new WorldDataBuilder(worldName)
+        WorldDataBuilder builder = new WorldDataBuilder(worldName)
                 .withCustomSpawn(parseCustomSpawn(section))
                 .withPermission(section.getString(dataPath(WorldDataKey.PERMISSION), "-"))
                 .withProject(section.getString(dataPath(WorldDataKey.PROJECT), "-"))
@@ -168,8 +185,14 @@ public final class WorldCodec implements Codec<BuildWorld> {
                 .withPermissionOverrideEnabled(
                         () -> context.configService().current().folder().overridePermissions())
                 .withProjectOverrideEnabled(
-                        () -> context.configService().current().folder().overrideProjects())
-                .build();
+                        () -> context.configService().current().folder().overrideProjects());
+        PluginConfig.World.Defaults defaults =
+                context.configService().current().world().defaults();
+        for (PhysicsCategory category : PhysicsCategory.values()) {
+            builder.withPhysicsCategory(
+                    category, section.getBoolean(dataPath(category.key()), defaults.physicsException(category)));
+        }
+        return builder.build();
     }
 
     /**

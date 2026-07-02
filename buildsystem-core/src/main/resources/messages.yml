@@ -841,6 +841,52 @@ worldeditor_physics_item: "&bBlock Physics"
 worldeditor_physics_lore:
   - "&7Toggle whether or not block"
   - "&7physics are activated."
+  - "&8» &7&oRight-click to manage exceptions"
+
+worldeditor_physics_title: "&3Physics Exceptions"
+worldeditor_physics_master_item: "&bBlock Physics"
+worldeditor_physics_master_lore:
+  - "&7The master switch. While disabled,"
+  - "&7only the exceptions below still run."
+worldeditor_physics_blockupdates_item: "&bBlock Updates"
+worldeditor_physics_blockupdates_lore:
+  - "&7Neighbor updates, e.g. torches"
+  - "&7and rails popping off, while"
+  - "&7physics are deactivated."
+worldeditor_physics_connections_item: "&bConnections"
+worldeditor_physics_connections_lore:
+  - "&7Fences, panes, stairs and walls"
+  - "&7connecting to adjacent blocks while"
+  - "&7physics are deactivated."
+worldeditor_physics_fallingblocks_item: "&bFalling Blocks"
+worldeditor_physics_fallingblocks_lore:
+  - "&7Sand, gravel and other gravity"
+  - "&7blocks falling while physics"
+  - "&7are deactivated."
+worldeditor_physics_fluidflow_item: "&bFluid Flow"
+worldeditor_physics_fluidflow_lore:
+  - "&7Water and lava flowing while"
+  - "&7physics are deactivated."
+worldeditor_physics_leafdecay_item: "&bLeaf Decay"
+worldeditor_physics_leafdecay_lore:
+  - "&7Leaves decaying while physics"
+  - "&7are deactivated."
+worldeditor_physics_growth_item: "&bGrowth"
+worldeditor_physics_growth_lore:
+  - "&7Crops and plants growing while"
+  - "&7physics are deactivated."
+worldeditor_physics_spreading_item: "&bSpreading"
+worldeditor_physics_spreading_lore:
+  - "&7Grass, vines and fire spreading"
+  - "&7while physics are deactivated."
+worldeditor_physics_blockforming_item: "&bBlock Forming"
+worldeditor_physics_blockforming_lore:
+  - "&7Snow and ice forming while"
+  - "&7physics are deactivated."
+worldeditor_physics_blockfading_item: "&bBlock Fading"
+worldeditor_physics_blockfading_lore:
+  - "&7Ice and snow melting and corals"
+  - "&7dying while physics are deactivated."
 
 worldeditor_pin_item: "&bPinned"
 worldeditor_pin_lore:

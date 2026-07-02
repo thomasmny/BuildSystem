@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.data;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
@@ -28,6 +29,7 @@ import de.eintosti.buildsystem.world.data.type.ConfigurableProperty;
 import de.eintosti.buildsystem.world.data.type.Overridable;
 import de.eintosti.buildsystem.world.data.type.PersistentProperty;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -58,6 +60,14 @@ public class WorldDataImpl implements WorldData {
     public static final boolean DEFAULT_EXPLOSIONS = true;
     public static final boolean DEFAULT_MOB_AI = true;
     public static final boolean DEFAULT_PHYSICS = true;
+
+    /**
+     * Unlike the other defaults, the {@link PhysicsCategory} values are seeded from the
+     * {@code world.defaults.physics-exceptions} config section at both creation and deserialization; this constant is
+     * only the fallback for builders that were never seeded.
+     */
+    public static final boolean DEFAULT_PHYSICS_CATEGORY = false;
+
     public static final boolean DEFAULT_PINNED = false;
     public static final int DEFAULT_TIME_SINCE_BACKUP = 0;
 
@@ -106,6 +116,12 @@ public class WorldDataImpl implements WorldData {
         register(WorldDataKey.EXPLOSIONS, new ConfigurableProperty<>(builder.explosions));
         register(WorldDataKey.MOB_AI, new ConfigurableProperty<>(builder.mobAi));
         register(WorldDataKey.PHYSICS, new ConfigurableProperty<>(builder.physics));
+        for (PhysicsCategory category : PhysicsCategory.values()) {
+            register(
+                    category.key(),
+                    new ConfigurableProperty<>(
+                            builder.physicsCategories.getOrDefault(category, DEFAULT_PHYSICS_CATEGORY)));
+        }
         register(WorldDataKey.PINNED, new ConfigurableProperty<>(builder.pinned));
         register(
                 WorldDataKey.VISIBILITY,
@@ -204,6 +220,7 @@ public class WorldDataImpl implements WorldData {
         private boolean explosions = DEFAULT_EXPLOSIONS;
         private boolean mobAi = DEFAULT_MOB_AI;
         private boolean physics = DEFAULT_PHYSICS;
+        private final Map<PhysicsCategory, Boolean> physicsCategories = new EnumMap<>(PhysicsCategory.class);
         private boolean pinned = DEFAULT_PINNED;
         private Visibility visibility = Visibility.EVERYONE;
         private int timeSinceBackup = DEFAULT_TIME_SINCE_BACKUP;
@@ -299,6 +316,11 @@ public class WorldDataImpl implements WorldData {
 
         public WorldDataBuilder withPhysics(boolean physics) {
             this.physics = physics;
+            return this;
+        }
+
+        public WorldDataBuilder withPhysicsCategory(PhysicsCategory category, boolean allowed) {
+            this.physicsCategories.put(category, allowed);
             return this;
         }
 

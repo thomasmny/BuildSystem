@@ -33,10 +33,6 @@ world:
     - world
     - world_nether
     - world_the_end
-  disabled-physics:
-    prevent-connections: true
-    prevent-fluid-flow: true
-    prevent-falling-blocks: true
   limits:
     public: -1
     private: -1
@@ -58,6 +54,17 @@ world:
       public: false
       private: true
     physics: true
+    # Behaviors that still run while a world's physics are disabled.
+    physics-exceptions:
+      block-updates: false
+      connections: false
+      falling-blocks: false
+      fluid-flow: false
+      leaf-decay: false
+      growth: false
+      spreading: false
+      block-forming: false
+      block-fading: false
     explosions: true
     mob-ai: true
     block-breaking: true

@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.config;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.cryptomorin.xseries.XMaterial;
+import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import java.util.logging.Logger;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
@@ -79,6 +80,30 @@ class PluginConfigTest {
         assertFalse(cfg.folder().overrideProjects());
     }
 
+    @Test
+    void physicsExceptions_default_toAllBlocked() {
+        PluginConfig cfg = parse("");
+
+        for (PhysicsCategory category : PhysicsCategory.values()) {
+            assertFalse(cfg.world().defaults().physicsException(category), category + " should default to blocked");
+        }
+    }
+
+    @Test
+    void physicsExceptions_configuredValues_areParsed() {
+        PluginConfig cfg = parse("""
+                world:
+                  defaults:
+                    physics-exceptions:
+                      fluid-flow: true
+                      leaf-decay: true
+                """);
+
+        assertTrue(cfg.world().defaults().physicsException(PhysicsCategory.FLUID_FLOW));
+        assertTrue(cfg.world().defaults().physicsException(PhysicsCategory.LEAF_DECAY));
+        assertFalse(cfg.world().defaults().physicsException(PhysicsCategory.CONNECTIONS));
+    }
+
     // -----------------------------------------------------------------------
     // 2. Full parse: representative config produces expected record values
     // -----------------------------------------------------------------------
@@ -113,10 +138,6 @@ class PluginConfigTest {
                   import-all-delay: 60
                   deletion-blacklist:
                     - world
-                  disabled-physics:
-                    prevent-connections: false
-                    prevent-fluid-flow: false
-                    prevent-falling-blocks: false
                   limits:
                     public: 5
                     private: 3
@@ -129,6 +150,8 @@ class PluginConfigTest {
                       night: 18100
                     gamerules: {}
                     physics: false
+                    physics-exceptions:
+                      fluid-flow: true
                     explosions: false
                     mob-ai: false
                     block-breaking: false
@@ -183,6 +206,8 @@ class PluginConfigTest {
         assertEquals(6100, cfg.world().defaults().time().noon());
         assertEquals(18100, cfg.world().defaults().time().night());
         assertFalse(cfg.world().defaults().physics());
+        assertTrue(cfg.world().defaults().physicsException(PhysicsCategory.FLUID_FLOW));
+        assertFalse(cfg.world().defaults().physicsException(PhysicsCategory.LEAF_DECAY));
         assertFalse(cfg.world().defaults().explosions());
         assertFalse(cfg.world().defaults().mobAi());
         assertFalse(cfg.world().defaults().blockBreaking());
