@@ -13,7 +13,7 @@ mockbukkit = "4.114.0"
 # Plugins
 luckperms = "5.5"
 worldedit = "7.4.4"
-placeholderapi = "2.12.2"
+placeholderapi = "2.12.3"
 axiompaper = "5.0.4+26.1"
 
 # Third Party
