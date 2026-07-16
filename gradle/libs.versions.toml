@@ -25,7 +25,7 @@ bstats = "3.2.1"
 fastboard = "2.2.0"
 jspecify = "1.0.0"
 nbt = "1.5.1"
-sshd-sftp = "2.18.0"
+sshd-sftp = "2.19.0"
 xseries = "13.7.1"
 zip4j = "2.11.6"
 
