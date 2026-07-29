@@ -104,10 +104,8 @@ public class StatusLayoutMenu extends Menu {
         }
 
         for (BuildWorldStatus status : registry.getStatuses()) {
-            int slot = status.getStatusSlot();
-            if (!status.isShownInStatusMenu()
-                    || !isSlotValid(slot)
-                    || status.getId().equals(held.getStatusId())) {
+            int slot = status.getSlot();
+            if (!status.isShown() || !isSlotValid(slot) || status.getId().equals(held.getStatusId())) {
                 continue;
             }
             ItemBuilder.of(status.getIcon())
@@ -152,7 +150,7 @@ public class StatusLayoutMenu extends Menu {
 
     private List<BuildWorldStatus> notAddedStatuses() {
         return registry.getStatuses().stream()
-                .filter(status -> !status.isShownInStatusMenu())
+                .filter(status -> !status.isShown())
                 .toList();
     }
 
@@ -199,15 +197,15 @@ public class StatusLayoutMenu extends Menu {
         WorldStatusImpl occupant = statusAtSlot(slot);
         if (occupant != null && !occupant.equals(heldStatus)) {
             if (held.getFromSlot() >= 0) {
-                occupant.setStatusSlot(held.getFromSlot());
+                occupant.setSlot(held.getFromSlot());
             } else {
-                occupant.setShownInStatusMenu(false);
+                occupant.setShown(false);
             }
             registry.persist(occupant);
         }
 
-        heldStatus.setStatusSlot(slot);
-        heldStatus.setShownInStatusMenu(true);
+        heldStatus.setSlot(slot);
+        heldStatus.setShown(true);
         registry.persist(heldStatus);
         clearHeld(player);
         refresh(player);
@@ -264,7 +262,7 @@ public class StatusLayoutMenu extends Menu {
     private void handleOutsideClickWhileHolding(Player player) {
         WorldStatusImpl heldStatus = currentHeld();
         if (heldStatus != null) {
-            heldStatus.setShownInStatusMenu(false);
+            heldStatus.setShown(false);
             registry.persist(heldStatus);
         }
         clearHeld(player);
@@ -336,7 +334,7 @@ public class StatusLayoutMenu extends Menu {
 
     private @Nullable WorldStatusImpl statusAtSlot(int slot) {
         return registry.getStatuses().stream()
-                .filter(status -> status.isShownInStatusMenu() && status.getStatusSlot() == slot)
+                .filter(status -> status.isShown() && status.getSlot() == slot)
                 .map(status -> (WorldStatusImpl) status)
                 .findFirst()
                 .orElse(null);

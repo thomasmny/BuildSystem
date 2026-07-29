@@ -22,7 +22,6 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import java.util.List;
 import java.util.Set;
-import org.bukkit.Material;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -48,47 +47,7 @@ import org.jspecify.annotations.Nullable;
  * @since 4.0.0
  */
 @NullMarked
-public interface NavigatorCategory {
-
-    /**
-     * Gets the stable, lower-case identifier of this category (e.g. {@code "public"}). Unique within the
-     * {@link NavigatorCategoryRegistry}; this is what folders and the navigator persist.
-     *
-     * @return The category identifier
-     */
-    String getId();
-
-    /**
-     * Gets the configurable display name of this category, with legacy colour codes unresolved.
-     *
-     * @return The display name
-     */
-    String getDisplayName();
-
-    /**
-     * Gets the legacy colour-code token (e.g. {@code "&b"}) applied to this category in the navigator.
-     *
-     * @return The colour token
-     */
-    String getColor();
-
-    /**
-     * Gets the display name prefixed with this category's {@link #getColor() colour}, with legacy colour codes still
-     * unresolved. Callers translate the codes when rendering.
-     *
-     * @return The colour-prefixed display name
-     * @since 4.0.0
-     */
-    default String getStyledName() {
-        return getColor() + getDisplayName();
-    }
-
-    /**
-     * Gets the material used to represent this category in the navigator and setup menus.
-     *
-     * @return The icon material
-     */
-    Material getIcon();
+public interface NavigatorCategory extends RegistryEntry {
 
     /**
      * Gets the skull texture applied when this category's {@link #getIcon() icon} is a player head. Returns
@@ -144,28 +103,4 @@ public interface NavigatorCategory {
     default boolean groups(Visibility visibility, String statusId) {
         return getVisibilities().contains(visibility) && getStatusIds().contains(statusId);
     }
-
-    /**
-     * Gets whether this category is given a section in the navigator. When {@code false}, its worlds are only reachable
-     * directly via commands or secondary menus.
-     *
-     * @return {@code true} if shown in the navigator, otherwise {@code false}
-     */
-    boolean isShownInNavigator();
-
-    /**
-     * Gets the default navigator slot used when a layout is generated for this category.
-     *
-     * @return The navigator slot
-     */
-    int getNavigatorSlot();
-
-    /**
-     * Gets whether this category is one of the plugin's built-in defaults, as opposed to an administrator-created
-     * custom category. Built-in categories can be restyled and deleted like any other; deleting one only removes it
-     * until the categories are reset to their defaults.
-     *
-     * @return {@code true} if built-in, otherwise {@code false}
-     */
-    boolean isBuiltIn();
 }

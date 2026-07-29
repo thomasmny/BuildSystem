@@ -150,23 +150,23 @@ class WorldStatusRegistryImplTest {
     void seededStatuses_getDefaultPickerSlots() {
         BuildWorldStatus notStarted =
                 registry.getStatus(WorldStatusRegistry.NOT_STARTED_ID).orElseThrow();
-        assertEquals(10, notStarted.getStatusSlot());
-        assertTrue(notStarted.isShownInStatusMenu());
-        assertEquals(15, registry.getStatus("hidden").orElseThrow().getStatusSlot());
+        assertEquals(10, notStarted.getSlot());
+        assertTrue(notStarted.isShown());
+        assertEquals(15, registry.getStatus("hidden").orElseThrow().getSlot());
     }
 
     @Test
     void createStatus_isPlacedInThePicker() {
         BuildWorldStatus created = registry.createStatus("Needs Review");
-        assertTrue(created.getStatusSlot() >= 0);
-        assertTrue(created.isShownInStatusMenu());
+        assertTrue(created.getSlot() >= 0);
+        assertTrue(created.isShown());
     }
 
     @Test
     void resetStatusLayout_restoresBuiltInSlotsAndHidesCustom() {
         WorldStatusImpl notStarted = (WorldStatusImpl)
                 registry.getStatus(WorldStatusRegistry.NOT_STARTED_ID).orElseThrow();
-        notStarted.setStatusSlot(25);
+        notStarted.setSlot(25);
         registry.persist(notStarted);
         WorldStatusImpl custom = registry.createStatus("Custom");
 
@@ -176,21 +176,21 @@ class WorldStatusRegistryImplTest {
                 10,
                 registry.getStatus(WorldStatusRegistry.NOT_STARTED_ID)
                         .orElseThrow()
-                        .getStatusSlot());
-        assertFalse(registry.getStatus(custom.getId()).orElseThrow().isShownInStatusMenu());
+                        .getSlot());
+        assertFalse(registry.getStatus(custom.getId()).orElseThrow().isShown());
     }
 
     @Test
     void unplacedStatus_isGivenASlotOnReload() {
         WorldStatusImpl notStarted = (WorldStatusImpl)
                 registry.getStatus(WorldStatusRegistry.NOT_STARTED_ID).orElseThrow();
-        notStarted.setStatusSlot(-1);
+        notStarted.setSlot(-1);
         registry.persist(notStarted);
 
         WorldStatusRegistryImpl reloaded = reloadRegistry();
         assertTrue(reloaded.getStatus(WorldStatusRegistry.NOT_STARTED_ID)
                         .orElseThrow()
-                        .getStatusSlot()
+                        .getSlot()
                 >= 0);
     }
 

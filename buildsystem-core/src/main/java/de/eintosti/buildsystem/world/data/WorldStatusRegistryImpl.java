@@ -238,10 +238,10 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
         for (WorldStatusImpl status : this.statuses.values()) {
             Integer preset = DEFAULT_SLOTS.get(status.getId());
             if (preset != null) {
-                status.setStatusSlot(preset);
-                status.setShownInStatusMenu(true);
+                status.setSlot(preset);
+                status.setShown(true);
             } else {
-                status.setShownInStatusMenu(false);
+                status.setShown(false);
             }
             storage.save(status);
         }
@@ -253,7 +253,7 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
      */
     private void placeUnplacedStatuses() {
         List<WorldStatusImpl> unplaced = this.statuses.values().stream()
-                .filter(status -> status.getStatusSlot() < 0)
+                .filter(status -> status.getSlot() < 0)
                 .sorted(Comparator.comparingInt(WorldStatusImpl::getOrder))
                 .toList();
         for (WorldStatusImpl status : unplaced) {
@@ -261,8 +261,8 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
             if (slot < 0) {
                 break;
             }
-            status.setStatusSlot(slot);
-            status.setShownInStatusMenu(true);
+            status.setSlot(slot);
+            status.setShown(true);
             storage.save(status);
         }
     }
@@ -273,8 +273,8 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
     private int firstFreeSlot() {
         Set<Integer> occupied = new HashSet<>();
         for (WorldStatusImpl status : this.statuses.values()) {
-            if (status.isShownInStatusMenu() && status.getStatusSlot() >= 0) {
-                occupied.add(status.getStatusSlot());
+            if (status.isShown() && status.getSlot() >= 0) {
+                occupied.add(status.getSlot());
             }
         }
         for (int slot = 0; slot < STATUS_MENU_SIZE; slot++) {

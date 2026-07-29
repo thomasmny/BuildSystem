@@ -115,8 +115,8 @@ public class NavigatorLayoutMenu extends Menu {
         }
 
         for (NavigatorCategory category : registry.getCategories()) {
-            int slot = category.getNavigatorSlot();
-            if (!category.isShownInNavigator() || !isSlotValid(slot) || slot == settingsSlot) {
+            int slot = category.getSlot();
+            if (!category.isShown() || !isSlotValid(slot) || slot == settingsSlot) {
                 continue;
             }
             if (category.getId().equals(cursorState.getHeldCategoryId())) {
@@ -184,7 +184,7 @@ public class NavigatorLayoutMenu extends Menu {
 
     private List<NavigatorCategory> notAddedCategories() {
         return registry.getCategories().stream()
-                .filter(category -> !category.isShownInNavigator())
+                .filter(category -> !category.isShown())
                 .toList();
     }
 
@@ -246,16 +246,16 @@ public class NavigatorLayoutMenu extends Menu {
             NavigatorCategoryImpl occupant = categoryAtSlot(slot);
             if (occupant != null && !occupant.equals(held)) {
                 if (cursorState.getHeldFromSlot() >= 0) {
-                    occupant.setNavigatorSlot(cursorState.getHeldFromSlot());
+                    occupant.setSlot(cursorState.getHeldFromSlot());
                 } else {
-                    occupant.setShownInNavigator(false);
+                    occupant.setShown(false);
                 }
                 registry.persist(occupant);
             }
         }
 
-        held.setNavigatorSlot(slot);
-        held.setShownInNavigator(true);
+        held.setSlot(slot);
+        held.setShown(true);
         registry.persist(held);
         clearHeld(player);
         refresh(player);
@@ -267,11 +267,11 @@ public class NavigatorLayoutMenu extends Menu {
             int previousSettingsSlot = registry.getSettingsSlot();
             if (isSlotValid(previousSettingsSlot)) {
                 // Swap: the displaced category takes the slot the settings button just vacated.
-                occupant.setNavigatorSlot(previousSettingsSlot);
+                occupant.setSlot(previousSettingsSlot);
             } else {
                 // Settings came from the palette (no slot to swap into); send the occupant to the palette rather than
                 // an invalid slot, which would hide it from the navigator entirely.
-                occupant.setShownInNavigator(false);
+                occupant.setShown(false);
             }
             registry.persist(occupant);
         }
@@ -339,7 +339,7 @@ public class NavigatorLayoutMenu extends Menu {
             NavigatorCategoryImpl held = (NavigatorCategoryImpl)
                     registry.getCategory(cursorState.getHeldCategoryId()).orElse(null);
             if (held != null) {
-                held.setShownInNavigator(false);
+                held.setShown(false);
                 registry.persist(held);
             }
         }
@@ -375,11 +375,11 @@ public class NavigatorLayoutMenu extends Menu {
                     NavigatorCategoryImpl created = registry.createCategory(name);
                     int freeSlot = firstFreeSlot();
                     if (freeSlot >= 0) {
-                        created.setShownInNavigator(true);
-                        created.setNavigatorSlot(freeSlot);
+                        created.setShown(true);
+                        created.setSlot(freeSlot);
                     } else {
                         // Grid is full: leave the new category in the palette rather than overwriting slot 0.
-                        created.setShownInNavigator(false);
+                        created.setShown(false);
                     }
                     registry.persist(created);
                     menus.openCategoryEditor(created, player);
@@ -432,7 +432,7 @@ public class NavigatorLayoutMenu extends Menu {
 
     private @Nullable NavigatorCategoryImpl categoryAtSlot(int slot) {
         return registry.getCategories().stream()
-                .filter(category -> category.isShownInNavigator() && category.getNavigatorSlot() == slot)
+                .filter(category -> category.isShown() && category.getSlot() == slot)
                 .map(category -> (NavigatorCategoryImpl) category)
                 .findFirst()
                 .orElse(null);
@@ -445,8 +445,8 @@ public class NavigatorLayoutMenu extends Menu {
     private int firstFreeSlot() {
         // Snapshot the occupied slots once rather than re-fetching the (sorted) category list for every slot.
         Set<Integer> occupied = registry.getCategories().stream()
-                .filter(NavigatorCategory::isShownInNavigator)
-                .map(NavigatorCategory::getNavigatorSlot)
+                .filter(NavigatorCategory::isShown)
+                .map(NavigatorCategory::getSlot)
                 .collect(Collectors.toSet());
         // The settings button holds a navigator slot too; never hand its slot out, or the category placed there is
         // skipped by populate() and silently vanishes from the navigator.

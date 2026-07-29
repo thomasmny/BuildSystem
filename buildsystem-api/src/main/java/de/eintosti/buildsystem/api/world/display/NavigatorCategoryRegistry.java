@@ -49,7 +49,7 @@ public interface NavigatorCategoryRegistry {
     String PRIVATE_ID = "private";
 
     /**
-     * Gets all registered categories, ordered by {@link NavigatorCategory#getNavigatorSlot()}.
+     * Gets all registered categories, ordered by {@link NavigatorCategory#getSlot()}.
      *
      * @return An unmodifiable view of all categories
      */

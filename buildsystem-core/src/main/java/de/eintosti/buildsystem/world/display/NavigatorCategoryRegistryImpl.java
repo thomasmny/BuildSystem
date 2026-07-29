@@ -158,7 +158,7 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
     @Override
     public Collection<NavigatorCategory> getCategories() {
         List<NavigatorCategory> ordered = new ArrayList<>(this.categories.values());
-        ordered.sort(Comparator.comparingInt(NavigatorCategory::getNavigatorSlot));
+        ordered.sort(Comparator.comparingInt(NavigatorCategory::getSlot));
         return Collections.unmodifiableList(ordered);
     }
 
@@ -217,10 +217,10 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
         for (NavigatorCategoryImpl category : this.categories.values()) {
             NavigatorCategoryImpl preset = defaults.get(category.getId());
             if (preset != null) {
-                category.setNavigatorSlot(preset.getNavigatorSlot());
-                category.setShownInNavigator(preset.isShownInNavigator());
+                category.setSlot(preset.getSlot());
+                category.setShown(preset.isShown());
             } else {
-                category.setShownInNavigator(false);
+                category.setShown(false);
             }
             storage.save(category);
         }
@@ -230,7 +230,7 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
     public NavigatorCategoryImpl createCategory(String displayName) {
         String id = StringUtils.uniqueId(displayName, "category", this.categories::containsKey);
         int slot = this.categories.values().stream()
-                        .mapToInt(NavigatorCategory::getNavigatorSlot)
+                        .mapToInt(NavigatorCategory::getSlot)
                         .max()
                         .orElse(10)
                 + 1;

@@ -18,8 +18,8 @@
 package de.eintosti.buildsystem.api.world.data;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.display.RegistryEntry;
 import java.util.Optional;
-import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -43,47 +43,7 @@ import org.jspecify.annotations.NullMarked;
  * @since 4.0.0
  */
 @NullMarked
-public interface BuildWorldStatus {
-
-    /**
-     * Gets the stable, lower-case identifier of this status (e.g. {@code "in_progress"}). The id is unique within the
-     * {@link WorldStatusRegistry} and is what gets persisted; it never changes once created.
-     *
-     * @return The status identifier
-     */
-    String getId();
-
-    /**
-     * Gets the configurable display name of this status, with legacy colour codes unresolved.
-     *
-     * @return The display name
-     */
-    String getDisplayName();
-
-    /**
-     * Gets the legacy colour-code token (e.g. {@code "&a"}) applied to this status and, by default, to the worlds that
-     * carry it.
-     *
-     * @return The colour token
-     */
-    String getColor();
-
-    /**
-     * Gets the material used to represent this status in menus.
-     *
-     * @return The icon material
-     */
-    Material getIcon();
-
-    /**
-     * Gets the display name prefixed with this status's {@link #getColor() colour}, with legacy colour codes still
-     * unresolved. Callers translate the codes when rendering.
-     *
-     * @return The colour-prefixed display name
-     */
-    default String getStyledName() {
-        return getColor() + getDisplayName();
-    }
+public interface BuildWorldStatus extends RegistryEntry {
 
     /**
      * Gets the ordering weight of this status. Lower values are considered earlier in a world's lifecycle and are used
@@ -114,30 +74,4 @@ public interface BuildWorldStatus {
      * @return The target status id, or {@link Optional#empty()} if this status does not auto-advance
      */
     Optional<String> getProgressesTo();
-
-    /**
-     * Gets the slot this status occupies in the {@code /worlds setStatus} picker. The layout is configured through the
-     * setup menu's status editor, exactly as navigator categories are arranged. A status that is not
-     * {@link #isShownInStatusMenu() shown}, or whose slot falls outside the picker, is omitted from it.
-     *
-     * @return The picker slot, or a negative value when the status has no assigned slot
-     */
-    int getStatusSlot();
-
-    /**
-     * Gets whether this status appears in the {@code /worlds setStatus} picker. A hidden status still exists and can be
-     * assigned through other means; it is simply not offered in the picker until it is placed back into the layout.
-     *
-     * @return {@code true} if shown in the picker, otherwise {@code false}
-     */
-    boolean isShownInStatusMenu();
-
-    /**
-     * Gets whether this status is one of the plugin's built-in defaults, as opposed to an administrator-created custom
-     * status. Built-in statuses can be restyled and deleted like any other; deleting one only removes it until the
-     * statuses are reset to their defaults.
-     *
-     * @return {@code true} if built-in, otherwise {@code false}
-     */
-    boolean isBuiltIn();
 }

@@ -70,8 +70,8 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
         this.buildWorld = buildWorld;
 
         for (BuildWorldStatus status : worldStatusRegistry.getStatuses()) {
-            int slot = status.getStatusSlot();
-            if (!status.isShownInStatusMenu() || slot < 0 || slot >= WorldStatusRegistryImpl.STATUS_MENU_SIZE) {
+            int slot = status.getSlot();
+            if (!status.isShown() || slot < 0 || slot >= WorldStatusRegistryImpl.STATUS_MENU_SIZE) {
                 continue;
             }
             register(slot, statusButton(status));

@@ -143,20 +143,20 @@ public final class NavigatorCategoryImpl implements NavigatorCategory {
     }
 
     @Override
-    public boolean isShownInNavigator() {
+    public boolean isShown() {
         return shownInNavigator;
     }
 
-    public void setShownInNavigator(boolean shownInNavigator) {
+    public void setShown(boolean shownInNavigator) {
         this.shownInNavigator = shownInNavigator;
     }
 
     @Override
-    public int getNavigatorSlot() {
+    public int getSlot() {
         return navigatorSlot;
     }
 
-    public void setNavigatorSlot(int navigatorSlot) {
+    public void setSlot(int navigatorSlot) {
         this.navigatorSlot = navigatorSlot;
     }
 

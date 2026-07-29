@@ -101,7 +101,7 @@ public class NavigatorService {
 
     public void spawnArmorStands(Player player) {
         List<NavigatorCategory> shownCategories = navigatorCategoryRegistry.getCategories().stream()
-                .filter(NavigatorCategory::isShownInNavigator)
+                .filter(NavigatorCategory::isShown)
                 .toList();
 
         ArmorStand[] stands = new ArmorStand[shownCategories.size()];
