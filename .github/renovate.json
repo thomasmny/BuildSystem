@@ -5,7 +5,8 @@
   ],
   "automerge": true,
   "ignoreDeps": [
-    "org.spigotmc:spigot-api"
+    "org.spigotmc:spigot-api",
+    "io.papermc.paper:paper-api"
   ],
   "labels": [
     "renovate"
