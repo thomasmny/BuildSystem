@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.*;
+import java.util.Locale;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.bukkit.Difficulty;
@@ -198,7 +199,7 @@ public class ConfigService {
                 autoBackup);
 
         Set<String> deletionBlacklist = config.getStringList("world.deletion-blacklist").stream()
-                .map(String::toLowerCase)
+                .map(name -> name.toLowerCase(Locale.ROOT))
                 .collect(Collectors.toSet());
 
         return new PluginConfig.World(

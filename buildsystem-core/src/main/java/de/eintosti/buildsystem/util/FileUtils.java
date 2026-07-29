@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.Comparator;
@@ -120,24 +121,23 @@ public final class FileUtils {
     /**
      * Copies a file or directory from the source location to the target location.
      *
+     * <p>A failure is thrown rather than logged. Callers copy a world before deleting the original (rename) or before
+     * declaring the copy usable (templates); if a partial copy reported success, the rename would delete the source it
+     * had failed to copy. This mirrors {@link #deleteDirectory(File)}, which surfaces failures for the same reason.
+     *
      * @param source The source file or directory to be copied
      * @param target The target file or directory where the source will be copied to
-     * @throws RuntimeException If an I/O error occurs while copying
+     * @throws IOException If any part of the copy fails
      */
-    public static void copy(File source, File target) {
-        try {
-            if (IGNORE_FILES.contains(source.getName())) {
-                return;
-            }
+    public static void copy(File source, File target) throws IOException {
+        if (IGNORE_FILES.contains(source.getName())) {
+            return;
+        }
 
-            if (source.isDirectory()) {
-                copyDirectory(source, target);
-            } else {
-                copyFile(source, target);
-            }
-        } catch (IOException e) {
-            LOGGER.log(
-                    Level.SEVERE, "Failed to copy " + source.getAbsolutePath() + " to " + target.getAbsolutePath(), e);
+        if (source.isDirectory()) {
+            copyDirectory(source, target);
+        } else {
+            copyFile(source, target);
         }
     }
 
@@ -146,21 +146,23 @@ public final class FileUtils {
      *
      * @param source The source directory to be copied
      * @param target The target directory where the source directory will be copied to
+     * @throws IOException If the target cannot be created, the source cannot be listed, or any child fails to copy
      */
-    private static void copyDirectory(File source, File target) {
+    private static void copyDirectory(File source, File target) throws IOException {
         if (!target.exists() && !target.mkdirs()) {
-            LOGGER.log(Level.SEVERE, "Failed to create target directory: " + target.getAbsolutePath());
-            return;
+            throw new IOException("Failed to create target directory: " + target.getAbsolutePath());
         }
 
-        for (String fileName : source.list()) {
+        String[] fileNames = source.list();
+        if (fileNames == null) {
+            throw new IOException("Failed to list directory: " + source.getAbsolutePath());
+        }
+
+        for (String fileName : fileNames) {
             if (IGNORE_FILES.contains(fileName)) {
                 continue;
             }
-
-            File sourceFile = new File(source, fileName);
-            File targetFile = new File(target, fileName);
-            copy(sourceFile, targetFile);
+            copy(new File(source, fileName), new File(target, fileName));
         }
     }
 
@@ -172,14 +174,7 @@ public final class FileUtils {
      * @throws IOException If an I/O error occurs while copying the file
      */
     private static void copyFile(File source, File target) throws IOException {
-        try (InputStream inputStream = Files.newInputStream(source.toPath());
-                OutputStream outputStream = Files.newOutputStream(target.toPath())) {
-            byte[] buffer = new byte[1024];
-            int length;
-            while ((length = inputStream.read(buffer)) > 0) {
-                outputStream.write(buffer, 0, length);
-            }
-        }
+        Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
     /**

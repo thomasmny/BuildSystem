@@ -32,10 +32,12 @@ import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import io.papermc.lib.PaperLib;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
@@ -131,10 +133,12 @@ public class WorldRenamer {
         CompletableFuture.runAsync(
                         () -> {
                             try {
+                                // Copy first, delete second, and only if the copy fully succeeded: a partial copy
+                                // followed by the delete would destroy the world being renamed.
                                 FileUtils.copy(oldWorldFile, newWorldFile);
                                 FileUtils.deleteDirectory(oldWorldFile);
-                            } catch (Exception e) {
-                                throw new RuntimeException("Failed to rename world directory", e);
+                            } catch (IOException e) {
+                                throw new CompletionException("Failed to rename world directory", e);
                             }
                         },
                         scheduler.background())
@@ -147,6 +151,16 @@ public class WorldRenamer {
                                 oldWorld,
                                 oldSpawnLocation,
                                 removedPlayers),
+                        scheduler.mainThread())
+                .exceptionallyAsync(
+                        throwable -> {
+                            // reconstruct() is skipped when the move fails, so the world keeps its old name on disk and
+                            // in storage; tell the player instead of leaving the rename silently half-done.
+                            plugin.getLogger()
+                                    .log(Level.SEVERE, "Failed to rename world \"" + oldName + "\"", throwable);
+                            messages.sendMessage(player, "worlds_rename_error");
+                            return null;
+                        },
                         scheduler.mainThread());
     }
 

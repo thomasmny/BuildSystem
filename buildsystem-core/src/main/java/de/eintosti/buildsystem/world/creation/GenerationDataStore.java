@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.World;
@@ -114,7 +115,7 @@ public class GenerationDataStore {
             return new WorldGenerationData.CustomGeneratorData(generatorData[0], generatorData[1]);
         } else {
             try {
-                BuildWorldType type = BuildWorldType.valueOf(content.toUpperCase());
+                BuildWorldType type = BuildWorldType.valueOf(content.toUpperCase(Locale.ROOT));
                 return new WorldGenerationData.PredefinedGeneratorData(type);
             } catch (IllegalArgumentException e) {
                 logger.warning("Invalid BuildWorldType in file for world %s. Content: '%s'. Defaulting to %s."

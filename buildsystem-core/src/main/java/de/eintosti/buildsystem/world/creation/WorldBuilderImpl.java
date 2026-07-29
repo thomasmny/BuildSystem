@@ -29,7 +29,9 @@ import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.WorldContext;
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
+import java.util.logging.Level;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
 import org.bukkit.entity.Player;
@@ -193,7 +195,15 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
                 "worlds_template_creation_started", Map.entry("%world%", worldName), Map.entry("%template%", template));
 
         File worldFile = FileUtils.worldFolder(worldName);
-        FileUtils.copy(templateFile, worldFile);
+        try {
+            FileUtils.copy(templateFile, worldFile);
+        } catch (IOException e) {
+            // Without this the world was registered around a half-copied (or empty) directory and reported as created.
+            context.logger()
+                    .log(Level.SEVERE, "Failed to copy template \"" + template + "\" for world " + worldName, e);
+            notifyAudience("worlds_template_creation_error", Map.entry("%template%", template));
+            return false;
+        }
 
         buildWorld = createAndRegisterBuildWorld();
         generateBukkitWorld(true);

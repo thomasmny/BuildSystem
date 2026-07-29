@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
+import java.util.Locale;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -52,7 +53,7 @@ public class DeleteSubCommand extends AbstractSubCommand {
                 .current()
                 .world()
                 .deletionBlacklist()
-                .contains(buildWorld.getName().toLowerCase())) {
+                .contains(buildWorld.getName().toLowerCase(Locale.ROOT))) {
             messages.sendMessage(player, "worlds_delete_forbidden");
             return;
         }

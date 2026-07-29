@@ -86,6 +86,30 @@ class FileUtilsTest {
     }
 
     @Test
+    void copy_unreadableSourceThrowsRatherThanReportingSuccess() throws IOException {
+        File source = createWorldLikeDirectory("source");
+        File target = tempDir.resolve("target").toFile();
+        // A file that cannot be read stands in for any mid-copy IO failure.
+        Path unreadable = source.toPath().resolve("region").resolve("r.0.0.mca");
+        assumeTrue(unreadable.toFile().setReadable(false), "filesystem must support clearing the read bit");
+
+        try {
+            // A silent partial copy is what made /worlds rename destructive: it deleted the source afterwards.
+            assertThrows(IOException.class, () -> FileUtils.copy(source, target));
+        } finally {
+            unreadable.toFile().setReadable(true);
+        }
+    }
+
+    @Test
+    void copy_missingSourceDirectoryThrows() {
+        File missing = tempDir.resolve("missing").toFile();
+        File target = tempDir.resolve("target").toFile();
+
+        assertThrows(IOException.class, () -> FileUtils.copy(missing, target));
+    }
+
+    @Test
     void deleteDirectory_removesNestedTree() throws IOException {
         File source = createWorldLikeDirectory("doomed");
 

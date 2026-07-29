@@ -29,9 +29,11 @@ import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.World;
@@ -99,7 +101,15 @@ public class SaveTemplateSubCommand extends AbstractSubCommand {
                 "worlds_savetemplate_started",
                 Map.entry("%world%", buildWorld.getName()),
                 Map.entry("%template%", templateName));
-        CompletableFuture.runAsync(() -> FileUtils.copy(worldDir, templateDir), scheduler.background())
+        CompletableFuture.runAsync(
+                        () -> {
+                            try {
+                                FileUtils.copy(worldDir, templateDir);
+                            } catch (IOException e) {
+                                throw new CompletionException(e);
+                            }
+                        },
+                        scheduler.background())
                 .whenComplete((ignored, throwable) -> scheduler.run(() -> {
                     if (throwable != null) {
                         logger.log(
