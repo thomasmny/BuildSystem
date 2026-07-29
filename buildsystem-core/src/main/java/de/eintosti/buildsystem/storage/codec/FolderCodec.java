@@ -73,17 +73,21 @@ public final class FolderCodec implements Codec<Folder> {
     }
 
     @Override
-    public Map<String, @Nullable Object> serialize(Folder folder) {
-        Map<String, @Nullable Object> serialized = new HashMap<>();
+    public Map<String, Object> serialize(Folder folder) {
+        Map<String, Object> serialized = new HashMap<>();
         serialized.put(NAME, folder.getName());
         serialized.put(UUID_KEY, folder.getUniqueId().toString());
         serialized.put(CREATOR, folder.getCreator().toString());
         serialized.put(CREATION, folder.getCreation());
         serialized.put(CATEGORY, folder.getCategory().getId());
-        serialized.put(
-                PARENT, folder.hasParent() ? folder.getParent().getUniqueId().toString() : null);
+        if (folder.hasParent()) {
+            serialized.put(PARENT, folder.getParent().getUniqueId().toString());
+        }
         serialized.put(MATERIAL, folder.getIcon().name());
-        serialized.put(ICON_SKULL_TEXTURE, folder.getIconSkullTexture());
+        String skullTexture = folder.getIconSkullTexture();
+        if (skullTexture != null) {
+            serialized.put(ICON_SKULL_TEXTURE, skullTexture);
+        }
         serialized.put(PERMISSION, folder.getPermission());
         serialized.put(PROJECT, folder.getProject());
         serialized.put(

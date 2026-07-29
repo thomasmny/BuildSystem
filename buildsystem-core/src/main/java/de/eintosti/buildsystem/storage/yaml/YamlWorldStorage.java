@@ -73,7 +73,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
         // Serialize on the calling (main) thread, where the world's data is owned: the async block must only write the
         // already-captured map to disk, never read live domain state off the main thread.
         String worldKey = codec().key(buildWorld);
-        Map<String, @Nullable Object> serialized = codec().serialize(buildWorld);
+        Map<String, Object> serialized = codec().serialize(buildWorld);
         return CompletableFuture.runAsync(
                 () -> store.atomicSave(() -> {
                     config.set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);

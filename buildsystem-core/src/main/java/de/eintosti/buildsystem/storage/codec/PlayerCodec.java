@@ -81,9 +81,9 @@ public final class PlayerCodec implements Codec<BuildPlayer> {
     }
 
     @Override
-    public Map<String, @Nullable Object> serialize(BuildPlayer value) {
+    public Map<String, Object> serialize(BuildPlayer value) {
         BuildPlayerImpl player = BuildPlayerImpl.of(value);
-        Map<String, @Nullable Object> serialized = new HashMap<>();
+        Map<String, Object> serialized = new HashMap<>();
 
         serialized.put(SETTINGS, serializeSettings(player.getSettings()));
         LogoutLocation logoutLocation = player.getLogoutLocation();
