@@ -26,7 +26,6 @@ import de.eintosti.buildsystem.world.backup.BackupImpl;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.Security;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -43,7 +42,6 @@ import org.apache.sshd.sftp.client.SftpClient;
 import org.apache.sshd.sftp.client.SftpClient.Attributes;
 import org.apache.sshd.sftp.client.SftpClient.DirEntry;
 import org.apache.sshd.sftp.client.SftpClientFactory;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -91,7 +89,6 @@ public class SftpBackupStorage extends AbstractBackupStorage {
         this.remoteBasePath = normalizeBasePath(remoteBasePath);
         this.tmpDownloadPath = FileUtils.resolve(dataFolder.toPath(), ".tmp_backup_downloads");
 
-        Security.addProvider(new BouncyCastleProvider());
         establishConnection();
     }
 

@@ -41,6 +41,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
@@ -77,6 +78,8 @@ public class S3BackupStorage extends AbstractBackupStorage {
         this.tmpDownloadDirectory = FileUtils.resolve(dataFolder, ".tmp_backup_downloads");
 
         S3ClientBuilder builder = S3Client.builder()
+                // Pinned explicitly so the SDK never probes for a transport that is deliberately not shaded in.
+                .httpClientBuilder(UrlConnectionHttpClient.builder())
                 .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
                 .region(Region.of(region));
 

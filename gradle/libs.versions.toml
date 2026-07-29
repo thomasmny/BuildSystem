@@ -20,7 +20,7 @@ axiompaper = "5.0.4+26.1"
 annotations = "26.1.0"
 authlib = "3.13.56"
 aws-sdk = "2.46.20"
-bouncycastle = "1.85"
+eddsa = "0.3.0"
 bstats = "3.2.1"
 fastboard = "2.2.0"
 jspecify = "1.0.0"
@@ -55,7 +55,8 @@ aws-auth = { module = "software.amazon.awssdk:auth", version.ref = "aws-sdk" }
 aws-core = { module = "software.amazon.awssdk:core", version.ref = "aws-sdk" }
 aws-regions = { module = "software.amazon.awssdk:regions", version.ref = "aws-sdk" }
 aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "aws-sdk" }
-bouncycastle = { group = "org.bouncycastle", name = "bcpkix-jdk18on", version.ref = "bouncycastle" }
+aws-urlconnection = { module = "software.amazon.awssdk:url-connection-client", version.ref = "aws-sdk" }
+eddsa = { group = "net.i2p.crypto", name = "eddsa", version.ref = "eddsa" }
 bstats = { group = "org.bstats", name = "bstats-bukkit", version.ref = "bstats" }
 fastboard = { group = "fr.mrmicky", name = "fastboard", version.ref = "fastboard" }
 jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
@@ -65,4 +66,4 @@ zip4j = { group = "net.lingala.zip4j", name = "zip4j", version.ref = "zip4j" }
 xseries = { group = "com.github.cryptomorin", name = "XSeries", version.ref = "xseries" }
 
 [bundles]
-aws = ["aws-s3", "aws-auth", "aws-regions", "aws-core"]
+aws = ["aws-s3", "aws-auth", "aws-regions", "aws-core", "aws-urlconnection"]
