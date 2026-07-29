@@ -150,7 +150,7 @@ class FileUtilsTest {
     void zipDirectoryToMemory_archivesEveryFileWithForwardSlashPaths() throws IOException {
         File world = createWorldLikeDirectory("source");
 
-        byte[] zipped = FileUtils.zipDirectoryToMemory(world.toPath());
+        byte[] zipped = FileUtils.zipDirectoryToMemory(world.toPath(), null);
 
         Map<String, String> entries = readZipEntries(zipped);
         assertEquals("level", entries.get("level.dat"));
@@ -159,11 +159,27 @@ class FileUtilsTest {
     }
 
     @Test
+    void zipDirectoryToMemory_skipsTheExcludedSubtree() throws IOException {
+        File world = createWorldLikeDirectory("source");
+        File nested = new File(world, "dimensions/minecraft/other");
+        assertTrue(nested.mkdirs(), "test fixture");
+        Files.writeString(nested.toPath().resolve("level.dat"), "other-world");
+
+        byte[] zipped = FileUtils.zipDirectoryToMemory(world.toPath(), new File(world, "dimensions").toPath());
+
+        Map<String, String> entries = readZipEntries(zipped);
+        assertEquals("level", entries.get("level.dat"), "the world's own data is archived");
+        assertFalse(
+                entries.containsKey("dimensions/minecraft/other/level.dat"),
+                "worlds nested under the default world must not be folded into its backup");
+    }
+
+    @Test
     void zipDirectoryToMemory_missingDirectoryThrows() {
         Path missing = tempDir.resolve("missing");
 
         // Failure must surface instead of producing a silently-truncated archive.
-        assertThrows(IOException.class, () -> FileUtils.zipDirectoryToMemory(missing));
+        assertThrows(IOException.class, () -> FileUtils.zipDirectoryToMemory(missing, null));
     }
 
     /** A running server with {@code level-name=world} whose container is the temp dir. */

@@ -144,6 +144,15 @@ public class BackupProfileImpl implements BackupProfile {
         }
         World world = optionalWorld.get();
 
+        // Restoring wipes the world folder before extracting. For the server's default world that folder is the
+        // level-name directory, which since Paper 26.1 holds every other world under dimensions/minecraft, so the
+        // wipe would take the whole server with it. Bukkit also refuses to unload the default world, so the unload
+        // that is supposed to precede the wipe silently does nothing.
+        if (Bukkit.getWorlds().getFirst().equals(world)) {
+            messages.sendMessage(player, "worlds_backup_restore_default_world");
+            return CompletableFuture.completedFuture(null);
+        }
+
         List<@Nullable Player> removedPlayers =
                 worldService.removePlayersFromWorld(worldName, "worlds_backup_restoration_in_progress");
 

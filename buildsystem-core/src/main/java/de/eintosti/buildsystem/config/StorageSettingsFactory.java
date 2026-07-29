@@ -57,10 +57,11 @@ final class StorageSettingsFactory {
 
     private static StorageSettings s3(FileConfiguration config, Logger logger) {
         String prefix = BASE + "s3.";
+        // Only what must come from the config: url is optional (absent means AWS rather than an S3-compatible
+        // service), and the credentials may instead be supplied through AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY,
+        // which are resolved after this runs.
         Map<String, String> required = new LinkedHashMap<>();
-        required.put(prefix + "url", config.getString(prefix + "url"));
-        required.put(prefix + "access-key", config.getString(prefix + "access-key"));
-        required.put(prefix + "secret-key", config.getString(prefix + "secret-key"));
+        required.put(prefix + "region", config.getString(prefix + "region"));
         required.put(prefix + "bucket", config.getString(prefix + "bucket"));
 
         if (fallbackOnMissing(required, "s3", logger)) {
@@ -77,10 +78,10 @@ final class StorageSettingsFactory {
 
     private static StorageSettings sftp(FileConfiguration config, Logger logger) {
         String prefix = BASE + "sftp.";
+        // The password may instead come from BUILDSYSTEM_SFTP_PASSWORD, which is resolved after this runs.
         Map<String, String> required = new LinkedHashMap<>();
         required.put(prefix + "host", config.getString(prefix + "host"));
         required.put(prefix + "username", config.getString(prefix + "username"));
-        required.put(prefix + "password", config.getString(prefix + "password"));
 
         if (fallbackOnMissing(required, "sftp", logger)) {
             return new Local();

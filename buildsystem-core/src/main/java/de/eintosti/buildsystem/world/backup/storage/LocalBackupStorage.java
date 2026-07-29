@@ -102,7 +102,15 @@ public class LocalBackupStorage extends AbstractBackupStorage {
     public CompletableFuture<Backup> storeBackup(BuildWorld buildWorld) {
         return supply("store backup for " + buildWorld.getName(), () -> {
             long timestamp = System.currentTimeMillis();
-            File storage = new File(getBackupDirectory(buildWorld).toFile(), backupName(timestamp));
+            Path directory = getBackupDirectory(buildWorld);
+            try {
+                // zip4j opens the destination archive with a RandomAccessFile, which fails outright if the per-world
+                // directory is missing
+                Files.createDirectories(directory);
+            } catch (IOException e) {
+                throw new IOException("Failed to create backup directory " + directory, e);
+            }
+            File storage = new File(directory.toFile(), backupName(timestamp));
             File zip = FileUtils.zipWorld(storage, buildWorld);
             if (zip == null) {
                 throw new IOException("Failed to complete the backup for " + buildWorld.getName());

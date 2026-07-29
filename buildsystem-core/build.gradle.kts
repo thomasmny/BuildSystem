@@ -64,9 +64,10 @@ dependencies {
     }
     compileOnly(libs.axiompaper)
 
-    implementation(libs.bouncycastle)
+    // Ed25519 host keys for the SFTP backup. sshd cannot use the JDK provider
+    // for these, and this is ~90 KB against BouncyCastle's ~19 MB.
+    implementation(libs.eddsa)
     implementation(libs.bstats)
-    implementation(libs.bundles.aws)
     implementation(libs.fastboard)
     implementation(libs.nbt) { isTransitive = false }
     implementation(libs.paperlib)
@@ -96,9 +97,8 @@ tasks.named("assemble") {
 
 tasks.named<ShadowJar>("shadowJar") {
     minimize {
-        exclude(dependency("software.amazon.awssdk:.*:.*"))
         exclude(dependency("org.apache.sshd:.*:.*"))
-        exclude(dependency("org.bouncycastle:.*:.*"))
+        exclude(dependency("net.i2p.crypto:.*:.*"))
         exclude(dependency("org.bstats:.*:.*"))
     }
     archiveFileName.set("${rootProject.name}-${project.version}.jar")
@@ -115,12 +115,9 @@ tasks.named<ShadowJar>("shadowJar") {
     relocate("org.apache.commons.logging", "$shadePath.apache.commons.logging")
     relocate("org.apache.http", "$shadePath.apache.http")
     relocate("org.apache.sshd", "$shadePath.sshd")
-    relocate("org.bouncycastle", "$shadePath.bouncycastle")
+    relocate("net.i2p.crypto", "$shadePath.eddsa")
     relocate("org.bstats", "$shadePath.bstats")
-    relocate("org.reactivestreams", "$shadePath.reactivestreams")
     relocate("org.slf4j", "$shadePath.slf4j")
-    relocate("software.amazon.awssdk", "$shadePath.awssdk")
-    relocate("software.amazon.eventstream", "$shadePath.awssdk.eventstream")
 }
 
 tasks.runServer {

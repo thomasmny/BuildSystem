@@ -237,8 +237,11 @@ public final class FileUtils {
         try (ZipFile zipFile = new ZipFile(storage.getAbsolutePath())) {
             File worldContainer = worldFolder(buildWorld.getName());
 
-            ExcludeFileFilter excludeFileFilter = Sets.newHashSet(
-                    new File(worldContainer, "uid.dat"), new File(worldContainer, "session.lock"))::contains;
+            Set<File> runtimeFiles =
+                    Sets.newHashSet(new File(worldContainer, "uid.dat"), new File(worldContainer, "session.lock"));
+            Path nestedWorlds = nestedWorldsRoot(worldContainer);
+            ExcludeFileFilter excludeFileFilter =
+                    file -> runtimeFiles.contains(file) || isUnder(file.toPath(), nestedWorlds);
             ZipParameters zipParameters = new ZipParameters();
             zipParameters.setExcludeFileFilter(excludeFileFilter);
 
@@ -251,8 +254,32 @@ public final class FileUtils {
     }
 
     public static byte[] zipWorldToMemory(BuildWorld buildWorld) throws IOException {
-        Path worldPath = worldFolder(buildWorld.getName()).toPath();
-        return zipDirectoryToMemory(worldPath);
+        File worldContainer = worldFolder(buildWorld.getName());
+        return zipDirectoryToMemory(worldContainer.toPath(), nestedWorldsRoot(worldContainer));
+    }
+
+    /**
+     * {@return the {@code dimensions} directory holding other worlds nested inside this one, or {@code null} when
+     * this is not the default world}
+     *
+     * <p>Only the server's default world has one: since Paper 26.1 every other world lives under its
+     * {@code dimensions/minecraft} directory. Archiving it would fold the entire server into one world's backup, so
+     * it is excluded and the default world is backed up alone.
+     *
+     * @param worldContainer The world folder being archived
+     */
+    private static @Nullable Path nestedWorldsRoot(File worldContainer) {
+        List<World> worlds = Bukkit.getWorlds();
+        if (worlds.isEmpty()) {
+            return null;
+        }
+
+        File defaultWorldFolder = worlds.getFirst().getWorldFolder();
+        return defaultWorldFolder.equals(worldContainer) ? new File(worldContainer, "dimensions").toPath() : null;
+    }
+
+    private static boolean isUnder(Path path, @Nullable Path directory) {
+        return directory != null && path.startsWith(directory);
     }
 
     /**
@@ -264,12 +291,14 @@ public final class FileUtils {
      * @return The zipped bytes
      * @throws IOException If the directory cannot be walked or any file cannot be read
      */
-    static byte[] zipDirectoryToMemory(Path worldPath) throws IOException {
+    static byte[] zipDirectoryToMemory(Path worldPath, @Nullable Path excludedSubtree) throws IOException {
         ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 
         try (ZipOutputStream zipOut = new ZipOutputStream(byteOut);
                 Stream<Path> walk = Files.walk(worldPath)) {
-            List<Path> files = walk.filter(Files::isRegularFile).toList();
+            List<Path> files = walk.filter(Files::isRegularFile)
+                    .filter(file -> !isUnder(file, excludedSubtree))
+                    .toList();
             for (Path file : files) {
                 Path relativePath = worldPath.relativize(file);
                 zipOut.putNextEntry(new ZipEntry(relativePath.toString().replace("\\", "/")));
