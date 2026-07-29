@@ -91,7 +91,7 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
         return List.of(
                 renameButton("setup_category_rename", "setup_category_rename_prompt", category::setDisplayName),
                 colorButton("setup_category_color", category::getColor, category::setColor),
-                iconButton());
+                categoryIconButton());
     }
 
     /**
@@ -109,12 +109,14 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
      * The category icon button. Left-click opens the item picker to choose the material. When that material is a player
      * head, the skull texture is part of the same control: right-click prompts for it (a texture, {@code viewer} for the
      * viewing player's head, or {@code none} to clear).
+     *
+     * <p>Named apart from the inherited {@link #iconButton(String, java.util.function.Supplier,
+     * java.util.function.Consumer) plain icon button} the status editor uses, so the two are not an overload pair.
      */
-    private MenuButton iconButton() {
-        boolean isHead = category.getIcon() == Material.PLAYER_HEAD;
+    private MenuButton categoryIconButton() {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
-                    String loreKey = isHead ? "setup_category_icon_head_lore" : "setup_category_icon_lore";
+                    String loreKey = isHeadIcon() ? "setup_category_icon_head_lore" : "setup_category_icon_lore";
                     String textureLabel = skullProcessor.getLabel(player);
 
                     ItemBuilder.icon(category, player)
@@ -123,7 +125,7 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                             .into(inventory, slot);
                 })
                 .onClick((player, event) -> {
-                    if (isHead && event.isRightClick()) {
+                    if (isHeadIcon() && event.isRightClick()) {
                         promptSkullTexture(player);
                         return;
                     }
@@ -136,6 +138,14 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                             () -> reopen(player));
                 })
                 .build();
+    }
+
+    /**
+     * Read per render and per click rather than captured at construction, so the skull-texture half of the control
+     * appears as soon as the icon becomes a head.
+     */
+    private boolean isHeadIcon() {
+        return category.getIcon() == Material.PLAYER_HEAD;
     }
 
     private void promptSkullTexture(Player player) {

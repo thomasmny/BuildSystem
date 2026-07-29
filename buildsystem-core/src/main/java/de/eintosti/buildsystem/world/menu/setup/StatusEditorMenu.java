@@ -68,26 +68,26 @@ public class StatusEditorMenu extends RegistryEditorMenu {
         this.registry = worldStatusRegistry;
         this.status = (WorldStatusImpl) status;
 
-        registerCentered(createPropertyButtons());
+        registerCentered(propertyButtons());
         register(SLOT_BACK, backButton());
     }
 
-    private List<MenuButton> createPropertyButtons() {
+    private List<MenuButton> propertyButtons() {
         // Navigator visibility is decided by category membership (a status only appears in the navigator through the
         // categories that group it), so there is no separate per-status "shown in navigator" toggle.
         return List.of(
                 renameButton("setup_status_rename", "setup_status_rename_prompt", status::setDisplayName),
                 colorButton("setup_status_color", status::getColor, status::setColor),
                 iconButton("setup_status_icon", status::getIcon, status::setIcon),
-                createOrderButton(),
+                orderButton(),
                 toggleButton(
                         "setup_status_building",
                         status::isBuildingAllowed,
                         () -> status.setBuildingAllowed(!status.isBuildingAllowed())),
-                createProgressesButton());
+                progressesButton());
     }
 
-    private MenuButton createOrderButton() {
+    private MenuButton orderButton() {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.COMPARATOR)
                         .name(messages.getString(
@@ -102,7 +102,7 @@ public class StatusEditorMenu extends RegistryEditorMenu {
                 .build();
     }
 
-    private MenuButton createProgressesButton() {
+    private MenuButton progressesButton() {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.ARROW)
                         .name(messages.getString(

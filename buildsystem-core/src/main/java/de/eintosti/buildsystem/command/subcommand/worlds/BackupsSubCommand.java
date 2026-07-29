@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import java.util.ArrayList;
@@ -69,7 +70,7 @@ public class BackupsSubCommand extends AbstractSubCommand {
             }
             case 2 -> {
                 if (args[1].equalsIgnoreCase("create")) {
-                    if (!player.hasPermission(getArgument().getPermission() + ".create")) {
+                    if (!player.hasPermission(Permissions.BACKUP_CREATE)) {
                         messages.sendPermissionError(player);
                         return;
                     }
@@ -95,7 +96,7 @@ public class BackupsSubCommand extends AbstractSubCommand {
             return List.of();
         }
 
-        if (player.hasPermission(getArgument().getPermission() + ".create")) {
+        if (player.hasPermission(Permissions.BACKUP_CREATE)) {
             List<String> result = new ArrayList<>();
             WorldsCompletions.addIfStartsWith(args[1], "create", result);
             return result;

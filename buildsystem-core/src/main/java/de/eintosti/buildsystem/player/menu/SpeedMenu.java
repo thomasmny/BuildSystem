@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.Map;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -62,21 +63,27 @@ public class SpeedMenu extends ButtonMenu<MenuButton> {
 
     private MenuButton speedButton(SpeedOption option) {
         return MenuButton.builder()
+                .permission(Permissions.SPEED)
                 .render((player, inventory, slot) -> inventory.setItem(
                         slot,
                         ItemBuilder.skull(Profileable.detect(option.skullTexture()))
                                 .name(messages.getString(option.nameKey(), player))
                                 .build()))
                 .onClick((player, event) -> {
-                    if (!player.hasPermission(Permissions.SPEED)) {
-                        player.closeInventory();
-                        return;
-                    }
                     setSpeed(player, option.speed(), option.displayNumber());
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     player.closeInventory();
                 })
                 .build();
+    }
+
+    /**
+     * Closes without a message or sound, matching how this menu has always turned away a player who lacks
+     * {@code buildsystem.speed}.
+     */
+    @Override
+    protected void onPermissionDenied(Player player, InventoryClickEvent event) {
+        player.closeInventory();
     }
 
     @Override

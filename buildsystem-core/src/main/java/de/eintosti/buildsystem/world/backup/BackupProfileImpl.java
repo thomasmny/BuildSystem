@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
@@ -36,10 +37,15 @@ import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
@@ -59,9 +65,21 @@ public class BackupProfileImpl implements BackupProfile {
     private final Messages messages;
     private final WorldServiceImpl worldService;
     private final SpawnService spawnService;
-    private final BackupStorage storage;
+    private final Supplier<BackupStorage> storage;
     private final BuildWorld buildWorld;
-    protected final Object backupLock;
+
+    /**
+     * Guards {@link #pendingCreation}. Only the hand-off is synchronized; the backup itself runs off-lock, serialized by
+     * the future chain instead.
+     */
+    private final Object creationLock = new Object();
+
+    /**
+     * The tail of this world's backup-creation chain. Retention trims the oldest archives from a listing taken at the
+     * start of a run, so two overlapping runs would read the same listing, delete the same archives twice and both
+     * overshoot the cap. Chaining makes a world's backups strictly sequential.
+     */
+    private CompletableFuture<@Nullable Backup> pendingCreation = CompletableFuture.completedFuture(null);
 
     public BackupProfileImpl(
             BuildSystemPlugin plugin,
@@ -69,7 +87,7 @@ public class BackupProfileImpl implements BackupProfile {
             Messages messages,
             WorldServiceImpl worldService,
             SpawnService spawnService,
-            BackupStorage storage,
+            Supplier<BackupStorage> storage,
             BuildWorld buildWorld) {
         this.plugin = plugin;
         this.configService = configService;
@@ -78,53 +96,61 @@ public class BackupProfileImpl implements BackupProfile {
         this.spawnService = spawnService;
         this.storage = storage;
         this.buildWorld = buildWorld;
-        this.backupLock = new Object();
     }
 
     @Override
     public CompletableFuture<List<Backup>> listBackups() {
-        synchronized (this.backupLock) {
-            return this.storage.listBackups(this.buildWorld);
-        }
+        return this.storage.get().listBackups(this.buildWorld);
     }
 
     @Override
     public CompletableFuture<Backup> createBackup() {
         this.buildWorld.getWorld().ifPresent(World::save);
 
-        CompletableFuture<Backup> resultFuture = new CompletableFuture<>();
-        this.listBackups()
-                .thenComposeAsync(backups -> {
-                    synchronized (this.backupLock) {
-                        int maxBackups =
-                                configService.current().world().backup().maxBackupsPerWorld();
-                        int excess = backups.size() - maxBackups + 1;
+        synchronized (this.creationLock) {
+            // handle() before the compose: a failed backup must not poison every later backup of this world.
+            CompletableFuture<Backup> next = this.pendingCreation
+                    .handle((backup, throwable) -> null)
+                    .thenCompose(ignored -> storeWithRetention());
+            this.pendingCreation = next.handle((backup, throwable) -> backup);
+            return next;
+        }
+    }
 
-                        List<CompletableFuture<Void>> deleteFutures = Collections.emptyList();
-
-                        if (excess > 0) {
-                            deleteFutures = backups.stream()
-                                    .sorted(Comparator.comparingLong(Backup::creationTime))
-                                    .limit(excess)
-                                    .map(b -> storage.deleteBackup(b)
-                                            .thenRun(() -> fireEventSync(new BackupDeletedEvent(buildWorld, b))))
-                                    .toList();
-                        }
-
-                        return CompletableFuture.allOf(deleteFutures.toArray(new CompletableFuture[0]))
-                                .thenCompose(v -> storage.storeBackup(this.buildWorld));
-                    }
-                })
-                .whenComplete((backup, throwable) -> {
-                    if (throwable != null) {
-                        resultFuture.completeExceptionally(throwable);
-                    } else {
-                        fireEventSync(new BackupCreatedEvent(buildWorld, backup));
-                        resultFuture.complete(backup);
-                    }
+    /**
+     * Deletes any archives over the retention cap, stores the new one, and announces it.
+     */
+    private CompletableFuture<Backup> storeWithRetention() {
+        BackupStorage backupStorage = this.storage.get();
+        return backupStorage
+                .listBackups(this.buildWorld)
+                .thenCompose(backups -> deleteExcess(backupStorage, backups))
+                .thenCompose(ignored -> backupStorage.storeBackup(this.buildWorld))
+                .thenApply(backup -> {
+                    fireEventSync(new BackupCreatedEvent(buildWorld, backup));
+                    return backup;
                 });
+    }
 
-        return resultFuture;
+    /**
+     * Deletes the oldest archives that the incoming backup would push over
+     * {@link PluginConfig.World.Backup#maxBackupsPerWorld() the per-world cap}.
+     */
+    private CompletableFuture<Void> deleteExcess(BackupStorage backupStorage, List<Backup> backups) {
+        int maxBackups = configService.current().world().backup().maxBackupsPerWorld();
+        int excess = backups.size() - maxBackups + 1;
+        if (excess <= 0) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        CompletableFuture<?>[] deletions = backups.stream()
+                .sorted(Comparator.comparingLong(Backup::creationTime))
+                .limit(excess)
+                .map(backup -> backupStorage
+                        .deleteBackup(backup)
+                        .thenRun(() -> fireEventSync(new BackupDeletedEvent(buildWorld, backup))))
+                .toArray(CompletableFuture[]::new);
+        return CompletableFuture.allOf(deletions);
     }
 
     /**
@@ -159,6 +185,7 @@ public class BackupProfileImpl implements BackupProfile {
         // Download off the main thread, then apply the restore back on the main thread. Blocking the
         // download here would freeze the entire server for the duration of a remote (S3/SFTP) fetch.
         return this.storage
+                .get()
                 .downloadBackup(backup)
                 .thenCompose(backupFile -> CompletableFuture.runAsync(
                         () -> {

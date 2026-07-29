@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -236,7 +237,7 @@ public class ConfigService {
     }
 
     private static List<GameRuleEntry<?>> parseGameRules(FileConfiguration config, Logger logger) {
-        var gameRulesSection = config.getConfigurationSection("world.defaults.gamerules");
+        ConfigurationSection gameRulesSection = config.getConfigurationSection("world.defaults.gamerules");
         Map<String, Object> gameRulesMap = gameRulesSection == null ? Map.of() : gameRulesSection.getValues(true);
         return gameRulesMap.entrySet().stream()
                 .map(entry -> {

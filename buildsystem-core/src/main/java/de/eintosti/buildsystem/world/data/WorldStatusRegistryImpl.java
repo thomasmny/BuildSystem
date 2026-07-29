@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -200,11 +201,28 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
     /**
      * Restores the six built-in statuses, discarding any customizations. Used by the setup menu's "reset to defaults"
      * control so an admin can always get back to a known-good state.
+     *
+     * <p>Discarding a custom status cascades exactly as {@link #delete(String)} does: every world that used it is reset
+     * to the {@link #getDefault() default} and the id is removed from every category that grouped it. Without this the
+     * worlds keep pointing at an id the registry no longer resolves, which only heals on the next restart.
      */
     public void resetToDefaults() {
+        Set<String> discarded = new LinkedHashSet<>(this.statuses.keySet());
+
         this.statuses.clear();
         seedDefaults();
         storage.saveAll(this.statuses.values());
+        // saveAll rewrites the whole section, so the discarded statuses are already gone from disk.
+        discarded.removeAll(this.statuses.keySet());
+
+        BuildWorldStatus fallback = getDefault();
+        for (String id : discarded) {
+            for (BuildWorld world : worldsWithStatus(id)) {
+                world.getData().set(WorldDataKey.STATUS, fallback);
+                worldService.get().getWorldStorage().save(world);
+            }
+            categoryRegistry.removeStatusFromCategories(id);
+        }
     }
 
     public WorldStatusImpl create(String displayName) {

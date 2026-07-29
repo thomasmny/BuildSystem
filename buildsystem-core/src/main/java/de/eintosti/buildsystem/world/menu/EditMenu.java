@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.config.PluginConfig.World.Defaults.Time;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.*;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
@@ -625,7 +626,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
     }
 
     private void changeTime(Player player) {
-        var defaultTime = configService.current().world().defaults().time();
+        Time defaultTime = configService.current().world().defaults().time();
         int time =
                 switch (getWorldTime()) {
                     case SUNRISE -> defaultTime.noon();

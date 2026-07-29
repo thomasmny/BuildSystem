@@ -37,6 +37,7 @@ public final class Permissions {
     public static final String ADMIN = "buildsystem.admin";
     public static final String BACK = "buildsystem.back";
     public static final String BACKUP = "buildsystem.backup";
+    public static final String BACKUP_CREATE = "buildsystem.backup.create";
     public static final String BLOCKS = "buildsystem.blocks";
     public static final String BUILD = "buildsystem.build";
     public static final String BUILD_OTHER = "buildsystem.build.other";

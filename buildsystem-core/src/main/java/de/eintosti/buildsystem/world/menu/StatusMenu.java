@@ -88,6 +88,7 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
 
     private MenuButton statusButton(BuildWorldStatus status) {
         return MenuButton.builder()
+                .permission(status.getPermission())
                 .render((player, inventory, slot) -> {
                     Material material = status.getIcon();
                     String displayName = ColorAPI.process(status.getStyledName());
@@ -103,11 +104,6 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
                             .into(inventory, slot);
                 })
                 .onClick((player, event) -> {
-                    if (!player.hasPermission(status.getPermission())) {
-                        XSound.ENTITY_ITEM_BREAK.play(player);
-                        return;
-                    }
-
                     player.closeInventory();
                     buildWorld.getData().set(WorldDataKey.STATUS, status);
                     settingsService.forceUpdateSidebar(buildWorld);
@@ -126,6 +122,15 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
     protected void populate(Player player) {
         menuItems.fillAll(player, getInventory());
         renderButtons(player);
+    }
+
+    /**
+     * Keeps the picker open on a denied click. The status is already drawn as a struck-through barrier, so the deny
+     * sound is the whole feedback; closing would also drop the player out of the edit flow.
+     */
+    @Override
+    protected void onPermissionDenied(Player player, InventoryClickEvent event) {
+        XSound.ENTITY_ITEM_BREAK.play(player);
     }
 
     @Override

@@ -199,10 +199,17 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
      *
      * @param first The first group, in display order
      * @param second The second group, in display order
+     * @throws IllegalArgumentException if the groups do not fit the row
      */
     protected final void registerGrouped(List<MenuButton> first, List<MenuButton> second) {
         int groupGap = first.isEmpty() || second.isEmpty() ? 0 : 1;
         int totalWidth = first.size() + groupGap + second.size();
+        // Overflowing the row used to spill silently into the next one, overwriting the back button; fail at
+        // construction instead, where the subclass that added the button can see it.
+        if (totalWidth > ITEMS_PER_ROW) {
+            throw new IllegalArgumentException("Property row holds at most " + ITEMS_PER_ROW + " slots, but "
+                    + totalWidth + " were requested (including the group gap)");
+        }
         int slot = MIDDLE_ROW_START_SLOT + (ITEMS_PER_ROW - totalWidth) / 2;
 
         for (MenuButton button : first) {

@@ -32,6 +32,7 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.menu.HeadProfileSource;
 import de.eintosti.buildsystem.world.builder.BuildersImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
@@ -102,7 +103,8 @@ public final class BuildWorldImpl implements BuildWorld, HeadProfileSource {
      */
     private static WorldDataImpl defaultWorldData(
             WorldContext context, String name, BuildWorldType worldType, boolean privateWorld) {
-        var defaults = context.configService().current().world().defaults();
+        PluginConfig.World.Defaults defaults =
+                context.configService().current().world().defaults();
         String permission = (privateWorld
                         ? defaults.permission().privatePermission()
                         : defaults.permission().publicPermission())
