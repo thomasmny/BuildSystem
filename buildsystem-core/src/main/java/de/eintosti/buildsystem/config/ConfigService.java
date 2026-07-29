@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.config;
 import com.cryptomorin.xseries.XGameRule;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.*;
 import java.util.logging.Logger;
@@ -146,11 +147,6 @@ public class ConfigService {
     }
 
     private static PluginConfig.World parseWorld(FileConfiguration config, Logger logger) {
-        PluginConfig.World.DisabledPhysics disabledPhysics = new PluginConfig.World.DisabledPhysics(
-                config.getBoolean("world.disabled-physics.prevent-connections", true),
-                config.getBoolean("world.disabled-physics.prevent-fluid-flow", true),
-                config.getBoolean("world.disabled-physics.prevent-falling-blocks", true));
-
         PluginConfig.World.Limits limits = new PluginConfig.World.Limits(
                 config.getInt("world.limits.public", -1), config.getInt("world.limits.private", -1));
 
@@ -169,6 +165,13 @@ public class ConfigService {
 
         List<GameRuleEntry<?>> gameRules = parseGameRules(config, logger);
 
+        Map<PhysicsCategory, Boolean> physicsExceptions = new EnumMap<>(PhysicsCategory.class);
+        for (PhysicsCategory category : PhysicsCategory.values()) {
+            physicsExceptions.put(
+                    category,
+                    config.getBoolean("world.defaults." + category.key().id(), false));
+        }
+
         PluginConfig.World.Defaults defaults = new PluginConfig.World.Defaults(
                 config.getInt("world.defaults.worldborder-size", 6000000),
                 Difficulty.valueOf(Objects.requireNonNullElse(config.getString("world.defaults.difficulty"), "PEACEFUL")
@@ -177,6 +180,7 @@ public class ConfigService {
                 permission,
                 time,
                 config.getBoolean("world.defaults.physics", true),
+                physicsExceptions,
                 config.getBoolean("world.defaults.explosions", true),
                 config.getBoolean("world.defaults.mob-ai", true),
                 config.getBoolean("world.defaults.block-breaking", true),
@@ -208,7 +212,6 @@ public class ConfigService {
                 Objects.requireNonNullElse(config.getString("world.invalid-characters"), "^\b$"),
                 config.getInt("world.import-all-delay", 30),
                 deletionBlacklist,
-                disabledPhysics,
                 limits,
                 defaults,
                 unload,

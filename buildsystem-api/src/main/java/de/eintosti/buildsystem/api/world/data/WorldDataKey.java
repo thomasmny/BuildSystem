@@ -100,7 +100,8 @@ public final class WorldDataKey<T> {
     public static final WorldDataKey<Boolean> MOB_AI = of("mob-ai", Boolean.class);
 
     /**
-     * Whether block physics (gravity, fluid flow, …) is applied.
+     * Whether block physics (gravity, fluid flow, …) is applied. While disabled, individual behaviors can be
+     * re-allowed per {@link PhysicsCategory}.
      */
     public static final WorldDataKey<Boolean> PHYSICS = of("physics", Boolean.class);
 

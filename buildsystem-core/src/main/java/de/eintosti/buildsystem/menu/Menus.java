@@ -46,6 +46,7 @@ import de.eintosti.buildsystem.world.menu.EditMenu;
 import de.eintosti.buildsystem.world.menu.FolderContentMenu;
 import de.eintosti.buildsystem.world.menu.GameRulesMenu;
 import de.eintosti.buildsystem.world.menu.NavigatorMenu;
+import de.eintosti.buildsystem.world.menu.PhysicsMenu;
 import de.eintosti.buildsystem.world.menu.SetupMenu;
 import de.eintosti.buildsystem.world.menu.StatusMenu;
 import de.eintosti.buildsystem.world.menu.setup.CategoryEditorMenu;
@@ -237,6 +238,10 @@ public final class Menus {
     public void openGameRules(BuildWorld buildWorld, Player player) {
         new GameRulesMenu(services.messages(), services.menuItems(), plugin.getLogger(), this, buildWorld, player)
                 .open(player);
+    }
+
+    public void openPhysics(BuildWorld buildWorld, Player player) {
+        new PhysicsMenu(services.messages(), services.menuItems(), this, buildWorld, player).open(player);
     }
 
     public void openMaterialPicker(Player player, Consumer<XMaterial> onPick, Runnable onBack) {

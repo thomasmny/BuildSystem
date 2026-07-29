@@ -17,199 +17,138 @@
  */
 package de.eintosti.buildsystem.listener.world;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
+import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
-import de.eintosti.buildsystem.config.ConfigService;
-import de.eintosti.buildsystem.util.DirectionUtil;
-import java.util.List;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.type.*;
 import org.bukkit.entity.EntityType;
+import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.*;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.metadata.MetadataValue;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+/**
+ * Cancels physics-driven events in worlds whose {@link WorldDataKey#PHYSICS} setting is disabled, unless the world
+ * re-allows the event's {@link PhysicsCategory}. Explosions are only gated by the master setting; they are owned by
+ * {@link WorldDataKey#EXPLOSIONS} and have no category.
+ */
 @NullMarked
 public class BlockPhysicsListener implements Listener {
 
     private final WorldStorage worldStorage;
-    private final ConfigService configService;
 
-    public BlockPhysicsListener(WorldStorage worldStorage, ConfigService configService) {
+    public BlockPhysicsListener(WorldStorage worldStorage) {
         this.worldStorage = worldStorage;
-        this.configService = configService;
     }
 
-    private boolean physicsAllowed(World world) {
+    /**
+     * {@return the world's data when physics is disabled there, or {@code null} when physics applies normally}
+     */
+    private @Nullable WorldData physicsDisabledData(World world) {
         BuildWorld buildWorld = worldStorage.getBuildWorld(world);
-        return buildWorld == null || buildWorld.getData().get(WorldDataKey.PHYSICS);
+        if (buildWorld == null) {
+            return null;
+        }
+        WorldData data = buildWorld.getData();
+        return data.get(WorldDataKey.PHYSICS) ? null : data;
+    }
+
+    private boolean allows(World world, PhysicsCategory category) {
+        WorldData data = physicsDisabledData(world);
+        return data == null || data.get(category.key());
+    }
+
+    private <E extends BlockEvent & Cancellable> void cancelUnlessAllowed(E event, PhysicsCategory category) {
+        if (!allows(event.getBlock().getWorld(), category)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onLeavesDecay(LeavesDecayEvent event) {
+        cancelUnlessAllowed(event, PhysicsCategory.LEAF_DECAY);
+    }
+
+    @EventHandler
+    public void onBlockFade(BlockFadeEvent event) {
+        cancelUnlessAllowed(event, PhysicsCategory.BLOCK_FADING);
+    }
+
+    @EventHandler
+    public void onBlockForm(BlockFormEvent event) {
+        cancelUnlessAllowed(event, PhysicsCategory.BLOCK_FORMING);
+    }
+
+    @EventHandler
+    public void onBlockGrow(BlockGrowEvent event) {
+        cancelUnlessAllowed(event, PhysicsCategory.GROWTH);
+    }
+
+    @EventHandler
+    public void onBlockSpread(BlockSpreadEvent event) {
+        cancelUnlessAllowed(event, PhysicsCategory.SPREADING);
     }
 
     @EventHandler
     public void onBlockPhysics(BlockPhysicsEvent event) {
         Block block = event.getBlock();
-        if (physicsAllowed(block.getWorld())) {
+        WorldData data = physicsDisabledData(block.getWorld());
+        if (data == null || data.get(PhysicsCategory.BLOCK_UPDATES.key())) {
             return;
         }
 
-        if (!configService.current().world().disabledPhysics().preventConnections()) {
-            boolean canConnect =
-                    switch (block.getBlockData()) {
-                        case Fence fence -> true;
-                        case Gate gate -> true;
-                        case GlassPane glassPane -> true;
-                        case Stairs stairs -> true;
-                        case Wall wall -> true;
-                        default -> false;
-                    };
-            if (canConnect) {
-                event.setCancelled(false);
-                return;
-            }
-        }
-
-        switch (XMaterial.matchXMaterial(block.getType())) {
-            case REDSTONE_BLOCK -> {
-                for (BlockFace blockFace : DirectionUtil.BLOCK_SIDES) {
-                    if (isCustomRedstoneLamp(block.getRelative(blockFace))) {
-                        event.setCancelled(false);
-                        return;
-                    }
-                }
-            }
-            case REDSTONE_LAMP -> {
-                for (BlockFace blockFace : DirectionUtil.BLOCK_SIDES) {
-                    if (block.getRelative(blockFace).getType() == XMaterial.REDSTONE_BLOCK.get()) {
-                        event.setCancelled(false);
-                        return;
-                    }
-                }
-            }
-        }
-
-        event.setCancelled(true);
+        boolean connects = data.get(PhysicsCategory.CONNECTIONS.key()) && canConnect(block);
+        event.setCancelled(!connects);
     }
 
-    @EventHandler
-    public void onLeavesDecay(LeavesDecayEvent event) {
-        if (physicsAllowed(event.getBlock().getWorld())) {
-            return;
-        }
-        event.setCancelled(true);
-    }
-
-    @EventHandler
-    public void onBlockFade(BlockFadeEvent event) {
-        if (physicsAllowed(event.getBlock().getWorld())) {
-            return;
-        }
-        event.setCancelled(true);
-    }
-
-    @EventHandler
-    public void onBlockForm(BlockFormEvent event) {
-        if (physicsAllowed(event.getBlock().getWorld())) {
-            return;
-        }
-        event.setCancelled(true);
+    private static boolean canConnect(Block block) {
+        return switch (block.getBlockData()) {
+            case Fence _, Gate _, GlassPane _, Stairs _, Wall _ -> true;
+            default -> false;
+        };
     }
 
     @EventHandler
     public void onBlockFromTo(BlockFromToEvent event) {
-        if (physicsAllowed(event.getBlock().getWorld())) {
+        WorldData data = physicsDisabledData(event.getBlock().getWorld());
+        if (data == null) {
             return;
         }
 
-        if (event.getBlock().isLiquid()
-                && !configService.current().world().disabledPhysics().preventFluidFlow()) {
-            event.setCancelled(false);
-            return;
-        }
-
-        event.setCancelled(true);
-    }
-
-    @EventHandler
-    public void onBlockGrow(BlockGrowEvent event) {
-        if (physicsAllowed(event.getBlock().getWorld())) {
-            return;
-        }
-        event.setCancelled(true);
-    }
-
-    @EventHandler
-    public void onBlockSpread(BlockSpreadEvent event) {
-        if (physicsAllowed(event.getBlock().getWorld())) {
-            return;
-        }
-        event.setCancelled(true);
+        boolean flows = event.getBlock().isLiquid() && data.get(PhysicsCategory.FLUID_FLOW.key());
+        event.setCancelled(!flows);
     }
 
     @EventHandler
     public void onEntityChangeBlock(EntityChangeBlockEvent event) {
-        if (physicsAllowed(event.getBlock().getWorld())) {
+        if (event.getEntityType() != EntityType.FALLING_BLOCK
+                || allows(event.getBlock().getWorld(), PhysicsCategory.FALLING_BLOCKS)) {
             return;
         }
-
-        if (event.getEntityType() == EntityType.FALLING_BLOCK
-                && configService.current().world().disabledPhysics().preventFallingBlocks()) {
-            event.setCancelled(true);
-            event.getBlock().getState().update(false, false);
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockRedstone(BlockRedstoneEvent event) {
-        Block block = event.getBlock();
-        if (isCustomRedstoneLamp(block)) {
-            event.setNewCurrent(15);
-        }
-
-        XMaterial xMaterial = XMaterial.matchXMaterial(block.getType());
-        if (xMaterial != XMaterial.REDSTONE_BLOCK) {
-            return;
-        }
-
-        for (BlockFace blockFace : DirectionUtil.BLOCK_SIDES) {
-            if (isCustomRedstoneLamp(block.getRelative(blockFace))) {
-                event.setNewCurrent(15);
-            }
-        }
+        event.setCancelled(true);
+        event.getBlock().getState().update(false, false);
     }
 
     @EventHandler
     public void onBlockExplode(BlockExplodeEvent event) {
-        if (physicsAllowed(event.getBlock().getWorld())) {
-            return;
+        if (physicsDisabledData(event.getBlock().getWorld()) != null) {
+            event.setCancelled(true);
         }
-        event.setCancelled(true);
     }
 
     @EventHandler
     public void onEntityExplode(EntityExplodeEvent event) {
         World world = event.getLocation().getWorld();
-        if (world == null || physicsAllowed(world)) {
-            return;
+        if (world != null && physicsDisabledData(world) != null) {
+            event.setCancelled(true);
         }
-        event.setCancelled(true);
-    }
-
-    private boolean isCustomRedstoneLamp(Block block) {
-        List<MetadataValue> metadataValues = block.getMetadata("CustomRedstoneLamp");
-        for (MetadataValue value : metadataValues) {
-            if (value.asBoolean()) {
-                return true;
-            }
-        }
-        return block.getType().name().equals("REDSTONE_LAMP_ON");
     }
 }

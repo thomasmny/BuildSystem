@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.test.TestData;
 import org.jspecify.annotations.NullMarked;
@@ -56,6 +57,30 @@ class WorldDataAccessorTest {
 
         data.set(WorldDataKey.PHYSICS, true);
         assertTrue(data.get(WorldDataKey.PHYSICS));
+    }
+
+    @Test
+    void physicsCategories_defaultToBlockedAndRoundTrip() {
+        WorldDataImpl data = worldData();
+
+        for (PhysicsCategory category : PhysicsCategory.values()) {
+            assertFalse(data.get(category.key()), category + " should default to blocked");
+        }
+
+        data.set(PhysicsCategory.FLUID_FLOW.key(), true);
+        assertTrue(data.get(PhysicsCategory.FLUID_FLOW.key()));
+        assertFalse(data.get(PhysicsCategory.LEAF_DECAY.key()));
+    }
+
+    @Test
+    void physicsCategories_builderSeedsIndividualValues() {
+        WorldDataImpl data = new WorldDataImpl.WorldDataBuilder("test")
+                .withStatus(TestData.NOT_STARTED)
+                .withPhysicsCategory(PhysicsCategory.CONNECTIONS, true)
+                .build();
+
+        assertTrue(data.get(PhysicsCategory.CONNECTIONS.key()));
+        assertFalse(data.get(PhysicsCategory.BLOCK_UPDATES.key()));
     }
 
     @Test

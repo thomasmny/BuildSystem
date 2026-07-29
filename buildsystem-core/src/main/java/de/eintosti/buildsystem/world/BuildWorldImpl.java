@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
@@ -108,7 +109,7 @@ public final class BuildWorldImpl implements BuildWorld {
         boolean buildersEnabled = privateWorld
                 ? defaults.buildersEnabled().privateBuilders()
                 : defaults.buildersEnabled().publicBuilders();
-        return new WorldDataBuilder(name)
+        WorldDataBuilder builder = new WorldDataBuilder(name)
                 .withVisibility(Visibility.matchVisibility(privateWorld))
                 .withStatus(context.statusRegistry().getDefaultStatus())
                 .withMaterial(
@@ -127,8 +128,11 @@ public final class BuildWorldImpl implements BuildWorld {
                 .withPermissionOverrideEnabled(
                         () -> context.configService().current().folder().overridePermissions())
                 .withProjectOverrideEnabled(
-                        () -> context.configService().current().folder().overrideProjects())
-                .build();
+                        () -> context.configService().current().folder().overrideProjects());
+        for (PhysicsCategory category : PhysicsCategory.values()) {
+            builder.withPhysicsCategory(category, defaults.physicsException(category));
+        }
+        return builder.build();
     }
 
     public BuildWorldImpl(

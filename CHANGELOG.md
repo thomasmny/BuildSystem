@@ -17,6 +17,15 @@ config toggles. `config.yml` and `messages.yml` migrate automatically.
 
 ### Added
 
+- **Per-world physics exceptions.** Physics control is no longer all-or-nothing:
+  while a world's physics are disabled, nine behavior categories (block updates,
+  connections, falling blocks, fluid flow, leaf decay, growth, spreading, block
+  forming, block fading) can individually be re-allowed. Right-click the physics
+  toggle in `/worlds edit` to open the exceptions menu (gated by the existing
+  `buildsystem.edit.physics`); values persist per world. The global
+  `world.disabled-physics` section is replaced by per-category defaults under
+  `world.defaults.physics-exceptions` (`true` = still runs while physics are
+  off); existing configs migrate automatically.
 - **Custom world statuses.** Statuses are no longer a fixed enum — admins create,
   restyle, reorder, and delete them in-game (`/setup` → World Statuses). Each
   status has its own name, colour, icon, ordering, a building-allowed flag, and an

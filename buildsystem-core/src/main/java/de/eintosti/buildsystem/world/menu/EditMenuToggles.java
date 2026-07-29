@@ -66,14 +66,6 @@ final class EditMenuToggles {
                             "worldeditor_blockplacement_lore",
                             WorldDataKey.BLOCK_PLACEMENT)),
             entry(
-                    22,
-                    new Toggle(
-                            XMaterial.SAND,
-                            "buildsystem.edit.physics",
-                            "worldeditor_physics_item",
-                            "worldeditor_physics_lore",
-                            WorldDataKey.PHYSICS)),
-            entry(
                     24,
                     new Toggle(
                             XMaterial.TNT,

@@ -18,8 +18,10 @@
 package de.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XMaterial;
+import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
@@ -58,7 +60,6 @@ public record PluginConfig(Settings settings, World world, Folder folder) {
             String invalidCharacters,
             int importAllDelay,
             Set<String> deletionBlacklist,
-            DisabledPhysics disabledPhysics,
             Limits limits,
             Defaults defaults,
             Unload unload,
@@ -67,9 +68,6 @@ public record PluginConfig(Settings settings, World world, Folder folder) {
         public World {
             deletionBlacklist = Set.copyOf(deletionBlacklist);
         }
-
-        public record DisabledPhysics(
-                boolean preventConnections, boolean preventFluidFlow, boolean preventFallingBlocks) {}
 
         public record Limits(int publicWorlds, int privateWorlds) {}
 
@@ -80,12 +78,26 @@ public record PluginConfig(Settings settings, World world, Folder folder) {
                 Permission permission,
                 Time time,
                 boolean physics,
+                Map<PhysicsCategory, Boolean> physicsExceptions,
                 boolean explosions,
                 boolean mobAi,
                 boolean blockBreaking,
                 boolean blockPlacement,
                 boolean blockInteractions,
                 BuildersEnabled buildersEnabled) {
+
+            public Defaults {
+                physicsExceptions = Map.copyOf(physicsExceptions);
+            }
+
+            /**
+             * The default for a {@link PhysicsCategory} on worlds that have never stored their own value:
+             * {@code true} means the behavior still runs while the world's physics are disabled. Unlisted categories
+             * default to blocked, matching vanilla physics-off behavior.
+             */
+            public boolean physicsException(PhysicsCategory category) {
+                return physicsExceptions.getOrDefault(category, false);
+            }
 
             public record Permission(String publicPermission, String privatePermission) {}
 
