@@ -103,7 +103,7 @@ public class DefaultIconsMenu extends ButtonMenu<MenuButton> {
                 .onClick((player, event) -> menus.openMaterialPicker(
                         player,
                         material -> {
-                            icons.setIcon(layout.type(), XMaterial.matchXMaterial(material));
+                            icons.setIcon(layout.type(), material);
                             this.open(player);
                         },
                         () -> this.open(player)))

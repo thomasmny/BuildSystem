@@ -28,7 +28,7 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.player.PlayerLookupService;
-import de.eintosti.buildsystem.util.Materials;
+import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
@@ -283,10 +283,11 @@ public final class WorldCodec implements Codec<BuildWorld> {
             return Material.BEDROCK;
         }
 
-        Material material = Materials.match(itemString, Material.BEDROCK);
-        if (material == Material.BEDROCK && !itemString.equals(Material.BEDROCK.name())) {
+        Material material = MaterialUtils.match(itemString);
+        if (material == null) {
             context.logger().warning("Unknown material found for \"" + worldName + "\" (" + itemString + ").");
             context.logger().warning("Defaulting back to BEDROCK.");
+            return Material.BEDROCK;
         }
         return material;
     }

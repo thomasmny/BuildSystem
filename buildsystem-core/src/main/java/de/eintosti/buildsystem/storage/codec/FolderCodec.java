@@ -21,7 +21,7 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
-import de.eintosti.buildsystem.util.Materials;
+import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.ArrayList;
@@ -100,7 +100,8 @@ public final class FolderCodec implements Codec<Folder> {
                 Builder.deserialize(section.getString(CREATOR)), "Creator cannot be null for folder: " + name);
         long creation = section.getLong(CREATION, System.currentTimeMillis());
         NavigatorCategory category = resolveCategory(section);
-        Material material = Materials.match(section.getString(MATERIAL), Material.CHEST);
+        Material material =
+                Objects.requireNonNullElse(MaterialUtils.match(section.getString(MATERIAL)), Material.CHEST);
         String permission = section.getString(PERMISSION, "-");
         String project = section.getString(PROJECT, "-");
         List<UUID> worlds =

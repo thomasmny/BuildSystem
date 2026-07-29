@@ -17,14 +17,15 @@
  */
 package de.eintosti.buildsystem.storage.yaml;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.world.display.CustomizableIcons.IconType;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jspecify.annotations.NullMarked;
@@ -37,18 +38,18 @@ public class YamlSetupStorage extends AbstractYamlStorage {
         super(plugin, "setup.yml");
     }
 
-    public <T extends Enum<?>> void saveIcons(IconType iconType, Map<T, XMaterial> typeIcons) {
+    public <T extends Enum<?>> void saveIcons(IconType iconType, Map<T, Material> typeIcons) {
         typeIcons.forEach((type, material) -> getFile()
                 .set("setup." + iconType.getKey() + "." + type.name().toLowerCase(Locale.ROOT), material.name()));
         saveFile();
     }
 
-    public <T extends Enum<?>> void saveIcon(IconType iconType, T type, XMaterial material) {
+    public <T extends Enum<?>> void saveIcon(IconType iconType, T type, Material material) {
         getFile().set("setup." + iconType.getKey() + "." + type.name().toLowerCase(Locale.ROOT), material.name());
         saveFile();
     }
 
-    public <T> @Nullable Map<T, XMaterial> loadIcons(IconType iconType, Function<String, T> mapper) {
+    public <T> @Nullable Map<T, Material> loadIcons(IconType iconType, Function<String, T> mapper) {
         FileConfiguration configuration = getFile();
         if (configuration == null) {
             return null;
@@ -64,7 +65,7 @@ public class YamlSetupStorage extends AbstractYamlStorage {
             return null;
         }
 
-        Map<T, XMaterial> icons = new HashMap<>();
+        Map<T, Material> icons = new HashMap<>();
 
         for (String type : types) {
             String materialString = configuration.getString("setup." + iconType.getKey() + "." + type);
@@ -73,7 +74,10 @@ public class YamlSetupStorage extends AbstractYamlStorage {
             }
 
             T mappedKey = mapper.apply(type);
-            XMaterial.matchXMaterial(materialString).ifPresent(material -> icons.put(mappedKey, material));
+            Material material = MaterialUtils.match(materialString);
+            if (material != null) {
+                icons.put(mappedKey, material);
+            }
         }
 
         return icons;

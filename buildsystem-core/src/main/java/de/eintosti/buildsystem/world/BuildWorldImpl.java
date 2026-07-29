@@ -116,11 +116,7 @@ public final class BuildWorldImpl implements BuildWorld, HeadProfileSource {
                 .withMaterial(
                         privateWorld
                                 ? Material.PLAYER_HEAD
-                                : Objects.requireNonNullElse(
-                                        context.customizableIcons()
-                                                .getIcon(worldType)
-                                                .get(),
-                                        Material.FILLED_MAP))
+                                : context.customizableIcons().getIcon(worldType))
                 .withPermission(permission)
                 .withDifficulty(defaults.difficulty())
                 .withBlockBreaking(defaults.blockBreaking())

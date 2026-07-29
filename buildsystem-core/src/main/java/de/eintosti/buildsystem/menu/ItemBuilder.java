@@ -208,10 +208,13 @@ public final class ItemBuilder {
         if (material != XMaterial.PLAYER_HEAD || (texture != null && !texture.isBlank())) {
             return icon(material, texture, viewer);
         }
-        Profileable headProfile = displayable instanceof HeadProfileSource source ? source.getHeadProfile() : null;
-        return headProfile != null
-                ? skull(headProfile, ((HeadProfileSource) displayable).getHeadFallbackProfile())
-                : of(XMaterial.PLAYER_HEAD);
+        if (displayable instanceof HeadProfileSource source) {
+            Profileable headProfile = source.getHeadProfile();
+            if (headProfile != null) {
+                return skull(headProfile, source.getHeadFallbackProfile());
+            }
+        }
+        return of(XMaterial.PLAYER_HEAD);
     }
 
     /**

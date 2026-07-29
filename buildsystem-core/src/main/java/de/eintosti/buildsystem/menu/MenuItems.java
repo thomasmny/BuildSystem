@@ -102,13 +102,14 @@ public final class MenuItems {
             return;
         }
 
-        Profileable headProfile = displayable instanceof HeadProfileSource source ? source.getHeadProfile() : null;
-        if (headProfile == null) {
-            ItemBuilder.of(XMaterial.PLAYER_HEAD).name(name).lore(lore).into(inventory, slot);
-            return;
+        if (displayable instanceof HeadProfileSource source) {
+            Profileable headProfile = source.getHeadProfile();
+            if (headProfile != null) {
+                applyHeadProfileAsync(inventory, slot, headProfile, source.getHeadFallbackProfile(), name, lore);
+                return;
+            }
         }
-        applyHeadProfileAsync(
-                inventory, slot, headProfile, ((HeadProfileSource) displayable).getHeadFallbackProfile(), name, lore);
+        ItemBuilder.of(XMaterial.PLAYER_HEAD).name(name).lore(lore).into(inventory, slot);
     }
 
     private void applyHeadProfileAsync(

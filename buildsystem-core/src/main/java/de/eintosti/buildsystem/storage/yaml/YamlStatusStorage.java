@@ -18,11 +18,12 @@
 package de.eintosti.buildsystem.storage.yaml;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.util.Materials;
+import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.world.data.WorldStatusImpl;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -67,7 +68,7 @@ public class YamlStatusStorage extends AbstractYamlStorage {
     }
 
     private WorldStatusImpl parseStatus(ConfigurationSection section, String id) {
-        Material icon = Materials.match(section.getString("icon"), Material.WHITE_DYE);
+        Material icon = Objects.requireNonNullElse(MaterialUtils.match(section.getString("icon")), Material.WHITE_DYE);
         String progressesTo = section.getString("progresses-to");
         return WorldStatusImpl.builder(id)
                 .displayName(section.getString("display-name", id))
