@@ -22,9 +22,7 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
-import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.navigator.NavigatorService;
@@ -33,8 +31,6 @@ import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.Map;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -42,7 +38,6 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class PlayerChangedWorldListener implements Listener {
@@ -90,7 +85,6 @@ public class PlayerChangedWorldListener implements Listener {
 
         removeOldNavigator(player);
         removeBuildMode(player);
-        setGoldBlock(newWorld);
         checkWorldStatus(player);
 
         if (settingsManager.getSettings(player).isScoreboard()) {
@@ -115,21 +109,6 @@ public class PlayerChangedWorldListener implements Listener {
         cachedValues.resetInventoryIfPresent(player);
         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
         messages.sendMessage(player, "build_deactivated_self");
-    }
-
-    private void setGoldBlock(@Nullable BuildWorld buildWorld) {
-        if (buildWorld == null
-                || buildWorld.getType() != BuildWorldType.VOID
-                || !buildWorld.getData().get(WorldDataKey.STATUS).getId().equals(WorldStatusRegistry.NOT_STARTED_ID)) {
-            return;
-        }
-
-        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
-        if (bukkitWorld == null) {
-            return;
-        }
-
-        bukkitWorld.getBlockAt(0, 64, 0).setType(Material.GOLD_BLOCK);
     }
 
     @SuppressWarnings("deprecation")

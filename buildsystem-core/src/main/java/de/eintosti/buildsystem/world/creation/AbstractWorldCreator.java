@@ -119,7 +119,8 @@ abstract class AbstractWorldCreator {
                         difficulty,
                         time,
                         worldBorderSize,
-                        seed)
+                        seed,
+                        !isImport())
                 .generate(
                         checkVersion ? BukkitWorldFactory.VersionCheck.REQUIRED : BukkitWorldFactory.VersionCheck.SKIP);
     }
