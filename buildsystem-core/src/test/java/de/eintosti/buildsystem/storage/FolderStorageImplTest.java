@@ -278,12 +278,12 @@ class FolderStorageImplTest {
         public void setProject(String p) {}
 
         @Override
-        public com.cryptomorin.xseries.XMaterial getIcon() {
-            return com.cryptomorin.xseries.XMaterial.CHEST;
+        public org.bukkit.Material getIcon() {
+            return org.bukkit.Material.CHEST;
         }
 
         @Override
-        public void setIcon(com.cryptomorin.xseries.XMaterial m) {}
+        public void setIcon(org.bukkit.Material m) {}
 
         @Override
         public @Nullable String getIconSkullTexture() {

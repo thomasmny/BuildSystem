@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
@@ -90,11 +89,11 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
     private MenuButton statusButton(BuildWorldStatus status) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
-                    XMaterial material = status.getIcon();
+                    Material material = status.getIcon();
                     String displayName = ColorAPI.process(status.getStyledName());
 
                     if (!player.hasPermission(status.getPermission())) {
-                        material = XMaterial.BARRIER;
+                        material = Material.BARRIER;
                         displayName = "§c§m" + ChatColor.stripColor(displayName);
                     }
 

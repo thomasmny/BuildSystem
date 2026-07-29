@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.data;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.api.world.data.Visibility;
@@ -40,6 +39,7 @@ import java.util.function.Supplier;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -101,7 +101,7 @@ public class WorldDataImpl implements WorldData {
                 new ConfigurableProperty<>(builder.difficulty).withConfigFormatter(Difficulty::name));
         register(
                 WorldDataKey.MATERIAL,
-                new ConfigurableProperty<>(builder.material).withConfigFormatter(XMaterial::name));
+                new ConfigurableProperty<>(builder.material).withConfigFormatter(Material::name));
         register(WorldDataKey.ICON_SKULL_TEXTURE, new ConfigurableProperty<>(builder.iconSkullTexture));
         register(
                 WorldDataKey.STATUS,
@@ -210,7 +210,7 @@ public class WorldDataImpl implements WorldData {
         private String permission = "-";
         private String project = "-";
         private Difficulty difficulty = Difficulty.PEACEFUL;
-        private XMaterial material = XMaterial.GRASS_BLOCK;
+        private Material material = Material.GRASS_BLOCK;
         private String iconSkullTexture = "";
         private @Nullable BuildWorldStatus status;
         private boolean blockBreaking = DEFAULT_BLOCK_BREAKING;
@@ -269,7 +269,7 @@ public class WorldDataImpl implements WorldData {
             return this;
         }
 
-        public WorldDataBuilder withMaterial(XMaterial material) {
+        public WorldDataBuilder withMaterial(Material material) {
             this.material = material;
             return this;
         }

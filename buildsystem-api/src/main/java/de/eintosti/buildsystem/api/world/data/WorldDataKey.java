@@ -17,9 +17,9 @@
  */
 package de.eintosti.buildsystem.api.world.data;
 
-import com.cryptomorin.xseries.XMaterial;
 import java.util.Objects;
 import org.bukkit.Difficulty;
+import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -55,9 +55,9 @@ public final class WorldDataKey<T> {
     public static final WorldDataKey<Difficulty> DIFFICULTY = of("difficulty", Difficulty.class);
 
     /**
-     * The {@link XMaterial} shown for the world in the navigator menus.
+     * The {@link Material} shown for the world in the navigator menus.
      */
-    public static final WorldDataKey<XMaterial> MATERIAL = of("material", XMaterial.class);
+    public static final WorldDataKey<Material> MATERIAL = of("material", Material.class);
 
     /**
      * The skull texture used when the {@link #MATERIAL icon} is a player head; the empty string means none.

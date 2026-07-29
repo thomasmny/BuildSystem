@@ -18,12 +18,29 @@
 package de.eintosti.buildsystem.util;
 
 import com.cryptomorin.xseries.XMaterial;
+import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class MaterialUtils {
 
     private MaterialUtils() {}
+
+    /**
+     * Resolves a persisted material name to a {@link Material}, tolerating pre-flattening names. XSeries stays an
+     * implementation detail of the plugin: names are parsed through {@link XMaterial} so old data keeps loading, but
+     * callers receive a concrete {@link Material}.
+     *
+     * @param name The persisted material name
+     * @return The resolved material, or {@code null} if the name is unknown or unsupported by the running server
+     */
+    public static @Nullable Material match(@Nullable String name) {
+        if (name == null) {
+            return null;
+        }
+        return XMaterial.matchXMaterial(name).map(XMaterial::get).orElse(null);
+    }
 
     /**
      * Checks if this Material can be interacted with.

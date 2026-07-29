@@ -83,8 +83,8 @@ public final class MenuItems {
     /**
      * Renders a {@link Displayable} into a menu slot. This is the single rendering path for every displayable: a
      * non-head icon or a configured {@link Displayable#getIconSkullTexture() skull texture} is applied synchronously,
-     * while a displayable's {@link Displayable#getHeadProfile() default head profile} (e.g. a world's creator) is
-     * resolved asynchronously so opening a menu never blocks on profile lookups.
+     * while a {@link HeadProfileSource}'s default head profile (e.g. a world's creator) is resolved asynchronously so
+     * opening a menu never blocks on profile lookups.
      *
      * @param inventory The inventory to add the item to
      * @param slot The slot to add the item at
@@ -92,7 +92,7 @@ public final class MenuItems {
      * @param viewer The player viewing the inventory
      */
     public void renderDisplayable(Inventory inventory, int slot, Displayable displayable, Player viewer) {
-        XMaterial icon = displayable.getIcon();
+        XMaterial icon = XMaterial.matchXMaterial(displayable.getIcon());
         String name = displayable.getDisplayName(viewer);
         List<String> lore = displayable.getLore(viewer);
 
@@ -102,12 +102,14 @@ public final class MenuItems {
             return;
         }
 
-        Profileable headProfile = displayable.getHeadProfile();
-        if (headProfile == null) {
-            ItemBuilder.of(XMaterial.PLAYER_HEAD).name(name).lore(lore).into(inventory, slot);
-            return;
+        if (displayable instanceof HeadProfileSource source) {
+            Profileable headProfile = source.getHeadProfile();
+            if (headProfile != null) {
+                applyHeadProfileAsync(inventory, slot, headProfile, source.getHeadFallbackProfile(), name, lore);
+                return;
+            }
         }
-        applyHeadProfileAsync(inventory, slot, headProfile, displayable.getHeadFallbackProfile(), name, lore);
+        ItemBuilder.of(XMaterial.PLAYER_HEAD).name(name).lore(lore).into(inventory, slot);
     }
 
     private void applyHeadProfileAsync(
@@ -158,7 +160,7 @@ public final class MenuItems {
      */
     public void renderCategoryIcon(
             Inventory inventory, int slot, NavigatorCategory category, Player viewer, String name, List<String> lore) {
-        XMaterial icon = category.getIcon();
+        XMaterial icon = XMaterial.matchXMaterial(category.getIcon());
         String texture = ItemBuilder.categoryTexture(category);
         if (icon != XMaterial.PLAYER_HEAD || texture == null || texture.isBlank()) {
             ItemBuilder.icon(icon, texture, viewer).name(name).lore(lore).into(inventory, slot);

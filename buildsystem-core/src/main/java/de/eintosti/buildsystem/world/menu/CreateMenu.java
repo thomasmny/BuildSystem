@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
@@ -160,7 +161,7 @@ public class CreateMenu extends PaginatedMenu {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
                     boolean canCreate = canCreateType(player, worldType);
-                    XMaterial material = canCreate ? customizableIcons.getIcon(worldType) : XMaterial.BARRIER;
+                    Material material = canCreate ? customizableIcons.getIcon(worldType) : Material.BARRIER;
                     String displayName = messages.getString(PREDEFINED_MESSAGE_KEYS.get(worldType), player);
                     if (!canCreate) {
                         displayName = "§c§m" + ChatColor.stripColor(displayName);

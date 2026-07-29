@@ -17,9 +17,9 @@
  */
 package de.eintosti.buildsystem.storage.yaml;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -27,6 +27,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jspecify.annotations.NullMarked;
@@ -83,8 +85,7 @@ public class YamlCategoryStorage extends AbstractYamlStorage {
             visibilities.add(Visibility.EVERYONE);
         }
 
-        XMaterial icon =
-                XMaterial.matchXMaterial(section.getString("icon", "OAK_SIGN")).orElse(XMaterial.OAK_SIGN);
+        Material icon = Objects.requireNonNullElse(MaterialUtils.match(section.getString("icon")), Material.OAK_SIGN);
         List<String> statusIds = section.getStringList("statuses");
         return NavigatorCategoryImpl.builder(id)
                 .displayName(section.getString("display-name", id))

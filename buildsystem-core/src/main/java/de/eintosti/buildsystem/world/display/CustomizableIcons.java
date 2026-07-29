@@ -17,13 +17,13 @@
  */
 package de.eintosti.buildsystem.world.display;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.storage.yaml.YamlSetupStorage;
 import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
+import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -35,7 +35,7 @@ public class CustomizableIcons {
 
     private final YamlSetupStorage setupStorage;
 
-    private final Map<BuildWorldType, XMaterial> typeIcons;
+    private final Map<BuildWorldType, Material> typeIcons;
 
     public CustomizableIcons(BuildSystemPlugin plugin) {
         this.setupStorage = new YamlSetupStorage(plugin);
@@ -43,22 +43,22 @@ public class CustomizableIcons {
         this.typeIcons = loadTypeIcons();
     }
 
-    private static Map<BuildWorldType, XMaterial> defaultTypeIcons() {
+    private static Map<BuildWorldType, Material> defaultTypeIcons() {
         return new EnumMap<>(Map.ofEntries(
-                Map.entry(BuildWorldType.NORMAL, XMaterial.OAK_LOG),
-                Map.entry(BuildWorldType.FLAT, XMaterial.GRASS_BLOCK),
-                Map.entry(BuildWorldType.NETHER, XMaterial.NETHERRACK),
-                Map.entry(BuildWorldType.END, XMaterial.END_STONE),
-                Map.entry(BuildWorldType.VOID, XMaterial.GLASS),
-                Map.entry(BuildWorldType.CUSTOM, XMaterial.FILLED_MAP),
-                Map.entry(BuildWorldType.TEMPLATE, XMaterial.FILLED_MAP),
-                Map.entry(BuildWorldType.IMPORTED, XMaterial.FURNACE)));
+                Map.entry(BuildWorldType.NORMAL, Material.OAK_LOG),
+                Map.entry(BuildWorldType.FLAT, Material.GRASS_BLOCK),
+                Map.entry(BuildWorldType.NETHER, Material.NETHERRACK),
+                Map.entry(BuildWorldType.END, Material.END_STONE),
+                Map.entry(BuildWorldType.VOID, Material.GLASS),
+                Map.entry(BuildWorldType.CUSTOM, Material.FILLED_MAP),
+                Map.entry(BuildWorldType.TEMPLATE, Material.FILLED_MAP),
+                Map.entry(BuildWorldType.IMPORTED, Material.FURNACE)));
     }
 
-    private Map<BuildWorldType, XMaterial> loadTypeIcons() {
-        Map<BuildWorldType, XMaterial> typeIcons = defaultTypeIcons();
+    private Map<BuildWorldType, Material> loadTypeIcons() {
+        Map<BuildWorldType, Material> typeIcons = defaultTypeIcons();
 
-        Map<BuildWorldType, XMaterial> loadedIcons = this.setupStorage.loadIcons(
+        Map<BuildWorldType, Material> loadedIcons = this.setupStorage.loadIcons(
                 IconType.TYPE, type -> BuildWorldType.valueOf(type.toUpperCase(Locale.ROOT)));
         if (loadedIcons != null) {
             typeIcons.putAll(loadedIcons);
@@ -83,7 +83,7 @@ public class CustomizableIcons {
      * @param type The world type
      * @return The material to use as an icon
      */
-    public XMaterial getIcon(BuildWorldType type) {
+    public Material getIcon(BuildWorldType type) {
         return this.typeIcons.get(type);
     }
 
@@ -93,7 +93,7 @@ public class CustomizableIcons {
      * @param type The world type
      * @param material The material to use as an icon
      */
-    public void setIcon(BuildWorldType type, XMaterial material) {
+    public void setIcon(BuildWorldType type, Material material) {
         this.typeIcons.put(type, material);
         this.setupStorage.saveIcon(IconType.TYPE, type, material);
     }

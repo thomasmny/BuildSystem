@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -79,9 +80,18 @@ public final class ItemBuilder {
     }
 
     /**
-     * Starts a builder for a regular item, with all {@link ItemFlag}s hidden (see the class note on default flags). If
-     * the material cannot be resolved to a Bukkit item it falls back to {@link XMaterial#BEDROCK} and logs a warning,
-     * so callers always receive a usable builder.
+     * Starts a builder for a regular item, with all {@link ItemFlag}s hidden (see the class note on default flags).
+     *
+     * @param material The material of the item
+     * @return A new builder wrapping the item
+     */
+    public static ItemBuilder of(Material material) {
+        return new ItemBuilder(new ItemStack(material)).hideAttributes();
+    }
+
+    /**
+     * Variant of {@link #of(Material)} for an {@link XMaterial}. If the material cannot be resolved to a Bukkit item
+     * it falls back to {@link XMaterial#BEDROCK} and logs a warning, so callers always receive a usable builder.
      *
      * @param material The material of the item
      * @return A new builder wrapping the resolved item
@@ -162,7 +172,7 @@ public final class ItemBuilder {
      */
     public static @Nullable String categoryTexture(NavigatorCategory category) {
         String texture = category.getIconSkullTexture();
-        if (category.getIcon() == XMaterial.PLAYER_HEAD && (texture == null || texture.isBlank())) {
+        if (category.getIcon() == Material.PLAYER_HEAD && (texture == null || texture.isBlank())) {
             return category.getPrimaryVisibility() == Visibility.ADDED_PLAYERS
                     ? VIEWER_HEAD
                     : SkullTextures.WORLD_NAVIGATOR;
@@ -179,13 +189,13 @@ public final class ItemBuilder {
      * @return A new builder wrapping the resolved icon
      */
     public static ItemBuilder icon(NavigatorCategory category, Player viewer) {
-        return icon(category.getIcon(), categoryTexture(category), viewer);
+        return icon(XMaterial.matchXMaterial(category.getIcon()), categoryTexture(category), viewer);
     }
 
     /**
      * Resolves a {@link Displayable}'s icon to a builder <em>without</em> applying its name or lore, so the caller can
-     * label it itself: a non-head icon or a configured skull texture is honoured, otherwise the displayable's
-     * {@link Displayable#getHeadProfile() default head profile} is applied. This is the synchronous counterpart to
+     * label it itself: a non-head icon or a configured skull texture is honoured, otherwise a
+     * {@link HeadProfileSource}'s default head profile is applied. This is the synchronous counterpart to
      * {@code MenuItems.renderDisplayable} and is intended for single items, not bulk lists.
      *
      * @param displayable The displayable whose icon is rendered
@@ -193,15 +203,18 @@ public final class ItemBuilder {
      * @return A new builder wrapping the resolved icon
      */
     public static ItemBuilder icon(Displayable displayable, Player viewer) {
-        XMaterial material = displayable.getIcon();
+        XMaterial material = XMaterial.matchXMaterial(displayable.getIcon());
         String texture = displayable.getIconSkullTexture();
         if (material != XMaterial.PLAYER_HEAD || (texture != null && !texture.isBlank())) {
             return icon(material, texture, viewer);
         }
-        Profileable headProfile = displayable.getHeadProfile();
-        return headProfile != null
-                ? skull(headProfile, displayable.getHeadFallbackProfile())
-                : of(XMaterial.PLAYER_HEAD);
+        if (displayable instanceof HeadProfileSource source) {
+            Profileable headProfile = source.getHeadProfile();
+            if (headProfile != null) {
+                return skull(headProfile, source.getHeadFallbackProfile());
+            }
+        }
+        return of(XMaterial.PLAYER_HEAD);
     }
 
     /**

@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.world;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
@@ -31,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Difficulty;
+import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,7 +53,7 @@ class BuildWorldImplTest {
         WorldDataImpl data = new WorldDataBuilder(name)
                 .withStatus(TestData.NOT_STARTED)
                 .withDifficulty(Difficulty.NORMAL)
-                .withMaterial(XMaterial.GRASS_BLOCK)
+                .withMaterial(Material.GRASS_BLOCK)
                 .withPermission("-")
                 .withProject("-")
                 .withVisibility(Visibility.EVERYONE)

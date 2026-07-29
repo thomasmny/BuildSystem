@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.world.folder;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
@@ -30,6 +29,7 @@ import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
 import java.util.*;
 import org.bukkit.Difficulty;
+import org.bukkit.Material;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -54,7 +54,7 @@ class FolderImplTest {
         WorldDataImpl data = new WorldDataBuilder(name)
                 .withStatus(TestData.NOT_STARTED)
                 .withDifficulty(Difficulty.NORMAL)
-                .withMaterial(XMaterial.GRASS_BLOCK)
+                .withMaterial(Material.GRASS_BLOCK)
                 .withPermission("-")
                 .withProject("-")
                 .withVisibility(Visibility.EVERYONE)
@@ -180,7 +180,7 @@ class FolderImplTest {
                 TestData.PUBLIC,
                 null,
                 Builder.of(UUID.randomUUID(), "Creator"),
-                XMaterial.CHEST,
+                Material.CHEST,
                 "-",
                 "-",
                 worlds,

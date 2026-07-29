@@ -10,7 +10,6 @@ project.description = "API"
 
 dependencies {
     compileOnly(libs.spigot)
-    compileOnly(libs.xseries)
     compileOnly(libs.annotations)
     compileOnly(libs.jspecify)
 }

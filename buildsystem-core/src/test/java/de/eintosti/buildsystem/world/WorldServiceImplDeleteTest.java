@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.exception.WorldDirectoryNotFoundException;
@@ -41,6 +40,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
+import org.bukkit.Material;
 import org.bukkit.Server;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,7 +77,7 @@ class WorldServiceImplDeleteTest {
         WorldDataImpl data = new WorldDataBuilder(name)
                 .withStatus(TestData.NOT_STARTED)
                 .withDifficulty(Difficulty.NORMAL)
-                .withMaterial(XMaterial.GRASS_BLOCK)
+                .withMaterial(Material.GRASS_BLOCK)
                 .withPermission("-")
                 .withProject("-")
                 .withVisibility(Visibility.EVERYONE)

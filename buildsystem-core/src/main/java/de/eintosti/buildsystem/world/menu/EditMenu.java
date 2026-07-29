@@ -350,7 +350,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
     private void renderWorldInfo(Player player, Inventory inventory) {
         String displayName =
                 messages.getString("worldeditor_world_item", player, Map.entry("%world%", buildWorld.getName()));
-        boolean isHead = buildWorld.getIcon() == XMaterial.PLAYER_HEAD;
+        boolean isHead = buildWorld.getIcon() == Material.PLAYER_HEAD;
         String loreKey = isHead ? "worldeditor_world_head_lore" : "worldeditor_world_lore";
         ItemBuilder.icon(buildWorld, player)
                 .name(displayName)
@@ -367,7 +367,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         if (!requirePermission(player, "buildsystem.edit.icon")) {
             return;
         }
-        if (buildWorld.getIcon() == XMaterial.PLAYER_HEAD && event.isRightClick()) {
+        if (buildWorld.getIcon() == Material.PLAYER_HEAD && event.isRightClick()) {
             promptIconTexture(player);
             return;
         }

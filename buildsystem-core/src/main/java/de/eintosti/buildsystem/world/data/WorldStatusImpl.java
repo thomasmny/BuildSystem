@@ -17,10 +17,10 @@
  */
 package de.eintosti.buildsystem.world.data;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import java.util.Locale;
 import java.util.Optional;
+import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -37,7 +37,7 @@ public final class WorldStatusImpl implements BuildWorldStatus {
 
     private String displayName;
     private String color;
-    private XMaterial icon;
+    private Material icon;
     private int order;
     private boolean buildingAllowed;
     private @Nullable String progressesTo;
@@ -91,11 +91,11 @@ public final class WorldStatusImpl implements BuildWorldStatus {
     }
 
     @Override
-    public XMaterial getIcon() {
+    public Material getIcon() {
         return icon;
     }
 
-    public void setIcon(XMaterial icon) {
+    public void setIcon(Material icon) {
         this.icon = icon;
     }
 
@@ -185,7 +185,7 @@ public final class WorldStatusImpl implements BuildWorldStatus {
 
         private String displayName;
         private String color = "&7";
-        private XMaterial icon = XMaterial.WHITE_DYE;
+        private Material icon = Material.WHITE_DYE;
         private int order = 0;
         private boolean buildingAllowed = true;
         private @Nullable String progressesTo = null;
@@ -208,7 +208,7 @@ public final class WorldStatusImpl implements BuildWorldStatus {
             return this;
         }
 
-        public Builder icon(XMaterial icon) {
+        public Builder icon(Material icon) {
             this.icon = icon;
             return this;
         }

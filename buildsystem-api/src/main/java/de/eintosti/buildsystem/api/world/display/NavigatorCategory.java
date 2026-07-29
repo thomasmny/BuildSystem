@@ -17,12 +17,12 @@
  */
 package de.eintosti.buildsystem.api.world.display;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import java.util.List;
 import java.util.Set;
+import org.bukkit.Material;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -88,7 +88,7 @@ public interface NavigatorCategory {
      *
      * @return The icon material
      */
-    XMaterial getIcon();
+    Material getIcon();
 
     /**
      * Gets the skull texture applied when this category's {@link #getIcon() icon} is a player head. Returns

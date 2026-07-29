@@ -36,6 +36,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -110,7 +111,7 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
      * viewing player's head, or {@code none} to clear).
      */
     private MenuButton iconButton() {
-        boolean isHead = category.getIcon() == XMaterial.PLAYER_HEAD;
+        boolean isHead = category.getIcon() == Material.PLAYER_HEAD;
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
                     String loreKey = isHead ? "setup_category_icon_head_lore" : "setup_category_icon_lore";

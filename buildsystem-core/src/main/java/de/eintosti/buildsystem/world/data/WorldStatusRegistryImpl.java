@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.data;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
@@ -39,6 +38,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -95,19 +95,19 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
     }
 
     private void seedDefaults() {
-        put("not_started", "Not Started", "&c", XMaterial.RED_DYE, 1, true, "in_progress");
-        put("in_progress", "In Progress", "&6", XMaterial.ORANGE_DYE, 2, true, null);
-        put("almost_finished", "Almost Finished", "&a", XMaterial.LIME_DYE, 3, true, null);
-        put("finished", "Finished", "&2", XMaterial.GREEN_DYE, 4, true, null);
-        put("archive", "Archive", "&3", XMaterial.CYAN_DYE, 5, false, null);
-        put("hidden", "Hidden", "&7", XMaterial.BONE_MEAL, 6, true, null);
+        put("not_started", "Not Started", "&c", Material.RED_DYE, 1, true, "in_progress");
+        put("in_progress", "In Progress", "&6", Material.ORANGE_DYE, 2, true, null);
+        put("almost_finished", "Almost Finished", "&a", Material.LIME_DYE, 3, true, null);
+        put("finished", "Finished", "&2", Material.GREEN_DYE, 4, true, null);
+        put("archive", "Archive", "&3", Material.CYAN_DYE, 5, false, null);
+        put("hidden", "Hidden", "&7", Material.BONE_MEAL, 6, true, null);
     }
 
     private void put(
             String id,
             String displayName,
             String color,
-            XMaterial icon,
+            Material icon,
             int order,
             boolean buildingAllowed,
             @Nullable String progressesTo) {

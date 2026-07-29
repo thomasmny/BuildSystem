@@ -72,7 +72,7 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
 
     private final MenuItems menuItems;
     private final Prompts prompts;
-    private final Consumer<XMaterial> onPick;
+    private final Consumer<Material> onPick;
     private final Runnable onBack;
 
     private String filter = "";
@@ -83,7 +83,7 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
             MenuItems menuItems,
             Prompts prompts,
             Player player,
-            Consumer<XMaterial> onPick,
+            Consumer<Material> onPick,
             Runnable onBack) {
         super(messages, INVENTORY_SIZE, messages.getString("setup_item_picker_title", player));
         this.menuItems = menuItems;
@@ -151,8 +151,12 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
                         .name(ColorAPI.process("&b" + getPrettyName(material)))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
+                    Material picked = material.get();
+                    if (picked == null) {
+                        return;
+                    }
                     XSound.ENTITY_CHICKEN_EGG.play(player);
-                    onPick.accept(material);
+                    onPick.accept(picked);
                 })
                 .build();
     }

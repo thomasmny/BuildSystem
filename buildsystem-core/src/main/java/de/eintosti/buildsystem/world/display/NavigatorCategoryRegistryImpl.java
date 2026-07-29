@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.display;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
@@ -42,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -117,7 +117,7 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
                 NavigatorCategoryImpl.builder(PUBLIC_ID)
                         .displayName("Worlds")
                         .color("&b")
-                        .icon(XMaterial.PLAYER_HEAD)
+                        .icon(Material.PLAYER_HEAD)
                         .iconSkullTexture(SkullTextures.WORLD_NAVIGATOR)
                         .visibilities(EnumSet.of(Visibility.EVERYONE))
                         .navigatorSlot(11)
@@ -129,7 +129,7 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
                 NavigatorCategoryImpl.builder(ARCHIVE_ID)
                         .displayName("Archive")
                         .color("&3")
-                        .icon(XMaterial.PLAYER_HEAD)
+                        .icon(Material.PLAYER_HEAD)
                         .iconSkullTexture(SkullTextures.WORLD_ARCHIVE)
                         .visibilities(EnumSet.of(Visibility.EVERYONE, Visibility.ADDED_PLAYERS))
                         .navigatorSlot(12)
@@ -141,7 +141,7 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
                 NavigatorCategoryImpl.builder(PRIVATE_ID)
                         .displayName("Private")
                         .color("&a")
-                        .icon(XMaterial.PLAYER_HEAD)
+                        .icon(Material.PLAYER_HEAD)
                         .iconSkullTexture(ItemBuilder.VIEWER_HEAD)
                         .visibilities(EnumSet.of(Visibility.ADDED_PLAYERS))
                         .navigatorSlot(13)
