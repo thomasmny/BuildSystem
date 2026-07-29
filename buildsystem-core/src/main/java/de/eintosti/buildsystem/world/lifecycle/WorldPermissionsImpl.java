@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.access.WorldSetting;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldContext;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
@@ -90,7 +91,7 @@ public class WorldPermissionsImpl implements WorldPermissions {
         }
 
         if (!buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()
-                && !player.hasPermission("buildsystem.bypass.archive")) {
+                && !player.hasPermission(Permissions.BYPASS_ARCHIVE)) {
             return false;
         }
 
@@ -106,7 +107,7 @@ public class WorldPermissionsImpl implements WorldPermissions {
         Builders builders = buildWorld.getBuilders();
         return builders.isCreator(player)
                 || builders.isBuilder(player)
-                || player.hasPermission("buildsystem.bypass.builders")
+                || player.hasPermission(Permissions.BYPASS_BUILDERS)
                 || !buildWorld.getData().get(WorldDataKey.BUILDERS_ENABLED);
     }
 
@@ -147,12 +148,12 @@ public class WorldPermissionsImpl implements WorldPermissions {
 
         WorldData worldData = buildWorld.getData();
         if (!worldData.get(WorldDataKey.STATUS).isBuildingAllowed()) {
-            return player.hasPermission("buildsystem.bypass.permission.archive");
+            return player.hasPermission(Permissions.BYPASS_PERMISSION_ARCHIVE);
         }
 
         return worldData.get(WorldDataKey.VISIBILITY).isPrivate()
-                ? player.hasPermission("buildsystem.bypass.permission.private")
-                : player.hasPermission("buildsystem.bypass.permission.public");
+                ? player.hasPermission(Permissions.BYPASS_PERMISSION_PRIVATE)
+                : player.hasPermission(Permissions.BYPASS_PERMISSION_PUBLIC);
     }
 
     @Override

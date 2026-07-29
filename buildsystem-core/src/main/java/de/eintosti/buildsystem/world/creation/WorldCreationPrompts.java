@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Prompts;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import java.util.Objects;
@@ -105,7 +106,7 @@ public class WorldCreationPrompts {
     private boolean generatorStep(Player player, Selection selection, String input) {
         // Generator names are dynamic and cannot be pre-registered in plugin.yml, so default-allow is emulated: a
         // generator is permitted unless an admin has explicitly denied its specific node.
-        String generatorNode = "buildsystem.create.generator." + input.trim();
+        String generatorNode = Permissions.createGenerator(input.trim());
         boolean allowed = !player.isPermissionSet(generatorNode) || player.hasPermission(generatorNode);
         if (!allowed) {
             messages.sendPermissionError(player);

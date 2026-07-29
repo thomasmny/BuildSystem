@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.world.data;
 
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
-import java.util.Locale;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.Optional;
 import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
@@ -116,7 +116,7 @@ public final class WorldStatusImpl implements BuildWorldStatus {
         // cannot
         // collapse onto the same permission node.
         String node = builtIn ? id.replace("_", "") : id;
-        return "buildsystem.setstatus." + node.toLowerCase(Locale.ROOT);
+        return Permissions.setStatus(node);
     }
 
     @Override

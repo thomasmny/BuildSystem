@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -35,7 +36,7 @@ final class WorldsCompletions {
 
     /**
      * Returns world names the player may act on, filtered by world-level permission and a command-specific permission
-     * (e.g. "buildsystem.edit").
+     * (e.g. Permissions.EDIT).
      */
     static List<String> permittedWorldNames(
             Player player, WorldStorage worldStorage, @Nullable String commandPermission, String input) {
@@ -62,7 +63,7 @@ final class WorldsCompletions {
             if (deletionBlacklist.contains(world.getName().toLowerCase(Locale.ROOT))) {
                 continue;
             }
-            if (world.getPermissions().canPerformCommand(player, "buildsystem.delete")) {
+            if (world.getPermissions().canPerformCommand(player, Permissions.DELETE)) {
                 addIfStartsWith(input, world.getName(), result);
             }
         }

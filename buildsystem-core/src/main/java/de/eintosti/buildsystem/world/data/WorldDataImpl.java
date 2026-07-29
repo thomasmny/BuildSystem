@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.data.type.Bypassable;
 import de.eintosti.buildsystem.world.data.type.ConfigurableProperty;
 import de.eintosti.buildsystem.world.data.type.Overridable;
@@ -86,7 +87,7 @@ public class WorldDataImpl implements WorldData {
         register(
                 WorldDataKey.PERMISSION,
                 new ConfigurableProperty<>(builder.permission)
-                        .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.permission"))
+                        .withCapability(Bypassable.class, new Bypassable(Permissions.BYPASS_PERMISSION))
                         .withCapability(
                                 Overridable.class,
                                 folderOverride(builder.permissionOverrideEnabled, Folder::getPermission)));
@@ -107,7 +108,7 @@ public class WorldDataImpl implements WorldData {
                 WorldDataKey.STATUS,
                 new ConfigurableProperty<>(Objects.requireNonNull(builder.status, "status"))
                         .withConfigFormatter(BuildWorldStatus::getId)
-                        .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.archive")));
+                        .withCapability(Bypassable.class, new Bypassable(Permissions.BYPASS_ARCHIVE)));
 
         register(WorldDataKey.BLOCK_BREAKING, settingsBypassable(builder.blockBreaking));
         register(WorldDataKey.BLOCK_INTERACTIONS, settingsBypassable(builder.blockInteractions));
@@ -164,7 +165,7 @@ public class WorldDataImpl implements WorldData {
      */
     private static ConfigurableProperty<Boolean> settingsBypassable(boolean defaultValue) {
         return new ConfigurableProperty<>(defaultValue)
-                .withCapability(Bypassable.class, new Bypassable("buildsystem.bypass.settings"));
+                .withCapability(Bypassable.class, new Bypassable(Permissions.BYPASS_SETTINGS));
     }
 
     /**

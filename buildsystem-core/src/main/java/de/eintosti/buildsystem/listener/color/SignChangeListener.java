@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.listener.color;
 
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -31,7 +32,7 @@ public class SignChangeListener implements Listener {
     @EventHandler
     public void onSignChange(SignChangeEvent event) {
         Player player = event.getPlayer();
-        if (!player.hasPermission("buildsystem.color.sign")) {
+        if (!player.hasPermission(Permissions.COLOR_SIGN)) {
             return;
         }
 

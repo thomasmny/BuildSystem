@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -56,7 +57,7 @@ public class TimeCommand extends CommandBase {
 
         switch (label.toLowerCase(Locale.ROOT)) {
             case "day" -> {
-                if (buildWorld != null && !buildWorld.getPermissions().canPerformCommand(player, "buildsystem.day")) {
+                if (buildWorld != null && !buildWorld.getPermissions().canPerformCommand(player, Permissions.DAY)) {
                     messages.sendPermissionError(player);
                     return;
                 }
@@ -76,7 +77,7 @@ public class TimeCommand extends CommandBase {
             }
 
             case "night" -> {
-                if (buildWorld != null && !buildWorld.getPermissions().canPerformCommand(player, "buildsystem.night")) {
+                if (buildWorld != null && !buildWorld.getPermissions().canPerformCommand(player, Permissions.NIGHT)) {
                     messages.sendPermissionError(player);
                     return;
                 }
@@ -105,7 +106,7 @@ public class TimeCommand extends CommandBase {
             case "day":
             case "night":
                 worldStorage.getBuildWorlds().stream()
-                        .filter(world -> world.getPermissions().canPerformCommand(player, "buildsystem." + lc))
+                        .filter(world -> world.getPermissions().canPerformCommand(player, Permissions.command(lc)))
                         .forEach(world -> addArgument(args[0], world.getName(), list));
                 break;
         }

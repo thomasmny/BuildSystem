@@ -21,6 +21,7 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
+import de.eintosti.buildsystem.util.Permissions;
 import io.papermc.lib.PaperLib;
 import java.util.logging.Logger;
 import org.bukkit.Location;
@@ -39,7 +40,7 @@ public class BackCommand extends CommandBase {
 
     @Override
     protected void run(Player player, String label, String[] args) {
-        if (!requirePermission(player, "buildsystem.back")) {
+        if (!requirePermission(player, Permissions.BACK)) {
             return;
         }
 

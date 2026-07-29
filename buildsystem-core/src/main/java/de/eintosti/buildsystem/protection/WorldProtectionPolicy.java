@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.api.world.access.WorldSetting;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.util.Permissions;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -67,7 +68,7 @@ public final class WorldProtectionPolicy {
      */
     public Denial checkStatus(Player player, BuildWorld world) {
         if (world.getPermissions().canBypassBuildRestriction(player)
-                || player.hasPermission("buildsystem.bypass.archive")) {
+                || player.hasPermission(Permissions.BYPASS_ARCHIVE)) {
             return Denial.NONE;
         }
 
@@ -88,7 +89,7 @@ public final class WorldProtectionPolicy {
      */
     public Denial checkBuilders(Player player, BuildWorld world) {
         if (world.getPermissions().canBypassBuildRestriction(player)
-                || player.hasPermission("buildsystem.bypass.builders")) {
+                || player.hasPermission(Permissions.BYPASS_BUILDERS)) {
             return Denial.NONE;
         }
 

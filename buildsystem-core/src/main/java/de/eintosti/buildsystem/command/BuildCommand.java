@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +46,7 @@ public class BuildCommand extends CommandBase {
 
     @Override
     protected void run(Player player, String label, String[] args) {
-        if (!requirePermission(player, "buildsystem.build")) {
+        if (!requirePermission(player, Permissions.BUILD)) {
             return;
         }
 
@@ -53,7 +54,7 @@ public class BuildCommand extends CommandBase {
             case 0 -> toggleBuildMode(player, player);
 
             case 1 -> {
-                if (!requirePermission(player, "buildsystem.build.other")) {
+                if (!requirePermission(player, Permissions.BUILD_OTHER)) {
                     return;
                 }
 
@@ -73,11 +74,11 @@ public class BuildCommand extends CommandBase {
     @Override
     protected List<String> complete(Player player, String label, String[] args) {
         List<String> list = new ArrayList<>();
-        if (!player.hasPermission("buildsystem.build")) {
+        if (!player.hasPermission(Permissions.BUILD)) {
             return list;
         }
 
-        if (args.length == 1 && !player.hasPermission("buildsystem.build.other")) {
+        if (args.length == 1 && !player.hasPermission(Permissions.BUILD_OTHER)) {
             Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[0], pl.getName(), list));
         }
 

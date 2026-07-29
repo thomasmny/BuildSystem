@@ -23,6 +23,7 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -45,7 +46,7 @@ final class EditMenuToggles {
                     new Toggle(
                             XMaterial.ITEM_FRAME,
                             XMaterial.GLOW_ITEM_FRAME,
-                            "buildsystem.edit.pin",
+                            Permissions.EDIT_PIN,
                             "worldeditor_pin_item",
                             "worldeditor_pin_lore",
                             WorldDataKey.PINNED)),
@@ -53,7 +54,7 @@ final class EditMenuToggles {
                     20,
                     new Toggle(
                             XMaterial.OAK_PLANKS,
-                            "buildsystem.edit.breaking",
+                            Permissions.EDIT_BREAKING,
                             "worldeditor_blockbreaking_item",
                             "worldeditor_blockbreaking_lore",
                             WorldDataKey.BLOCK_BREAKING)),
@@ -61,7 +62,7 @@ final class EditMenuToggles {
                     21,
                     new Toggle(
                             XMaterial.POLISHED_ANDESITE,
-                            "buildsystem.edit.placement",
+                            Permissions.EDIT_PLACEMENT,
                             "worldeditor_blockplacement_item",
                             "worldeditor_blockplacement_lore",
                             WorldDataKey.BLOCK_PLACEMENT)),
@@ -69,7 +70,7 @@ final class EditMenuToggles {
                     24,
                     new Toggle(
                             XMaterial.TNT,
-                            "buildsystem.edit.explosions",
+                            Permissions.EDIT_EXPLOSIONS,
                             "worldeditor_explosions_item",
                             "worldeditor_explosions_lore",
                             WorldDataKey.EXPLOSIONS)),
@@ -77,7 +78,7 @@ final class EditMenuToggles {
                     31,
                     new Toggle(
                             XMaterial.ARMOR_STAND,
-                            "buildsystem.edit.mobai",
+                            Permissions.EDIT_MOBAI,
                             "worldeditor_mobai_item",
                             "worldeditor_mobai_lore",
                             WorldDataKey.MOB_AI)),
@@ -85,7 +86,7 @@ final class EditMenuToggles {
                     33,
                     new Toggle(
                             XMaterial.TRIPWIRE_HOOK,
-                            "buildsystem.edit.interactions",
+                            Permissions.EDIT_INTERACTIONS,
                             "worldeditor_blockinteractions_item",
                             "worldeditor_blockinteractions_lore",
                             WorldDataKey.BLOCK_INTERACTIONS)));

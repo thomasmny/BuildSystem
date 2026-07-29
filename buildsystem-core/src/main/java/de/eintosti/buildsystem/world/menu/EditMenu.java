@@ -31,6 +31,7 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.*;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -186,7 +187,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         register(
                 SLOT_WORLD_INFO,
                 EditButton.builder()
-                        .permission("buildsystem.edit.icon")
+                        .permission(Permissions.EDIT_ICON)
                         .outcome(ClickOutcome.SUBMENU)
                         .render(this::renderWorldInfo)
                         .onClick(this::onWorldInfoClick)
@@ -208,7 +209,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         register(
                 SLOT_TIME,
                 EditButton.builder()
-                        .permission("buildsystem.edit.time")
+                        .permission(Permissions.EDIT_TIME)
                         .outcome(ClickOutcome.REOPEN)
                         .render(this::renderTime)
                         .onClick((player, event) -> {
@@ -220,7 +221,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         register(
                 SLOT_BUTCHER,
                 EditButton.builder()
-                        .permission("buildsystem.edit.entities")
+                        .permission(Permissions.EDIT_ENTITIES)
                         .outcome(ClickOutcome.CLOSE)
                         .render(this::renderButcher)
                         .onClick((player, event) -> removeEntities(player))
@@ -229,7 +230,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         register(
                 SLOT_PHYSICS,
                 EditButton.builder()
-                        .permission("buildsystem.edit.physics")
+                        .permission(Permissions.EDIT_PHYSICS)
                         .outcome(ClickOutcome.REOPEN)
                         .render((player, inventory) -> menuItems.addToggleItem(
                                 player,
@@ -245,7 +246,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         register(
                 SLOT_BUILDERS,
                 EditButton.builder()
-                        .permission("buildsystem.edit.builders")
+                        .permission(Permissions.EDIT_BUILDERS)
                         .outcome(ClickOutcome.REOPEN)
                         .render(this::renderBuilders)
                         .onClick(this::onBuildersClick)
@@ -254,7 +255,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         register(
                 SLOT_VISIBILITY,
                 EditButton.builder()
-                        .permission("buildsystem.edit.visibility")
+                        .permission(Permissions.EDIT_VISIBILITY)
                         .outcome(ClickOutcome.REOPEN)
                         .render(this::renderVisibility)
                         .onClick(this::onVisibilityClick)
@@ -263,7 +264,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         register(
                 SLOT_GAMERULES,
                 EditButton.builder()
-                        .permission("buildsystem.edit.gamerules")
+                        .permission(Permissions.EDIT_GAMERULES)
                         .outcome(ClickOutcome.SUBMENU)
                         .render(this::renderGameRules)
                         .onClick((player, event) -> {
@@ -275,7 +276,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         register(
                 SLOT_DIFFICULTY,
                 EditButton.builder()
-                        .permission("buildsystem.edit.difficulty")
+                        .permission(Permissions.EDIT_DIFFICULTY)
                         .outcome(ClickOutcome.REOPEN)
                         .render(this::renderDifficulty)
                         .onClick((player, event) -> {
@@ -287,7 +288,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         register(
                 SLOT_STATUS,
                 EditButton.builder()
-                        .permission("buildsystem.edit.status")
+                        .permission(Permissions.EDIT_STATUS)
                         .outcome(ClickOutcome.SUBMENU)
                         .render(this::renderStatus)
                         .onClick((player, event) -> {
@@ -299,7 +300,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         register(
                 SLOT_PROJECT,
                 EditButton.builder()
-                        .permission("buildsystem.edit.project")
+                        .permission(Permissions.EDIT_PROJECT)
                         .outcome(ClickOutcome.INPUT)
                         .render(this::renderProject)
                         .onClick((player, event) -> {
@@ -311,7 +312,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         register(
                 SLOT_PERMISSION,
                 EditButton.builder()
-                        .permission("buildsystem.edit.permission")
+                        .permission(Permissions.EDIT_PERMISSION)
                         .outcome(ClickOutcome.INPUT)
                         .render(this::renderPermission)
                         .onClick((player, event) -> {

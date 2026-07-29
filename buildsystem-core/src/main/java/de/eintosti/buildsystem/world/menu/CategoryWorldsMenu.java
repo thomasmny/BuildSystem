@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.SkullTextures;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import org.bukkit.entity.Player;
@@ -76,7 +77,7 @@ public class CategoryWorldsMenu extends DisplayablesMenu {
                     .name(messages.getString("world_navigator_create_world", player))
                     .into(inventory, SLOT_CREATE_WORLD);
         }
-        if (player.hasPermission("buildsystem.create.folder")) {
+        if (player.hasPermission(Permissions.CREATE_FOLDER)) {
             // With the create-world button hidden, centre the lone folder button instead of leaving it off to the side.
             int folderSlot = createWorld ? SLOT_CREATE_FOLDER : SLOT_CREATE_CENTER;
             ItemBuilder.skull(Profileable.detect(CREATE_FOLDER_PROFILE))
@@ -103,6 +104,6 @@ public class CategoryWorldsMenu extends DisplayablesMenu {
      */
     private boolean hasCreatePermission(Player player) {
         return player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)
-                || player.hasPermission("buildsystem.create." + category.getId());
+                || player.hasPermission(Permissions.createInCategory(category.getId()));
     }
 }

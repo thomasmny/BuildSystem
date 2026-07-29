@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.integration.Integrations;
 import de.eintosti.buildsystem.listener.ListenerRegistrar;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocation;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
@@ -42,7 +43,7 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     public static final int SPIGOT_ID = 60441;
     public static final int METRICS_ID = 7427;
-    public static final String ADMIN_PERMISSION = "buildsystem.admin";
+    public static final String ADMIN_PERMISSION = Permissions.ADMIN;
 
     private static final long CONFIG_SAVE_INTERVAL_TICKS = 5L * 60L * 20L;
 

@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.listener.color;
 
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -31,7 +32,7 @@ public class AsyncPlayerChatListener implements Listener {
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
-        if (!player.hasPermission("buildsystem.color.chat")) {
+        if (!player.hasPermission(Permissions.COLOR_CHAT)) {
             return;
         }
 
