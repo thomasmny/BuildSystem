@@ -57,15 +57,15 @@ public class PhysicsMenu extends ButtonMenu<MenuButton> {
             WorldDataKey.PHYSICS);
 
     private static final Map<Integer, Toggle> CATEGORY_TOGGLES = Map.ofEntries(
-            entry(12, categoryToggle(XMaterial.OBSERVER, "blockupdates", PhysicsCategory.BLOCK_UPDATES)),
-            entry(13, categoryToggle(XMaterial.OAK_FENCE, "connections", PhysicsCategory.CONNECTIONS)),
-            entry(14, categoryToggle(XMaterial.GRAVEL, "fallingblocks", PhysicsCategory.FALLING_BLOCKS)),
-            entry(21, categoryToggle(XMaterial.WATER_BUCKET, "fluidflow", PhysicsCategory.FLUID_FLOW)),
-            entry(22, categoryToggle(XMaterial.OAK_LEAVES, "leafdecay", PhysicsCategory.LEAF_DECAY)),
-            entry(23, categoryToggle(XMaterial.WHEAT, "growth", PhysicsCategory.GROWTH)),
-            entry(30, categoryToggle(XMaterial.VINE, "spreading", PhysicsCategory.SPREADING)),
-            entry(31, categoryToggle(XMaterial.SNOW_BLOCK, "blockforming", PhysicsCategory.BLOCK_FORMING)),
-            entry(32, categoryToggle(XMaterial.ICE, "blockfading", PhysicsCategory.BLOCK_FADING)));
+            entry(12, categoryToggle(PhysicsCategory.BLOCK_UPDATES, XMaterial.OBSERVER)),
+            entry(13, categoryToggle(PhysicsCategory.CONNECTIONS, XMaterial.OAK_FENCE)),
+            entry(14, categoryToggle(PhysicsCategory.FALLING_BLOCKS, XMaterial.GRAVEL)),
+            entry(21, categoryToggle(PhysicsCategory.FLUID_FLOW, XMaterial.WATER_BUCKET)),
+            entry(22, categoryToggle(PhysicsCategory.LEAF_DECAY, XMaterial.OAK_LEAVES)),
+            entry(23, categoryToggle(PhysicsCategory.GROWTH, XMaterial.WHEAT)),
+            entry(30, categoryToggle(PhysicsCategory.SPREADING, XMaterial.VINE)),
+            entry(31, categoryToggle(PhysicsCategory.BLOCK_FORMING, XMaterial.SNOW_BLOCK)),
+            entry(32, categoryToggle(PhysicsCategory.BLOCK_FADING, XMaterial.ICE)));
 
     private final MenuItems menuItems;
     private final Menus menus;
@@ -81,7 +81,14 @@ public class PhysicsMenu extends ButtonMenu<MenuButton> {
         CATEGORY_TOGGLES.forEach((slot, toggle) -> register(slot, toggleButton(toggle)));
     }
 
-    private static Toggle categoryToggle(XMaterial material, String messageName, PhysicsCategory category) {
+    /**
+     * Builds a toggle for a category. The message keys are derived from the category's
+     * {@link PhysicsCategory#id() id} (e.g. {@code block-updates} &rarr;
+     * {@code worldeditor_physics_blockupdates_item}), so adding a category only means adding its entry above and its
+     * two message keys.
+     */
+    private static Toggle categoryToggle(PhysicsCategory category, XMaterial material) {
+        String messageName = category.id().replace("-", "");
         return new Toggle(
                 material,
                 PERMISSION,

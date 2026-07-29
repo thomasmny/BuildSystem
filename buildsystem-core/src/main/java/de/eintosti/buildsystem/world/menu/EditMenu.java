@@ -557,6 +557,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
             XSound.ENTITY_ITEM_BREAK.play(player);
             return;
         }
+
         if (event.isRightClick()) {
             XSound.BLOCK_CHEST_OPEN.play(player);
             menus.openBuilder(buildWorld, player);

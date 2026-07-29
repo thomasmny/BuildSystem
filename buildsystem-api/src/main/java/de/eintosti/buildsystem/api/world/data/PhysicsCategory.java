@@ -75,10 +75,20 @@ public enum PhysicsCategory {
      */
     BLOCK_FADING("block-fading");
 
+    private final String id;
     private final WorldDataKey<Boolean> key;
 
     PhysicsCategory(String id) {
+        this.id = id;
         this.key = WorldDataKey.of("physics-exceptions." + id, Boolean.class);
+    }
+
+    /**
+     * {@return this category's identifier, e.g. {@code block-updates}} This is the name used in config and in the
+     * {@link #key() key}, and is stable across renames of the enum constant.
+     */
+    public String id() {
+        return id;
     }
 
     /**
