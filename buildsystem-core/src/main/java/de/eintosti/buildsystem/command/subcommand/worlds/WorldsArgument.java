@@ -18,35 +18,36 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.Arrays;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public enum WorldsArgument implements Argument {
-    ADD_BUILDER("addBuilder", "buildsystem.addbuilder"),
-    BACKUP("backup", "buildsystem.backup"),
-    BUILDERS("builders", "buildsystem.builders"),
-    DELETE("delete", "buildsystem.delete"),
-    EDIT("edit", "buildsystem.edit"),
-    FOLDER("folder", "buildsystem.folder"),
-    HELP("help", "buildsystem.help.worlds"),
-    IMPORT("import", "buildsystem.import"),
-    IMPORT_ALL("importAll", "buildsystem.import.all"),
-    INFO("info", "buildsystem.info"),
-    ITEM("item", "buildsystem.navigator.item"),
-    REMOVE_BUILDER("removeBuilder", "buildsystem.removebuilder"),
-    RENAME("rename", "buildsystem.rename"),
-    SAVE_TEMPLATE("saveTemplate", "buildsystem.savetemplate"),
-    SET_CREATOR("setCreator", "buildsystem.setcreator"),
-    SET_ITEM("setItem", "buildsystem.setitem"),
-    SET_PERMISSION("setPermission", "buildsystem.setpermission"),
-    SET_PROJECT("setProject", "buildsystem.setproject"),
-    SET_STATUS("setStatus", "buildsystem.setstatus"),
-    SET_SPAWN("setSpawn", "buildsystem.setspawn"),
-    REMOVE_SPAWN("removeSpawn", "buildsystem.removespawn"),
-    TP("tp", "buildsystem.worldtp"),
-    UNIMPORT("unimport", "buildsystem.unimport");
+    ADD_BUILDER("addBuilder", Permissions.ADDBUILDER),
+    BACKUP("backup", Permissions.BACKUP),
+    BUILDERS("builders", Permissions.BUILDERS),
+    DELETE("delete", Permissions.DELETE),
+    EDIT("edit", Permissions.EDIT),
+    FOLDER("folder", Permissions.FOLDER),
+    HELP("help", Permissions.HELP_WORLDS),
+    IMPORT("import", Permissions.IMPORT),
+    IMPORT_ALL("importAll", Permissions.IMPORT_ALL),
+    INFO("info", Permissions.INFO),
+    ITEM("item", Permissions.NAVIGATOR_ITEM),
+    REMOVE_BUILDER("removeBuilder", Permissions.REMOVEBUILDER),
+    RENAME("rename", Permissions.RENAME),
+    SAVE_TEMPLATE("saveTemplate", Permissions.SAVETEMPLATE),
+    SET_CREATOR("setCreator", Permissions.SETCREATOR),
+    SET_ITEM("setItem", Permissions.SETITEM),
+    SET_PERMISSION("setPermission", Permissions.SETPERMISSION),
+    SET_PROJECT("setProject", Permissions.SETPROJECT),
+    SET_STATUS("setStatus", Permissions.SETSTATUS),
+    SET_SPAWN("setSpawn", Permissions.SETSPAWN),
+    REMOVE_SPAWN("removeSpawn", Permissions.REMOVESPAWN),
+    TP("tp", Permissions.WORLDTP),
+    UNIMPORT("unimport", Permissions.UNIMPORT);
 
     private final String command;
     private final String permission;

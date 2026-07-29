@@ -30,6 +30,7 @@ import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Prompts;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.*;
@@ -123,7 +124,7 @@ public class FolderSubCommand extends AbstractSubCommand {
 
         switch (operation) {
             case "add":
-                if (!player.hasPermission("buildsystem.folder.add")) {
+                if (!player.hasPermission(Permissions.FOLDER_ADD)) {
                     messages.sendPermissionError(player);
                     return;
                 }
@@ -161,7 +162,7 @@ public class FolderSubCommand extends AbstractSubCommand {
                 break;
 
             case "remove":
-                if (!player.hasPermission("buildsystem.folder.remove")) {
+                if (!player.hasPermission(Permissions.FOLDER_REMOVE)) {
                     messages.sendPermissionError(player);
                     return;
                 }
@@ -180,7 +181,7 @@ public class FolderSubCommand extends AbstractSubCommand {
     }
 
     private void handlePermissionInput(Player player, Folder folder) {
-        if (!player.hasPermission("buildsystem.folder.setpermission")) {
+        if (!player.hasPermission(Permissions.FOLDER_SETPERMISSION)) {
             messages.sendPermissionError(player);
             return;
         }
@@ -194,7 +195,7 @@ public class FolderSubCommand extends AbstractSubCommand {
     }
 
     private void handleProjectInput(Player player, Folder folder) {
-        if (!player.hasPermission("buildsystem.folder.setproject")) {
+        if (!player.hasPermission(Permissions.FOLDER_SETPROJECT)) {
             messages.sendPermissionError(player);
             return;
         }
@@ -208,7 +209,7 @@ public class FolderSubCommand extends AbstractSubCommand {
     }
 
     private void handleIconChange(Player player, Folder folder) {
-        if (!player.hasPermission("buildsystem.folder.setitem")) {
+        if (!player.hasPermission(Permissions.FOLDER_SETITEM)) {
             messages.sendPermissionError(player);
             return;
         }
@@ -224,7 +225,7 @@ public class FolderSubCommand extends AbstractSubCommand {
     }
 
     private void handleDeletion(Player player, Folder folder) {
-        if (!player.hasPermission("buildsystem.folder.delete")) {
+        if (!player.hasPermission(Permissions.FOLDER_DELETE)) {
             messages.sendPermissionError(player);
             return;
         }
@@ -253,12 +254,12 @@ public class FolderSubCommand extends AbstractSubCommand {
         }
         if (args.length == 3) {
             Map<String, String> subCmds = Map.ofEntries(
-                    entry("add", "buildsystem.folder.add"),
-                    entry("remove", "buildsystem.folder.remove"),
-                    entry("delete", "buildsystem.folder.delete"),
-                    entry("setPermission", "buildsystem.folder.setpermission"),
-                    entry("setProject", "buildsystem.folder.setproject"),
-                    entry("setItem", "buildsystem.folder.setitem"));
+                    entry("add", Permissions.FOLDER_ADD),
+                    entry("remove", Permissions.FOLDER_REMOVE),
+                    entry("delete", Permissions.FOLDER_DELETE),
+                    entry("setPermission", Permissions.FOLDER_SETPERMISSION),
+                    entry("setProject", Permissions.FOLDER_SETPROJECT),
+                    entry("setItem", Permissions.FOLDER_SETITEM));
             subCmds.entrySet().stream()
                     .filter(e -> player.hasPermission(e.getValue()))
                     .forEach(e -> WorldsCompletions.addIfStartsWith(args[2], e.getKey(), result));

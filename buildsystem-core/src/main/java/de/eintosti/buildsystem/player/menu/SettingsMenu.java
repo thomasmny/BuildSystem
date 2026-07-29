@@ -32,6 +32,7 @@ import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -48,7 +49,6 @@ import org.jspecify.annotations.Nullable;
 public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
 
     private static final int DESIGN_SLOT = 11;
-    private static final String PERMISSION_PREFIX = "buildsystem.setting.";
 
     /**
      * Classifies a settings slot's click behavior, so the per-slot contract can be asserted as data. {@code TOGGLE}
@@ -90,7 +90,7 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
          */
         @Override
         public @Nullable String permission() {
-            return node == null ? null : PERMISSION_PREFIX + node;
+            return node == null ? null : Permissions.setting(node);
         }
 
         static Builder builder() {
@@ -410,7 +410,7 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
         buttons().forEach((slot, button) -> {
             String node = button.node();
             if (node != null) {
-                nodes.put(slot, PERMISSION_PREFIX + node);
+                nodes.put(slot, Permissions.setting(node));
             }
         });
         return nodes;

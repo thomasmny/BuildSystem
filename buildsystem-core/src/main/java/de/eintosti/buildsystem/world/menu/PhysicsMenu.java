@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.menu.EditMenuToggles.Toggle;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +45,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class PhysicsMenu extends ButtonMenu<MenuButton> {
 
-    private static final String PERMISSION = "buildsystem.edit.physics";
+    private static final String PERMISSION = Permissions.EDIT_PHYSICS;
 
     private static final int MENU_SIZE = 45;
     private static final int SLOT_MASTER = 4;

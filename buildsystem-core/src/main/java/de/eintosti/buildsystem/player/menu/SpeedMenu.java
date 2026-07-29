@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -67,7 +68,7 @@ public class SpeedMenu extends ButtonMenu<MenuButton> {
                                 .name(messages.getString(option.nameKey(), player))
                                 .build()))
                 .onClick((player, event) -> {
-                    if (!player.hasPermission("buildsystem.speed")) {
+                    if (!player.hasPermission(Permissions.SPEED)) {
                         player.closeInventory();
                         return;
                     }

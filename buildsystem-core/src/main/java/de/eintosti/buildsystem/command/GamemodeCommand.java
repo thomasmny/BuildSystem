@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.*;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
@@ -73,7 +74,7 @@ public class GamemodeCommand extends CommandBase {
         if (args.length == 1) {
             Arrays.stream(GameMode.values())
                     .map(gameMode -> gameMode.name().toLowerCase(Locale.ROOT))
-                    .filter(gameModeName -> player.hasPermission("buildsystem.gamemode.%s".formatted(gameModeName)))
+                    .filter(gameModeName -> player.hasPermission(Permissions.gamemode(gameModeName)))
                     .forEach(gameModeName -> addArgument(args[0], gameModeName, list));
         } else if (args.length == 2) {
             String gameModeName =
@@ -85,7 +86,7 @@ public class GamemodeCommand extends CommandBase {
                         default -> null;
                     };
 
-            if (gameModeName != null && player.hasPermission("buildsystem.gamemode.%s.other".formatted(gameModeName))) {
+            if (gameModeName != null && player.hasPermission(Permissions.gamemodeOther(gameModeName))) {
                 Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[1], pl.getName(), list));
             }
         }
@@ -102,8 +103,7 @@ public class GamemodeCommand extends CommandBase {
     }
 
     private void setPlayerGamemode(Player player, GameMode gameMode, String gameModeName) {
-        if (!requirePermission(
-                player, "buildsystem.gamemode.%s".formatted(gameMode.name().toLowerCase(Locale.ROOT)))) {
+        if (!requirePermission(player, Permissions.gamemode(gameMode.name()))) {
             return;
         }
 
@@ -112,9 +112,7 @@ public class GamemodeCommand extends CommandBase {
     }
 
     private void setTargetGamemode(Player player, String[] args, GameMode gameMode, String gameModeName) {
-        if (!requirePermission(
-                player,
-                "buildsystem.gamemode.%s.other".formatted(gameMode.name().toLowerCase(Locale.ROOT)))) {
+        if (!requirePermission(player, Permissions.gamemodeOther(gameMode.name()))) {
             return;
         }
 

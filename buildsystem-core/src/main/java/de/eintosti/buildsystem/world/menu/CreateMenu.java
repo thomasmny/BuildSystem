@@ -31,11 +31,11 @@ import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.FileUtils;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import java.io.File;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -185,8 +185,7 @@ public class CreateMenu extends PaginatedMenu {
     }
 
     private static boolean canCreateType(Player player, BuildWorldType worldType) {
-        return player.hasPermission(
-                "buildsystem.create.type." + worldType.name().toLowerCase(Locale.ROOT));
+        return player.hasPermission(Permissions.createType(worldType.name()));
     }
 
     private void registerGenerator(Player player) {
@@ -245,7 +244,7 @@ public class CreateMenu extends PaginatedMenu {
                 .onClick((player, event) -> {
                     // Template names are dynamic and cannot be pre-registered in plugin.yml, so default-allow is
                     // emulated: a template is permitted unless an admin has explicitly denied its specific node.
-                    String templateNode = "buildsystem.create.template." + rawTemplateName;
+                    String templateNode = Permissions.createTemplate(rawTemplateName);
                     if (player.isPermissionSet(templateNode) && !player.hasPermission(templateNode)) {
                         XSound.ENTITY_ITEM_BREAK.play(player);
                         return;

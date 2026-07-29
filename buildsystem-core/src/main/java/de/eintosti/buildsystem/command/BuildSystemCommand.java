@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.List;
 import java.util.logging.Logger;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -34,7 +35,7 @@ public class BuildSystemCommand extends PagedCommand {
 
     @Override
     protected void run(Player player, String label, String[] args) {
-        if (!requirePermission(player, "buildsystem.help.buildsystem")) {
+        if (!requirePermission(player, Permissions.HELP_BUILDSYSTEM)) {
             return;
         }
 
@@ -55,28 +56,24 @@ public class BuildSystemCommand extends PagedCommand {
     @Override
     protected List<TextComponent> getCommands(Player player) {
         List<TextComponent> commands = Lists.newArrayList(
-                createComponent(player, "/back", "buildsystem_back", "/back", "buildsystem.back"),
-                createComponent(player, "/blocks", "buildsystem_blocks", "/blocks", "buildsystem.blocks"),
-                createComponent(player, "/build [player]", "buildsystem_build", "/build", "buildsystem.build"),
-                createComponent(player, "/config reload", "buildsystem_config", "/config reload", "buildsystem.config"),
-                createComponent(player, "/day [world]", "buildsystem_day", "/day", "buildsystem.day"),
+                createComponent(player, "/back", "buildsystem_back", "/back", Permissions.BACK),
+                createComponent(player, "/blocks", "buildsystem_blocks", "/blocks", Permissions.BLOCKS),
+                createComponent(player, "/build [player]", "buildsystem_build", "/build", Permissions.BUILD),
+                createComponent(player, "/config reload", "buildsystem_config", "/config reload", Permissions.CONFIG),
+                createComponent(player, "/day [world]", "buildsystem_day", "/day", Permissions.DAY),
                 createComponent(
-                        player,
-                        "/explosions [world]",
-                        "buildsystem_explosions",
-                        "/explosions",
-                        "buildsystem.explosions"),
+                        player, "/explosions [world]", "buildsystem_explosions", "/explosions", Permissions.EXPLOSIONS),
                 createComponent(
-                        player, "/gm <gamemode> [player]", "buildsystem_gamemode", "/gm ", "buildsystem.gamemode"),
-                createComponent(player, "/night [world]", "buildsystem_night", "/night", "buildsystem.night"),
-                createComponent(player, "/noai [world]", "buildsystem_noai", "/noai", "buildsystem.noai"),
-                createComponent(player, "/physics [world]", "buildsystem_physics", "/physics", "buildsystem.physics"),
-                createComponent(player, "/settings", "buildsystem_settings", "/settings", "buildsystem.settings"),
-                createComponent(player, "/setup", "buildsystem_setup", "/setup", "buildsystem.setup"),
-                createComponent(player, "/skull [player/id]", "buildsystem_skull", "/skull", "buildsystem.skull"),
+                        player, "/gm <gamemode> [player]", "buildsystem_gamemode", "/gm ", Permissions.GAMEMODE),
+                createComponent(player, "/night [world]", "buildsystem_night", "/night", Permissions.NIGHT),
+                createComponent(player, "/noai [world]", "buildsystem_noai", "/noai", Permissions.NOAI),
+                createComponent(player, "/physics [world]", "buildsystem_physics", "/physics", Permissions.PHYSICS),
+                createComponent(player, "/settings", "buildsystem_settings", "/settings", Permissions.SETTINGS),
+                createComponent(player, "/setup", "buildsystem_setup", "/setup", Permissions.SETUP),
+                createComponent(player, "/skull [player/id]", "buildsystem_skull", "/skull", Permissions.SKULL),
                 createComponent(player, "/spawn", "buildsystem_spawn", "/spawn", "-"),
-                createComponent(player, "/speed <1-5>", "buildsystem_speed", "/speed ", "buildsystem.speed"),
-                createComponent(player, "/top", "buildsystem_top", "/top", "buildsystem.top"),
+                createComponent(player, "/speed <1-5>", "buildsystem_speed", "/speed ", Permissions.SPEED),
+                createComponent(player, "/top", "buildsystem_top", "/top", Permissions.TOP),
                 createComponent(player, "/worlds help", "buildsystem_worlds", "/worlds help", "-"));
         commands.removeIf(textComponent -> textComponent.getText().isEmpty());
         return commands;

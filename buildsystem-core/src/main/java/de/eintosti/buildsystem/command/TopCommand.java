@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.lifecycle.WorldTeleporterImpl;
 import io.papermc.lib.PaperLib;
 import java.util.logging.Logger;
@@ -35,7 +36,7 @@ public class TopCommand extends CommandBase {
 
     @Override
     protected void run(Player player, String label, String[] args) {
-        if (!requirePermission(player, "buildsystem.top")) {
+        if (!requirePermission(player, Permissions.TOP)) {
             return;
         }
 

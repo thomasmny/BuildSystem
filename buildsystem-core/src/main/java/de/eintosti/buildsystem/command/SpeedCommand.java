@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,7 @@ public class SpeedCommand extends CommandBase {
 
     @Override
     protected void run(Player player, String label, String[] args) {
-        if (!requirePermission(player, "buildsystem.speed")) {
+        if (!requirePermission(player, Permissions.SPEED)) {
             return;
         }
 

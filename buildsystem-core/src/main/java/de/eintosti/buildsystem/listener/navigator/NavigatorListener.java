@@ -37,6 +37,7 @@ import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.Objects;
 import java.util.UUID;
 import org.bukkit.Material;
@@ -111,7 +112,7 @@ public class NavigatorListener implements Listener {
 
         if (navigatorItems.is(itemStack)) {
             event.setCancelled(true);
-            if (!player.hasPermission("buildsystem.navigator.item")) {
+            if (!player.hasPermission(Permissions.NAVIGATOR_ITEM)) {
                 messages.sendPermissionError(player);
                 return;
             }

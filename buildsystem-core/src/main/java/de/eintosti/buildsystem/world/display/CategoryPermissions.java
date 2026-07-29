@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.world.display;
 
+import de.eintosti.buildsystem.util.Permissions;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -41,7 +42,7 @@ public final class CategoryPermissions {
      * @param categoryId The category id
      */
     public static String node(String categoryId) {
-        return "buildsystem.navigator." + categoryId;
+        return Permissions.navigatorCategory(categoryId);
     }
 
     /**

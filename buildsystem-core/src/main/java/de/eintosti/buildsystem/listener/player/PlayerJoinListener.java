@@ -34,6 +34,7 @@ import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
@@ -115,7 +116,7 @@ public class PlayerJoinListener implements Listener {
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld != null) {
             WorldData worldData = buildWorld.getData();
-            if (!worldData.get(WorldDataKey.PHYSICS) && player.hasPermission("buildsystem.physics.message")) {
+            if (!worldData.get(WorldDataKey.PHYSICS) && player.hasPermission(Permissions.PHYSICS_MESSAGE)) {
                 messages.sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", worldName));
             }
 
@@ -128,7 +129,7 @@ public class PlayerJoinListener implements Listener {
             }
         }
 
-        if (player.hasPermission("buildsystem.updates")) {
+        if (player.hasPermission(Permissions.UPDATES)) {
             performUpdateCheck(player);
         }
     }

@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +47,7 @@ public class PhysicsCommand extends CommandBase {
     protected void run(Player player, String label, String[] args) {
         String worldName = worldNameFromArgs(player, args, 0);
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
-        if (buildWorld != null && !buildWorld.getPermissions().canPerformCommand(player, "buildsystem.physics")) {
+        if (buildWorld != null && !buildWorld.getPermissions().canPerformCommand(player, Permissions.PHYSICS)) {
             messages.sendPermissionError(player);
             return;
         }
@@ -73,7 +74,7 @@ public class PhysicsCommand extends CommandBase {
         List<String> list = new ArrayList<>();
         if (args.length == 1) {
             worldStorage.getBuildWorlds().stream()
-                    .filter(world -> world.getPermissions().canPerformCommand(player, "buildsystem.physics"))
+                    .filter(world -> world.getPermissions().canPerformCommand(player, Permissions.PHYSICS))
                     .forEach(world -> addArgument(args[0], world.getName(), list));
         }
         return list;

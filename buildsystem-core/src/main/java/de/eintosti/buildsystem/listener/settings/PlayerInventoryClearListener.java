@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.event.player.PlayerInventoryClearEvent;
 import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.Permissions;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -43,7 +44,7 @@ public class PlayerInventoryClearListener implements Listener {
     public void onPlayerInventoryClear(PlayerInventoryClearEvent event) {
         Player player = event.getPlayer();
         Settings settings = settingsManager.getSettings(player);
-        if (!settings.isKeepNavigator() || !player.hasPermission("buildsystem.navigator.item")) {
+        if (!settings.isKeepNavigator() || !player.hasPermission(Permissions.NAVIGATOR_ITEM)) {
             return;
         }
 

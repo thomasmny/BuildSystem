@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.command.PagedCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.List;
 import java.util.logging.Logger;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -60,104 +61,86 @@ public class HelpSubCommand extends PagedCommand implements SubCommand {
     protected List<TextComponent> getCommands(Player player) {
         List<TextComponent> commands = Lists.newArrayList(
                 createComponent(player, "/worlds help <page>", "worlds_help_help", "/worlds help", "-"),
-                createComponent(player, "/worlds info", "worlds_help_info", "/worlds info", "buildsystem.info"),
-                createComponent(
-                        player, "/worlds item", "worlds_help_item", "/worlds item", "buildsystem.navigator.item"),
-                createComponent(player, "/worlds tp <world>", "worlds_help_tp", "/worlds tp ", "buildsystem.worldtp"),
-                createComponent(
-                        player, "/worlds edit <world>", "worlds_help_edit", "/worlds edit ", "buildsystem.edit"),
+                createComponent(player, "/worlds info", "worlds_help_info", "/worlds info", Permissions.INFO),
+                createComponent(player, "/worlds item", "worlds_help_item", "/worlds item", Permissions.NAVIGATOR_ITEM),
+                createComponent(player, "/worlds tp <world>", "worlds_help_tp", "/worlds tp ", Permissions.WORLDTP),
+                createComponent(player, "/worlds edit <world>", "worlds_help_edit", "/worlds edit ", Permissions.EDIT),
                 createComponent(
                         player,
                         "/worlds addBuilder <world>",
                         "worlds_help_addbuilder",
                         "/worlds addBuilder ",
-                        "buildsystem.addbuilder"),
+                        Permissions.ADDBUILDER),
                 createComponent(
                         player,
                         "/worlds removeBuilder <world>",
                         "worlds_help_removebuilder",
                         "/worlds removeBuilder ",
-                        "buildsystem.removebuilder"),
+                        Permissions.REMOVEBUILDER),
                 createComponent(
                         player,
                         "/worlds builders <world>",
                         "worlds_help_builders",
                         "/worlds builders ",
-                        "buildsystem.builders"),
+                        Permissions.BUILDERS),
                 createComponent(
-                        player,
-                        "/worlds rename <world>",
-                        "worlds_help_rename",
-                        "/worlds rename ",
-                        "buildsystem.rename"),
+                        player, "/worlds rename <world>", "worlds_help_rename", "/worlds rename ", Permissions.RENAME),
                 createComponent(
                         player,
                         "/worlds setItem <world>",
                         "worlds_help_setitem",
                         "/worlds setItem ",
-                        "buildsystem.setitem"),
+                        Permissions.SETITEM),
                 createComponent(
                         player,
                         "/worlds setCreator <world>",
                         "worlds_help_setcreator",
                         "/worlds setCreator ",
-                        "buildsystem.setcreator"),
+                        Permissions.SETCREATOR),
                 createComponent(
                         player,
                         "/worlds setProject <world>",
                         "worlds_help_setproject",
                         "/worlds setProject ",
-                        "buildsystem.setproject"),
+                        Permissions.SETPROJECT),
                 createComponent(
                         player,
                         "/worlds saveTemplate <world> [template]",
                         "worlds_help_savetemplate",
                         "/worlds saveTemplate ",
-                        "buildsystem.savetemplate"),
+                        Permissions.SAVETEMPLATE),
                 createComponent(
                         player,
                         "/worlds setPermission <world>",
                         "worlds_help_setpermission",
                         "/worlds setPermission ",
-                        "buildsystem.setpermission"),
+                        Permissions.SETPERMISSION),
                 createComponent(
                         player,
                         "/worlds setStatus <world>",
                         "worlds_help_setstatus",
                         "/worlds setStatus ",
-                        "buildsystem.setstatus"),
+                        Permissions.SETSTATUS),
                 createComponent(
-                        player, "/worlds setSpawn", "worlds_help_setspawn", "/worlds setSpawn", "buildsystem.setspawn"),
+                        player, "/worlds setSpawn", "worlds_help_setspawn", "/worlds setSpawn", Permissions.SETSPAWN),
                 createComponent(
                         player,
                         "/worlds removeSpawn",
                         "worlds_help_removespawn",
                         "/worlds removeSpawn",
-                        "buildsystem.removespawn"),
+                        Permissions.REMOVESPAWN),
                 createComponent(
-                        player,
-                        "/worlds delete <world>",
-                        "worlds_help_delete",
-                        "/worlds delete ",
-                        "buildsystem.delete"),
+                        player, "/worlds delete <world>", "worlds_help_delete", "/worlds delete ", Permissions.DELETE),
                 createComponent(
-                        player,
-                        "/worlds import <world>",
-                        "worlds_help_import",
-                        "/worlds import ",
-                        "buildsystem.import"),
+                        player, "/worlds import <world>", "worlds_help_import", "/worlds import ", Permissions.IMPORT),
                 createComponent(
                         player,
                         "/worlds importAll",
                         "worlds_help_importall",
                         "/worlds importAll",
-                        "buildsystem.import.all"),
+                        Permissions.IMPORT_ALL),
                 createComponent(
-                        player,
-                        "/worlds unimport",
-                        "worlds_help_unimport",
-                        "/worlds unimport",
-                        "buildsystem.unimport"));
+                        player, "/worlds unimport", "worlds_help_unimport", "/worlds unimport", Permissions.UNIMPORT));
         commands.removeIf(textComponent -> textComponent.getText().isEmpty());
         return commands;
     }

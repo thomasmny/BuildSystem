@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.command;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.bukkit.entity.Player;
@@ -34,7 +35,7 @@ public class SkullCommand extends CommandBase {
 
     @Override
     protected void run(Player player, String label, String[] args) {
-        if (!requirePermission(player, "buildsystem.skull")) {
+        if (!requirePermission(player, Permissions.SKULL)) {
             return;
         }
 

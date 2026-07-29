@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -79,7 +80,7 @@ public class PlayerChangedWorldListener implements Listener {
         BuildWorld newWorld = worldStorage.getBuildWorld(worldName);
         if (newWorld != null
                 && !newWorld.getData().get(WorldDataKey.PHYSICS)
-                && player.hasPermission("buildsystem.physics.message")) {
+                && player.hasPermission(Permissions.PHYSICS_MESSAGE)) {
             messages.sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", newWorld.getName()));
         }
 

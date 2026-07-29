@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +64,7 @@ public class SpawnCommand extends CommandBase {
             }
 
             case 1 -> {
-                if (!player.hasPermission("buildsystem.spawn")) {
+                if (!player.hasPermission(Permissions.SPAWN)) {
                     messages.sendMessage(player, "spawn_usage");
                     return;
                 }
@@ -101,7 +102,7 @@ public class SpawnCommand extends CommandBase {
             }
 
             default -> {
-                String key = player.hasPermission("buildsystem.spawn") ? "spawn_admin" : "spawn_usage";
+                String key = player.hasPermission(Permissions.SPAWN) ? "spawn_admin" : "spawn_usage";
                 messages.sendMessage(player, key);
             }
         }
@@ -110,7 +111,7 @@ public class SpawnCommand extends CommandBase {
     @Override
     protected List<String> complete(Player player, String label, String[] args) {
         List<String> list = new ArrayList<>();
-        if (player.hasPermission("buildsystem.spawn")) {
+        if (player.hasPermission(Permissions.SPAWN)) {
             addArgument(args[0], "set", list);
             addArgument(args[0], "remove", list);
         }

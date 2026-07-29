@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
@@ -182,7 +183,7 @@ public class NavigatorService {
 
     public void giveNavigator(Player player) {
         if (!configService.current().settings().navigator().giveItemOnJoin()
-                || !player.hasPermission("buildsystem.navigator.item")
+                || !player.hasPermission(Permissions.NAVIGATOR_ITEM)
                 || navigatorItems.has(player)) {
             return;
         }

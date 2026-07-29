@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.SkullTextures;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.display.CategoryPermissions;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
@@ -91,7 +92,7 @@ public class NavigatorMenu extends ButtonMenu<MenuButton> {
                         .name(messages.getString("old_navigator_settings", player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
-                    if (!player.hasPermission("buildsystem.settings")) {
+                    if (!player.hasPermission(Permissions.SETTINGS)) {
                         XSound.ENTITY_ITEM_BREAK.play(player);
                         return;
                     }

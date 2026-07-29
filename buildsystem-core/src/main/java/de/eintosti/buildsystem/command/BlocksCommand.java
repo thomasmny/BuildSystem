@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.command;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -36,7 +37,7 @@ public class BlocksCommand extends CommandBase {
 
     @Override
     protected void run(Player player, String label, String[] args) {
-        if (!requirePermission(player, "buildsystem.blocks")) {
+        if (!requirePermission(player, Permissions.BLOCKS)) {
             return;
         }
 

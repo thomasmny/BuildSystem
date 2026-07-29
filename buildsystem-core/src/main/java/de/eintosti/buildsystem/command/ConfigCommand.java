@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.util.Permissions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -39,7 +40,7 @@ public class ConfigCommand extends CommandBase {
 
     @Override
     protected void run(CommandSender sender, String label, String[] args) {
-        if (!requirePermission(sender, "buildsystem.config")) {
+        if (!requirePermission(sender, Permissions.CONFIG)) {
             return;
         }
 
@@ -64,7 +65,7 @@ public class ConfigCommand extends CommandBase {
     @Override
     protected List<String> complete(Player player, String label, String[] args) {
         List<String> list = new ArrayList<>();
-        if (player.hasPermission("buildsystem.config")) {
+        if (player.hasPermission(Permissions.CONFIG)) {
             list.add("reload");
         }
         return list;

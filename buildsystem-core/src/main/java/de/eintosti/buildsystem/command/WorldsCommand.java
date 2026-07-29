@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
@@ -102,7 +103,7 @@ public class WorldsCommand extends CommandBase {
     @Override
     protected void run(Player player, String label, String[] args) {
         if (args.length == 0) {
-            if (!requirePermission(player, "buildsystem.navigator")) {
+            if (!requirePermission(player, Permissions.NAVIGATOR)) {
                 return;
             }
             services.menus().openNavigator(player);
