@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.storage.codec;
 import java.util.Map;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Maps a single entity of type {@code T} to and from its persisted YAML form, isolating the (de)serialization concern
@@ -52,6 +53,20 @@ public interface Codec<T> {
      * @return The persisted map form, round-trippable by {@link #deserialize(String, ConfigurationSection)}
      */
     Map<String, Object> serialize(T value);
+
+    /**
+     * Puts {@code value} under {@code key} unless it is {@code null}, so an absent field is simply omitted. Lets a
+     * codec keep one line per field without ever putting a null into the map.
+     *
+     * @param serialized The map being built
+     * @param key The field key
+     * @param value The value, or {@code null} to omit the field
+     */
+    static void putIfPresent(Map<String, Object> serialized, String key, @Nullable Object value) {
+        if (value != null) {
+            serialized.put(key, value);
+        }
+    }
 
     /**
      * Reconstructs an entity from the section stored under {@code key}.
