@@ -29,7 +29,7 @@ import org.jspecify.annotations.NullMarked;
  * setup menu. Instances are obtained and resolved through the {@link WorldStatusRegistry}. Six statuses are
  * {@link #isBuiltIn() built in} and seeded by default — {@code not_started}, {@code in_progress},
  * {@code almost_finished}, {@code finished}, {@code archive}, and {@code hidden} — and can be restored after deletion
- * by resetting to defaults. The registry always keeps at least one status so a {@link WorldStatusRegistry#getDefaultStatus()
+ * by resetting to defaults. The registry always keeps at least one status so a {@link WorldStatusRegistry#getDefault()
  * default} fallback always exists.
  *
  * <p>Behavioral traits are data-driven and defined by individual properties, such as whether building is permitted,

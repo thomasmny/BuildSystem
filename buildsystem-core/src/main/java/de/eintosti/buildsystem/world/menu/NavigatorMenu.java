@@ -59,7 +59,7 @@ public class NavigatorMenu extends ButtonMenu<MenuButton> {
         this.menus = menus;
 
         int settingsSlot = navigatorCategoryRegistry.getSettingsSlot();
-        for (NavigatorCategory category : navigatorCategoryRegistry.getCategories()) {
+        for (NavigatorCategory category : navigatorCategoryRegistry.getAll()) {
             int slot = category.getSlot();
             if (!category.isShown() || slot < 0 || slot >= INVENTORY_SIZE || slot == settingsSlot) {
                 continue;

@@ -103,7 +103,7 @@ public class StatusLayoutMenu extends Menu {
             menuItems.addGlassPane(player, inventory, slot);
         }
 
-        for (BuildWorldStatus status : registry.getStatuses()) {
+        for (BuildWorldStatus status : registry.getAll()) {
             int slot = status.getSlot();
             if (!status.isShown() || !isSlotValid(slot) || status.getId().equals(held.getStatusId())) {
                 continue;
@@ -149,9 +149,7 @@ public class StatusLayoutMenu extends Menu {
     }
 
     private List<BuildWorldStatus> notAddedStatuses() {
-        return registry.getStatuses().stream()
-                .filter(status -> !status.isShown())
-                .toList();
+        return registry.getAll().stream().filter(status -> !status.isShown()).toList();
     }
 
     @Override
@@ -302,7 +300,7 @@ public class StatusLayoutMenu extends Menu {
 
     private void pickUp(Player player, String statusId, int fromSlot) {
         held.track(statusId, fromSlot);
-        BuildWorldStatus status = registry.getStatus(statusId).orElse(null);
+        BuildWorldStatus status = registry.get(statusId).orElse(null);
         ItemStack cursor = status == null
                 ? null
                 : ItemBuilder.of(status.getIcon())
@@ -333,7 +331,7 @@ public class StatusLayoutMenu extends Menu {
     }
 
     private @Nullable WorldStatusImpl statusAtSlot(int slot) {
-        return registry.getStatuses().stream()
+        return registry.getAll().stream()
                 .filter(status -> status.isShown() && status.getSlot() == slot)
                 .map(status -> (WorldStatusImpl) status)
                 .findFirst()
@@ -341,7 +339,7 @@ public class StatusLayoutMenu extends Menu {
     }
 
     private @Nullable WorldStatusImpl currentHeld() {
-        return (WorldStatusImpl) registry.getStatus(held.getStatusId()).orElse(null);
+        return (WorldStatusImpl) registry.get(held.getStatusId()).orElse(null);
     }
 
     private static boolean isSlotValid(int slot) {

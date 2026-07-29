@@ -89,9 +89,7 @@ public class NavigatorService {
 
     public @Nullable NavigatorCategory matchNavigatorCategory(ArmorStand armorStand) {
         String categoryId = armorStand.getPersistentDataContainer().get(categoryKey, PersistentDataType.STRING);
-        return categoryId != null
-                ? navigatorCategoryRegistry.getCategory(categoryId).orElse(null)
-                : null;
+        return categoryId != null ? navigatorCategoryRegistry.get(categoryId).orElse(null) : null;
     }
 
     public @Nullable UUID getOwner(ArmorStand armorStand) {
@@ -100,7 +98,7 @@ public class NavigatorService {
     }
 
     public void spawnArmorStands(Player player) {
-        List<NavigatorCategory> shownCategories = navigatorCategoryRegistry.getCategories().stream()
+        List<NavigatorCategory> shownCategories = navigatorCategoryRegistry.getAll().stream()
                 .filter(NavigatorCategory::isShown)
                 .toList();
 

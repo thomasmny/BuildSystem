@@ -112,7 +112,7 @@ public final class BuildWorldImpl implements BuildWorld, HeadProfileSource {
                 : defaults.buildersEnabled().publicBuilders();
         WorldDataBuilder builder = new WorldDataBuilder(name)
                 .withVisibility(Visibility.matchVisibility(privateWorld))
-                .withStatus(context.statusRegistry().getDefaultStatus())
+                .withStatus(context.statusRegistry().getDefault())
                 .withMaterial(
                         privateWorld
                                 ? Material.PLAYER_HEAD

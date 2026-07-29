@@ -64,15 +64,14 @@ class WorldStatusRegistryImplTest {
 
     @Test
     void seedsTheSixBuiltInStatuses() {
-        assertEquals(6, registry.getStatuses().size());
-        assertTrue(registry.getStatus(WorldStatusRegistry.NOT_STARTED_ID).isPresent());
-        assertTrue(registry.getStatus(WorldStatusRegistry.ARCHIVE_ID).isPresent());
+        assertEquals(6, registry.getAll().size());
+        assertTrue(registry.get(WorldStatusRegistry.NOT_STARTED_ID).isPresent());
+        assertTrue(registry.get(WorldStatusRegistry.ARCHIVE_ID).isPresent());
     }
 
     @Test
     void defaultStatusIsNotStarted() {
-        assertEquals(
-                WorldStatusRegistry.NOT_STARTED_ID, registry.getDefaultStatus().getId());
+        assertEquals(WorldStatusRegistry.NOT_STARTED_ID, registry.getDefault().getId());
     }
 
     @Test
@@ -81,7 +80,7 @@ class WorldStatusRegistryImplTest {
 
         assertEquals("needs_review", created.getId());
         assertFalse(created.isBuiltIn());
-        assertTrue(registry.getStatus("needs_review").isPresent());
+        assertTrue(registry.get("needs_review").isPresent());
     }
 
     @Test
@@ -97,13 +96,13 @@ class WorldStatusRegistryImplTest {
         BuildWorldStatus created = registry.createStatus("Temporary");
 
         assertTrue(registry.deleteStatus(created.getId()));
-        assertFalse(registry.getStatus(created.getId()).isPresent());
+        assertFalse(registry.get(created.getId()).isPresent());
     }
 
     @Test
     void deleteStatus_allowsBuiltIn() {
         assertTrue(registry.deleteStatus(WorldStatusRegistry.NOT_STARTED_ID));
-        assertFalse(registry.getStatus(WorldStatusRegistry.NOT_STARTED_ID).isPresent());
+        assertFalse(registry.get(WorldStatusRegistry.NOT_STARTED_ID).isPresent());
     }
 
     @Test
@@ -115,18 +114,18 @@ class WorldStatusRegistryImplTest {
 
         assertTrue(registry.deleteStatus(target.getId()));
 
-        BuildWorldStatus survivor = registry.getStatus(source.getId()).orElseThrow();
+        BuildWorldStatus survivor = registry.get(source.getId()).orElseThrow();
         assertTrue(survivor.getProgressesTo().isEmpty(), "progressesTo should be cleared, not left dangling");
     }
 
     @Test
     void deleteStatus_refusesLastRemaining() {
         // Delete down to a single status; the final one must never be removable.
-        for (BuildWorldStatus status : List.copyOf(registry.getStatuses())) {
+        for (BuildWorldStatus status : List.copyOf(registry.getAll())) {
             registry.deleteStatus(status.getId());
         }
-        assertEquals(1, registry.getStatuses().size());
-        String lastId = registry.getStatuses().iterator().next().getId();
+        assertEquals(1, registry.getAll().size());
+        String lastId = registry.getAll().iterator().next().getId();
         assertFalse(registry.deleteStatus(lastId));
     }
 
@@ -134,8 +133,8 @@ class WorldStatusRegistryImplTest {
     void resetToDefaults_restoresBuiltIns() {
         registry.deleteStatus(WorldStatusRegistry.NOT_STARTED_ID);
         registry.resetToDefaults();
-        assertEquals(6, registry.getStatuses().size());
-        assertTrue(registry.getStatus(WorldStatusRegistry.NOT_STARTED_ID).isPresent());
+        assertEquals(6, registry.getAll().size());
+        assertTrue(registry.get(WorldStatusRegistry.NOT_STARTED_ID).isPresent());
     }
 
     @Test
@@ -143,16 +142,16 @@ class WorldStatusRegistryImplTest {
         registry.createStatus("Persisted");
 
         WorldStatusRegistryImpl reloaded = reloadRegistry();
-        assertTrue(reloaded.getStatus("persisted").isPresent());
+        assertTrue(reloaded.get("persisted").isPresent());
     }
 
     @Test
     void seededStatuses_getDefaultPickerSlots() {
         BuildWorldStatus notStarted =
-                registry.getStatus(WorldStatusRegistry.NOT_STARTED_ID).orElseThrow();
+                registry.get(WorldStatusRegistry.NOT_STARTED_ID).orElseThrow();
         assertEquals(10, notStarted.getSlot());
         assertTrue(notStarted.isShown());
-        assertEquals(15, registry.getStatus("hidden").orElseThrow().getSlot());
+        assertEquals(15, registry.get("hidden").orElseThrow().getSlot());
     }
 
     @Test
@@ -165,7 +164,7 @@ class WorldStatusRegistryImplTest {
     @Test
     void resetStatusLayout_restoresBuiltInSlotsAndHidesCustom() {
         WorldStatusImpl notStarted = (WorldStatusImpl)
-                registry.getStatus(WorldStatusRegistry.NOT_STARTED_ID).orElseThrow();
+                registry.get(WorldStatusRegistry.NOT_STARTED_ID).orElseThrow();
         notStarted.setSlot(25);
         registry.persist(notStarted);
         WorldStatusImpl custom = registry.createStatus("Custom");
@@ -174,24 +173,20 @@ class WorldStatusRegistryImplTest {
 
         assertEquals(
                 10,
-                registry.getStatus(WorldStatusRegistry.NOT_STARTED_ID)
-                        .orElseThrow()
-                        .getSlot());
-        assertFalse(registry.getStatus(custom.getId()).orElseThrow().isShown());
+                registry.get(WorldStatusRegistry.NOT_STARTED_ID).orElseThrow().getSlot());
+        assertFalse(registry.get(custom.getId()).orElseThrow().isShown());
     }
 
     @Test
     void unplacedStatus_isGivenASlotOnReload() {
         WorldStatusImpl notStarted = (WorldStatusImpl)
-                registry.getStatus(WorldStatusRegistry.NOT_STARTED_ID).orElseThrow();
+                registry.get(WorldStatusRegistry.NOT_STARTED_ID).orElseThrow();
         notStarted.setSlot(-1);
         registry.persist(notStarted);
 
         WorldStatusRegistryImpl reloaded = reloadRegistry();
-        assertTrue(reloaded.getStatus(WorldStatusRegistry.NOT_STARTED_ID)
-                        .orElseThrow()
-                        .getSlot()
-                >= 0);
+        assertTrue(
+                reloaded.get(WorldStatusRegistry.NOT_STARTED_ID).orElseThrow().getSlot() >= 0);
     }
 
     private WorldStatusRegistryImpl reloadRegistry() {

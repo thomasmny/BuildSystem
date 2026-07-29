@@ -36,7 +36,7 @@ import org.jspecify.annotations.NullMarked;
  * and offers world/folder creation.
  *
  * <p>World creation is offered dynamically: a category shows the "create world" item only when a freshly created world
- * — which always starts at the registry's {@link de.eintosti.buildsystem.api.world.data.WorldStatusRegistry#getDefaultStatus()
+ * — which always starts at the registry's {@link de.eintosti.buildsystem.api.world.data.WorldStatusRegistry#getDefault()
  * default status} — would actually be grouped into this category, and the player holds the per-category create
  * permission {@code buildsystem.create.<categoryId>} (e.g. {@code buildsystem.create.public}). This is why the archive
  * category, which never contains the default status, never offers world creation.
@@ -92,7 +92,7 @@ public class CategoryWorldsMenu extends DisplayablesMenu {
      * per-category create permission.
      */
     private boolean canCreateWorldHere(Player player) {
-        String defaultStatusId = worldStatusRegistry.getDefaultStatus().getId();
+        String defaultStatusId = worldStatusRegistry.getDefault().getId();
         return category.getStatusIds().contains(defaultStatusId)
                 && playerService.canCreateWorld(player, category.getPrimaryVisibility())
                 && hasCreatePermission(player);

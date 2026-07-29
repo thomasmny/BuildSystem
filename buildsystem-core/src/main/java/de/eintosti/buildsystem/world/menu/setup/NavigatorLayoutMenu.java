@@ -114,7 +114,7 @@ public class NavigatorLayoutMenu extends Menu {
                     .into(inventory, settingsSlot);
         }
 
-        for (NavigatorCategory category : registry.getCategories()) {
+        for (NavigatorCategory category : registry.getAll()) {
             int slot = category.getSlot();
             if (!category.isShown() || !isSlotValid(slot) || slot == settingsSlot) {
                 continue;
@@ -183,7 +183,7 @@ public class NavigatorLayoutMenu extends Menu {
     }
 
     private List<NavigatorCategory> notAddedCategories() {
-        return registry.getCategories().stream()
+        return registry.getAll().stream()
                 .filter(category -> !category.isShown())
                 .toList();
     }
@@ -233,7 +233,7 @@ public class NavigatorLayoutMenu extends Menu {
 
     private void placeHeldCategory(Player player, int slot) {
         NavigatorCategoryImpl held = (NavigatorCategoryImpl)
-                registry.getCategory(cursorState.getHeldCategoryId()).orElse(null);
+                registry.get(cursorState.getHeldCategoryId()).orElse(null);
         if (held == null) {
             clearHeld(player);
             return;
@@ -337,7 +337,7 @@ public class NavigatorLayoutMenu extends Menu {
             registry.setSettingsSlot(-1);
         } else if (cursorState.isHoldingCategory()) {
             NavigatorCategoryImpl held = (NavigatorCategoryImpl)
-                    registry.getCategory(cursorState.getHeldCategoryId()).orElse(null);
+                    registry.get(cursorState.getHeldCategoryId()).orElse(null);
             if (held != null) {
                 held.setShown(false);
                 registry.persist(held);
@@ -388,7 +388,7 @@ public class NavigatorLayoutMenu extends Menu {
 
     private void pickUpCategory(Player player, String categoryId, int fromSlot) {
         cursorState.trackCategory(categoryId, fromSlot);
-        NavigatorCategory category = registry.getCategory(categoryId).orElse(null);
+        NavigatorCategory category = registry.get(categoryId).orElse(null);
         ItemStack cursor = category == null
                 ? null
                 : ItemBuilder.icon(category, player)
@@ -431,7 +431,7 @@ public class NavigatorLayoutMenu extends Menu {
     }
 
     private @Nullable NavigatorCategoryImpl categoryAtSlot(int slot) {
-        return registry.getCategories().stream()
+        return registry.getAll().stream()
                 .filter(category -> category.isShown() && category.getSlot() == slot)
                 .map(category -> (NavigatorCategoryImpl) category)
                 .findFirst()
@@ -444,7 +444,7 @@ public class NavigatorLayoutMenu extends Menu {
      */
     private int firstFreeSlot() {
         // Snapshot the occupied slots once rather than re-fetching the (sorted) category list for every slot.
-        Set<Integer> occupied = registry.getCategories().stream()
+        Set<Integer> occupied = registry.getAll().stream()
                 .filter(NavigatorCategory::isShown)
                 .map(NavigatorCategory::getSlot)
                 .collect(Collectors.toSet());

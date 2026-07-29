@@ -217,6 +217,7 @@ public final class WorldCodec implements Codec<BuildWorld> {
         if (raw == null) {
             return BuildWorldType.UNKNOWN;
         }
+
         try {
             return BuildWorldType.valueOf(raw);
         } catch (IllegalArgumentException e) {
@@ -249,14 +250,15 @@ public final class WorldCodec implements Codec<BuildWorld> {
         WorldStatusRegistry registry = context.statusRegistry();
         String raw = section.getString(dataPath(WorldDataKey.STATUS));
         if (raw == null) {
-            return registry.getDefaultStatus();
+            return registry.getDefault();
         }
+
         String id = raw.toLowerCase(Locale.ROOT);
-        return registry.getStatus(id).orElseGet(() -> {
+        return registry.get(id).orElseGet(() -> {
             context.logger()
                     .warning("Unknown status \"" + raw + "\" for \"" + worldName + "\". Defaulting to "
-                            + registry.getDefaultStatus().getId() + ".");
-            return registry.getDefaultStatus();
+                            + registry.getDefault().getId() + ".");
+            return registry.getDefault();
         });
     }
 

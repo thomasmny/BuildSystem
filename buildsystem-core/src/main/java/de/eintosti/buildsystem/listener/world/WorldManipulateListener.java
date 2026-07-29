@@ -155,7 +155,7 @@ public class WorldManipulateListener implements Listener {
         worldData
                 .get(WorldDataKey.STATUS)
                 .getProgressesTo()
-                .flatMap(worldStatusRegistry::getStatus)
+                .flatMap(worldStatusRegistry::get)
                 .ifPresent(next -> {
                     worldData.set(WorldDataKey.STATUS, next);
                     settingsService.forceUpdateSidebar(player);

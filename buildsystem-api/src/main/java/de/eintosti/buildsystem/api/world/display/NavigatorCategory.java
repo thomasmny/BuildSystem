@@ -37,7 +37,7 @@ import org.jspecify.annotations.Nullable;
  * <p>Server administrators can create, restyle, and delete categories at runtime through the in-game setup menu. Three
  * categories are {@link #isBuiltIn() built in} and seeded by default ({@code public}, {@code private},
  * {@code archive}) and can be restored after deletion by resetting to defaults. The registry always keeps at least one
- * category so a {@link NavigatorCategoryRegistry#getDefaultCategory() default} fallback always exists.
+ * category so a {@link NavigatorCategoryRegistry#getDefault() default} fallback always exists.
  *
  * <p>Two categories are equal if and only if they share the same {@link #getId() id}. Compare categories with
  * {@link Object#equals(Object) equals}, never with {@code ==}: this type is no longer an enum, so reference identity is

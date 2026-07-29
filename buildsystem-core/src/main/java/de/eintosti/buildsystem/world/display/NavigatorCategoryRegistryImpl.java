@@ -50,7 +50,7 @@ import org.jspecify.annotations.Nullable;
  * changes. The category a world is displayed in is resolved by matching both the category's
  * {@link NavigatorCategory#getVisibilities() visibilities} and its statuses against the world. Any category may be
  * deleted, including the last one — the navigator then simply shows no categories until {@link #resetToDefaults()}
- * restores the built-ins. As a safety net for folders (which always need a home category), {@link #getDefaultCategory()}
+ * restores the built-ins. As a safety net for folders (which always need a home category), {@link #getDefault()}
  * reseeds the built-ins on demand when the registry is empty. Deleting a category never orphans a status because statuses
  * are shared, not owned.
  */
@@ -156,14 +156,14 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
     }
 
     @Override
-    public Collection<NavigatorCategory> getCategories() {
+    public Collection<NavigatorCategory> getAll() {
         List<NavigatorCategory> ordered = new ArrayList<>(this.categories.values());
         ordered.sort(Comparator.comparingInt(NavigatorCategory::getSlot));
         return Collections.unmodifiableList(ordered);
     }
 
     @Override
-    public Optional<NavigatorCategory> getCategory(@Nullable String id) {
+    public Optional<NavigatorCategory> get(@Nullable String id) {
         return Optional.ofNullable(this.categories.get(id));
     }
 
@@ -171,17 +171,17 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
     public NavigatorCategory getCategoryForWorld(BuildWorld world) {
         WorldData data = world.getData();
         String statusId = data.get(WorldDataKey.STATUS).getId();
-        for (NavigatorCategory category : getCategories()) {
+        for (NavigatorCategory category : getAll()) {
             if (category.getVisibilities().contains(data.get(WorldDataKey.VISIBILITY))
                     && category.getStatusIds().contains(statusId)) {
                 return category;
             }
         }
-        return getDefaultCategory();
+        return getDefault();
     }
 
     @Override
-    public NavigatorCategory getDefaultCategory() {
+    public NavigatorCategory getDefault() {
         // Folders always need a home category, so an empty registry reseeds the built-ins on demand rather than handing
         // back nothing. The navigator's own browse paths never call this, so deleting every category still leaves the
         // navigator empty until an admin resets — only folder operations trigger the reseed.
@@ -191,9 +191,7 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
         }
         NavigatorCategoryImpl publicCategory = this.categories.get(PUBLIC_ID);
         // Prefer the built-in public category, but it may have been deleted; then the lowest-slot category wins.
-        return publicCategory != null
-                ? publicCategory
-                : getCategories().iterator().next();
+        return publicCategory != null ? publicCategory : getAll().iterator().next();
     }
 
     /**
@@ -257,7 +255,7 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
         if (this.categories.isEmpty()) {
             return;
         }
-        NavigatorCategoryImpl defaultSet = (NavigatorCategoryImpl) getDefaultCategory();
+        NavigatorCategoryImpl defaultSet = (NavigatorCategoryImpl) getDefault();
         defaultSet.addStatusId(statusId);
         storage.save(defaultSet);
     }
@@ -278,7 +276,7 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
     /**
      * Removes a category (built-in or custom). Any category may be deleted, including the last one; the navigator then
      * shows no categories until an admin restores the built-ins with {@link #resetToDefaults()}. Worlds previously
-     * displayed in the category simply resolve to another matching category (or the {@link #getDefaultCategory() default})
+     * displayed in the category simply resolve to another matching category (or the {@link #getDefault() default})
      * on the next render; no status is orphaned because statuses are shared rather than owned by a category. Folders,
      * which hold a fixed category, are re-homed to the default so they (and the worlds they contain) stay reachable — but
      * only while at least one category remains, since deleting the very last category leaves nothing to re-home them to
@@ -299,13 +297,13 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
     }
 
     /**
-     * Re-homes every folder that belonged to the just-deleted category to the {@link #getDefaultCategory() default}, so
+     * Re-homes every folder that belonged to the just-deleted category to the {@link #getDefault() default}, so
      * the folders (and the worlds they contain) stay reachable in the navigator instead of vanishing until the next
      * reload. Mirrors how deleting a status resets the worlds that used it. Whole subtrees move together because a
      * subfolder shares its parent's category.
      */
     private void rehomeFolders(String deletedId) {
-        NavigatorCategory fallback = getDefaultCategory();
+        NavigatorCategory fallback = getDefault();
         var folderStorage = worldService.get().getFolderStorage();
         List<Folder> rehomed = new ArrayList<>();
         for (Folder folder : folderStorage.getFolders()) {

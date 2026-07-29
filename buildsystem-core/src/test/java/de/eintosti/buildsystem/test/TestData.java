@@ -33,6 +33,7 @@ import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.data.WorldStatusImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
@@ -134,14 +135,13 @@ public final class TestData {
      * Wires a mocked plugin's {@link WorldStatusRegistryImpl} to resolve the built-in statuses by id, defaulting to
      * {@link #NOT_STARTED}. Uses lenient stubbing so tests that never touch the registry do not fail strict-stub checks.
      *
-     * @param plugin The mocked plugin to wire
      * @return The mocked registry, for further stubbing if needed
      */
     public static WorldStatusRegistryImpl statusRegistry() {
         WorldStatusRegistryImpl registry = mock(WorldStatusRegistryImpl.class);
-        lenient().when(registry.getStatuses()).thenReturn(List.copyOf(STATUSES));
-        lenient().when(registry.getDefaultStatus()).thenReturn(NOT_STARTED);
-        lenient().when(registry.getStatus(anyString())).thenAnswer(invocation -> byId(invocation.getArgument(0)));
+        lenient().when(registry.getAll()).thenReturn(List.copyOf(STATUSES));
+        lenient().when(registry.getDefault()).thenReturn(NOT_STARTED);
+        lenient().when(registry.get(anyString())).thenAnswer(invocation -> byId(invocation.getArgument(0)));
         return registry;
     }
 
@@ -149,16 +149,13 @@ public final class TestData {
      * Wires a mocked plugin's {@link NavigatorCategoryRegistryImpl} to resolve the built-in categories by id, defaulting
      * to {@link #PUBLIC}.
      *
-     * @param plugin The mocked plugin to wire
      * @return The mocked registry, for further stubbing if needed
      */
     public static NavigatorCategoryRegistryImpl categoryRegistry() {
         NavigatorCategoryRegistryImpl registry = mock(NavigatorCategoryRegistryImpl.class);
-        lenient().when(registry.getCategories()).thenReturn(List.copyOf(CATEGORIES));
-        lenient().when(registry.getDefaultCategory()).thenReturn(PUBLIC);
-        lenient()
-                .when(registry.getCategory(anyString()))
-                .thenAnswer(invocation -> categoryById(invocation.getArgument(0)));
+        lenient().when(registry.getAll()).thenReturn(List.copyOf(CATEGORIES));
+        lenient().when(registry.getDefault()).thenReturn(PUBLIC);
+        lenient().when(registry.get(anyString())).thenAnswer(invocation -> categoryById(invocation.getArgument(0)));
         return registry;
     }
 

@@ -64,7 +64,7 @@ public class CategorySubCommand extends AbstractSubCommand {
         }
 
         NavigatorCategoryRegistry registry = navigatorCategoryRegistry;
-        NavigatorCategory category = registry.getCategory(categoryId).orElse(null);
+        NavigatorCategory category = registry.get(categoryId).orElse(null);
         if (category == null) {
             // The category was deleted between the shortcut being listed and this invocation.
             messages.sendMessage(player, "worlds_unknown_command");
