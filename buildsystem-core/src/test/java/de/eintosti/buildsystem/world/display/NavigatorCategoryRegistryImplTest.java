@@ -57,90 +57,86 @@ class NavigatorCategoryRegistryImplTest {
 
     @Test
     void seedsThreeBuiltInCategories() {
-        assertEquals(3, registry.getCategories().size());
-        assertTrue(registry.getCategory(NavigatorCategoryRegistry.PUBLIC_ID).isPresent());
-        assertTrue(registry.getCategory(NavigatorCategoryRegistry.PRIVATE_ID).isPresent());
-        assertTrue(registry.getCategory(NavigatorCategoryRegistry.ARCHIVE_ID).isPresent());
+        assertEquals(3, registry.getAll().size());
+        assertTrue(registry.get(NavigatorCategoryRegistry.PUBLIC_ID).isPresent());
+        assertTrue(registry.get(NavigatorCategoryRegistry.PRIVATE_ID).isPresent());
+        assertTrue(registry.get(NavigatorCategoryRegistry.ARCHIVE_ID).isPresent());
     }
 
     @Test
     void defaultCategoryIsPublic() {
-        assertEquals(
-                NavigatorCategoryRegistry.PUBLIC_ID,
-                registry.getDefaultCategory().getId());
+        assertEquals(NavigatorCategoryRegistry.PUBLIC_ID, registry.getDefault().getId());
     }
 
     @Test
     void privateCategoryGroupsAddedPlayers() {
         NavigatorCategory privateCategory =
-                registry.getCategory(NavigatorCategoryRegistry.PRIVATE_ID).orElseThrow();
+                registry.get(NavigatorCategoryRegistry.PRIVATE_ID).orElseThrow();
         assertTrue(privateCategory.getVisibilities().contains(Visibility.ADDED_PLAYERS));
         assertFalse(privateCategory.getVisibilities().contains(Visibility.EVERYONE));
     }
 
     @Test
     void createCategory_addsCustomCategory() {
-        NavigatorCategory created = registry.createCategory("Administration");
+        NavigatorCategory created = registry.create("Administration");
 
         assertEquals("administration", created.getId());
         assertFalse(created.isBuiltIn());
-        assertTrue(registry.getCategory("administration").isPresent());
+        assertTrue(registry.get("administration").isPresent());
     }
 
     @Test
     void deleteCategory_removesCustomCategory() {
-        NavigatorCategory created = registry.createCategory("Temporary");
+        NavigatorCategory created = registry.create("Temporary");
 
-        assertTrue(registry.deleteCategory(created.getId()));
-        assertFalse(registry.getCategory(created.getId()).isPresent());
+        assertTrue(registry.delete(created.getId()));
+        assertFalse(registry.get(created.getId()).isPresent());
     }
 
     @Test
     void deleteCategory_allowsBuiltIn() {
-        assertTrue(registry.deleteCategory(NavigatorCategoryRegistry.PUBLIC_ID));
-        assertFalse(registry.getCategory(NavigatorCategoryRegistry.PUBLIC_ID).isPresent());
+        assertTrue(registry.delete(NavigatorCategoryRegistry.PUBLIC_ID));
+        assertFalse(registry.get(NavigatorCategoryRegistry.PUBLIC_ID).isPresent());
     }
 
     @Test
     void deleteCategory_allowsDeletingEveryCategory() {
-        for (NavigatorCategory category : List.copyOf(registry.getCategories())) {
-            assertTrue(registry.deleteCategory(category.getId()));
+        for (NavigatorCategory category : List.copyOf(registry.getAll())) {
+            assertTrue(registry.delete(category.getId()));
         }
-        assertEquals(0, registry.getCategories().size());
+        assertEquals(0, registry.getAll().size());
     }
 
     @Test
     void deleteCategory_returnsFalseForUnknownId() {
-        assertFalse(registry.deleteCategory("does-not-exist"));
+        assertFalse(registry.delete("does-not-exist"));
     }
 
     @Test
-    void getDefaultCategory_reseedsBuiltInsWhenEmpty() {
-        for (NavigatorCategory category : List.copyOf(registry.getCategories())) {
-            registry.deleteCategory(category.getId());
+    void getDefault_reseedsBuiltInsWhenEmpty() {
+        for (NavigatorCategory category : List.copyOf(registry.getAll())) {
+            registry.delete(category.getId());
         }
-        assertEquals(0, registry.getCategories().size());
+        assertEquals(0, registry.getAll().size());
 
         // Folders always need a home category, so the default reseeds the built-ins on demand.
-        assertEquals(
-                NavigatorCategoryRegistry.PUBLIC_ID,
-                registry.getDefaultCategory().getId());
-        assertEquals(3, registry.getCategories().size());
+        assertEquals(NavigatorCategoryRegistry.PUBLIC_ID, registry.getDefault().getId());
+        assertEquals(3, registry.getAll().size());
     }
 
     @Test
     void resetToDefaults_restoresBuiltIns() {
-        registry.deleteCategory(NavigatorCategoryRegistry.PUBLIC_ID);
+        registry.delete(NavigatorCategoryRegistry.PUBLIC_ID);
         registry.resetToDefaults();
-        assertEquals(3, registry.getCategories().size());
-        assertTrue(registry.getCategory(NavigatorCategoryRegistry.PUBLIC_ID).isPresent());
+        assertEquals(3, registry.getAll().size());
+        assertTrue(registry.get(NavigatorCategoryRegistry.PUBLIC_ID).isPresent());
     }
 
     @Test
     void addStatusToDefaultCategory_makesItReachable() {
         registry.addStatusToDefaultCategory("custom_status");
 
-        assertTrue(registry.getDefaultCategory().getStatusIds().contains("custom_status"));
+        assertTrue(registry.getDefault().getStatusIds().contains("custom_status"));
     }
 
     @Test
@@ -148,6 +144,6 @@ class NavigatorCategoryRegistryImplTest {
         registry.addStatusToDefaultCategory("custom_status");
         registry.removeStatusFromCategories("custom_status");
 
-        assertFalse(registry.getDefaultCategory().getStatusIds().contains("custom_status"));
+        assertFalse(registry.getDefault().getStatusIds().contains("custom_status"));
     }
 }

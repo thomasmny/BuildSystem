@@ -164,8 +164,8 @@ public class YamlCategoryStorage extends AbstractYamlStorage {
         config.set(
                 path + ".visibilities",
                 category.getVisibilities().stream().map(Visibility::name).toList());
-        config.set(path + ".shown-in-navigator", category.isShownInNavigator());
-        config.set(path + ".navigator-slot", category.getNavigatorSlot());
+        config.set(path + ".shown-in-navigator", category.isShown());
+        config.set(path + ".navigator-slot", category.getSlot());
         config.set(path + ".built-in", category.isBuiltIn());
         config.set(path + ".statuses", category.getStatusIds());
     }

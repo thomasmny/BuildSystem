@@ -17,58 +17,41 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
-import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
-import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.display.Registry;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.Menu;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.Prompts;
-import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.util.TaskScheduler;
-import de.eintosti.buildsystem.util.color.ColorAPI;
-import de.eintosti.buildsystem.world.data.WorldStatusImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
-import java.util.List;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
- * The status setup, built as the exact counterpart of the {@link NavigatorLayoutMenu navigator layout editor}: the top
- * inventory is a live preview of the {@code /worlds setStatus} picker, and the player's own inventory is taken over (by
- * the shared {@link de.eintosti.buildsystem.navigator.NavigatorEditorService}, restored on close/quit/shutdown) to show
- * a back button, a create button, reset and delete controls, and the palette of statuses not currently in the picker.
- * Statuses are dragged into slots, dropped onto the bin to delete, and shift-clicked to open the
- * {@link StatusEditorMenu}.
+ * The status setup: the preview is a live {@code /worlds setStatus} picker, and statuses are dragged into it from the
+ * palette. All of the drag-and-drop lives in {@link LayoutEditorMenu}; this class supplies only the registry, the
+ * icon, the message keys, and where shift-click goes.
  */
 @NullMarked
-public class StatusLayoutMenu extends Menu {
+public class StatusLayoutMenu extends LayoutEditorMenu<BuildWorldStatus> {
 
-    private static final int PREVIEW_SIZE = WorldStatusRegistryImpl.STATUS_MENU_SIZE;
+    private static final LayoutMessages MESSAGES = new LayoutMessages(
+            "setup_status_add",
+            "setup_status_layout_create_lore",
+            "setup_status_layout_reset",
+            "setup_status_layout_reset_lore",
+            "setup_status_layout_reset_confirm_lore",
+            "setup_status_layout_reset_all_confirm_lore",
+            "setup_status_layout_delete",
+            "setup_status_layout_delete_lore",
+            "setup_status_layout_placed_lore",
+            "setup_status_layout_palette_lore",
+            "setup_status_add_prompt");
 
-    private static final int BACK_SLOT = 0;
-    private static final int CREATE_SLOT = 4;
-    private static final int RESET_SLOT = 7;
-    private static final int DELETE_SLOT = 8;
-    private static final int PALETTE_FIRST_SLOT = 9;
-    private static final int PALETTE_LAST_SLOT = 35;
-
-    private final MenuItems menuItems;
-    private final Menus menus;
-    private final TaskScheduler scheduler;
-    private final Prompts prompts;
     private final WorldStatusRegistryImpl registry;
-    private final NavigatorEditorService navigatorEditorService;
-    private final Held held = new Held();
 
     public StatusLayoutMenu(
             Messages messages,
@@ -79,309 +62,36 @@ public class StatusLayoutMenu extends Menu {
             WorldStatusRegistryImpl worldStatusRegistry,
             NavigatorEditorService navigatorEditorService,
             Player player) {
-        super(messages, PREVIEW_SIZE, messages.getString("setup_statuses_title", player));
-        this.menuItems = menuItems;
-        this.menus = menus;
-        this.scheduler = scheduler;
-        this.prompts = prompts;
+        super(
+                messages,
+                WorldStatusRegistryImpl.STATUS_MENU_SIZE,
+                messages.getString("setup_statuses_title", player),
+                MESSAGES,
+                menuItems,
+                menus,
+                scheduler,
+                prompts,
+                navigatorEditorService);
         this.registry = worldStatusRegistry;
-        this.navigatorEditorService = navigatorEditorService;
     }
 
     @Override
-    public void open(Player player) {
-        navigatorEditorService.beginSession(player);
-        populate(player);
-        player.openInventory(getInventory());
-        renderControls(player);
+    protected Registry<BuildWorldStatus> registry() {
+        return registry;
     }
 
     @Override
-    protected void populate(Player player) {
-        Inventory inventory = getInventory();
-        for (int slot = 0; slot < PREVIEW_SIZE; slot++) {
-            menuItems.addGlassPane(player, inventory, slot);
-        }
-
-        for (BuildWorldStatus status : registry.getStatuses()) {
-            int slot = status.getStatusSlot();
-            if (!status.isShownInStatusMenu()
-                    || !isSlotValid(slot)
-                    || status.getId().equals(held.getStatusId())) {
-                continue;
-            }
-            ItemBuilder.of(status.getIcon())
-                    .name(ColorAPI.process(status.getStyledName()))
-                    .lore(messages.getStringList("setup_status_layout_placed_lore", player))
-                    .into(inventory, slot);
-        }
-    }
-
-    private void renderControls(Player player) {
-        Inventory playerInventory = player.getInventory();
-        playerInventory.clear();
-
-        ItemBuilder.of(XMaterial.BARRIER)
-                .name(messages.getString("setup_back", player))
-                .into(playerInventory, BACK_SLOT);
-        ItemBuilder.skull(Profileable.detect(SkullTextures.ADD_ITEM))
-                .name(messages.getString("setup_status_add", player))
-                .lore(messages.getStringList("setup_status_layout_create_lore", player))
-                .into(playerInventory, CREATE_SLOT);
-        ItemBuilder.skull(Profileable.detect(SkullTextures.RESET))
-                .name(messages.getString("setup_status_layout_reset", player))
-                .lore(messages.getStringList("setup_status_layout_reset_lore", player))
-                .into(playerInventory, RESET_SLOT);
-        ItemBuilder.skull(Profileable.detect(SkullTextures.DELETE))
-                .name(messages.getString("setup_status_layout_delete", player))
-                .lore(messages.getStringList("setup_status_layout_delete_lore", player))
-                .into(playerInventory, DELETE_SLOT);
-
-        List<BuildWorldStatus> notAdded = notAddedStatuses();
-        for (int i = 0; i < notAdded.size() && PALETTE_FIRST_SLOT + i <= PALETTE_LAST_SLOT; i++) {
-            BuildWorldStatus status = notAdded.get(i);
-            if (status.getId().equals(held.getStatusId())) {
-                continue;
-            }
-            ItemBuilder.of(status.getIcon())
-                    .name(ColorAPI.process(status.getStyledName()))
-                    .lore(messages.getStringList("setup_status_layout_palette_lore", player))
-                    .into(playerInventory, PALETTE_FIRST_SLOT + i);
-        }
-    }
-
-    private List<BuildWorldStatus> notAddedStatuses() {
-        return registry.getStatuses().stream()
-                .filter(status -> !status.isShownInStatusMenu())
-                .toList();
+    protected ItemBuilder icon(BuildWorldStatus status, Player player) {
+        return ItemBuilder.of(status.getIcon());
     }
 
     @Override
-    public void handleClick(InventoryClickEvent event) {
-        event.setCancelled(true);
-        Player player = (Player) event.getWhoClicked();
-
-        if (event.getClickedInventory() == getInventory()) {
-            handlePreviewClick(player, event.getRawSlot(), event.isShiftClick());
-        } else if (event.getClickedInventory() == player.getInventory()) {
-            handlePlayerClick(player, event.getSlot(), event.isRightClick(), event.isShiftClick());
-        } else {
-            handleOutsideClickWhileHolding(player);
-        }
-    }
-
-    private void handlePreviewClick(Player player, int slot, boolean shiftClick) {
-        if (!isSlotValid(slot)) {
-            return;
-        }
-        if (held.isHolding()) {
-            placeHeld(player, slot);
-            return;
-        }
-
-        WorldStatusImpl occupant = statusAtSlot(slot);
-        if (occupant != null) {
-            if (shiftClick) {
-                menus.openStatusEditor(occupant, player);
-            } else {
-                pickUp(player, occupant.getId(), slot);
-            }
-        }
-    }
-
-    private void placeHeld(Player player, int slot) {
-        WorldStatusImpl heldStatus = currentHeld();
-        if (heldStatus == null) {
-            clearHeld(player);
-            return;
-        }
-
-        WorldStatusImpl occupant = statusAtSlot(slot);
-        if (occupant != null && !occupant.equals(heldStatus)) {
-            if (held.getFromSlot() >= 0) {
-                occupant.setStatusSlot(held.getFromSlot());
-            } else {
-                occupant.setShownInStatusMenu(false);
-            }
-            registry.persist(occupant);
-        }
-
-        heldStatus.setStatusSlot(slot);
-        heldStatus.setShownInStatusMenu(true);
-        registry.persist(heldStatus);
-        clearHeld(player);
-        refresh(player);
-    }
-
-    private void handlePlayerClick(Player player, int slot, boolean rightClick, boolean shiftClick) {
-        if (held.isHolding() && slot == DELETE_SLOT) {
-            deleteHeld(player);
-            return;
-        }
-        if (held.isHolding()) {
-            handleOutsideClickWhileHolding(player);
-            return;
-        }
-
-        if (slot == BACK_SLOT) {
-            XSound.BLOCK_CHEST_OPEN.play(player);
-            player.closeInventory();
-            menus.openSetup(player);
-            return;
-        }
-        if (slot == CREATE_SLOT) {
-            beginStatusCreation(player);
-            return;
-        }
-        if (slot == RESET_SLOT) {
-            // Left-click resets only the layout; right-click resets every status to the built-in defaults.
-            promptReset(player, rightClick);
-            return;
-        }
-
-        int paletteIndex = slot - PALETTE_FIRST_SLOT;
-        List<BuildWorldStatus> notAdded = notAddedStatuses();
-        if (paletteIndex < 0 || paletteIndex >= notAdded.size() || slot > PALETTE_LAST_SLOT) {
-            return;
-        }
-
-        BuildWorldStatus clicked = notAdded.get(paletteIndex);
-        if (shiftClick) {
-            menus.openStatusEditor(clicked, player);
-        } else {
-            pickUp(player, clicked.getId(), -1);
-        }
-    }
-
-    private void deleteHeld(Player player) {
-        if (held.isHolding() && registry.deleteStatus(held.getStatusId())) {
-            XSound.ENTITY_ITEM_BREAK.play(player);
-        }
-        clearHeld(player);
-        refresh(player);
-    }
-
-    private void handleOutsideClickWhileHolding(Player player) {
-        WorldStatusImpl heldStatus = currentHeld();
-        if (heldStatus != null) {
-            heldStatus.setShownInStatusMenu(false);
-            registry.persist(heldStatus);
-        }
-        clearHeld(player);
-        refresh(player);
-    }
-
-    private void promptReset(Player player, boolean resetEverything) {
-        String confirmLoreKey = resetEverything
-                ? "setup_status_layout_reset_all_confirm_lore"
-                : "setup_status_layout_reset_confirm_lore";
-        menus.openDeletionConfirm(
-                player,
-                messages.getString("setup_status_layout_reset", player),
-                messages.getStringList(confirmLoreKey, player),
-                () -> {
-                    if (resetEverything) {
-                        registry.resetToDefaults();
-                    } else {
-                        registry.resetStatusLayout();
-                    }
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
-                    menus.openStatusLayout(player);
-                },
-                () -> menus.openStatusLayout(player));
-    }
-
-    private void beginStatusCreation(Player player) {
-        prompts.prompt(player)
-                .title("setup_status_add_prompt")
-                .sanitizeName("setup_name_invalid_characters", "setup_name_empty")
-                .onCancel(() -> menus.openStatusLayout(player))
-                .request(name -> {
-                    WorldStatusImpl created = registry.createStatus(name);
-                    menus.openStatusEditor(created, player);
-                });
-    }
-
-    private void pickUp(Player player, String statusId, int fromSlot) {
-        held.track(statusId, fromSlot);
-        BuildWorldStatus status = registry.getStatus(statusId).orElse(null);
-        ItemStack cursor = status == null
-                ? null
-                : ItemBuilder.of(status.getIcon())
-                        .name(ColorAPI.process(status.getStyledName()))
-                        .build();
-
-        setCursorNextTick(player, cursor);
-        XSound.ITEM_ARMOR_EQUIP_LEATHER.play(player);
-        refresh(player);
-    }
-
-    private void clearHeld(Player player) {
-        held.reset();
-        setCursorNextTick(player, null);
-    }
-
-    private void setCursorNextTick(Player player, @Nullable ItemStack cursor) {
-        scheduler.run(() -> {
-            if (navigatorEditorService.hasSession(player)) {
-                player.setItemOnCursor(cursor);
-            }
-        });
-    }
-
-    private void refresh(Player player) {
-        populate(player);
-        renderControls(player);
-    }
-
-    private @Nullable WorldStatusImpl statusAtSlot(int slot) {
-        return registry.getStatuses().stream()
-                .filter(status -> status.isShownInStatusMenu() && status.getStatusSlot() == slot)
-                .map(status -> (WorldStatusImpl) status)
-                .findFirst()
-                .orElse(null);
-    }
-
-    private @Nullable WorldStatusImpl currentHeld() {
-        return (WorldStatusImpl) registry.getStatus(held.getStatusId()).orElse(null);
-    }
-
-    private static boolean isSlotValid(int slot) {
-        return slot >= 0 && slot < PREVIEW_SIZE;
+    protected void openEditor(BuildWorldStatus status, Player player) {
+        menus.openStatusEditor(status, player);
     }
 
     @Override
-    public void handleClose(InventoryCloseEvent event) {
-        navigatorEditorService.restore((Player) event.getPlayer());
-    }
-
-    /**
-     * Pick-and-place tracking for the status currently held on the cursor.
-     */
-    private static final class Held {
-        private @Nullable String statusId;
-        private int fromSlot = -1;
-
-        void track(String statusId, int fromSlot) {
-            this.statusId = statusId;
-            this.fromSlot = fromSlot;
-        }
-
-        void reset() {
-            this.statusId = null;
-            this.fromSlot = -1;
-        }
-
-        @Nullable String getStatusId() {
-            return statusId;
-        }
-
-        boolean isHolding() {
-            return statusId != null;
-        }
-
-        int getFromSlot() {
-            return fromSlot;
-        }
+    protected void reopen(Player player) {
+        menus.openStatusLayout(player);
     }
 }

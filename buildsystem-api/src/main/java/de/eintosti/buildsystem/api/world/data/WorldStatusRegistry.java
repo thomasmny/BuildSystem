@@ -17,11 +17,8 @@
  */
 package de.eintosti.buildsystem.api.world.data;
 
-import java.util.Collection;
-import java.util.Optional;
-import org.jetbrains.annotations.Unmodifiable;
+import de.eintosti.buildsystem.api.world.display.Registry;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
  * The registry of all {@link BuildWorldStatus statuses} known to the server, both the built-in defaults and any custom
@@ -30,7 +27,7 @@ import org.jspecify.annotations.Nullable;
  * @since 4.0.0
  */
 @NullMarked
-public interface WorldStatusRegistry {
+public interface WorldStatusRegistry extends Registry<BuildWorldStatus> {
 
     /**
      * The id of the built-in {@code not_started} status, which is also the global default fallback.
@@ -61,28 +58,4 @@ public interface WorldStatusRegistry {
      * The id of the built-in {@code hidden} status (not shown in the navigator).
      */
     String HIDDEN_ID = "hidden";
-
-    /**
-     * Gets all registered statuses, ordered by {@link BuildWorldStatus#getOrder()}.
-     *
-     * @return An unmodifiable view of all statuses
-     */
-    @Unmodifiable
-    Collection<BuildWorldStatus> getStatuses();
-
-    /**
-     * Resolves a status by its {@link BuildWorldStatus#getId() id}.
-     *
-     * @param id The status id, or {@code null}
-     * @return The matching status, or {@link Optional#empty()} if {@code id} is {@code null} or no status is registered
-     *     with that id
-     */
-    Optional<BuildWorldStatus> getStatus(@Nullable String id);
-
-    /**
-     * Gets the global default status worlds fall back to (the built-in {@code not_started}). Always present.
-     *
-     * @return The default status
-     */
-    BuildWorldStatus getDefaultStatus();
 }

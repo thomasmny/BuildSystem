@@ -77,7 +77,7 @@ public class CategoryStatusesMenu extends PaginatedMenu {
 
     @Override
     protected int totalItems() {
-        return worldStatusRegistry.getStatuses().size();
+        return worldStatusRegistry.getAll().size();
     }
 
     @Override
@@ -87,7 +87,7 @@ public class CategoryStatusesMenu extends PaginatedMenu {
         // Top + bottom glass border with a hollow middle, matching the status/category management menus.
         menuItems.fillWithGlass(getInventory(), player);
 
-        List<BuildWorldStatus> statuses = List.copyOf(worldStatusRegistry.getStatuses());
+        List<BuildWorldStatus> statuses = List.copyOf(worldStatusRegistry.getAll());
         registerPageItems(FIRST_CONTENT_SLOT, ITEMS_PER_PAGE, statuses, this::createStatusToggle);
 
         register(SLOT_BACK, createBackButton());

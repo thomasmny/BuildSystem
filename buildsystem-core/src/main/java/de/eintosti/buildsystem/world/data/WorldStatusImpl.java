@@ -138,20 +138,20 @@ public final class WorldStatusImpl implements BuildWorldStatus {
     }
 
     @Override
-    public int getStatusSlot() {
+    public int getSlot() {
         return statusSlot;
     }
 
-    public void setStatusSlot(int statusSlot) {
+    public void setSlot(int statusSlot) {
         this.statusSlot = statusSlot;
     }
 
     @Override
-    public boolean isShownInStatusMenu() {
+    public boolean isShown() {
         return shownInStatusMenu;
     }
 
-    public void setShownInStatusMenu(boolean shownInStatusMenu) {
+    public void setShown(boolean shownInStatusMenu) {
         this.shownInStatusMenu = shownInStatusMenu;
     }
 

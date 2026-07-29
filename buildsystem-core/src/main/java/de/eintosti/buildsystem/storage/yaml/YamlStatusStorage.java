@@ -124,7 +124,7 @@ public class YamlStatusStorage extends AbstractYamlStorage {
         config.set(path + ".building-allowed", status.isBuildingAllowed());
         config.set(path + ".progresses-to", status.getProgressesTo().orElse(null));
         config.set(path + ".built-in", status.isBuiltIn());
-        config.set(path + ".status-slot", status.getStatusSlot());
-        config.set(path + ".shown-in-status-menu", status.isShownInStatusMenu());
+        config.set(path + ".status-slot", status.getSlot());
+        config.set(path + ".shown-in-status-menu", status.isShown());
     }
 }

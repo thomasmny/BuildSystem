@@ -180,7 +180,7 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                         lore.add(messages.getString("setup_category_statuses_none", player));
                     } else {
                         category.getStatusIds().stream()
-                                .map(id -> worldStatusRegistry.getStatus(id).orElse(null))
+                                .map(id -> worldStatusRegistry.get(id).orElse(null))
                                 .filter(Objects::nonNull)
                                 .sorted(Comparator.comparingInt(BuildWorldStatus::getOrder))
                                 .map(status -> messages.getString(

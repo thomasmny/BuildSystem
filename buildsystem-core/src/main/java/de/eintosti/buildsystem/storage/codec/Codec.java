@@ -49,6 +49,11 @@ public interface Codec<T> {
     /**
      * Serializes the entity into the map persisted under its {@link #key(Object) key}.
      *
+     * <p>Values are never {@code null}: an absent field is omitted from the map rather than mapped to {@code null}.
+     * The storages write the whole map at the entity's key, which replaces the entity's section outright, so an
+     * omitted key is already an erased key. Null would only carry extra meaning if a storage ever merged into the
+     * existing section field by field, where absence would mean "keep the old value".
+     *
      * @param value The entity to serialize
      * @return The persisted map form, round-trippable by {@link #deserialize(String, ConfigurationSection)}
      */

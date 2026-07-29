@@ -118,7 +118,7 @@ public class StatusEditorMenu extends RegistryEditorMenu {
 
     private String getProgressesLabel(Player player) {
         return status.getProgressesTo()
-                .flatMap(registry::getStatus)
+                .flatMap(registry::get)
                 .map(target -> ColorAPI.process(target.getStyledName()))
                 .orElseGet(() -> messages.getString("setup_status_progresses_none", player));
     }
@@ -128,7 +128,7 @@ public class StatusEditorMenu extends RegistryEditorMenu {
      * itself). Only real registry values are cycled; clearing to "none" is a separate right-click on the button.
      */
     private @Nullable String nextProgressTarget() {
-        List<String> candidates = registry.getStatuses().stream()
+        List<String> candidates = registry.getAll().stream()
                 .map(BuildWorldStatus::getId)
                 .filter(id -> !id.equals(status.getId()))
                 .toList();

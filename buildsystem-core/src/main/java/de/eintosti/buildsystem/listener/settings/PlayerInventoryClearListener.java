@@ -50,6 +50,6 @@ public class PlayerInventoryClearListener implements Listener {
 
         PlayerInventory playerInventory = player.getInventory();
         ItemStack navigatorItem = navigatorItems.create(player);
-        event.getNavigatorSlots().forEach(slot -> playerInventory.setItem(slot, navigatorItem));
+        event.getSlots().forEach(slot -> playerInventory.setItem(slot, navigatorItem));
     }
 }

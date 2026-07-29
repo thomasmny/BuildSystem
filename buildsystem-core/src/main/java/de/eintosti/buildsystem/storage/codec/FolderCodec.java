@@ -145,7 +145,7 @@ public final class FolderCodec implements Codec<Folder> {
         String categoryId = section.getString(CATEGORY);
         categoryId = categoryId != null ? categoryId.toLowerCase(Locale.ROOT) : null;
         return categoryId != null
-                ? categoryRegistry.getCategory(categoryId).orElseGet(categoryRegistry::getDefaultCategory)
-                : categoryRegistry.getDefaultCategory();
+                ? categoryRegistry.get(categoryId).orElseGet(categoryRegistry::getDefault)
+                : categoryRegistry.getDefault();
     }
 }

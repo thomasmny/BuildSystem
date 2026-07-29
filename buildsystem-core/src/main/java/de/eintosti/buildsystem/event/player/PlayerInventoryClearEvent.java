@@ -47,7 +47,7 @@ public class PlayerInventoryClearEvent extends PlayerEvent {
      *
      * @return A list of slot numbers containing navigator items
      */
-    public List<Integer> getNavigatorSlots() {
+    public List<Integer> getSlots() {
         return navigatorSlots;
     }
 

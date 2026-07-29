@@ -44,13 +44,13 @@ public final class CategoryShortcuts implements DynamicSubCommands {
     @Override
     public Optional<SubCommand> resolve(String name) {
         return services.navigatorCategoryRegistry()
-                .getCategory(name.toLowerCase(Locale.ROOT))
+                .get(name.toLowerCase(Locale.ROOT))
                 .map(category -> categoryCommand(category.getId()));
     }
 
     @Override
     public List<SubCommand> available(Player player) {
-        return services.navigatorCategoryRegistry().getCategories().stream()
+        return services.navigatorCategoryRegistry().getAll().stream()
                 .filter(category -> CategoryPermissions.canAccess(player, category.getId()))
                 .<SubCommand>map(category -> categoryCommand(category.getId()))
                 .toList();

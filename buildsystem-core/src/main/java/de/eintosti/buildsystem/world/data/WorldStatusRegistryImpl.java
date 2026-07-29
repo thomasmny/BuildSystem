@@ -44,7 +44,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Owns every {@link BuildWorldStatus}, seeding the built-in defaults on first run and persisting all administrator
- * changes. Deleting a status cascades: every world that used it is reset to the {@link #getDefaultStatus() default}
+ * changes. Deleting a status cascades: every world that used it is reset to the {@link #getDefault() default}
  * status and the id is removed from every category that grouped it. The last remaining status can never be deleted, so
  * a valid default always exists.
  */
@@ -175,26 +175,26 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
     }
 
     @Override
-    public Collection<BuildWorldStatus> getStatuses() {
+    public Collection<BuildWorldStatus> getAll() {
         List<BuildWorldStatus> ordered = new ArrayList<>(this.statuses.values());
         ordered.sort(Comparator.comparingInt(BuildWorldStatus::getOrder));
         return Collections.unmodifiableList(ordered);
     }
 
     @Override
-    public Optional<BuildWorldStatus> getStatus(@Nullable String id) {
+    public Optional<BuildWorldStatus> get(@Nullable String id) {
         return Optional.ofNullable(this.statuses.get(id));
     }
 
     @Override
-    public BuildWorldStatus getDefaultStatus() {
+    public BuildWorldStatus getDefault() {
         if (this.statuses.isEmpty()) {
             seedDefaults();
             storage.saveAll(this.statuses.values());
         }
         WorldStatusImpl notStarted = this.statuses.get(NOT_STARTED_ID);
         // Prefer the built-in fallback, but it may have been deleted by an admin; then the lowest-order status wins.
-        return notStarted != null ? notStarted : getStatuses().iterator().next();
+        return notStarted != null ? notStarted : getAll().iterator().next();
     }
 
     /**
@@ -207,7 +207,7 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
         storage.saveAll(this.statuses.values());
     }
 
-    public WorldStatusImpl createStatus(String displayName) {
+    public WorldStatusImpl create(String displayName) {
         String id = StringUtils.uniqueId(displayName, "status", this.statuses::containsKey);
         int order = this.statuses.values().stream()
                         .mapToInt(WorldStatusImpl::getOrder)
@@ -234,14 +234,14 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
      * without otherwise changing the statuses. Backs the status editor's "reset layout" control, mirroring the
      * navigator's layout reset; a full {@link #resetToDefaults()} is the separate "reset everything".
      */
-    public void resetStatusLayout() {
+    public void resetLayout() {
         for (WorldStatusImpl status : this.statuses.values()) {
             Integer preset = DEFAULT_SLOTS.get(status.getId());
             if (preset != null) {
-                status.setStatusSlot(preset);
-                status.setShownInStatusMenu(true);
+                status.setSlot(preset);
+                status.setShown(true);
             } else {
-                status.setShownInStatusMenu(false);
+                status.setShown(false);
             }
             storage.save(status);
         }
@@ -253,7 +253,7 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
      */
     private void placeUnplacedStatuses() {
         List<WorldStatusImpl> unplaced = this.statuses.values().stream()
-                .filter(status -> status.getStatusSlot() < 0)
+                .filter(status -> status.getSlot() < 0)
                 .sorted(Comparator.comparingInt(WorldStatusImpl::getOrder))
                 .toList();
         for (WorldStatusImpl status : unplaced) {
@@ -261,8 +261,8 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
             if (slot < 0) {
                 break;
             }
-            status.setStatusSlot(slot);
-            status.setShownInStatusMenu(true);
+            status.setSlot(slot);
+            status.setShown(true);
             storage.save(status);
         }
     }
@@ -273,8 +273,8 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
     private int firstFreeSlot() {
         Set<Integer> occupied = new HashSet<>();
         for (WorldStatusImpl status : this.statuses.values()) {
-            if (status.isShownInStatusMenu() && status.getStatusSlot() >= 0) {
-                occupied.add(status.getStatusSlot());
+            if (status.isShown() && status.getSlot() >= 0) {
+                occupied.add(status.getSlot());
             }
         }
         for (int slot = 0; slot < STATUS_MENU_SIZE; slot++) {
@@ -285,8 +285,9 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
         return -1;
     }
 
-    public void persist(WorldStatusImpl status) {
-        storage.save(status);
+    public void persist(BuildWorldStatus status) {
+        // The registry only ever hands out its own instances, so anything it is asked to persist is one of them.
+        storage.save((WorldStatusImpl) status);
     }
 
     /**
@@ -301,19 +302,19 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
 
     /**
      * Deletes a status (built-in or custom), cascading every world that used it back to the
-     * {@link #getDefaultStatus() default} and removing the id from every category that grouped it. The last remaining
+     * {@link #getDefault() default} and removing the id from every category that grouped it. The last remaining
      * status is never deleted, so a valid default always exists; an admin can restore the built-ins with
      * {@link #resetToDefaults()}.
      *
      * @return {@code true} if the status was deleted, {@code false} if it was unknown or the last remaining status
      */
-    public boolean deleteStatus(String id) {
+    public boolean delete(String id) {
         if (!this.statuses.containsKey(id) || this.statuses.size() == 1) {
             return false;
         }
 
         this.statuses.remove(id);
-        BuildWorldStatus fallback = getDefaultStatus();
+        BuildWorldStatus fallback = getDefault();
         for (BuildWorld world : worldsWithStatus(id)) {
             world.getData().set(WorldDataKey.STATUS, fallback);
             worldService.get().getWorldStorage().save(world);
