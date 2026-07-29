@@ -133,8 +133,6 @@ public class WorldRenamer {
         CompletableFuture.runAsync(
                         () -> {
                             try {
-                                // Copy first, delete second, and only if the copy fully succeeded: a partial copy
-                                // followed by the delete would destroy the world being renamed.
                                 FileUtils.copy(oldWorldFile, newWorldFile);
                                 FileUtils.deleteDirectory(oldWorldFile);
                             } catch (IOException e) {

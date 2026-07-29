@@ -118,8 +118,8 @@ public class SettingsService {
     }
 
     private void updateScoreboard(Player player, FastBoard board) {
-        // Resolved once per update, not once per line: this reads the player's world and formats four timestamps, and
-        // the scoreboard refreshes every second for every player.
+        // Hoisted out of the per-line callback: this reads the player's world and formats four timestamps, and the
+        // scoreboard refreshes every second for every player.
         Map.Entry<String, Object>[] placeholders = getPlaceholders(player);
         List<String> body = messages.getStringList("body", player, line -> placeholders);
         board.updateLines(body);

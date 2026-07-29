@@ -220,7 +220,6 @@ public class NavigatorLayoutMenu extends LayoutEditorMenu<NavigatorCategory> {
             if (slot != registry.getSettingsSlot()) {
                 return false;
             }
-            // Takes the slot the category vacated, or any free slot when the category came from the palette.
             registry.setSettingsSlot(heldFromSlot >= 0 ? heldFromSlot : firstFreeSlot());
             return true;
         }
@@ -240,7 +239,6 @@ public class NavigatorLayoutMenu extends LayoutEditorMenu<NavigatorCategory> {
             if (occupant != null) {
                 int previousSettingsSlot = registry.getSettingsSlot();
                 if (isSlotValid(previousSettingsSlot)) {
-                    // Swap: the displaced category takes the slot the settings button just vacated.
                     occupant.setSlot(previousSettingsSlot);
                 } else {
                     // Settings came from the palette (no slot to swap into); send the occupant to the palette rather
