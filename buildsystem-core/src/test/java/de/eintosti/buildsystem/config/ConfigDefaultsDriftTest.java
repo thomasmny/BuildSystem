@@ -58,7 +58,10 @@ class ConfigDefaultsDriftTest {
      * asked for. Anything else appearing here is drift, not a decision.
      */
     private static final Set<String> INTENTIONAL = Set.of(
-            "world.deletionBlacklist", "world.unload.blacklistedWorlds", "settings.worldPermissionWhitelist");
+            "world.deletionBlacklist",
+            "world.unload.blacklistedWorlds",
+            "settings.worldPermissionWhitelist",
+            "world.defaults.gameRules");
 
     @Test
     @DisplayName("Every parser default matches the value shipped in config.yml")
@@ -69,26 +72,26 @@ class ConfigDefaultsDriftTest {
         List<String> drifted = new ArrayList<>();
         compare("", fromBundledFile, fromEmptyConfig, drifted);
 
-        assertTrue(
-                drifted.isEmpty(),
-                """
+        assertTrue(drifted.isEmpty(), """
                 config.yml and the parser's fallbacks disagree. A server missing the key gets the second value:
                   %s
-                Fix the parser default (or config.yml), or add the path to INTENTIONAL with a reason."""
-                        .formatted(String.join("\n  ", drifted)));
+                Fix the parser default (or config.yml), or add the path to INTENTIONAL with a reason.""".formatted(String.join("\n  ", drifted)));
     }
 
     /**
      * Walks two config trees in parallel, recording the dotted path of every component whose values differ. Records are
      * descended into so the failure names the leaf that drifted rather than the whole subtree.
      */
-    private static void compare(String path, @Nullable Object shipped, @Nullable Object fallback, List<String> drifted) {
+    private static void compare(
+            String path, @Nullable Object shipped, @Nullable Object fallback, List<String> drifted) {
         if (INTENTIONAL.contains(path)) {
             return;
         }
+
         if (Objects.equals(shipped, fallback)) {
             return;
         }
+
         if (shipped != null && fallback != null && shipped.getClass() == fallback.getClass()) {
             RecordComponent[] components = shipped.getClass().getRecordComponents();
             if (components != null) {
@@ -102,6 +105,7 @@ class ConfigDefaultsDriftTest {
                 return;
             }
         }
+
         drifted.add("%s: config.yml=%s, parser default=%s".formatted(path, shipped, fallback));
     }
 

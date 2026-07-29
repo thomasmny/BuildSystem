@@ -31,6 +31,11 @@ subprojects {
     plugins.withId("java") {
         pluginManager.apply("com.diffplug.spotless")
         configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+            // Formatting is applied by the pre-commit hook, which every clone gets via the core.hooksPath
+            // configuration above. A format violation is machine-fixable and tells a reviewer nothing, so it must not
+            // fail `check` and cost a CI round trip. Run `spotlessCheck` directly if you want to verify.
+            isEnforceCheck = false
+
             java {
                 palantirJavaFormat("2.92.0")
                 removeUnusedImports()

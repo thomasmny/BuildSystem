@@ -14,7 +14,10 @@ staged=$(git diff --cached --name-only -z)
 [ -z "$staged" ] && exit 0
 
 echo "Running spotlessApply..."
-./gradlew spotlessApply --quiet
+# --rerun-tasks because Gradle will otherwise report spotlessApply UP-TO-DATE from an
+# earlier run in the same session and skip it, letting an unformatted file through the
+# hook silently. The hook is the only thing enforcing format now, so it cannot be a no-op.
+./gradlew spotlessApply --quiet --rerun-tasks
 
 # Re-stage any previously-staged file that Spotless reformatted.
 printf '%s' "$staged" | while IFS= read -r -d '' f; do

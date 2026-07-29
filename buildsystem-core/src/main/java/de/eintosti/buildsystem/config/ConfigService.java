@@ -184,7 +184,7 @@ public class ConfigService {
                 buildersEnabled);
 
         PluginConfig.World.Unload unload = new PluginConfig.World.Unload(
-                config.getBoolean("world.unload.enabled", false),
+                config.getBoolean("world.unload.enabled", true),
                 Objects.requireNonNullElse(config.getString("world.unload.time-until-unload"), "01:00:00"),
                 new HashSet<>(config.getStringList("world.unload.blacklisted-worlds")));
 
@@ -204,7 +204,9 @@ public class ConfigService {
 
         return new PluginConfig.World(
                 config.getBoolean("world.lock-weather", true),
-                Objects.requireNonNullElse(config.getString("world.invalid-characters"), "^\b$"),
+                // "^\\b$" is the regex config.yml ships. Written unescaped, "^\b$" is a literal backspace character
+                // instead, which is a different string even though both happen to match nothing in practice.
+                Objects.requireNonNullElse(config.getString("world.invalid-characters"), "^\\b$"),
                 config.getInt("world.import-all-delay", 30),
                 deletionBlacklist,
                 voidBlock,

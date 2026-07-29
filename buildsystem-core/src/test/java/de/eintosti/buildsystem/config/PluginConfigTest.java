@@ -56,7 +56,7 @@ class PluginConfigTest {
         assertTrue(cfg.settings().scoreboard());
         // World
         assertTrue(cfg.world().lockWeather());
-        assertEquals("^\b$", cfg.world().invalidCharacters());
+        assertEquals("^\\b$", cfg.world().invalidCharacters());
         assertEquals(30, cfg.world().importAllDelay());
         // World - Default
         assertEquals(6000000, cfg.world().defaults().worldBorderSize());
@@ -67,7 +67,7 @@ class PluginConfigTest {
         assertEquals(-1, cfg.world().limits().publicWorlds());
         assertEquals(-1, cfg.world().limits().privateWorlds());
         // World - Unload
-        assertFalse(cfg.world().unload().enabled());
+        assertTrue(cfg.world().unload().enabled());
         assertEquals("01:00:00", cfg.world().unload().timeUntilUnload());
         // World - Backup
         assertEquals(5, cfg.world().backup().maxBackupsPerWorld());
