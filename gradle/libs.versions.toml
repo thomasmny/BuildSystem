@@ -19,7 +19,6 @@ axiompaper = "5.0.4+26.1"
 # Third Party
 annotations = "26.1.0"
 authlib = "3.13.56"
-aws-sdk = "2.46.20"
 eddsa = "0.3.0"
 bstats = "3.2.1"
 fastboard = "2.2.0"
@@ -51,11 +50,6 @@ axiompaper = { group = "maven.modrinth.workaround", name = "axiom-paper-plugin",
 # Third Party
 annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
 authlib = { group = "com.mojang", name = "authlib", version.ref = "authlib" }
-aws-auth = { module = "software.amazon.awssdk:auth", version.ref = "aws-sdk" }
-aws-core = { module = "software.amazon.awssdk:core", version.ref = "aws-sdk" }
-aws-regions = { module = "software.amazon.awssdk:regions", version.ref = "aws-sdk" }
-aws-s3 = { module = "software.amazon.awssdk:s3", version.ref = "aws-sdk" }
-aws-urlconnection = { module = "software.amazon.awssdk:url-connection-client", version.ref = "aws-sdk" }
 eddsa = { group = "net.i2p.crypto", name = "eddsa", version.ref = "eddsa" }
 bstats = { group = "org.bstats", name = "bstats-bukkit", version.ref = "bstats" }
 fastboard = { group = "fr.mrmicky", name = "fastboard", version.ref = "fastboard" }
@@ -64,6 +58,3 @@ nbt = { group = "dev.dewy", name = "nbt", version.ref = "nbt" }
 sftp = { group = "org.apache.sshd", name = "sshd-sftp", version.ref = "sshd-sftp" }
 zip4j = { group = "net.lingala.zip4j", name = "zip4j", version.ref = "zip4j" }
 xseries = { group = "com.github.cryptomorin", name = "XSeries", version.ref = "xseries" }
-
-[bundles]
-aws = ["aws-s3", "aws-auth", "aws-regions", "aws-core", "aws-urlconnection"]

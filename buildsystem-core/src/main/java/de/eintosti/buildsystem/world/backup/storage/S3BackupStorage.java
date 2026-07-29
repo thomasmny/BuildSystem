@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.backup.BackupImpl;
+import de.eintosti.buildsystem.world.backup.storage.s3.S3Client;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -37,15 +38,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.exception.SdkClientException;
-import software.amazon.awssdk.core.sync.RequestBody;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.S3ClientBuilder;
-import software.amazon.awssdk.services.s3.model.*;
 
 @NullMarked
 public class S3BackupStorage extends AbstractBackupStorage {
@@ -53,7 +45,6 @@ public class S3BackupStorage extends AbstractBackupStorage {
     private final ConfigService configService;
     private final Function<BuildWorld, BackupProfile> profileProvider;
     private final S3Client s3Client;
-    private final String bucket;
     private final String pathPrefix;
     private final Path tmpDownloadDirectory;
 
@@ -73,21 +64,11 @@ public class S3BackupStorage extends AbstractBackupStorage {
 
         this.configService = configService;
         this.profileProvider = profileProvider;
-        this.bucket = bucket;
         this.pathPrefix = pathPrefix.endsWith("/") ? pathPrefix : pathPrefix + "/";
         this.tmpDownloadDirectory = FileUtils.resolve(dataFolder, ".tmp_backup_downloads");
 
-        S3ClientBuilder builder = S3Client.builder()
-                // Pinned explicitly so the SDK never probes for a transport that is deliberately not shaded in.
-                .httpClientBuilder(UrlConnectionHttpClient.builder())
-                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
-                .region(Region.of(region));
-
-        if (url != null && !url.isEmpty()) {
-            builder = builder.region(Region.of(region)).endpointOverride(URI.create(url));
-        }
-
-        this.s3Client = builder.build();
+        URI endpoint = url == null || url.isEmpty() ? null : URI.create(url);
+        this.s3Client = new S3Client(accessKey, secretKey, region, bucket, endpoint);
     }
 
     private String getBackupDirectory(BuildWorld buildWorld) {
@@ -99,19 +80,14 @@ public class S3BackupStorage extends AbstractBackupStorage {
         List<Backup> backups =
                 new ArrayList<>(configService.current().world().backup().maxBackupsPerWorld());
         try {
-            ListObjectsV2Response response = s3Client.listObjectsV2(ListObjectsV2Request.builder()
-                    .bucket(bucket)
-                    .prefix(getBackupDirectory(buildWorld))
-                    .build());
-
-            backups.addAll(response.contents().stream()
+            backups.addAll(s3Client.list(getBackupDirectory(buildWorld)).stream()
                     .filter(object -> object.key().endsWith(".zip"))
                     .map(object -> new BackupImpl(
                             profileProvider.apply(buildWorld),
                             object.lastModified().toEpochMilli(),
                             object.key()))
                     .toList());
-        } catch (S3Exception | SdkClientException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Error while listing S3 backups", e);
         }
         return backups;
@@ -126,9 +102,8 @@ public class S3BackupStorage extends AbstractBackupStorage {
             byte[] zipBytes = FileUtils.zipWorldToMemory(buildWorld);
 
             try {
-                s3Client.putObject(
-                        PutObjectRequest.builder().bucket(bucket).key(key).build(), RequestBody.fromBytes(zipBytes));
-            } catch (S3Exception | SdkClientException e) {
+                s3Client.put(key, zipBytes);
+            } catch (IOException e) {
                 throw new IOException("Failed to upload S3 backup for " + buildWorld.getName(), e);
             }
 
@@ -142,14 +117,9 @@ public class S3BackupStorage extends AbstractBackupStorage {
         return supply("download S3 backup " + backup.key(), () -> {
             try {
                 Path target = tmpDownloadDirectory.resolve(UUID.randomUUID() + ".zip");
-                s3Client.getObject(
-                        GetObjectRequest.builder()
-                                .bucket(bucket)
-                                .key(backup.key())
-                                .build(),
-                        target);
+                s3Client.get(backup.key(), target);
                 return target.toFile();
-            } catch (S3Exception | SdkClientException e) {
+            } catch (IOException e) {
                 throw new IOException("Failed to download S3 backup: " + backup.key(), e);
             }
         });
@@ -158,11 +128,8 @@ public class S3BackupStorage extends AbstractBackupStorage {
     @Override
     protected void doDeleteBackup(Backup backup) {
         try {
-            s3Client.deleteObject(DeleteObjectRequest.builder()
-                    .bucket(bucket)
-                    .key(backup.key())
-                    .build());
-        } catch (S3Exception | SdkClientException e) {
+            s3Client.delete(backup.key());
+        } catch (IOException e) {
             throw new RuntimeException("Unable to delete S3 backup " + backup.key(), e);
         }
     }

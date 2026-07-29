@@ -64,17 +64,10 @@ dependencies {
     }
     compileOnly(libs.axiompaper)
 
-    // Ed25519 host keys for the SFTP backup. sshd cannot use the JDK provider for these, and this is ~90 KB
-    // against BouncyCastle's ~19 MB.
+    // Ed25519 host keys for the SFTP backup. sshd cannot use the JDK provider
+    // for these, and this is ~90 KB against BouncyCastle's ~19 MB.
     implementation(libs.eddsa)
     implementation(libs.bstats)
-    // The S3 backup uses the synchronous S3Client, so the async netty transport is dead weight, and the Apache
-    // client is swapped for the JDK-backed one. Together they are ~14 MB of the shaded jar.
-    implementation(libs.bundles.aws) {
-        exclude(group = "software.amazon.awssdk", module = "netty-nio-client")
-        exclude(group = "software.amazon.awssdk", module = "apache-client")
-        exclude(group = "software.amazon.awssdk", module = "apache5-client")
-    }
     implementation(libs.fastboard)
     implementation(libs.nbt) { isTransitive = false }
     implementation(libs.paperlib)
@@ -104,7 +97,6 @@ tasks.named("assemble") {
 
 tasks.named<ShadowJar>("shadowJar") {
     minimize {
-        exclude(dependency("software.amazon.awssdk:.*:.*"))
         exclude(dependency("org.apache.sshd:.*:.*"))
         exclude(dependency("net.i2p.crypto:.*:.*"))
         exclude(dependency("org.bstats:.*:.*"))
@@ -122,14 +114,10 @@ tasks.named<ShadowJar>("shadowJar") {
     relocate("org.apache.commons.codec", "$shadePath.apache.commons.codec")
     relocate("org.apache.commons.logging", "$shadePath.apache.commons.logging")
     relocate("org.apache.http", "$shadePath.apache.http")
-    relocate("org.apache.hc", "$shadePath.apache.hc")
     relocate("org.apache.sshd", "$shadePath.sshd")
     relocate("net.i2p.crypto", "$shadePath.eddsa")
     relocate("org.bstats", "$shadePath.bstats")
-    relocate("org.reactivestreams", "$shadePath.reactivestreams")
     relocate("org.slf4j", "$shadePath.slf4j")
-    relocate("software.amazon.awssdk", "$shadePath.awssdk")
-    relocate("software.amazon.eventstream", "$shadePath.awssdk.eventstream")
 }
 
 tasks.runServer {
