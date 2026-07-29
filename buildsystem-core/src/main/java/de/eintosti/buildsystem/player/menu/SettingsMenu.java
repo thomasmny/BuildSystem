@@ -83,6 +83,16 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
             clickHandler.accept(player, event);
         }
 
+        /**
+         * {@return the full permission node for this button, or {@code null} for the unrestricted design slot} The
+         * short {@link #node()} is the configurable part; the shared prefix is applied here so the menu enforces the
+         * same string the golden test pins.
+         */
+        @Override
+        public @Nullable String permission() {
+            return node == null ? null : PERMISSION_PREFIX + node;
+        }
+
         static Builder builder() {
             return new Builder();
         }
@@ -349,17 +359,11 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
     }
 
     /**
-     * The shared toggle click sequence. Note the two intentional differences from {@code Menu.requirePermission}: a
-     * denied permission does <strong>not</strong> close the inventory, and a rejected toggle (scoreboard disabled in
-     * config) plays the break sound without re-opening.
+     * The shared toggle click sequence. The permission is enforced by the menu before the click reaches here (see
+     * {@link #onPermissionDenied}); a rejected toggle (scoreboard disabled in config) plays the break sound without
+     * re-opening.
      */
     private void handleToggle(Player player, String node, BooleanSupplier onToggle) {
-        if (!player.hasPermission(PERMISSION_PREFIX + node)) {
-            messages.sendPermissionError(player);
-            XSound.ENTITY_ITEM_BREAK.play(player);
-            return;
-        }
-
         if (!onToggle.getAsBoolean()) {
             XSound.ENTITY_ITEM_BREAK.play(player);
             return;
@@ -367,6 +371,16 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
 
         XSound.ENTITY_ITEM_PICKUP.play(player);
         menus.openSettings(player);
+    }
+
+    /**
+     * Unlike the default, a denied toggle leaves the settings menu open: the player can still reach the toggles they
+     * do have, which is the point of per-option permissions.
+     */
+    @Override
+    protected void onPermissionDenied(Player player, InventoryClickEvent event) {
+        messages.sendPermissionError(player);
+        XSound.ENTITY_ITEM_BREAK.play(player);
     }
 
     @Override

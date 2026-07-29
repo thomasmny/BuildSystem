@@ -21,6 +21,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A single slot in a {@link ButtonMenu}: it knows how to render its icon and how to react to a click. A menu keeps a
@@ -50,6 +51,17 @@ public interface MenuButton {
      * @param event The click event
      */
     void onClick(Player player, InventoryClickEvent event);
+
+    /**
+     * {@return the permission required to click this button, or {@code null} if it is unrestricted}
+     *
+     * <p>This is <em>enforced</em>: {@link ButtonMenu#handleClick} checks it before dispatching to
+     * {@link #onClick}, so a button that declares a permission never has to check it again. Denial is handled by
+     * {@link ButtonMenu#onPermissionDenied}.
+     */
+    default @Nullable String permission() {
+        return null;
+    }
 
     /**
      * {@return a new {@link Builder} for assembling a {@code MenuButton} from a renderer and a click handler} Either part
@@ -98,8 +110,21 @@ public interface MenuButton {
 
         private Renderer renderer = (player, inventory, slot) -> {};
         private ClickHandler clickHandler = (player, event) -> {};
+        private @Nullable String permission;
 
         private Builder() {}
+
+        /**
+         * Sets the permission required to click the button; {@code null} leaves it unrestricted. The menu enforces
+         * this before dispatching the click, so the handler does not repeat the check.
+         *
+         * @param permission The required permission, or {@code null}
+         * @return This builder
+         */
+        public Builder permission(@Nullable String permission) {
+            this.permission = permission;
+            return this;
+        }
 
         /**
          * Sets how the button renders into its slot.
@@ -129,6 +154,8 @@ public interface MenuButton {
         public MenuButton build() {
             Renderer builtRenderer = renderer;
             ClickHandler builtClickHandler = clickHandler;
+            String builtPermission = permission;
+
             return new MenuButton() {
                 @Override
                 public void render(Player player, Inventory inventory, int slot) {
@@ -138,6 +165,11 @@ public interface MenuButton {
                 @Override
                 public void onClick(Player player, InventoryClickEvent event) {
                     builtClickHandler.onClick(player, event);
+                }
+
+                @Override
+                public @Nullable String permission() {
+                    return builtPermission;
                 }
             };
         }

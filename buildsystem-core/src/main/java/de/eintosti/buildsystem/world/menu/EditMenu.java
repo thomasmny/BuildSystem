@@ -29,15 +29,13 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.menu.ButtonMenu;
-import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
-import de.eintosti.buildsystem.menu.Prompts;
+import de.eintosti.buildsystem.menu.*;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.color.ColorAPI;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import org.bukkit.*;
@@ -202,10 +200,8 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                         .render((player, inventory) ->
                                 toggle.render(menuItems, buildWorld.getData(), player, inventory, slot))
                         .onClick((player, event) -> {
-                            if (requirePermission(player, toggle.permission())) {
-                                toggle.flip(buildWorld.getData());
-                                reopen(player);
-                            }
+                            toggle.flip(buildWorld.getData());
+                            reopen(player);
                         })
                         .build()));
 
@@ -216,9 +212,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                         .outcome(ClickOutcome.REOPEN)
                         .render(this::renderTime)
                         .onClick((player, event) -> {
-                            if (requirePermission(player, "buildsystem.edit.time")) {
-                                changeTime(player);
-                            }
+                            changeTime(player);
                             reopen(player);
                         })
                         .build());
@@ -229,11 +223,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                         .permission("buildsystem.edit.entities")
                         .outcome(ClickOutcome.CLOSE)
                         .render(this::renderButcher)
-                        .onClick((player, event) -> {
-                            if (requirePermission(player, "buildsystem.edit.entities")) {
-                                removeEntities(player);
-                            }
-                        })
+                        .onClick((player, event) -> removeEntities(player))
                         .build());
 
         register(
@@ -277,10 +267,8 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                         .outcome(ClickOutcome.SUBMENU)
                         .render(this::renderGameRules)
                         .onClick((player, event) -> {
-                            if (requirePermission(player, "buildsystem.edit.gamerules")) {
-                                XSound.BLOCK_CHEST_OPEN.play(player);
-                                menus.openGameRules(buildWorld, player);
-                            }
+                            XSound.BLOCK_CHEST_OPEN.play(player);
+                            menus.openGameRules(buildWorld, player);
                         })
                         .build());
 
@@ -291,9 +279,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                         .outcome(ClickOutcome.REOPEN)
                         .render(this::renderDifficulty)
                         .onClick((player, event) -> {
-                            if (requirePermission(player, "buildsystem.edit.difficulty")) {
-                                cycleDifficulty();
-                            }
+                            cycleDifficulty();
                             reopen(player);
                         })
                         .build());
@@ -305,10 +291,8 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                         .outcome(ClickOutcome.SUBMENU)
                         .render(this::renderStatus)
                         .onClick((player, event) -> {
-                            if (requirePermission(player, "buildsystem.edit.status")) {
-                                XSound.ENTITY_CHICKEN_EGG.play(player);
-                                menus.openStatus(buildWorld, player);
-                            }
+                            XSound.ENTITY_CHICKEN_EGG.play(player);
+                            menus.openStatus(buildWorld, player);
                         })
                         .build());
 
@@ -319,10 +303,8 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                         .outcome(ClickOutcome.INPUT)
                         .render(this::renderProject)
                         .onClick((player, event) -> {
-                            if (requirePermission(player, "buildsystem.edit.project")) {
-                                XSound.ENTITY_CHICKEN_EGG.play(player);
-                                menus.promptWorldProject(buildWorld, player);
-                            }
+                            XSound.ENTITY_CHICKEN_EGG.play(player);
+                            menus.promptWorldProject(buildWorld, player);
                         })
                         .build());
 
@@ -333,10 +315,8 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                         .outcome(ClickOutcome.INPUT)
                         .render(this::renderPermission)
                         .onClick((player, event) -> {
-                            if (requirePermission(player, "buildsystem.edit.permission")) {
-                                XSound.ENTITY_CHICKEN_EGG.play(player);
-                                menus.promptWorldPermission(buildWorld, player);
-                            }
+                            XSound.ENTITY_CHICKEN_EGG.play(player);
+                            menus.promptWorldPermission(buildWorld, player);
                         })
                         .build());
     }
@@ -364,9 +344,6 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
      * the viewing player's head, or {@code none} to clear).
      */
     private void onWorldInfoClick(Player player, InventoryClickEvent event) {
-        if (!requirePermission(player, "buildsystem.edit.icon")) {
-            return;
-        }
         if (buildWorld.getIcon() == Material.PLAYER_HEAD && event.isRightClick()) {
             promptIconTexture(player);
             return;
@@ -558,9 +535,6 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
      * the {@link PhysicsMenu} with the per-category exceptions.
      */
     private void onPhysicsClick(Player player, InventoryClickEvent event) {
-        if (!requirePermission(player, "buildsystem.edit.physics")) {
-            return;
-        }
         if (event.isRightClick()) {
             XSound.BLOCK_CHEST_OPEN.play(player);
             menus.openPhysics(buildWorld, player);
@@ -583,9 +557,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
             XSound.ENTITY_ITEM_BREAK.play(player);
             return;
         }
-        if (!requirePermission(player, "buildsystem.edit.builders")) {
-            return;
-        }
+
         if (event.isRightClick()) {
             XSound.BLOCK_CHEST_OPEN.play(player);
             menus.openBuilder(buildWorld, player);
@@ -608,14 +580,11 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
             XSound.ENTITY_ITEM_BREAK.play(player);
             return;
         }
-        if (requirePermission(player, "buildsystem.edit.visibility")) {
-            WorldData worldData = buildWorld.getData();
-            worldData.set(
-                    WorldDataKey.VISIBILITY,
-                    worldData.get(WorldDataKey.VISIBILITY).isPrivate()
-                            ? Visibility.EVERYONE
-                            : Visibility.ADDED_PLAYERS);
-        }
+
+        WorldData worldData = buildWorld.getData();
+        worldData.set(
+                WorldDataKey.VISIBILITY,
+                worldData.get(WorldDataKey.VISIBILITY).isPrivate() ? Visibility.EVERYONE : Visibility.ADDED_PLAYERS);
         reopen(player);
     }
 
