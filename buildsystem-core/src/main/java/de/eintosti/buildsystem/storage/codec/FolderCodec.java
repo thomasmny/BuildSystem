@@ -80,14 +80,12 @@ public final class FolderCodec implements Codec<Folder> {
         serialized.put(CREATOR, folder.getCreator().toString());
         serialized.put(CREATION, folder.getCreation());
         serialized.put(CATEGORY, folder.getCategory().getId());
-        if (folder.hasParent()) {
-            serialized.put(PARENT, folder.getParent().getUniqueId().toString());
-        }
+        Codec.putIfPresent(
+                serialized,
+                PARENT,
+                folder.hasParent() ? folder.getParent().getUniqueId().toString() : null);
         serialized.put(MATERIAL, folder.getIcon().name());
-        String skullTexture = folder.getIconSkullTexture();
-        if (skullTexture != null) {
-            serialized.put(ICON_SKULL_TEXTURE, skullTexture);
-        }
+        Codec.putIfPresent(serialized, ICON_SKULL_TEXTURE, folder.getIconSkullTexture());
         serialized.put(PERMISSION, folder.getPermission());
         serialized.put(PROJECT, folder.getProject());
         serialized.put(

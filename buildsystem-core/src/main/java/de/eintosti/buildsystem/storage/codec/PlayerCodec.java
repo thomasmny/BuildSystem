@@ -87,9 +87,10 @@ public final class PlayerCodec implements Codec<BuildPlayer> {
 
         serialized.put(SETTINGS, serializeSettings(player.getSettings()));
         LogoutLocation logoutLocation = player.getLogoutLocation();
-        if (logoutLocation != null) {
-            serialized.put(LOGOUT_LOCATION, LogoutLocationCodec.format(logoutLocation));
-        }
+        Codec.putIfPresent(
+                serialized,
+                LOGOUT_LOCATION,
+                logoutLocation == null ? null : LogoutLocationCodec.format(logoutLocation));
 
         return serialized;
     }
