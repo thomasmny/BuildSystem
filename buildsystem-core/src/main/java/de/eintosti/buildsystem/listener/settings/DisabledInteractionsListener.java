@@ -28,7 +28,6 @@ import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import de.eintosti.buildsystem.util.DirectionUtil;
-import de.eintosti.buildsystem.util.MaterialUtils;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -79,7 +78,7 @@ public class DisabledInteractionsListener implements Listener {
         }
 
         Block block = event.getClickedBlock();
-        if (block == null || !MaterialUtils.isInteractable(XMaterial.matchXMaterial(block.getType()))) {
+        if (block == null || !block.getType().isInteractable()) {
             return;
         }
 
