@@ -210,7 +210,7 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
      * themselves. Built-in categories return to their default slots and become visible again; custom categories are kept
      * but removed from the navigator (so they can be re-added). The settings button returns to its default slot.
      */
-    public void resetNavigatorLayout() {
+    public void resetLayout() {
         Map<String, NavigatorCategoryImpl> defaults = buildDefaults();
         for (NavigatorCategoryImpl category : this.categories.values()) {
             NavigatorCategoryImpl preset = defaults.get(category.getId());
@@ -225,7 +225,7 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
         setSettingsSlot(DEFAULT_SETTINGS_SLOT);
     }
 
-    public NavigatorCategoryImpl createCategory(String displayName) {
+    public NavigatorCategoryImpl create(String displayName) {
         String id = StringUtils.uniqueId(displayName, "category", this.categories::containsKey);
         int slot = this.categories.values().stream()
                         .mapToInt(NavigatorCategory::getSlot)
@@ -241,8 +241,9 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
         return category;
     }
 
-    public void persist(NavigatorCategoryImpl category) {
-        storage.save(category);
+    public void persist(NavigatorCategory category) {
+        // The registry only ever hands out its own instances, so anything it is asked to persist is one of them.
+        storage.save((NavigatorCategoryImpl) category);
     }
 
     /**
@@ -284,7 +285,7 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
      *
      * @return {@code true} if the category was deleted, {@code false} if it was unknown
      */
-    public boolean deleteCategory(String id) {
+    public boolean delete(String id) {
         if (!this.categories.containsKey(id)) {
             return false;
         }

@@ -80,12 +80,26 @@ public interface RegistryEntry {
     int getSlot();
 
     /**
+     * Sets the slot this entry occupies in its editor's layout.
+     *
+     * @param slot The inventory slot
+     */
+    void setSlot(int slot);
+
+    /**
      * Gets whether this entry is shown in its menu. A hidden entry still exists and can still be assigned; it is only
      * absent from the picker.
      *
      * @return {@code true} if shown
      */
     boolean isShown();
+
+    /**
+     * Sets whether this entry is shown in its menu.
+     *
+     * @param shown {@code true} to show it
+     */
+    void setShown(boolean shown);
 
     /**
      * Gets whether this entry ships with the plugin rather than having been created by an admin. Built-in entries can

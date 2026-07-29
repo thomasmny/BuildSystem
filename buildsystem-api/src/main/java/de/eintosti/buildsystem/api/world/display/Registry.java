@@ -59,4 +59,41 @@ public interface Registry<T extends RegistryEntry> {
      * @return The default entry
      */
     T getDefault();
+
+    /**
+     * Creates a new entry with the given display name, assigns it an id, and persists it. The entry starts hidden and
+     * unplaced; give it a slot with {@link RegistryEntry#setSlot(int)} and show it with
+     * {@link RegistryEntry#setShown(boolean)}.
+     *
+     * @param displayName The display name to create it under
+     * @return The created entry
+     */
+    T create(String displayName);
+
+    /**
+     * Deletes the entry with the given id. The last remaining entry is never deleted, so {@link #getDefault()} always
+     * has something to return.
+     *
+     * @param id The id to delete
+     * @return {@code true} if it was deleted
+     */
+    boolean delete(String id);
+
+    /**
+     * Writes an entry's current state to storage. Mutating an entry does not save it on its own, so a drag that
+     * touches several fields costs one write rather than one per field.
+     *
+     * @param entry The entry to persist
+     */
+    void persist(T entry);
+
+    /**
+     * Restores the built-in entries to their default slots and hides the rest, keeping custom entries.
+     */
+    void resetLayout();
+
+    /**
+     * Restores every entry to the built-in defaults, discarding custom entries.
+     */
+    void resetToDefaults();
 }

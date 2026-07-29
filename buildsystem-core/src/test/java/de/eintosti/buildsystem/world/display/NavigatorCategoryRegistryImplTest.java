@@ -78,7 +78,7 @@ class NavigatorCategoryRegistryImplTest {
 
     @Test
     void createCategory_addsCustomCategory() {
-        NavigatorCategory created = registry.createCategory("Administration");
+        NavigatorCategory created = registry.create("Administration");
 
         assertEquals("administration", created.getId());
         assertFalse(created.isBuiltIn());
@@ -87,35 +87,35 @@ class NavigatorCategoryRegistryImplTest {
 
     @Test
     void deleteCategory_removesCustomCategory() {
-        NavigatorCategory created = registry.createCategory("Temporary");
+        NavigatorCategory created = registry.create("Temporary");
 
-        assertTrue(registry.deleteCategory(created.getId()));
+        assertTrue(registry.delete(created.getId()));
         assertFalse(registry.get(created.getId()).isPresent());
     }
 
     @Test
     void deleteCategory_allowsBuiltIn() {
-        assertTrue(registry.deleteCategory(NavigatorCategoryRegistry.PUBLIC_ID));
+        assertTrue(registry.delete(NavigatorCategoryRegistry.PUBLIC_ID));
         assertFalse(registry.get(NavigatorCategoryRegistry.PUBLIC_ID).isPresent());
     }
 
     @Test
     void deleteCategory_allowsDeletingEveryCategory() {
         for (NavigatorCategory category : List.copyOf(registry.getAll())) {
-            assertTrue(registry.deleteCategory(category.getId()));
+            assertTrue(registry.delete(category.getId()));
         }
         assertEquals(0, registry.getAll().size());
     }
 
     @Test
     void deleteCategory_returnsFalseForUnknownId() {
-        assertFalse(registry.deleteCategory("does-not-exist"));
+        assertFalse(registry.delete("does-not-exist"));
     }
 
     @Test
     void getDefault_reseedsBuiltInsWhenEmpty() {
         for (NavigatorCategory category : List.copyOf(registry.getAll())) {
-            registry.deleteCategory(category.getId());
+            registry.delete(category.getId());
         }
         assertEquals(0, registry.getAll().size());
 
@@ -126,7 +126,7 @@ class NavigatorCategoryRegistryImplTest {
 
     @Test
     void resetToDefaults_restoresBuiltIns() {
-        registry.deleteCategory(NavigatorCategoryRegistry.PUBLIC_ID);
+        registry.delete(NavigatorCategoryRegistry.PUBLIC_ID);
         registry.resetToDefaults();
         assertEquals(3, registry.getAll().size());
         assertTrue(registry.get(NavigatorCategoryRegistry.PUBLIC_ID).isPresent());

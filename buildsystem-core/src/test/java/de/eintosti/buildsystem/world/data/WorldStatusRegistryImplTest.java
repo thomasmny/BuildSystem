@@ -76,7 +76,7 @@ class WorldStatusRegistryImplTest {
 
     @Test
     void createStatus_addsCustomStatusWithUniqueId() {
-        BuildWorldStatus created = registry.createStatus("Needs Review");
+        BuildWorldStatus created = registry.create("Needs Review");
 
         assertEquals("needs_review", created.getId());
         assertFalse(created.isBuiltIn());
@@ -85,34 +85,34 @@ class WorldStatusRegistryImplTest {
 
     @Test
     void createStatus_twiceYieldsDistinctIds() {
-        BuildWorldStatus first = registry.createStatus("Review");
-        BuildWorldStatus second = registry.createStatus("Review");
+        BuildWorldStatus first = registry.create("Review");
+        BuildWorldStatus second = registry.create("Review");
 
         assertNotEquals(first.getId(), second.getId());
     }
 
     @Test
     void deleteStatus_removesCustomStatus() {
-        BuildWorldStatus created = registry.createStatus("Temporary");
+        BuildWorldStatus created = registry.create("Temporary");
 
-        assertTrue(registry.deleteStatus(created.getId()));
+        assertTrue(registry.delete(created.getId()));
         assertFalse(registry.get(created.getId()).isPresent());
     }
 
     @Test
     void deleteStatus_allowsBuiltIn() {
-        assertTrue(registry.deleteStatus(WorldStatusRegistry.NOT_STARTED_ID));
+        assertTrue(registry.delete(WorldStatusRegistry.NOT_STARTED_ID));
         assertFalse(registry.get(WorldStatusRegistry.NOT_STARTED_ID).isPresent());
     }
 
     @Test
     void deleteStatus_clearsDanglingProgressionTarget() {
-        WorldStatusImpl source = registry.createStatus("Source");
-        WorldStatusImpl target = registry.createStatus("Target");
+        WorldStatusImpl source = registry.create("Source");
+        WorldStatusImpl target = registry.create("Target");
         source.setProgressesTo(target.getId());
         registry.persist(source);
 
-        assertTrue(registry.deleteStatus(target.getId()));
+        assertTrue(registry.delete(target.getId()));
 
         BuildWorldStatus survivor = registry.get(source.getId()).orElseThrow();
         assertTrue(survivor.getProgressesTo().isEmpty(), "progressesTo should be cleared, not left dangling");
@@ -122,16 +122,16 @@ class WorldStatusRegistryImplTest {
     void deleteStatus_refusesLastRemaining() {
         // Delete down to a single status; the final one must never be removable.
         for (BuildWorldStatus status : List.copyOf(registry.getAll())) {
-            registry.deleteStatus(status.getId());
+            registry.delete(status.getId());
         }
         assertEquals(1, registry.getAll().size());
         String lastId = registry.getAll().iterator().next().getId();
-        assertFalse(registry.deleteStatus(lastId));
+        assertFalse(registry.delete(lastId));
     }
 
     @Test
     void resetToDefaults_restoresBuiltIns() {
-        registry.deleteStatus(WorldStatusRegistry.NOT_STARTED_ID);
+        registry.delete(WorldStatusRegistry.NOT_STARTED_ID);
         registry.resetToDefaults();
         assertEquals(6, registry.getAll().size());
         assertTrue(registry.get(WorldStatusRegistry.NOT_STARTED_ID).isPresent());
@@ -139,7 +139,7 @@ class WorldStatusRegistryImplTest {
 
     @Test
     void createdStatus_survivesReload() {
-        registry.createStatus("Persisted");
+        registry.create("Persisted");
 
         WorldStatusRegistryImpl reloaded = reloadRegistry();
         assertTrue(reloaded.get("persisted").isPresent());
@@ -156,7 +156,7 @@ class WorldStatusRegistryImplTest {
 
     @Test
     void createStatus_isPlacedInThePicker() {
-        BuildWorldStatus created = registry.createStatus("Needs Review");
+        BuildWorldStatus created = registry.create("Needs Review");
         assertTrue(created.getSlot() >= 0);
         assertTrue(created.isShown());
     }
@@ -167,9 +167,9 @@ class WorldStatusRegistryImplTest {
                 registry.get(WorldStatusRegistry.NOT_STARTED_ID).orElseThrow();
         notStarted.setSlot(25);
         registry.persist(notStarted);
-        WorldStatusImpl custom = registry.createStatus("Custom");
+        WorldStatusImpl custom = registry.create("Custom");
 
-        registry.resetStatusLayout();
+        registry.resetLayout();
 
         assertEquals(
                 10,

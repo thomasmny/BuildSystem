@@ -207,7 +207,7 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
         storage.saveAll(this.statuses.values());
     }
 
-    public WorldStatusImpl createStatus(String displayName) {
+    public WorldStatusImpl create(String displayName) {
         String id = StringUtils.uniqueId(displayName, "status", this.statuses::containsKey);
         int order = this.statuses.values().stream()
                         .mapToInt(WorldStatusImpl::getOrder)
@@ -234,7 +234,7 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
      * without otherwise changing the statuses. Backs the status editor's "reset layout" control, mirroring the
      * navigator's layout reset; a full {@link #resetToDefaults()} is the separate "reset everything".
      */
-    public void resetStatusLayout() {
+    public void resetLayout() {
         for (WorldStatusImpl status : this.statuses.values()) {
             Integer preset = DEFAULT_SLOTS.get(status.getId());
             if (preset != null) {
@@ -285,8 +285,9 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
         return -1;
     }
 
-    public void persist(WorldStatusImpl status) {
-        storage.save(status);
+    public void persist(BuildWorldStatus status) {
+        // The registry only ever hands out its own instances, so anything it is asked to persist is one of them.
+        storage.save((WorldStatusImpl) status);
     }
 
     /**
@@ -307,7 +308,7 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
      *
      * @return {@code true} if the status was deleted, {@code false} if it was unknown or the last remaining status
      */
-    public boolean deleteStatus(String id) {
+    public boolean delete(String id) {
         if (!this.statuses.containsKey(id) || this.statuses.size() == 1) {
             return false;
         }
