@@ -172,6 +172,7 @@ worlds_addbuilder_added: "%prefix% &b%builder% &7was &aadded &7as a builder."
 
 worlds_backup_usage: "%prefix% &7Usage: &b/worlds backup [create]"
 worlds_backup_unknown_world: "%prefix% &cUnknown world."
+worlds_backup_restore_default_world: "%prefix% &cThe default world cannot be restored while the server runs. Stop the server and extract the backup over its folder."
 worlds_backup_world_not_imported: "%prefix% &cWorld must be imported: /worlds import <world>"
 worlds_backup_created: "%prefix% &7Successfully &acreated &7a backup of &b%world%&7."
 worlds_backup_failed: "%prefix% &cUnable to create a backup of %world%."
