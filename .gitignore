@@ -125,3 +125,6 @@ buildSrc/.kotlin/
 run/
 /*.jar
 plans/
+
+# Internal release notes; the published changelog lives in the docs site.
+CHANGELOG.md
