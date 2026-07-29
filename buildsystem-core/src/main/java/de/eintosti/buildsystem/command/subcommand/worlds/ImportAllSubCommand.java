@@ -86,7 +86,11 @@ public class ImportAllSubCommand extends AbstractSubCommand {
             }
             try {
                 generator = Generator.valueOf(generatorArg.toUpperCase(Locale.ROOT));
-            } catch (IllegalArgumentException ignored) {
+            } catch (IllegalArgumentException e) {
+                // Unlike /worlds import, a bulk import has no per-world generator data, so an unknown name cannot be
+                // taken as a custom generator; silently falling back to VOID imported every world with the wrong one.
+                messages.sendMessage(player, "worlds_import_unknown_generator");
+                return;
             }
         }
 
