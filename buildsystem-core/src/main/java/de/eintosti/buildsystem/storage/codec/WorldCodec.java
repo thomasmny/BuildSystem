@@ -84,8 +84,8 @@ public final class WorldCodec implements Codec<BuildWorld> {
     }
 
     @Override
-    public Map<String, @Nullable Object> serialize(BuildWorld buildWorld) {
-        Map<String, @Nullable Object> world = new HashMap<>();
+    public Map<String, Object> serialize(BuildWorld buildWorld) {
+        Map<String, Object> world = new HashMap<>();
 
         world.put(NAME, buildWorld.getName());
         world.put(UUID_KEY, buildWorld.getUniqueId().toString());
@@ -110,9 +110,9 @@ public final class WorldCodec implements Codec<BuildWorld> {
      * keys, so the nesting has to happen here for the file to gain real sections. Ids nest one section level deep,
      * which is all the catalog uses.
      */
-    private Map<String, @Nullable Object> serializeWorldData(WorldDataImpl worldData) {
-        Map<String, @Nullable Object> data = new HashMap<>();
-        Map<String, Map<String, @Nullable Object>> sections = new HashMap<>();
+    private Map<String, Object> serializeWorldData(WorldDataImpl worldData) {
+        Map<String, Object> data = new HashMap<>();
+        Map<String, Map<String, Object>> sections = new HashMap<>();
         worldData.getAllData().forEach((id, property) -> {
             int dot = id.indexOf('.');
             if (dot < 0) {
