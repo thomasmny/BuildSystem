@@ -21,11 +21,11 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import java.util.Map;
 import java.util.stream.IntStream;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -64,7 +64,7 @@ public class DeleteMenu extends ButtonMenu<MenuButton> {
                             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(p);
                             p.closeInventory();
                             messages.sendMessage(
-                                    p, "worlds_delete_canceled", Map.entry("%world%", buildWorld.getName()));
+                                    p, "worlds_delete_canceled", Placeholders.of("%world%", buildWorld.getName()));
                         })
                         .build());
     }
@@ -89,7 +89,7 @@ public class DeleteMenu extends ButtonMenu<MenuButton> {
                         .into(getInventory(), slot));
 
         ItemBuilder.of(XMaterial.FILLED_MAP)
-                .name(messages.getString("delete_world_name", player, Map.entry("%world%", buildWorld.getName())))
+                .name(messages.getString("delete_world_name", player, Placeholders.of("%world%", buildWorld.getName())))
                 .lore(messages.getStringList("delete_world_name_lore", player))
                 .into(getInventory(), 13);
 

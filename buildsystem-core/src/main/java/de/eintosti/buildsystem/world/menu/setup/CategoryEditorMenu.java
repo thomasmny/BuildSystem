@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuItems;
@@ -34,7 +35,6 @@ import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -72,7 +72,7 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                 messages.getString(
                         "setup_category_editor_title",
                         player,
-                        Map.entry("%category%", ColorAPI.process(category.getStyledName()))));
+                        Placeholders.of("%category%", ColorAPI.process(category.getStyledName()))));
 
         this.registry = navigatorCategoryRegistry;
         this.worldStatusRegistry = worldStatusRegistry;
@@ -121,7 +121,7 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
 
                     ItemBuilder.icon(category, player)
                             .name(messages.getString("setup_category_icon", player))
-                            .lore(messages.getStringList(loreKey, player, Map.entry("%texture%", textureLabel)))
+                            .lore(messages.getStringList(loreKey, player, Placeholders.of("%texture%", textureLabel)))
                             .into(inventory, slot);
                 })
                 .onClick((player, event) -> {
@@ -168,7 +168,8 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
 
                     ItemBuilder.of(icon)
                             .name(messages.getString(nameKey, player))
-                            .lore(messages.getStringList(nameKey + "_lore", player, Map.entry("%state%", stateString)))
+                            .lore(messages.getStringList(
+                                    nameKey + "_lore", player, Placeholders.of("%state%", stateString)))
                             .glow(active)
                             .into(inventory, slot);
                 })
@@ -196,7 +197,7 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                                 .map(status -> messages.getString(
                                         "setup_category_statuses_member_entry",
                                         player,
-                                        Map.entry("%status%", ColorAPI.process(status.getStyledName()))))
+                                        Placeholders.of("%status%", ColorAPI.process(status.getStyledName()))))
                                 .forEach(lore::add);
                     }
 

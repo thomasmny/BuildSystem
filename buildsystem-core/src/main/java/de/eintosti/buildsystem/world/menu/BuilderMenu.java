@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuItems;
@@ -35,7 +36,6 @@ import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -122,7 +122,7 @@ public class BuilderMenu extends PaginatedMenu {
                                     .lore(messages.getString(
                                             "worldeditor_builders_creator_lore",
                                             player,
-                                            Map.entry("%creator%", creator.getName())))
+                                            Placeholders.of("%creator%", creator.getName())))
                                     .build();
                     inventory.setItem(slot, item);
                 })
@@ -166,7 +166,7 @@ public class BuilderMenu extends PaginatedMenu {
                                 .name(messages.getString(
                                         "worldeditor_builders_builder_item",
                                         player,
-                                        Map.entry("%builder%", builder.getName())))
+                                        Placeholders.of("%builder%", builder.getName())))
                                 .lore(messages.getStringList("worldeditor_builders_builder_lore", player))
                                 .pdc(this.builderNameKey, PersistentDataType.STRING, builder.getName())
                                 .build()))
@@ -206,7 +206,8 @@ public class BuilderMenu extends PaginatedMenu {
 
                     buildWorld.getBuilders().removeBuilder(builderId);
                     XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
-                    messages.sendMessage(player, "worlds_removebuilder_removed", Map.entry("%builder%", builderName));
+                    messages.sendMessage(
+                            player, "worlds_removebuilder_removed", Placeholders.of("%builder%", builderName));
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     populate(player);
                 }));

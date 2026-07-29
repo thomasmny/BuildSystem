@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.world.menu.setup;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuItems;
@@ -29,7 +30,6 @@ import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.data.WorldStatusImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import java.util.List;
-import java.util.Map;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -63,7 +63,7 @@ public class StatusEditorMenu extends RegistryEditorMenu {
                 messages.getString(
                         "setup_status_editor_title",
                         player,
-                        Map.entry("%status%", ColorAPI.process(status.getStyledName()))));
+                        Placeholders.of("%status%", ColorAPI.process(status.getStyledName()))));
 
         this.registry = worldStatusRegistry;
         this.status = (WorldStatusImpl) status;
@@ -91,7 +91,9 @@ public class StatusEditorMenu extends RegistryEditorMenu {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.COMPARATOR)
                         .name(messages.getString(
-                                "setup_status_order", player, Map.entry("%order%", String.valueOf(status.getOrder()))))
+                                "setup_status_order",
+                                player,
+                                Placeholders.of("%order%", String.valueOf(status.getOrder()))))
                         .lore(messages.getStringList("setup_order_lore", player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
@@ -106,7 +108,9 @@ public class StatusEditorMenu extends RegistryEditorMenu {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.ARROW)
                         .name(messages.getString(
-                                "setup_status_progresses", player, Map.entry("%target%", getProgressesLabel(player))))
+                                "setup_status_progresses",
+                                player,
+                                Placeholders.of("%target%", getProgressesLabel(player))))
                         .lore(messages.getStringList("setup_status_progresses_lore", player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {

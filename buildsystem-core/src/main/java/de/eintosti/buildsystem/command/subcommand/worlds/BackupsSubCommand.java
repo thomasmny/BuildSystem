@@ -22,14 +22,13 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -75,11 +74,11 @@ public class BackupsSubCommand extends AbstractSubCommand {
                         return;
                     }
 
-                    Entry<String, Object> worldNamePlaceholder = Map.entry("%world%", buildWorld.getName());
+                    Placeholders worldPlaceholder = Placeholders.of("%world%", buildWorld.getName());
                     backupService.backup(
                             buildWorld,
-                            () -> messages.sendMessage(player, "worlds_backup_created", worldNamePlaceholder),
-                            () -> messages.sendMessage(player, "worlds_backup_failed", worldNamePlaceholder));
+                            () -> messages.sendMessage(player, "worlds_backup_created", worldPlaceholder),
+                            () -> messages.sendMessage(player, "worlds_backup_failed", worldPlaceholder));
                 } else {
                     messages.sendMessage(player, "worlds_backup_usage");
                 }

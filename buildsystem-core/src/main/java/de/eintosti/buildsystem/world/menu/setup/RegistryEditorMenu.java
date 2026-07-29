@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.world.menu.setup;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
@@ -27,13 +28,11 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.Prompts;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -145,7 +144,8 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
 
                     ItemBuilder.of(on ? XMaterial.LIME_DYE : XMaterial.GRAY_DYE)
                             .name(messages.getString(nameKey, player))
-                            .lore(messages.getStringList(nameKey + "_lore", player, Map.entry("%state%", stateText)))
+                            .lore(messages.getStringList(
+                                    nameKey + "_lore", player, Placeholders.of("%state%", stateText)))
                             .glow(on)
                             .into(inventory, slot);
                 })
@@ -225,10 +225,5 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
     protected void populate(Player player) {
         menuItems.fillAll(player, getInventory());
         renderButtons(player);
-    }
-
-    @Override
-    protected void onUnhandledClick(Player player, InventoryClickEvent event) {
-        // Filler clicks do nothing; navigation is via the explicit back button.
     }
 }

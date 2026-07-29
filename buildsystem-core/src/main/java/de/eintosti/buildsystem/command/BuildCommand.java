@@ -21,12 +21,12 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.event.world.PlayerBuildModeToggleEvent;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
@@ -109,8 +109,10 @@ public class BuildCommand extends CommandBase {
                 messages.sendMessage(target, "build_activated_self");
             } else {
                 XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
-                messages.sendMessage(sender, "build_activated_other_sender", Map.entry("%target%", target.getName()));
-                messages.sendMessage(target, "build_activated_other_target", Map.entry("%sender%", sender.getName()));
+                messages.sendMessage(
+                        sender, "build_activated_other_sender", Placeholders.of("%target%", target.getName()));
+                messages.sendMessage(
+                        target, "build_activated_other_target", Placeholders.of("%sender%", sender.getName()));
             }
         } else {
             if (!playerService.leaveBuildMode(targetUuid)) {
@@ -124,8 +126,10 @@ public class BuildCommand extends CommandBase {
                 messages.sendMessage(target, "build_deactivated_self");
             } else {
                 XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
-                messages.sendMessage(sender, "build_deactivated_other_sender", Map.entry("%target%", target.getName()));
-                messages.sendMessage(target, "build_deactivated_other_target", Map.entry("%sender%", sender.getName()));
+                messages.sendMessage(
+                        sender, "build_deactivated_other_sender", Placeholders.of("%target%", target.getName()));
+                messages.sendMessage(
+                        target, "build_deactivated_other_target", Placeholders.of("%sender%", sender.getName()));
             }
         }
     }

@@ -73,8 +73,10 @@ public class TeleportSubCommand extends AbstractSubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        WorldStorage ws = worldService.getWorldStorage();
-        return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
+
+        WorldStorage worldStorage = worldService.getWorldStorage();
+        return WorldsCompletions.permittedWorldNames(
+                player, worldStorage, getArgument().getPermission(), args[1]);
     }
 
     @Override

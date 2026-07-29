@@ -34,7 +34,6 @@ import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.List;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -149,10 +148,5 @@ public class CategoryStatusesMenu extends PaginatedMenu {
         } else {
             category.addStatusId(status.getId());
         }
-    }
-
-    @Override
-    protected void onUnhandledClick(Player player, InventoryClickEvent event) {
-        // Filler clicks do nothing; navigation is via the explicit buttons.
     }
 }

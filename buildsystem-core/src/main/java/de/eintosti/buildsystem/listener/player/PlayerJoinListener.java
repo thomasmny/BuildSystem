@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocation;
@@ -39,7 +40,6 @@ import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import io.papermc.lib.PaperLib;
-import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -94,7 +94,7 @@ public class PlayerJoinListener implements Listener {
     public void sendPlayerJoinMessage(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         String message = configService.current().settings().joinQuitMessages()
-                ? messages.getString("player_join", player, Map.entry("%player%", player.getName()))
+                ? messages.getString("player_join", player, Placeholders.of("%player%", player.getName()))
                 : null;
         event.setJoinMessage(message);
     }
@@ -117,7 +117,7 @@ public class PlayerJoinListener implements Listener {
         if (buildWorld != null) {
             WorldData worldData = buildWorld.getData();
             if (!worldData.get(WorldDataKey.PHYSICS) && player.hasPermission(Permissions.PHYSICS_MESSAGE)) {
-                messages.sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", worldName));
+                messages.sendMessage(player, "physics_deactivated_in_world", Placeholders.of("%world%", worldName));
             }
 
             if (configService.current().settings().archive().vanish()

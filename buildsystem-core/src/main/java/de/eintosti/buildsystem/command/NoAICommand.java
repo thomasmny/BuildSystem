@@ -21,11 +21,11 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -85,10 +85,10 @@ public class NoAICommand extends CommandBase {
         WorldData worldData = buildWorld.getData();
         if (worldData.get(WorldDataKey.MOB_AI)) {
             worldData.set(WorldDataKey.MOB_AI, false);
-            messages.sendMessage(player, "noai_activated", Map.entry("%world%", buildWorld.getName()));
+            messages.sendMessage(player, "noai_activated", Placeholders.of("%world%", buildWorld.getName()));
         } else {
             worldData.set(WorldDataKey.MOB_AI, true);
-            messages.sendMessage(player, "noai_deactivated", Map.entry("%world%", buildWorld.getName()));
+            messages.sendMessage(player, "noai_deactivated", Placeholders.of("%world%", buildWorld.getName()));
         }
 
         boolean hasAi = worldData.get(WorldDataKey.MOB_AI);

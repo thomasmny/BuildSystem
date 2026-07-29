@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.player.menu;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
@@ -106,10 +107,10 @@ public class SpeedMenu extends ButtonMenu<MenuButton> {
     private void setSpeed(Player player, float speed, int num) {
         if (player.isFlying()) {
             player.setFlySpeed(speed - 0.1f);
-            messages.sendMessage(player, "speed_set_flying", Map.entry("%speed%", num));
+            messages.sendMessage(player, "speed_set_flying", Placeholders.of("%speed%", num));
         } else {
             player.setWalkSpeed(speed);
-            messages.sendMessage(player, "speed_set_walking", Map.entry("%speed%", num));
+            messages.sendMessage(player, "speed_set_walking", Placeholders.of("%speed%", num));
         }
     }
 }

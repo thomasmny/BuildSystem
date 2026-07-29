@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
@@ -31,7 +32,6 @@ import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -136,7 +136,7 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
 
         builders.addBuilder(builder);
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
-        messages.sendMessage(player, "worlds_addbuilder_added", Map.entry("%builder%", builderName));
+        messages.sendMessage(player, "worlds_addbuilder_added", Placeholders.of("%builder%", builderName));
 
         if (closeInventory) {
             player.closeInventory();
@@ -157,11 +157,13 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
         if (args.length != 2) {
             return List.of();
         }
+
         BuildWorld buildWorld =
                 worldService.getWorldStorage().getBuildWorld(player.getWorld().getName());
         if (buildWorld == null) {
             return List.of();
         }
+
         List<String> result = new ArrayList<>();
         Builders builders = buildWorld.getBuilders();
         Bukkit.getOnlinePlayers().stream()

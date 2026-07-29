@@ -23,12 +23,12 @@ import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -72,8 +72,8 @@ public class WorldImportCoordinator {
     public void importWorlds(Player player, String[] worldList, Generator generator, @Nullable Builder creator) {
         int delay = configService.current().world().importAllDelay();
         messages.sendMessage(
-                player, "worlds_importall_started", Map.entry("%amount%", String.valueOf(worldList.length)));
-        messages.sendMessage(player, "worlds_importall_delay", Map.entry("%delay%", String.valueOf(delay)));
+                player, "worlds_importall_started", Placeholders.of("%amount%", String.valueOf(worldList.length)));
+        messages.sendMessage(player, "worlds_importall_delay", Placeholders.of("%delay%", String.valueOf(delay)));
 
         if (!importingAllWorlds.compareAndSet(false, true)) {
             // The subcommand checks isImportingAllWorlds() first, but that is check-then-act; claim it atomically so
@@ -85,7 +85,7 @@ public class WorldImportCoordinator {
             @Override
             public void skippedExisting(String worldName) {
                 messages.sendMessage(
-                        player, "worlds_importall_world_already_imported", Map.entry("%world%", worldName));
+                        player, "worlds_importall_world_already_imported", Placeholders.of("%world%", worldName));
             }
 
             @Override
@@ -93,18 +93,20 @@ public class WorldImportCoordinator {
                 messages.sendMessage(
                         player,
                         "worlds_importall_invalid_character",
-                        Map.entry("%world%", worldName),
-                        Map.entry("%char%", invalidChar));
+                        Placeholders.of()
+                                .add("%world%", worldName)
+                                .add("%char%", invalidChar)
+                                .build());
             }
 
             @Override
             public void imported(String worldName) {
-                messages.sendMessage(player, "worlds_importall_world_imported", Map.entry("%world%", worldName));
+                messages.sendMessage(player, "worlds_importall_world_imported", Placeholders.of("%world%", worldName));
             }
 
             @Override
             public void failed(String worldName) {
-                messages.sendMessage(player, "worlds_importall_world_failed", Map.entry("%world%", worldName));
+                messages.sendMessage(player, "worlds_importall_world_failed", Placeholders.of("%world%", worldName));
             }
         };
         importStaggered(

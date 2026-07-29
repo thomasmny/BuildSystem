@@ -23,11 +23,11 @@ import de.eintosti.buildsystem.api.world.creation.WorldImporter;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
-import java.util.Map;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
@@ -94,7 +94,7 @@ public class WorldImporterImpl extends AbstractWorldCreator implements WorldImpo
     @Override
     public @Nullable BuildWorld build() {
         if (isDataVersionTooHigh()) {
-            notifyAudience("worlds_import_newer_version", Map.entry("%world%", worldName));
+            notifyAudience("worlds_import_newer_version", Placeholders.of("%world%", worldName));
             return null;
         }
 

@@ -45,7 +45,6 @@ public abstract class CommandBase implements CommandExecutor, TabCompleter {
     public final boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (playerOnly) {
             if (!(sender instanceof Player player)) {
-                // Logging this left a command block or RCON caller with no feedback at all.
                 messages.sendMessage(sender, "sender_not_player");
                 return true;
             }

@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -120,14 +121,13 @@ public class SettingsService {
     private void updateScoreboard(Player player, FastBoard board) {
         // Hoisted out of the per-line callback: this reads the player's world and formats four timestamps, and the
         // scoreboard refreshes every second for every player.
-        Map.Entry<String, Object>[] placeholders = getPlaceholders(player);
+        Placeholders placeholders = getPlaceholders(player);
         List<String> body = messages.getStringList("body", player, line -> placeholders);
         board.updateLines(body);
     }
 
     @Contract("_ -> new")
-    @SuppressWarnings("unchecked")
-    private Map.Entry<String, Object>[] getPlaceholders(Player player) {
+    private Placeholders getPlaceholders(Player player) {
         String worldName = player.getWorld().getName();
         BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
 
@@ -155,17 +155,17 @@ public class SettingsService {
             lastUnloaded = messages.formatDate(worldData.get(WorldDataKey.LAST_UNLOADED));
         }
 
-        return new Map.Entry[] {
-            Map.entry("%world%", worldName),
-            Map.entry("%status%", status),
-            Map.entry("%permission%", permission),
-            Map.entry("%project%", project),
-            Map.entry("%creator%", creator),
-            Map.entry("%creation%", creation),
-            Map.entry("%lastedited%", lastEdited),
-            Map.entry("%lastloaded%", lastLoaded),
-            Map.entry("%lastunloaded%", lastUnloaded)
-        };
+        return Placeholders.of()
+                .add("%world%", worldName)
+                .add("%status%", status)
+                .add("%permission%", permission)
+                .add("%project%", project)
+                .add("%creator%", creator)
+                .add("%creation%", creation)
+                .add("%lastedited%", lastEdited)
+                .add("%lastloaded%", lastLoaded)
+                .add("%lastunloaded%", lastUnloaded)
+                .build();
     }
 
     public void hideScoreboard(Player player) {

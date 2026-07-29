@@ -18,9 +18,9 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import net.md_5.bungee.api.chat.ClickEvent;
@@ -94,7 +94,8 @@ public abstract class PagedCommand extends CommandBase {
         commandComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, suggest));
         commandComponent.setHoverEvent(new HoverEvent(
                 HoverEvent.Action.SHOW_TEXT,
-                new Text(messages.getString(this.permissionTemplate, player, Map.entry("%permission%", permission)))));
+                new Text(messages.getString(
+                        this.permissionTemplate, player, Placeholders.of("%permission%", permission)))));
         commandComponent.addExtra(textComponent);
         return commandComponent;
     }

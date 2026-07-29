@@ -28,7 +28,6 @@ import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.List;
 import java.util.function.Consumer;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -149,10 +148,5 @@ public class DyePickerMenu extends ButtonMenu<MenuButton> {
     protected void populate(Player player) {
         menuItems.fillAll(player, getInventory());
         renderButtons(player);
-    }
-
-    @Override
-    protected void onUnhandledClick(Player player, InventoryClickEvent event) {
-        // Filler clicks do nothing; navigation is via the explicit back button.
     }
 }

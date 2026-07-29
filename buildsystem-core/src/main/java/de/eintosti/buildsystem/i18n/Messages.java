@@ -26,7 +26,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Logger;
@@ -98,19 +97,25 @@ public final class Messages {
         sendMessage(sender, "no_permissions");
     }
 
-    @SafeVarargs
-    public final void sendMessage(CommandSender sender, String key, Entry<String, Object>... placeholders) {
+    public void sendMessage(CommandSender sender, String key) {
+        sendMessage(sender, key, Placeholders.none());
+    }
+
+    public void sendMessage(CommandSender sender, String key, Placeholders placeholders) {
         String message = getString(key, sender, placeholders);
         if (!message.isEmpty()) {
             sender.sendMessage(message);
         }
     }
 
-    @SafeVarargs
-    public final String getString(String key, CommandSender sender, Entry<String, Object>... placeholders) {
+    public String getString(String key, CommandSender sender) {
+        return getString(key, sender, Placeholders.none());
+    }
+
+    public String getString(String key, CommandSender sender, Placeholders placeholders) {
         store.checkIfKeyPresent(key);
         String message = store.getRaw(key).replace("%prefix%", store.getPrefix());
-        String result = Placeholders.apply(message, placeholders);
+        String result = placeholders.applyTo(message);
         Player player = sender instanceof Player p ? p : null;
         return ColorAPI.process(applyResolver(this.placeholderResolver, player, result));
     }
@@ -131,22 +136,31 @@ public final class Messages {
         return text;
     }
 
-    @SafeVarargs
-    public final List<String> getStringList(
-            String key, @Nullable Player player, Entry<String, Object>... placeholders) {
-        return getStringList(key, player, (line) -> placeholders);
+    public List<String> getStringList(String key, @Nullable Player player) {
+        return getStringList(key, player, Placeholders.none());
     }
 
+    public List<String> getStringList(String key, @Nullable Player player, Placeholders placeholders) {
+        return getStringList(key, player, line -> placeholders);
+    }
+
+    /**
+     * Renders a multi-line message, choosing the substitutions per line. Only the world-item lore needs this, to expand
+     * a builder list across as many lines as it takes.
+     *
+     * @param key The message key
+     * @param player The player the text is for, or {@code null} for a non-player audience
+     * @param placeholders Supplies the substitutions for a given raw line
+     * @return The rendered lines
+     */
     @Unmodifiable
     public List<String> getStringList(
-            String key, @Nullable Player player, Function<String, Entry<String, Object>[]> placeholders) {
-        // Lore is looked up through here, so without this a mistyped lore key renders as an empty list with no warning
-        // at all, while the same mistake in a name is reported.
+            String key, @Nullable Player player, Function<String, Placeholders> placeholders) {
         store.checkIfKeyPresent(key);
         String message = store.getRaw(key).replace("%prefix%", store.getPrefix());
         TextResolver resolver = this.placeholderResolver;
         return Arrays.stream(message.split("\n"))
-                .map(line -> Placeholders.apply(line, placeholders.apply(line)))
+                .map(line -> placeholders.apply(line).applyTo(line))
                 .map(line -> applyResolver(resolver, player, line))
                 .map(ColorAPI::process)
                 .toList();

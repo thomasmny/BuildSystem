@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
@@ -31,7 +32,6 @@ import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
-import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -63,7 +63,7 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
         super(
                 messages,
                 WorldStatusRegistryImpl.STATUS_MENU_SIZE,
-                messages.getString("status_title", player, Map.entry("%world%", formatWorldName(buildWorld))));
+                messages.getString("status_title", player, Placeholders.of("%world%", formatWorldName(buildWorld))));
         this.settingsService = settingsService;
         this.menuItems = menuItems;
         this.menus = menus;
@@ -112,8 +112,10 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
                     messages.sendMessage(
                             player,
                             "worlds_setstatus_set",
-                            Map.entry("%world%", buildWorld.getName()),
-                            Map.entry("%status%", ColorAPI.process(status.getStyledName())));
+                            Placeholders.of()
+                                    .add("%world%", buildWorld.getName())
+                                    .add("%status%", ColorAPI.process(status.getStyledName()))
+                                    .build());
                 })
                 .build();
     }

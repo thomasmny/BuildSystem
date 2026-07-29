@@ -24,13 +24,13 @@ import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.WorldContext;
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 import java.util.logging.Level;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
@@ -166,8 +166,10 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
         if (audience != null) {
             notifyAudience(
                     "worlds_world_creation_started",
-                    Map.entry("%world%", worldName),
-                    Map.entry("%type%", context.messages().getString(Messages.getMessageKey(worldType), audience)));
+                    Placeholders.of()
+                            .add("%world%", worldName)
+                            .add("%type%", context.messages().getString(Messages.getMessageKey(worldType), audience))
+                            .build());
         }
         buildWorld = createAndRegisterBuildWorld();
         generateBukkitWorld(false);
@@ -192,7 +194,11 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
         }
 
         notifyAudience(
-                "worlds_template_creation_started", Map.entry("%world%", worldName), Map.entry("%template%", template));
+                "worlds_template_creation_started",
+                Placeholders.of()
+                        .add("%world%", worldName)
+                        .add("%template%", template)
+                        .build());
 
         File worldFile = FileUtils.worldFolder(worldName);
         try {
@@ -201,7 +207,7 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
             // Without this the world was registered around a half-copied (or empty) directory and reported as created.
             context.logger()
                     .log(Level.SEVERE, "Failed to copy template \"" + template + "\" for world " + worldName, e);
-            notifyAudience("worlds_template_creation_error", Map.entry("%template%", template));
+            notifyAudience("worlds_template_creation_error", Placeholders.of("%template%", template));
             return false;
         }
 

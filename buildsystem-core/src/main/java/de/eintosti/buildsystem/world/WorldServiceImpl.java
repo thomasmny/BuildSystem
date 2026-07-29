@@ -37,6 +37,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlFolderStorage;
@@ -56,7 +57,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
@@ -168,7 +168,7 @@ public class WorldServiceImpl implements WorldService {
 
         if (worldImporter.isDataVersionTooHigh()) {
             String key = single ? "import" : "importall";
-            messages.sendMessage(player, "worlds_" + key + "_newer_version", Map.entry("%world%", worldName));
+            messages.sendMessage(player, "worlds_" + key + "_newer_version", Placeholders.of("%world%", worldName));
             return false;
         }
 
@@ -206,7 +206,7 @@ public class WorldServiceImpl implements WorldService {
 
     public void deleteWorld(Player player, BuildWorld buildWorld) {
         String worldName = buildWorld.getName();
-        messages.sendMessage(player, "worlds_delete_started", Map.entry("%world%", worldName));
+        messages.sendMessage(player, "worlds_delete_started", Placeholders.of("%world%", worldName));
         deleteWorld(buildWorld)
                 .thenRun(() -> messages.sendMessage(player, "worlds_delete_finished"))
                 .exceptionally(e -> {
@@ -220,7 +220,7 @@ public class WorldServiceImpl implements WorldService {
                             // The cancelling listener is responsible for messaging the player.
                         }
                         default -> {
-                            messages.sendMessage(player, "worlds_delete_error", Map.entry("%world%", worldName));
+                            messages.sendMessage(player, "worlds_delete_error", Placeholders.of("%world%", worldName));
                             plugin.getLogger()
                                     .log(
                                             Level.SEVERE,

@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.*;
 import de.eintosti.buildsystem.api.world.display.WorldFilter.Mode;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.*;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
@@ -291,7 +292,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                 };
 
         List<String> lore = new ArrayList<>();
-        lore.add(messages.getString(loreKey, player, Map.entry("%text%", worldFilter.getText())));
+        lore.add(messages.getString(loreKey, player, Placeholders.of("%text%", worldFilter.getText())));
         lore.addAll(messages.getStringList("world_filter_lore", player));
 
         ItemBuilder.of(XMaterial.HOPPER)
@@ -372,7 +373,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                     }
 
                     Folder folder = createFolder(folderName);
-                    messages.sendMessage(player, "worlds_folder_created", Map.entry("%folder%", folder.getName()));
+                    messages.sendMessage(
+                            player, "worlds_folder_created", Placeholders.of("%folder%", folder.getName()));
                     open(player);
                 });
     }

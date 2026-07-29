@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuItems;
@@ -239,7 +240,8 @@ public class CreateMenu extends PaginatedMenu {
     private MenuButton templateButton(String rawTemplateName) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.FILLED_MAP)
-                        .name(messages.getString("create_template", player, Map.entry("%template%", rawTemplateName)))
+                        .name(messages.getString(
+                                "create_template", player, Placeholders.of("%template%", rawTemplateName)))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
                     // Template names are dynamic and cannot be pre-registered in plugin.yml, so default-allow is

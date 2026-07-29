@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.*;
 import java.util.logging.Logger;
@@ -108,7 +109,7 @@ public class GamemodeCommand extends CommandBase {
         }
 
         player.setGameMode(gameMode);
-        messages.sendMessage(player, "gamemode_set_self", Map.entry("%gamemode%", gameModeName));
+        messages.sendMessage(player, "gamemode_set_self", Placeholders.of("%gamemode%", gameModeName));
     }
 
     private void setTargetGamemode(Player player, String[] args, GameMode gameMode, String gameModeName) {
@@ -123,11 +124,13 @@ public class GamemodeCommand extends CommandBase {
         }
 
         target.setGameMode(gameMode);
-        messages.sendMessage(target, "gamemode_set_self", Map.entry("%gamemode%", gameModeName));
+        messages.sendMessage(target, "gamemode_set_self", Placeholders.of("%gamemode%", gameModeName));
         messages.sendMessage(
                 player,
                 "gamemode_set_other",
-                Map.entry("%target%", target.getName()),
-                Map.entry("%gamemode%", gameModeName));
+                Placeholders.of()
+                        .add("%target%", target.getName())
+                        .add("%gamemode%", gameModeName)
+                        .build());
     }
 }

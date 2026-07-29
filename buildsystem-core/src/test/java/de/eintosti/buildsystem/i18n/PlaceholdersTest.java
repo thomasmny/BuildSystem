@@ -18,8 +18,8 @@
 package de.eintosti.buildsystem.i18n;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
-import java.util.Map;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
@@ -27,41 +27,68 @@ import org.junit.jupiter.api.Test;
 class PlaceholdersTest {
 
     @Test
-    void apply_simplePlaceholder_substituted() {
-        String result = Placeholders.apply("World: %world%", Map.entry("%world%", "MyWorld"));
-        assertEquals("World: MyWorld", result);
+    void applyTo_simplePlaceholder_substituted() {
+        assertEquals("World: MyWorld", Placeholders.of("%world%", "MyWorld").applyTo("World: %world%"));
     }
 
     @Test
-    void apply_valueContainingDollarSign_treatedLiterally() {
+    void applyTo_valueContainingDollarSign_treatedLiterally() {
         // Previously replaceAll treated the value as a regex replacement template;
         // a '$' in the value would cause IndexOutOfBoundsException.
-        String result = Placeholders.apply("Price: %val%", Map.entry("%val%", "$100"));
-        assertEquals("Price: $100", result);
+        assertEquals("Price: $100", Placeholders.of("%val%", "$100").applyTo("Price: %val%"));
     }
 
     @Test
-    void apply_valueContainingBackslash_treatedLiterally() {
-        String result = Placeholders.apply("Path: %val%", Map.entry("%val%", "C:\\Users\\test"));
-        assertEquals("Path: C:\\Users\\test", result);
+    void applyTo_valueContainingBackslash_treatedLiterally() {
+        assertEquals(
+                "Path: C:\\Users\\test",
+                Placeholders.of("%val%", "C:\\Users\\test").applyTo("Path: %val%"));
     }
 
     @Test
-    void apply_multiplePlaceholders_allSubstituted() {
-        String result = Placeholders.apply(
-                "%player% joined %world%", Map.entry("%player%", "Alice"), Map.entry("%world%", "Lobby"));
-        assertEquals("Alice joined Lobby", result);
+    void applyTo_multiplePlaceholders_allSubstituted() {
+        Placeholders placeholders = Placeholders.of()
+                .add("%player%", "Alice")
+                .add("%world%", "Lobby")
+                .build();
+        assertEquals("Alice joined Lobby", placeholders.applyTo("%player% joined %world%"));
     }
 
     @Test
-    void apply_absentPlaceholder_templateUnchanged() {
-        String result = Placeholders.apply("Hello %name%", Map.entry("%world%", "X"));
-        assertEquals("Hello %name%", result);
+    void applyTo_absentPlaceholder_templateUnchanged() {
+        assertEquals("Hello %name%", Placeholders.of("%world%", "X").applyTo("Hello %name%"));
     }
 
     @Test
-    void apply_noPlaceholders_returnsOriginal() {
-        String result = Placeholders.apply("no placeholders here");
-        assertEquals("no placeholders here", result);
+    void applyTo_noPlaceholders_returnsOriginal() {
+        assertEquals("no placeholders here", Placeholders.none().applyTo("no placeholders here"));
+    }
+
+    @Test
+    void add_sameTokenTwice_keepsTheLaterValue() {
+        Placeholders placeholders = Placeholders.of()
+                .add("%world%", "first")
+                .add("%world%", "second")
+                .build();
+        assertEquals("second", placeholders.applyTo("%world%"));
+    }
+
+    @Test
+    void build_withNothingAdded_isTheSharedEmptySet() {
+        assertSame(Placeholders.none(), Placeholders.of().build());
+    }
+
+    @Test
+    void build_snapshotsTheBuilder() {
+        Placeholders.Builder builder = Placeholders.of().add("%world%", "before");
+        Placeholders built = builder.build();
+        builder.add("%world%", "after");
+
+        assertEquals("before", built.applyTo("%world%"), "a built set must not see later builder mutations");
+    }
+
+    @Test
+    void nonStringValue_isRenderedWithValueOf() {
+        assertEquals("Speed: 3", Placeholders.of("%speed%", 3).applyTo("Speed: %speed%"));
     }
 }

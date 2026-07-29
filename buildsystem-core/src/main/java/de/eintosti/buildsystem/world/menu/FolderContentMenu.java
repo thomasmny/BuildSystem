@@ -23,9 +23,9 @@ import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.WorldDisplay;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.world.display.DisplayOrdering;
 import java.util.*;
-import java.util.AbstractMap.SimpleEntry;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.Unmodifiable;
@@ -49,7 +49,7 @@ public class FolderContentMenu extends DisplayablesMenu {
                 Options.builder()
                         .category(category)
                         .title(context.messages()
-                                .getString("folder_title", player, new SimpleEntry<>("%folder%", folder.getName())))
+                                .getString("folder_title", player, Placeholders.of("%folder%", folder.getName())))
                         .build());
         this.folder = folder;
         this.parentInventory = parentInventory;

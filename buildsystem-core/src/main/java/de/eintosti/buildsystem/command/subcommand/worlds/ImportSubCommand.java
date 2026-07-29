@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.FileUtils;
@@ -83,8 +84,10 @@ public class ImportSubCommand extends AbstractSubCommand {
             messages.sendMessage(
                     player,
                     "worlds_import_invalid_character",
-                    Map.entry("%world%", worldName),
-                    Map.entry("%char%", invalidChar));
+                    Placeholders.of()
+                            .add("%world%", worldName)
+                            .add("%char%", invalidChar)
+                            .build());
             return;
         }
 
@@ -152,6 +155,7 @@ public class ImportSubCommand extends AbstractSubCommand {
                     messages.sendMessage(player, "worlds_import_usage");
                     return null;
                 }
+
                 try {
                     generator = Generator.valueOf(generatorArg.toUpperCase(Locale.ROOT));
                     generatorName = generator.name();
@@ -176,12 +180,13 @@ public class ImportSubCommand extends AbstractSubCommand {
                     messages.sendMessage(player, "worlds_import_usage");
                     return null;
                 }
+
                 try {
                     worldType = BuildWorldType.valueOf(worldTypeArg.toUpperCase(Locale.ROOT));
                 } catch (IllegalArgumentException e) {
                     // Unlike -g, there is no "custom" world type to fall back to; silently importing as IMPORTED left
                     // the player believing the flag had been applied.
-                    messages.sendMessage(player, "worlds_import_unknown_type", Map.entry("%type%", worldTypeArg));
+                    messages.sendMessage(player, "worlds_import_unknown_type", Placeholders.of("%type%", worldTypeArg));
                     return null;
                 }
             }
@@ -197,7 +202,7 @@ public class ImportSubCommand extends AbstractSubCommand {
             BuildWorldType worldType,
             Generator generator,
             String generatorName) {
-        messages.sendMessage(player, "worlds_import_started", Map.entry("%world%", worldName));
+        messages.sendMessage(player, "worlds_import_started", Placeholders.of("%world%", worldName));
         if (worldService.importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
             messages.sendMessage(player, "worlds_import_finished");
         }
@@ -215,11 +220,13 @@ public class ImportSubCommand extends AbstractSubCommand {
                 return FileUtils.isWorldDirectory(new File(dir, name))
                         && !worldService.getWorldStorage().worldExists(name);
             });
+
             if (directories != null) {
                 for (String dir : directories) {
                     WorldsCompletions.addIfStartsWith(args[1], dir, result);
                 }
             }
+
             return result;
         }
 

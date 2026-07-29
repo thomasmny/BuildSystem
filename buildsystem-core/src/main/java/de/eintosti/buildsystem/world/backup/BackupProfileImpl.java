@@ -30,6 +30,7 @@ import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -38,7 +39,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -245,7 +245,7 @@ public class BackupProfileImpl implements BackupProfile {
         messages.sendMessage(
                 player,
                 "worlds_backup_restoration_successful",
-                Map.entry("%timestamp%", messages.formatDateTime(backup.creationTime())));
+                Placeholders.of("%timestamp%", messages.formatDateTime(backup.creationTime())));
     }
 
     /**

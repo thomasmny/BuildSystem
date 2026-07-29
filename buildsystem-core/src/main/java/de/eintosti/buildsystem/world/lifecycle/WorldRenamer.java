@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.event.world.BuildWorldRenameEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
@@ -34,7 +35,6 @@ import io.papermc.lib.PaperLib;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -206,6 +206,11 @@ public class WorldRenamer {
         }
 
         messages.sendMessage(
-                player, "worlds_rename_set", Map.entry("%oldName%", oldName), Map.entry("%newName%", sanitizedNewName));
+                player,
+                "worlds_rename_set",
+                Placeholders.of()
+                        .add("%oldName%", oldName)
+                        .add("%newName%", sanitizedNewName)
+                        .build());
     }
 }

@@ -21,12 +21,12 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig.World.Defaults.Time;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.function.ToIntFunction;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
@@ -106,7 +106,7 @@ public class TimeCommand extends CommandBase {
 
         Time time = configService.current().world().defaults().time();
         world.setTime(variant.tick.applyAsInt(time));
-        messages.sendMessage(player, variant.label + "_set", Map.entry("%world%", world.getName()));
+        messages.sendMessage(player, variant.label + "_set", Placeholders.of("%world%", world.getName()));
     }
 
     @Override

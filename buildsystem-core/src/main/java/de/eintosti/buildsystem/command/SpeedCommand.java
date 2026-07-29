@@ -18,11 +18,11 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -86,10 +86,10 @@ public class SpeedCommand extends CommandBase {
     private void setSpeed(Player player, float speed, String speedString) {
         if (player.isFlying()) {
             player.setFlySpeed(speed - 0.1f);
-            messages.sendMessage(player, "speed_set_flying", Map.entry("%speed%", speedString));
+            messages.sendMessage(player, "speed_set_flying", Placeholders.of("%speed%", speedString));
         } else {
             player.setWalkSpeed(speed);
-            messages.sendMessage(player, "speed_set_walking", Map.entry("%speed%", speedString));
+            messages.sendMessage(player, "speed_set_walking", Placeholders.of("%speed%", speedString));
         }
     }
 }

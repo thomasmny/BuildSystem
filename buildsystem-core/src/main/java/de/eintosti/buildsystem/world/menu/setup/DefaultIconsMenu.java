@@ -31,7 +31,6 @@ import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import java.util.List;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -126,11 +125,6 @@ public class DefaultIconsMenu extends ButtonMenu<MenuButton> {
     protected void populate(Player player) {
         menuItems.fillAll(player, getInventory());
         renderButtons(player);
-    }
-
-    @Override
-    protected void onUnhandledClick(Player player, InventoryClickEvent event) {
-        // Filler clicks do nothing; navigation is via the explicit back button.
     }
 
     /**
