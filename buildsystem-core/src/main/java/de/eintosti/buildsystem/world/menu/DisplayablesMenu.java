@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.*;
 import de.eintosti.buildsystem.api.world.display.WorldFilter.Mode;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.*;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
@@ -50,7 +51,7 @@ import org.jspecify.annotations.Nullable;
 public abstract class DisplayablesMenu extends PaginatedMenu {
 
     private static final int MAX_WORLDS_PER_PAGE = 36;
-    private static final int FIRST_WORD_SLOT = 9;
+    private static final int FIRST_WORLD_SLOT = 9;
     private static final int LAST_WORLD_SLOT = 44;
 
     private static final int SLOT_NO_WORLDS = 22;
@@ -175,7 +176,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         register(SLOT_PREVIOUS_PAGE, previousPageButton(SkullTextures.PREVIOUS_PAGE, MAX_WORLDS_PER_PAGE));
         register(SLOT_NEXT_PAGE, nextPageButton(SkullTextures.NEXT_PAGE, MAX_WORLDS_PER_PAGE));
 
-        for (int i = FIRST_WORD_SLOT; i <= LAST_WORLD_SLOT; i++) {
+        for (int i = FIRST_WORLD_SLOT; i <= LAST_WORLD_SLOT; i++) {
             inv.setItem(i, null);
         }
 
@@ -184,7 +185,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                     .name(noWorldsMessage)
                     .into(inv, SLOT_NO_WORLDS);
         } else {
-            registerPageItems(FIRST_WORD_SLOT, MAX_WORLDS_PER_PAGE, cachedDisplayables, this::displayableButton);
+            registerPageItems(FIRST_WORLD_SLOT, MAX_WORLDS_PER_PAGE, cachedDisplayables, this::displayableButton);
         }
 
         renderButtons(player);
@@ -291,7 +292,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                 };
 
         List<String> lore = new ArrayList<>();
-        lore.add(messages.getString(loreKey, player, Map.entry("%text%", worldFilter.getText())));
+        lore.add(messages.getString(loreKey, player, Placeholders.of("%text%", worldFilter.getText())));
         lore.addAll(messages.getStringList("world_filter_lore", player));
 
         ItemBuilder.of(XMaterial.HOPPER)
@@ -372,7 +373,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                     }
 
                     Folder folder = createFolder(folderName);
-                    messages.sendMessage(player, "worlds_folder_created", Map.entry("%folder%", folder.getName()));
+                    messages.sendMessage(
+                            player, "worlds_folder_created", Placeholders.of("%folder%", folder.getName()));
                     open(player);
                 });
     }

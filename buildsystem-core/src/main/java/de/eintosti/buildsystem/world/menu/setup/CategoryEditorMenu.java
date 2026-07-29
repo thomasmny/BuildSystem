@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuItems;
@@ -34,7 +35,6 @@ import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -72,7 +72,7 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                 messages.getString(
                         "setup_category_editor_title",
                         player,
-                        Map.entry("%category%", ColorAPI.process(category.getStyledName()))));
+                        Placeholders.of("%category%", ColorAPI.process(category.getStyledName()))));
 
         this.registry = navigatorCategoryRegistry;
         this.worldStatusRegistry = worldStatusRegistry;
@@ -91,7 +91,7 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
         return List.of(
                 renameButton("setup_category_rename", "setup_category_rename_prompt", category::setDisplayName),
                 colorButton("setup_category_color", category::getColor, category::setColor),
-                iconButton());
+                categoryIconButton());
     }
 
     /**
@@ -109,21 +109,23 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
      * The category icon button. Left-click opens the item picker to choose the material. When that material is a player
      * head, the skull texture is part of the same control: right-click prompts for it (a texture, {@code viewer} for the
      * viewing player's head, or {@code none} to clear).
+     *
+     * <p>Named apart from the inherited {@link #iconButton(String, java.util.function.Supplier,
+     * java.util.function.Consumer) plain icon button} the status editor uses, so the two are not an overload pair.
      */
-    private MenuButton iconButton() {
-        boolean isHead = category.getIcon() == Material.PLAYER_HEAD;
+    private MenuButton categoryIconButton() {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
-                    String loreKey = isHead ? "setup_category_icon_head_lore" : "setup_category_icon_lore";
+                    String loreKey = isHeadIcon() ? "setup_category_icon_head_lore" : "setup_category_icon_lore";
                     String textureLabel = skullProcessor.getLabel(player);
 
                     ItemBuilder.icon(category, player)
                             .name(messages.getString("setup_category_icon", player))
-                            .lore(messages.getStringList(loreKey, player, Map.entry("%texture%", textureLabel)))
+                            .lore(messages.getStringList(loreKey, player, Placeholders.of("%texture%", textureLabel)))
                             .into(inventory, slot);
                 })
                 .onClick((player, event) -> {
-                    if (isHead && event.isRightClick()) {
+                    if (isHeadIcon() && event.isRightClick()) {
                         promptSkullTexture(player);
                         return;
                     }
@@ -136,6 +138,14 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                             () -> reopen(player));
                 })
                 .build();
+    }
+
+    /**
+     * Read per render and per click rather than captured at construction, so the skull-texture half of the control
+     * appears as soon as the icon becomes a head.
+     */
+    private boolean isHeadIcon() {
+        return category.getIcon() == Material.PLAYER_HEAD;
     }
 
     private void promptSkullTexture(Player player) {
@@ -158,7 +168,8 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
 
                     ItemBuilder.of(icon)
                             .name(messages.getString(nameKey, player))
-                            .lore(messages.getStringList(nameKey + "_lore", player, Map.entry("%state%", stateString)))
+                            .lore(messages.getStringList(
+                                    nameKey + "_lore", player, Placeholders.of("%state%", stateString)))
                             .glow(active)
                             .into(inventory, slot);
                 })
@@ -186,7 +197,7 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                                 .map(status -> messages.getString(
                                         "setup_category_statuses_member_entry",
                                         player,
-                                        Map.entry("%status%", ColorAPI.process(status.getStyledName()))))
+                                        Placeholders.of("%status%", ColorAPI.process(status.getStyledName()))))
                                 .forEach(lore::add);
                     }
 

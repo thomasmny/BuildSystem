@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
@@ -28,7 +29,6 @@ import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -69,7 +69,7 @@ public class PlayerQuitListener implements Listener {
     public void sendPlayerQuitMessage(PlayerQuitEvent event) {
         Player player = event.getPlayer();
         String message = configService.current().settings().joinQuitMessages()
-                ? messages.getString("player_quit", player, Map.entry("%player%", player.getName()))
+                ? messages.getString("player_quit", player, Placeholders.of("%player%", player.getName()))
                 : null;
         event.setQuitMessage(message);
     }
@@ -100,8 +100,7 @@ public class PlayerQuitListener implements Listener {
         buildPlayer.setLogoutLocation(new LogoutLocation(player.getWorld().getName(), player.getLocation()));
 
         CachedValues cachedValues = buildPlayer.getCachedValues();
-        cachedValues.resetGameModeIfPresent(player);
-        cachedValues.resetInventoryIfPresent(player);
+        cachedValues.resetBuildStateIfPresent(player);
         playerManager.leaveBuildMode(player.getUniqueId());
 
         manageHidePlayer(player);
@@ -114,7 +113,7 @@ public class PlayerQuitListener implements Listener {
             Bukkit.getOnlinePlayers().forEach(player::showPlayer);
         }
 
-        // Show player to all players who had him/her hidden
+        // Show player to all players who had them hidden
         for (Player pl : Bukkit.getOnlinePlayers()) {
             if (!settingsManager.getSettings(pl).isHidePlayers()) {
                 continue;

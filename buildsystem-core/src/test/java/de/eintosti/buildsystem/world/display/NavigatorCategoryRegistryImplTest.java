@@ -22,13 +22,16 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
+import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.io.File;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -130,6 +133,27 @@ class NavigatorCategoryRegistryImplTest {
         registry.resetToDefaults();
         assertEquals(3, registry.getAll().size());
         assertTrue(registry.get(NavigatorCategoryRegistry.PUBLIC_ID).isPresent());
+    }
+
+    @Test
+    void resetToDefaults_reHomesFoldersOfDiscardedCategories() {
+        BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
+        when(plugin.getDataFolder()).thenReturn(dataFolder);
+        FolderStorageImpl folderStorage = mock(FolderStorageImpl.class);
+        WorldServiceImpl worldService = mock(WorldServiceImpl.class);
+        when(worldService.getFolderStorage()).thenReturn(folderStorage);
+        NavigatorCategoryRegistryImpl categoryRegistry = new NavigatorCategoryRegistryImpl(plugin, () -> worldService);
+
+        NavigatorCategory custom = categoryRegistry.create("Administration");
+        FolderImpl folder = mock(FolderImpl.class);
+        when(folder.getCategory()).thenReturn(custom);
+        when(folderStorage.getFolders()).thenReturn(List.of(folder));
+
+        categoryRegistry.resetToDefaults();
+
+        // Without the cascade the folder keeps a category the registry no longer lists, so it renders in none of them.
+        verify(folder).setCategory(categoryRegistry.getDefault());
+        verify(folderStorage).save(List.of(folder));
     }
 
     @Test

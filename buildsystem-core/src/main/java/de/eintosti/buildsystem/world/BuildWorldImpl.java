@@ -24,14 +24,13 @@ import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
-import de.eintosti.buildsystem.api.world.data.BuildWorldType;
-import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
-import de.eintosti.buildsystem.api.world.data.Visibility;
-import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.api.world.data.*;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
+import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.HeadProfileSource;
 import de.eintosti.buildsystem.world.builder.BuildersImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
@@ -102,7 +101,8 @@ public final class BuildWorldImpl implements BuildWorld, HeadProfileSource {
      */
     private static WorldDataImpl defaultWorldData(
             WorldContext context, String name, BuildWorldType worldType, boolean privateWorld) {
-        var defaults = context.configService().current().world().defaults();
+        PluginConfig.World.Defaults defaults =
+                context.configService().current().world().defaults();
         String permission = (privateWorld
                         ? defaults.permission().privatePermission()
                         : defaults.permission().publicPermission())
@@ -216,7 +216,7 @@ public final class BuildWorldImpl implements BuildWorld, HeadProfileSource {
 
     @Override
     public String getDisplayName(Player player) {
-        String title = context.messages().getString("world_item_title", player, Map.entry("%world%", this.name));
+        String title = context.messages().getString("world_item_title", player, Placeholders.of("%world%", this.name));
         if (this.worldData.get(WorldDataKey.PINNED)) {
             return context.messages().getString("world_item_pinned_prefix", player) + title;
         }
@@ -225,25 +225,17 @@ public final class BuildWorldImpl implements BuildWorld, HeadProfileSource {
 
     @Override
     public List<String> getLore(Player player) {
-        @SuppressWarnings("unchecked")
-        Map.Entry<String, Object>[] placeholders = List.of(
-                        Map.entry("%status%", worldData.get(WorldDataKey.STATUS).getStyledName()),
-                        Map.entry("%project%", worldData.get(WorldDataKey.PROJECT)),
-                        Map.entry("%permission%", worldData.get(WorldDataKey.PERMISSION)),
-                        Map.entry(
-                                "%creator%",
-                                builders.getCreator() != null
-                                        ? builders.getCreator().getName()
-                                        : "-"),
-                        Map.entry("%creation%", context.messages().formatDate(getCreation())),
-                        Map.entry(
-                                "%lastedited%", context.messages().formatDate(worldData.get(WorldDataKey.LAST_EDITED))),
-                        Map.entry(
-                                "%lastloaded%", context.messages().formatDate(worldData.get(WorldDataKey.LAST_LOADED))),
-                        Map.entry(
-                                "%lastunloaded%",
-                                context.messages().formatDate(worldData.get(WorldDataKey.LAST_UNLOADED))))
-                .toArray(Map.Entry[]::new);
+        Messages messages = context.messages();
+        Placeholders placeholders = Placeholders.of()
+                .add("%status%", worldData.get(WorldDataKey.STATUS).getStyledName())
+                .add("%project%", worldData.get(WorldDataKey.PROJECT))
+                .add("%permission%", worldData.get(WorldDataKey.PERMISSION))
+                .add("%creator%", builders.hasCreator() ? builders.getCreator().getName() : "-")
+                .add("%creation%", messages.formatDate(getCreation()))
+                .add("%lastedited%", messages.formatDate(worldData.get(WorldDataKey.LAST_EDITED)))
+                .add("%lastloaded%", messages.formatDate(worldData.get(WorldDataKey.LAST_LOADED)))
+                .add("%lastunloaded%", messages.formatDate(worldData.get(WorldDataKey.LAST_UNLOADED)))
+                .build();
 
         List<String> messageList = getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())
                 ? context.messages().getStringList("world_item_lore_edit", player, placeholders)

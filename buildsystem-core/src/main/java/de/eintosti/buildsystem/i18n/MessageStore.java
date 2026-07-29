@@ -28,8 +28,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jspecify.annotations.NullMarked;
@@ -81,12 +79,6 @@ final class MessageStore {
         ConfigurationSection section = userConfig.getConfigurationSection("");
         if (section != null) {
             section.getKeys(false).forEach(key -> {
-                if (!userConfig.contains(key)) {
-                    Bukkit.getConsoleSender()
-                            .sendMessage(ChatColor.RED + "[BuildSystem] Could not find message with key: " + key);
-                    return;
-                }
-
                 if (userConfig.isList(key)) {
                     map.put(key, String.join("\n", userConfig.getStringList(key)));
                 } else {
@@ -98,10 +90,6 @@ final class MessageStore {
             });
         }
         this.messages = Map.copyOf(map);
-    }
-
-    void reload() {
-        load();
     }
 
     String getPrefix() {

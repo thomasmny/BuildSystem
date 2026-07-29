@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -55,7 +56,8 @@ public abstract class FolderStorageImpl implements FolderStorage {
     public void loadFolders() {
         try {
             this.foldersByName.putAll(load().get().stream()
-                    .collect(Collectors.toMap(folder -> folder.getName().toLowerCase(), Function.identity())));
+                    .collect(Collectors.toMap(
+                            folder -> folder.getName().toLowerCase(Locale.ROOT), Function.identity())));
         } catch (InterruptedException | ExecutionException e) {
             logger.severe("Failed to load folders from storage: " + e.getMessage());
         }
@@ -69,7 +71,7 @@ public abstract class FolderStorageImpl implements FolderStorage {
 
     @Nullable @Override
     public Folder getFolder(String name) {
-        return foldersByName.get(name.toLowerCase());
+        return foldersByName.get(name.toLowerCase(Locale.ROOT));
     }
 
     @Override
@@ -85,7 +87,7 @@ public abstract class FolderStorageImpl implements FolderStorage {
     @Override
     public Folder createFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
         Folder folder = newFolder(name, category, parent, creator);
-        foldersByName.put(name.toLowerCase(), folder);
+        foldersByName.put(name.toLowerCase(Locale.ROOT), folder);
         fireEvent(new FolderCreatedEvent(folder));
         return folder;
     }
@@ -98,7 +100,7 @@ public abstract class FolderStorageImpl implements FolderStorage {
 
     @Override
     public void removeFolder(String name) {
-        Folder removed = foldersByName.remove(name.toLowerCase());
+        Folder removed = foldersByName.remove(name.toLowerCase(Locale.ROOT));
         if (removed == null) {
             return;
         }

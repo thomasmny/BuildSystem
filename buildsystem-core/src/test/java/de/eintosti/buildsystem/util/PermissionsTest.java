@@ -32,12 +32,17 @@ import org.junit.jupiter.api.Test;
 /**
  * Guards the single-source-of-truth property of {@link Permissions}: permission nodes belong there, not inline at the
  * call site, so a typo fails to compile instead of silently never matching.
+ *
+ * <p>Covers both ways of writing one inline — the whole node as a literal, and a literal suffix concatenated onto
+ * {@code getArgument().getPermission()}. The second form spells a real node without ever writing
+ * {@code "buildsystem.…"}, so it slipped past the literal check.
  */
 class PermissionsTest {
 
     private static final Path SOURCE_ROOT = Path.of("src/main/java");
     private static final Path PERMISSIONS = SOURCE_ROOT.resolve("de/eintosti/buildsystem/util/Permissions.java");
     private static final Pattern NODE = Pattern.compile("\"buildsystem\\.[a-z.%]*\"");
+    private static final Pattern SUFFIXED_NODE = Pattern.compile("getPermission\\(\\)\\s*\\+\\s*\"[^\"]*\"");
 
     @Test
     @DisplayName("No permission node is written inline outside Permissions")
@@ -62,11 +67,16 @@ class PermissionsTest {
             throw new IllegalStateException("Could not read " + path, e);
         }
 
-        Matcher matcher = NODE.matcher(source);
         Stream.Builder<String> found = Stream.builder();
+        collect(NODE, source, path, found);
+        collect(SUFFIXED_NODE, source, path, found);
+        return found.build();
+    }
+
+    private static void collect(Pattern pattern, String source, Path path, Stream.Builder<String> found) {
+        Matcher matcher = pattern.matcher(source);
         while (matcher.find()) {
             found.add(path.getFileName() + ": " + matcher.group());
         }
-        return found.build();
     }
 }

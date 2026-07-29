@@ -25,12 +25,12 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.Permissions;
-import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -81,7 +81,8 @@ public class PlayerChangedWorldListener implements Listener {
         if (newWorld != null
                 && !newWorld.getData().get(WorldDataKey.PHYSICS)
                 && player.hasPermission(Permissions.PHYSICS_MESSAGE)) {
-            messages.sendMessage(player, "physics_deactivated_in_world", Map.entry("%world%", newWorld.getName()));
+            messages.sendMessage(
+                    player, "physics_deactivated_in_world", Placeholders.of("%world%", newWorld.getName()));
         }
 
         removeOldNavigator(player);
@@ -106,8 +107,7 @@ public class PlayerChangedWorldListener implements Listener {
         CachedValues cachedValues = BuildPlayerImpl.of(
                         playerManager.getPlayerStorage().getBuildPlayer(player))
                 .getCachedValues();
-        cachedValues.resetGameModeIfPresent(player);
-        cachedValues.resetInventoryIfPresent(player);
+        cachedValues.resetBuildStateIfPresent(player);
         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
         messages.sendMessage(player, "build_deactivated_self");
     }

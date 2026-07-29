@@ -21,6 +21,7 @@ import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
@@ -32,11 +33,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.function.Consumer;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -187,7 +186,7 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
                     ItemBuilder.of(XMaterial.HOPPER)
                             .name(messages.getString("setup_filter", player))
                             .lore(messages.getStringList(
-                                    "setup_filter_lore", player, Map.entry("%filter%", activeFilterDisplay)))
+                                    "setup_filter_lore", player, Placeholders.of("%filter%", activeFilterDisplay)))
                             .into(inventory, slot);
                 })
                 .onClick((player, event) -> {
@@ -240,10 +239,5 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
             }
         }
         return builder.toString().trim();
-    }
-
-    @Override
-    protected void onUnhandledClick(Player player, InventoryClickEvent event) {
-        // Filler/empty slots do nothing; navigation is via the explicit controls.
     }
 }

@@ -23,9 +23,9 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
-import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -52,7 +52,7 @@ public class SetItemSubCommand extends AbstractSubCommand {
         }
 
         buildWorld.getData().set(WorldDataKey.MATERIAL, itemStack.getType());
-        messages.sendMessage(player, "worlds_setitem_set", Map.entry("%world%", buildWorld.getName()));
+        messages.sendMessage(player, "worlds_setitem_set", Placeholders.of("%world%", buildWorld.getName()));
     }
 
     @Override
@@ -60,8 +60,10 @@ public class SetItemSubCommand extends AbstractSubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        WorldStorage ws = worldService.getWorldStorage();
-        return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
+
+        WorldStorage worldStorage = worldService.getWorldStorage();
+        return WorldsCompletions.permittedWorldNames(
+                player, worldStorage, getArgument().getPermission(), args[1]);
     }
 
     @Override

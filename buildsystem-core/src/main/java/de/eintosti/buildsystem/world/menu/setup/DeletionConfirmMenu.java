@@ -28,12 +28,14 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.List;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
 
 /**
  * A reusable yes/no confirmation, used before a destructive action (e.g. deleting a custom status or category). Shows
  * the consequences in the centre and a confirm/cancel pair; either choice runs the supplied callback.
+ *
+ * <p>Only those two buttons act. A confirmation has to be deliberate, so nothing else in the menu is clickable — do not
+ * add a filler or border shortcut here.
  */
 @NullMarked
 public class DeletionConfirmMenu extends ButtonMenu<MenuButton> {
@@ -86,10 +88,5 @@ public class DeletionConfirmMenu extends ButtonMenu<MenuButton> {
     protected void populate(Player player) {
         menuItems.fillAll(player, getInventory());
         renderButtons(player);
-    }
-
-    @Override
-    protected void onUnhandledClick(Player player, InventoryClickEvent event) {
-        // A confirmation must be deliberate: only the confirm/cancel buttons act. Filler clicks do nothing.
     }
 }

@@ -23,15 +23,14 @@ import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
-import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.entity.Player;
@@ -81,8 +80,10 @@ public class BackupsMenu extends ButtonMenu<MenuButton> {
                 .lore(messages.getStringList(
                         "backups_information_lore",
                         player,
-                        Map.entry("%interval%", getBackupIntervalSeconds() / 60),
-                        Map.entry("%remaining%", getDurationUntilBackup())))
+                        Placeholders.of()
+                                .add("%interval%", getBackupIntervalSeconds() / 60)
+                                .add("%remaining%", getDurationUntilBackup())
+                                .build()))
                 .into(getInventory(), SLOT_INFO);
 
         menuItems.fillRange(player, getInventory(), 27, 36);
@@ -121,14 +122,7 @@ public class BackupsMenu extends ButtonMenu<MenuButton> {
                         .name(messages.getString(
                                 "backups_backup_name",
                                 player,
-                                Map.entry(
-                                        "%timestamp%",
-                                        StringUtils.formatTime(
-                                                backup.creationTime(),
-                                                configService
-                                                        .current()
-                                                        .settings()
-                                                        .dateFormat()))))
+                                Placeholders.of("%timestamp%", messages.formatDateTime(backup.creationTime()))))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
                     player.closeInventory();

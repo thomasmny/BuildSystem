@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.i18n.Messages;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Logger;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -44,7 +45,7 @@ public abstract class CommandBase implements CommandExecutor, TabCompleter {
     public final boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (playerOnly) {
             if (!(sender instanceof Player player)) {
-                logger.warning(messages.getString("sender_not_player", sender));
+                messages.sendMessage(sender, "sender_not_player");
                 return true;
             }
             run(player, label, args);
@@ -80,7 +81,7 @@ public abstract class CommandBase implements CommandExecutor, TabCompleter {
     }
 
     protected static void addArgument(String input, String argument, List<String> list) {
-        if (input.isEmpty() || argument.toLowerCase().startsWith(input.toLowerCase())) {
+        if (input.isEmpty() || argument.toLowerCase(Locale.ROOT).startsWith(input.toLowerCase(Locale.ROOT))) {
             list.add(argument);
         }
     }

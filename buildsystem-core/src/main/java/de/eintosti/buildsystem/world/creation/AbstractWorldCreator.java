@@ -25,10 +25,10 @@ import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
-import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
@@ -125,8 +125,11 @@ abstract class AbstractWorldCreator {
                         checkVersion ? BukkitWorldFactory.VersionCheck.REQUIRED : BukkitWorldFactory.VersionCheck.SKIP);
     }
 
-    @SafeVarargs
-    protected final void notifyAudience(String key, Map.Entry<String, Object>... placeholders) {
+    protected final void notifyAudience(String key) {
+        notifyAudience(key, Placeholders.none());
+    }
+
+    protected final void notifyAudience(String key, Placeholders placeholders) {
         if (audience != null) {
             context.messages().sendMessage(audience, key, placeholders);
         }

@@ -46,6 +46,7 @@ class WorldStatusRegistryImplTest {
     File dataFolder;
 
     private WorldStatusRegistryImpl registry;
+    private NavigatorCategoryRegistryImpl categories;
 
     @BeforeEach
     void setUp() {
@@ -53,8 +54,7 @@ class WorldStatusRegistryImplTest {
         when(plugin.getDataFolder()).thenReturn(dataFolder);
         // The delete/reset cascades walk worldService.getWorldStorage()/getFolderStorage(); deep-stub mocks yield
         // empty collections so those cascades are no-ops rather than NPEs.
-        NavigatorCategoryRegistryImpl categories =
-                new NavigatorCategoryRegistryImpl(plugin, () -> mock(WorldServiceImpl.class, RETURNS_DEEP_STUBS));
+        categories = new NavigatorCategoryRegistryImpl(plugin, () -> mock(WorldServiceImpl.class, RETURNS_DEEP_STUBS));
         registry = new WorldStatusRegistryImpl(
                 plugin,
                 categories,
@@ -135,6 +135,23 @@ class WorldStatusRegistryImplTest {
         registry.resetToDefaults();
         assertEquals(6, registry.getAll().size());
         assertTrue(registry.get(WorldStatusRegistry.NOT_STARTED_ID).isPresent());
+    }
+
+    @Test
+    void resetToDefaults_removesDiscardedCustomStatusFromCategories() {
+        WorldStatusImpl custom = registry.create("Needs Review");
+        assertTrue(
+                categories.getAll().stream()
+                        .anyMatch(category -> category.getStatusIds().contains(custom.getId())),
+                "a new status should be grouped by the default category");
+
+        registry.resetToDefaults();
+
+        assertFalse(registry.get(custom.getId()).isPresent());
+        assertFalse(
+                categories.getAll().stream()
+                        .anyMatch(category -> category.getStatusIds().contains(custom.getId())),
+                "reset must cascade like delete: no category may still group a discarded status");
     }
 
     @Test

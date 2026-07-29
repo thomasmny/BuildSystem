@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.SkullTextures;
+import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlCategoryStorage;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -37,9 +38,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
@@ -197,12 +200,24 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
     /**
      * Restores the three built-in categories, discarding any customizations. Used by the setup menu's "reset to
      * defaults" control so an admin can always get back to a known-good state.
+     *
+     * <p>Discarding a custom category re-homes its folders exactly as {@link #delete(String)} does. Without this the
+     * folders keep a category the registry no longer lists, so they — and every world inside them — disappear from the
+     * navigator until the next restart re-homes them on load.
      */
     public void resetToDefaults() {
+        Set<String> discarded = new LinkedHashSet<>(this.categories.keySet());
+
         this.categories.clear();
         seedDefaults();
         storage.saveAll(this.categories.values());
         setSettingsSlot(DEFAULT_SETTINGS_SLOT);
+        // saveAll rewrites the whole section, so the discarded categories are already gone from disk.
+        discarded.removeAll(this.categories.keySet());
+
+        for (String id : discarded) {
+            rehomeFolders(id);
+        }
     }
 
     /**
@@ -305,7 +320,7 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
      */
     private void rehomeFolders(String deletedId) {
         NavigatorCategory fallback = getDefault();
-        var folderStorage = worldService.get().getFolderStorage();
+        FolderStorageImpl folderStorage = worldService.get().getFolderStorage();
         List<Folder> rehomed = new ArrayList<>();
         for (Folder folder : folderStorage.getFolders()) {
             if (folder.getCategory().getId().equals(deletedId)) {

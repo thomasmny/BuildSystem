@@ -138,7 +138,6 @@ public class WorldDataImpl implements WorldData {
         this.folderResolver = resolver;
     }
 
-    @SuppressWarnings("unchecked")
     public void setStatusChangeListener(BiConsumer<BuildWorldStatus, BuildWorldStatus> listener) {
         ((ConfigurableProperty<BuildWorldStatus>) property(WorldDataKey.STATUS)).setChangeListener(listener);
     }
@@ -148,16 +147,27 @@ public class WorldDataImpl implements WorldData {
         return resolver != null ? resolver.get() : null;
     }
 
-    private void register(WorldDataKey<?> key, ConfigurableProperty<?> property) {
+    /**
+     * Binds a key to the property holding its value. The shared type parameter is what makes the registration block
+     * above compile-checked: pairing a key with a property of the wrong type is a compile error, not a corrupted read
+     * somewhere else.
+     */
+    private <T> void register(WorldDataKey<T> key, ConfigurableProperty<T> property) {
         this.data.put(key.id(), property);
     }
 
-    private PersistentProperty<?> property(WorldDataKey<?> key) {
+    /**
+     * {@return the property registered for the given key} The map is heterogeneous, so the cast cannot be expressed to
+     * the compiler; it is sound because {@link #register(WorldDataKey, ConfigurableProperty)} is the only writer and
+     * only accepts a matching pair. Confining the cast here keeps it the single unchecked spot in this class.
+     */
+    @SuppressWarnings("unchecked")
+    private <T> PersistentProperty<T> property(WorldDataKey<T> key) {
         PersistentProperty<?> property = this.data.get(key.id());
         if (property == null) {
             throw new IllegalArgumentException("Unknown world data key: " + key.id());
         }
-        return property;
+        return (PersistentProperty<T>) property;
     }
 
     /**
@@ -185,9 +195,8 @@ public class WorldDataImpl implements WorldData {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public <T> void set(WorldDataKey<T> key, T value) {
-        ((PersistentProperty<T>) property(key)).set(value);
+        property(key).set(value);
     }
 
     @Override

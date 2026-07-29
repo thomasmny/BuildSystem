@@ -21,10 +21,14 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.util.color.ColorAPI;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.Map.Entry;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Unmodifiable;
@@ -34,13 +38,29 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class Messages {
 
+    /**
+     * Used when {@code settings.date-format} is not a pattern the formatter accepts, so a bad config line degrades to a
+     * readable date instead of throwing on every render.
+     */
+    private static final String FALLBACK_DATE_FORMAT = "dd/MM/yyyy";
+
+    private static final String TIME_SUFFIX = " HH:mm:ss";
+
     private final ConfigService configService;
     private final MessageStore store;
+    private final Logger logger;
     private volatile @Nullable TextResolver placeholderResolver;
+
+    /**
+     * The formatters built for the currently configured pattern. Cached because the scoreboard renders several
+     * timestamps per player per second, and rebuilt when a reload changes the pattern.
+     */
+    private volatile @Nullable Formatters formatters;
 
     public Messages(BuildSystemPlugin plugin, ConfigService configService) {
         this.configService = configService;
         this.store = new MessageStore(plugin);
+        this.logger = plugin.getLogger();
     }
 
     /**
@@ -70,26 +90,32 @@ public final class Messages {
     }
 
     public void reload() {
-        this.store.reload();
+        this.store.load();
     }
 
     public void sendPermissionError(CommandSender sender) {
         sendMessage(sender, "no_permissions");
     }
 
-    @SafeVarargs
-    public final void sendMessage(CommandSender sender, String key, Entry<String, Object>... placeholders) {
+    public void sendMessage(CommandSender sender, String key) {
+        sendMessage(sender, key, Placeholders.none());
+    }
+
+    public void sendMessage(CommandSender sender, String key, Placeholders placeholders) {
         String message = getString(key, sender, placeholders);
         if (!message.isEmpty()) {
             sender.sendMessage(message);
         }
     }
 
-    @SafeVarargs
-    public final String getString(String key, CommandSender sender, Entry<String, Object>... placeholders) {
+    public String getString(String key, CommandSender sender) {
+        return getString(key, sender, Placeholders.none());
+    }
+
+    public String getString(String key, CommandSender sender, Placeholders placeholders) {
         store.checkIfKeyPresent(key);
         String message = store.getRaw(key).replace("%prefix%", store.getPrefix());
-        String result = Placeholders.apply(message, placeholders);
+        String result = placeholders.applyTo(message);
         Player player = sender instanceof Player p ? p : null;
         return ColorAPI.process(applyResolver(this.placeholderResolver, player, result));
     }
@@ -110,29 +136,92 @@ public final class Messages {
         return text;
     }
 
-    @SafeVarargs
-    public final List<String> getStringList(
-            String key, @Nullable Player player, Entry<String, Object>... placeholders) {
-        return getStringList(key, player, (line) -> placeholders);
+    public List<String> getStringList(String key, @Nullable Player player) {
+        return getStringList(key, player, Placeholders.none());
     }
 
+    public List<String> getStringList(String key, @Nullable Player player, Placeholders placeholders) {
+        return getStringList(key, player, line -> placeholders);
+    }
+
+    /**
+     * Renders a multi-line message, choosing the substitutions per line. Only the world-item lore needs this, to expand
+     * a builder list across as many lines as it takes.
+     *
+     * @param key The message key
+     * @param player The player the text is for, or {@code null} for a non-player audience
+     * @param placeholders Supplies the substitutions for a given raw line
+     * @return The rendered lines
+     */
     @Unmodifiable
     public List<String> getStringList(
-            String key, @Nullable Player player, Function<String, Entry<String, Object>[]> placeholders) {
+            String key, @Nullable Player player, Function<String, Placeholders> placeholders) {
+        store.checkIfKeyPresent(key);
         String message = store.getRaw(key).replace("%prefix%", store.getPrefix());
         TextResolver resolver = this.placeholderResolver;
         return Arrays.stream(message.split("\n"))
-                .map(line -> Placeholders.apply(line, placeholders.apply(line)))
+                .map(line -> placeholders.apply(line).applyTo(line))
                 .map(line -> applyResolver(resolver, player, line))
                 .map(ColorAPI::process)
                 .toList();
     }
 
+    /**
+     * Formats a timestamp as a date, using {@code settings.date-format}.
+     *
+     * @param millis The epoch milliseconds, or a non-positive value for "never"
+     * @return The formatted date, or {@code "-"} when there is no timestamp
+     */
     public String formatDate(long millis) {
-        return millis > 0
-                ? new SimpleDateFormat(configService.current().settings().dateFormat()).format(millis)
-                : "-";
+        return format(millis, formatters().date());
     }
+
+    /**
+     * Formats a timestamp as a date and time-of-day. Used where the exact moment matters, such as naming a backup.
+     *
+     * @param millis The epoch milliseconds, or a non-positive value for "never"
+     * @return The formatted timestamp, or {@code "-"} when there is no timestamp
+     */
+    public String formatDateTime(long millis) {
+        return format(millis, formatters().dateTime());
+    }
+
+    private static String format(long millis, DateTimeFormatter formatter) {
+        return millis > 0 ? formatter.format(Instant.ofEpochMilli(millis)) : "-";
+    }
+
+    private Formatters formatters() {
+        String pattern = configService.current().settings().dateFormat();
+        Formatters current = this.formatters;
+        if (current != null && current.pattern().equals(pattern)) {
+            return current;
+        }
+
+        Formatters rebuilt = buildFormatters(pattern);
+        this.formatters = rebuilt;
+        return rebuilt;
+    }
+
+    private Formatters buildFormatters(String pattern) {
+        try {
+            return new Formatters(pattern, formatter(pattern), formatter(pattern + TIME_SUFFIX));
+        } catch (IllegalArgumentException e) {
+            logger.warning("Invalid settings.date-format \"" + pattern + "\", falling back to " + FALLBACK_DATE_FORMAT
+                    + ": " + e.getMessage());
+            return new Formatters(
+                    pattern, formatter(FALLBACK_DATE_FORMAT), formatter(FALLBACK_DATE_FORMAT + TIME_SUFFIX));
+        }
+    }
+
+    private static DateTimeFormatter formatter(String pattern) {
+        return DateTimeFormatter.ofPattern(pattern).withZone(ZoneId.systemDefault());
+    }
+
+    /**
+     * The date and date-time formatters derived from one configured pattern. {@link DateTimeFormatter} is immutable and
+     * thread-safe, so these can be shared across the async scoreboard threads that render them.
+     */
+    private record Formatters(String pattern, DateTimeFormatter date, DateTimeFormatter dateTime) {}
 
     public static String getMessageKey(BuildWorldType type) {
         return switch (type) {

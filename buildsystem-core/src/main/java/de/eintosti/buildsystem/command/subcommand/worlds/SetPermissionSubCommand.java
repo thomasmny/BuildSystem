@@ -25,12 +25,12 @@ import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
-import java.util.Map;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -87,7 +87,7 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
             settingsService.forceUpdateSidebar(buildWorld);
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            messages.sendMessage(player, "worlds_setpermission_set", Map.entry("%world%", buildWorld.getName()));
+            messages.sendMessage(player, "worlds_setpermission_set", Placeholders.of("%world%", buildWorld.getName()));
 
             if (closeInventory) {
                 player.closeInventory();
@@ -116,8 +116,10 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        WorldStorage ws = worldService.getWorldStorage();
-        return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
+
+        WorldStorage worldStorage = worldService.getWorldStorage();
+        return WorldsCompletions.permittedWorldNames(
+                player, worldStorage, getArgument().getPermission(), args[1]);
     }
 
     @Override

@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.FileUtils;
@@ -83,8 +84,10 @@ public class ImportSubCommand extends AbstractSubCommand {
             messages.sendMessage(
                     player,
                     "worlds_import_invalid_character",
-                    Map.entry("%world%", worldName),
-                    Map.entry("%char%", invalidChar));
+                    Placeholders.of()
+                            .add("%world%", worldName)
+                            .add("%char%", invalidChar)
+                            .build());
             return;
         }
 
@@ -95,59 +98,17 @@ public class ImportSubCommand extends AbstractSubCommand {
             return;
         }
 
-        Generator generator = Generator.VOID;
-        String generatorName = generator.name();
-        BuildWorldType worldType = BuildWorldType.IMPORTED;
-        String creatorArg = null;
-
-        if (args.length != 2) {
-            ArgumentParser parser = new ArgumentParser(args);
-
-            if (parser.isArgument("g")) {
-                String generatorArg = parser.getValue("g");
-                if (generatorArg == null) {
-                    messages.sendMessage(player, "worlds_import_usage");
-                    return;
-                }
-                try {
-                    generator = Generator.valueOf(generatorArg.toUpperCase(Locale.ROOT));
-                    generatorName = generator.name();
-                } catch (IllegalArgumentException ignored) {
-                    generator = Generator.CUSTOM;
-                    generatorName = generatorArg;
-                }
-            }
-
-            if (parser.isArgument("c")) {
-                creatorArg = parser.getValue("c");
-                if (creatorArg == null) {
-                    messages.sendMessage(player, "worlds_import_usage");
-                    return;
-                }
-            }
-
-            if (parser.isArgument("t")) {
-                String worldTypeArg = parser.getValue("t");
-                if (worldTypeArg == null) {
-                    messages.sendMessage(player, "worlds_import_usage");
-                    return;
-                }
-                try {
-                    worldType = BuildWorldType.valueOf(worldTypeArg.toUpperCase(Locale.ROOT));
-                } catch (IllegalArgumentException ignored) {
-                }
-            }
-        }
-
-        if (creatorArg == null) {
-            startImport(player, worldName, null, worldType, generator, generatorName);
+        ImportOptions options = parseOptions(player, args);
+        if (options == null) {
             return;
         }
 
-        String creatorName = creatorArg;
-        Generator resolvedGenerator = generator;
-        String resolvedGeneratorName = generatorName;
-        BuildWorldType resolvedWorldType = worldType;
+        if (options.creatorName() == null) {
+            startImport(player, worldName, null, options.worldType(), options.generator(), options.generatorName());
+            return;
+        }
+
+        String creatorName = options.creatorName();
         playerLookupService
                 .lookupUniqueId(creatorName)
                 .thenAccept(creatorId -> scheduler.run(() -> {
@@ -159,10 +120,79 @@ public class ImportSubCommand extends AbstractSubCommand {
                             player,
                             worldName,
                             Builder.of(creatorId, creatorName),
-                            resolvedWorldType,
-                            resolvedGenerator,
-                            resolvedGeneratorName);
+                            options.worldType(),
+                            options.generator(),
+                            options.generatorName());
                 }));
+    }
+
+    /**
+     * The optional {@code -g}/{@code -c}/{@code -t} flags. {@code creatorName} is unresolved here because looking a name
+     * up is asynchronous.
+     */
+    private record ImportOptions(
+            Generator generator,
+            String generatorName,
+            BuildWorldType worldType,
+            @Nullable String creatorName) {}
+
+    /**
+     * {@return the parsed flags, or {@code null} when one was malformed} A usage message has already been sent in that
+     * case.
+     */
+    private @Nullable ImportOptions parseOptions(Player player, String[] args) {
+        Generator generator = Generator.VOID;
+        String generatorName = generator.name();
+        BuildWorldType worldType = BuildWorldType.IMPORTED;
+        String creatorName = null;
+
+        if (args.length != 2) {
+            ArgumentParser parser = new ArgumentParser(args);
+
+            if (parser.isArgument("g")) {
+                String generatorArg = parser.getValue("g");
+                if (generatorArg == null) {
+                    messages.sendMessage(player, "worlds_import_usage");
+                    return null;
+                }
+
+                try {
+                    generator = Generator.valueOf(generatorArg.toUpperCase(Locale.ROOT));
+                    generatorName = generator.name();
+                } catch (IllegalArgumentException ignored) {
+                    // An unknown name is a custom generator, not a mistake.
+                    generator = Generator.CUSTOM;
+                    generatorName = generatorArg;
+                }
+            }
+
+            if (parser.isArgument("c")) {
+                creatorName = parser.getValue("c");
+                if (creatorName == null) {
+                    messages.sendMessage(player, "worlds_import_usage");
+                    return null;
+                }
+            }
+
+            if (parser.isArgument("t")) {
+                String worldTypeArg = parser.getValue("t");
+                if (worldTypeArg == null) {
+                    messages.sendMessage(player, "worlds_import_usage");
+                    return null;
+                }
+
+                try {
+                    worldType = BuildWorldType.valueOf(worldTypeArg.toUpperCase(Locale.ROOT));
+                } catch (IllegalArgumentException e) {
+                    // Unlike -g, there is no "custom" world type to fall back to; silently importing as IMPORTED left
+                    // the player believing the flag had been applied.
+                    messages.sendMessage(player, "worlds_import_unknown_type", Placeholders.of("%type%", worldTypeArg));
+                    return null;
+                }
+            }
+        }
+
+        return new ImportOptions(generator, generatorName, worldType, creatorName);
     }
 
     private void startImport(
@@ -172,7 +202,7 @@ public class ImportSubCommand extends AbstractSubCommand {
             BuildWorldType worldType,
             Generator generator,
             String generatorName) {
-        messages.sendMessage(player, "worlds_import_started", Map.entry("%world%", worldName));
+        messages.sendMessage(player, "worlds_import_started", Placeholders.of("%world%", worldName));
         if (worldService.importWorld(player, worldName, creator, worldType, generator, generatorName, true)) {
             messages.sendMessage(player, "worlds_import_finished");
         }
@@ -190,11 +220,13 @@ public class ImportSubCommand extends AbstractSubCommand {
                 return FileUtils.isWorldDirectory(new File(dir, name))
                         && !worldService.getWorldStorage().worldExists(name);
             });
+
             if (directories != null) {
                 for (String dir : directories) {
                     WorldsCompletions.addIfStartsWith(args[1], dir, result);
                 }
             }
+
             return result;
         }
 

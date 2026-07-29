@@ -21,10 +21,10 @@ import de.eintosti.buildsystem.api.event.world.BuildWorldLoadEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostLoadEvent;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldLoader;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
-import java.util.Map;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -56,7 +56,8 @@ public class WorldLoaderImpl implements WorldLoader {
         player.closeInventory();
         player.sendTitle(
                 " ",
-                context.messages().getString("loading_world", player, Map.entry("%world%", this.buildWorld.getName())),
+                context.messages()
+                        .getString("loading_world", player, Placeholders.of("%world%", this.buildWorld.getName())),
                 5,
                 70,
                 20);

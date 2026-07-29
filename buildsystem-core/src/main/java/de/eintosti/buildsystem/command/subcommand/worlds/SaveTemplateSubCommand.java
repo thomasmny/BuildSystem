@@ -24,14 +24,16 @@ import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.World;
@@ -83,7 +85,7 @@ public class SaveTemplateSubCommand extends AbstractSubCommand {
         }
 
         if (templateDir.exists()) {
-            messages.sendMessage(player, "worlds_savetemplate_exists", Map.entry("%template%", templateName));
+            messages.sendMessage(player, "worlds_savetemplate_exists", Placeholders.of("%template%", templateName));
             return;
         }
 
@@ -97,9 +99,19 @@ public class SaveTemplateSubCommand extends AbstractSubCommand {
         messages.sendMessage(
                 player,
                 "worlds_savetemplate_started",
-                Map.entry("%world%", buildWorld.getName()),
-                Map.entry("%template%", templateName));
-        CompletableFuture.runAsync(() -> FileUtils.copy(worldDir, templateDir), scheduler.background())
+                Placeholders.of()
+                        .add("%world%", buildWorld.getName())
+                        .add("%template%", templateName)
+                        .build());
+        CompletableFuture.runAsync(
+                        () -> {
+                            try {
+                                FileUtils.copy(worldDir, templateDir);
+                            } catch (IOException e) {
+                                throw new CompletionException(e);
+                            }
+                        },
+                        scheduler.background())
                 .whenComplete((ignored, throwable) -> scheduler.run(() -> {
                     if (throwable != null) {
                         logger.log(
@@ -107,11 +119,11 @@ public class SaveTemplateSubCommand extends AbstractSubCommand {
                                 "Failed to save template '" + templateName + "' from world " + buildWorld.getName(),
                                 throwable);
                         messages.sendMessage(
-                                player, "worlds_savetemplate_error", Map.entry("%template%", templateName));
+                                player, "worlds_savetemplate_error", Placeholders.of("%template%", templateName));
                     } else {
                         XSound.ENTITY_PLAYER_LEVELUP.play(player);
                         messages.sendMessage(
-                                player, "worlds_savetemplate_finished", Map.entry("%template%", templateName));
+                                player, "worlds_savetemplate_finished", Placeholders.of("%template%", templateName));
                     }
                 }));
     }
@@ -121,8 +133,10 @@ public class SaveTemplateSubCommand extends AbstractSubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        WorldStorage ws = worldService.getWorldStorage();
-        return WorldsCompletions.permittedWorldNames(player, ws, getArgument().getPermission(), args[1]);
+
+        WorldStorage worldStorage = worldService.getWorldStorage();
+        return WorldsCompletions.permittedWorldNames(
+                player, worldStorage, getArgument().getPermission(), args[1]);
     }
 
     @Override

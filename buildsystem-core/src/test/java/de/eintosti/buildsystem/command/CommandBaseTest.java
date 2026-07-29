@@ -58,14 +58,15 @@ class CommandBaseTest {
     }
 
     @Test
-    void playerOnly_consoleSender_warnsAndDoesNotDelegate() {
+    void playerOnly_consoleSender_repliesToSenderAndDoesNotDelegate() {
         TestCommand cmd = new TestCommand(true);
         CommandSender console = mock(CommandSender.class);
 
         cmd.onCommand(console, null, "test", NO_ARGS);
 
         assertTrue(cmd.playerInvocations.isEmpty(), "run(Player) must not be called for console sender");
-        verify(cmd.logger).warning(anyString());
+        verify(cmd.messages).sendMessage(console, "sender_not_player");
+        verify(cmd.logger, never()).warning(anyString());
     }
 
     @Test

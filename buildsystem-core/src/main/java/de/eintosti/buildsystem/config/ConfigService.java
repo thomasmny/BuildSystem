@@ -24,11 +24,13 @@ import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.*;
+import java.util.Locale;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -70,17 +72,6 @@ public class ConfigService {
      */
     public int getVersion() {
         return plugin.getConfig().getInt("version", 1);
-    }
-
-    /**
-     * Sets the version of the plugin's configuration and saves the config file.
-     *
-     * @param version The version number to set
-     */
-    public void setVersion(int version) {
-        plugin.getConfig().set("version", version);
-        plugin.getConfig().setComments("version", List.of("Internal, do not change manually!"));
-        plugin.saveConfig();
     }
 
     /**
@@ -208,7 +199,7 @@ public class ConfigService {
                 autoBackup);
 
         Set<String> deletionBlacklist = config.getStringList("world.deletion-blacklist").stream()
-                .map(String::toLowerCase)
+                .map(name -> name.toLowerCase(Locale.ROOT))
                 .collect(Collectors.toSet());
 
         return new PluginConfig.World(
@@ -236,7 +227,7 @@ public class ConfigService {
     }
 
     private static List<GameRuleEntry<?>> parseGameRules(FileConfiguration config, Logger logger) {
-        var gameRulesSection = config.getConfigurationSection("world.defaults.gamerules");
+        ConfigurationSection gameRulesSection = config.getConfigurationSection("world.defaults.gamerules");
         Map<String, Object> gameRulesMap = gameRulesSection == null ? Map.of() : gameRulesSection.getValues(true);
         return gameRulesMap.entrySet().stream()
                 .map(entry -> {

@@ -19,18 +19,21 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.config.PluginConfig.World.Defaults.Time;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
+import java.util.function.ToIntFunction;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class TimeCommand extends CommandBase {
@@ -44,58 +47,66 @@ public class TimeCommand extends CommandBase {
         this.worldStorage = worldStorage;
     }
 
+    /**
+     * The two labels this command serves. They differ only in the permission, the configured time, and the message
+     * prefix, so the difference is data instead of two near-identical branches — which is how the night path came to
+     * send the day path's "unknown world" message.
+     */
+    private enum Variant {
+        DAY("day", Permissions.DAY, Time::noon),
+        NIGHT("night", Permissions.NIGHT, Time::night);
+
+        private final String label;
+        private final String permission;
+        private final ToIntFunction<Time> tick;
+
+        Variant(String label, String permission, ToIntFunction<Time> tick) {
+            this.label = label;
+            this.permission = permission;
+            this.tick = tick;
+        }
+
+        static @Nullable Variant forLabel(String label) {
+            String normalized = label.toLowerCase(Locale.ROOT);
+            for (Variant variant : values()) {
+                if (variant.label.equals(normalized)) {
+                    return variant;
+                }
+            }
+            return null;
+        }
+    }
+
     @Override
     protected void run(Player player, String label, String[] args) {
+        Variant variant = Variant.forLabel(label);
+        if (variant == null) {
+            // Only reachable if a label is registered in plugin.yml but not added above; say so rather than no-op.
+            logger.warning("TimeCommand received unknown label \"" + label + "\"");
+            return;
+        }
+
         String worldName = worldNameFromArgs(player, args, 0);
         World world = Bukkit.getWorld(worldName);
         if (world == null) {
-            messages.sendMessage(player, "day_unknown_world");
+            messages.sendMessage(player, variant.label + "_unknown_world");
             return;
         }
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(world);
-
-        switch (label.toLowerCase(Locale.ROOT)) {
-            case "day" -> {
-                if (buildWorld != null && !buildWorld.getPermissions().canPerformCommand(player, Permissions.DAY)) {
-                    messages.sendPermissionError(player);
-                    return;
-                }
-
-                switch (args.length) {
-                    case 0, 1 -> {
-                        world.setTime(configService
-                                .current()
-                                .world()
-                                .defaults()
-                                .time()
-                                .noon());
-                        messages.sendMessage(player, "day_set", Map.entry("%world%", world.getName()));
-                    }
-                    default -> messages.sendMessage(player, "day_usage");
-                }
-            }
-
-            case "night" -> {
-                if (buildWorld != null && !buildWorld.getPermissions().canPerformCommand(player, Permissions.NIGHT)) {
-                    messages.sendPermissionError(player);
-                    return;
-                }
-
-                switch (args.length) {
-                    case 0, 1 -> {
-                        world.setTime(configService
-                                .current()
-                                .world()
-                                .defaults()
-                                .time()
-                                .night());
-                        messages.sendMessage(player, "night_set", Map.entry("%world%", world.getName()));
-                    }
-                    default -> messages.sendMessage(player, "night_usage");
-                }
-            }
+        if (buildWorld != null && !buildWorld.getPermissions().canPerformCommand(player, variant.permission)) {
+            messages.sendPermissionError(player);
+            return;
         }
+
+        if (args.length > 1) {
+            messages.sendMessage(player, variant.label + "_usage");
+            return;
+        }
+
+        Time time = configService.current().world().defaults().time();
+        world.setTime(variant.tick.applyAsInt(time));
+        messages.sendMessage(player, variant.label + "_set", Placeholders.of("%world%", world.getName()));
     }
 
     @Override

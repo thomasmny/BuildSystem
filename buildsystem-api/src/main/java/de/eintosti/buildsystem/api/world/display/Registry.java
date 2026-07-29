@@ -71,11 +71,15 @@ public interface Registry<T extends RegistryEntry> {
     T create(String displayName);
 
     /**
-     * Deletes the entry with the given id. The last remaining entry is never deleted, so {@link #getDefault()} always
-     * has something to return.
+     * Deletes the entry with the given id, cascading to whatever referenced it so nothing is left pointing at an id
+     * this registry no longer resolves.
+     *
+     * <p>Whether the last remaining entry may be deleted is up to the implementation, so callers must not assume the
+     * registry stays non-empty: a status registry keeps its final status (every world needs one), while a category
+     * registry may be emptied completely, leaving the navigator blank until the built-ins are restored.
      *
      * @param id The id to delete
-     * @return {@code true} if it was deleted
+     * @return {@code true} if it was deleted, {@code false} if the id was unknown or the implementation refused
      */
     boolean delete(String id);
 
@@ -93,7 +97,8 @@ public interface Registry<T extends RegistryEntry> {
     void resetLayout();
 
     /**
-     * Restores every entry to the built-in defaults, discarding custom entries.
+     * Restores every entry to the built-in defaults, discarding custom entries. Discarding one cascades exactly as
+     * {@link #delete(String)} does, so nothing keeps a reference to an entry this registry no longer resolves.
      */
     void resetToDefaults();
 }

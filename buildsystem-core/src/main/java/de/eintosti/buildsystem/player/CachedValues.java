@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.player;
 
-import java.util.Arrays;
-import java.util.List;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -26,17 +24,21 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Snapshots a player's gameplay state before BuildSystem mutates it, so it can be restored afterwards. Two independent
- * snapshot groups exist: one for build mode (gamemode, inventory, walk/fly speed) and one for archive worlds
- * (gamemode, inventory, armor). They are deliberately separate — a player can toggle build mode while inside an
- * archive world, and the two restores must not overwrite each other. Internal to BuildSystem; not part of the public
- * API.
+ * Snapshots a player's gameplay state before BuildSystem mutates it, so it can be restored afterwards. Three
+ * independent snapshot groups exist: build mode (gamemode and inventory), the navigator (walk and fly speed), and
+ * archive worlds (gamemode, inventory and armor). They are deliberately separate — a player can toggle build mode
+ * while inside an archive world, and the restores must not overwrite each other.
+ *
+ * <p>Each group is saved and restored as a unit, because restoring half of one leaves the player in a state neither
+ * the caller nor the plugin ever intended (a build inventory in survival, say). Internal to BuildSystem; not part of
+ * the public API.
  */
 @NullMarked
 public class CachedValues {
 
-    private @Nullable GameMode gameMode;
-    private @Nullable List<ItemStack> inventory;
+    private @Nullable GameMode buildGameMode;
+    private @Nullable ItemStack @Nullable [] buildInventory;
+
     private @Nullable Float walkSpeed;
     private @Nullable Float flySpeed;
 
@@ -44,53 +46,51 @@ public class CachedValues {
     private @Nullable ItemStack @Nullable [] archiveInventory;
     private @Nullable ItemStack @Nullable [] archiveArmor;
 
-    public void saveGameMode(GameMode gameMode) {
-        this.gameMode = gameMode;
+    /**
+     * Snapshots gamemode and inventory before build mode replaces them.
+     */
+    public void saveBuildState(Player player) {
+        this.buildGameMode = player.getGameMode();
+        this.buildInventory = player.getInventory().getContents();
     }
 
-    public void resetGameModeIfPresent(Player player) {
-        if (this.gameMode == null) {
-            return;
+    /**
+     * Restores the state captured by {@link #saveBuildState(Player)}, if any, and clears the snapshot.
+     */
+    public void resetBuildStateIfPresent(Player player) {
+        if (this.buildGameMode != null) {
+            player.setGameMode(buildGameMode);
+            this.buildGameMode = null;
         }
-        player.setGameMode(gameMode);
-        this.gameMode = null;
-    }
 
-    public void saveInventory(ItemStack[] inventory) {
-        this.inventory = Arrays.asList(inventory);
-    }
-
-    public void resetInventoryIfPresent(Player player) {
-        if (this.inventory == null) {
-            return;
+        if (this.buildInventory != null) {
+            player.getInventory().clear();
+            player.getInventory().setContents(buildInventory);
+            this.buildInventory = null;
         }
-        player.getInventory().clear();
-        player.getInventory().setContents(this.inventory.toArray(new ItemStack[0]));
-        this.inventory = null;
     }
 
-    public void saveWalkSpeed(float walkSpeed) {
-        this.walkSpeed = walkSpeed;
+    /**
+     * Snapshots walk and fly speed before the navigator overrides them.
+     */
+    public void saveSpeeds(Player player) {
+        this.walkSpeed = player.getWalkSpeed();
+        this.flySpeed = player.getFlySpeed();
     }
 
-    public void resetWalkSpeedIfPresent(Player player) {
-        if (this.walkSpeed == null) {
-            return;
+    /**
+     * Restores the speeds captured by {@link #saveSpeeds(Player)}, if any, and clears the snapshot.
+     */
+    public void resetSpeedsIfPresent(Player player) {
+        if (this.walkSpeed != null) {
+            player.setWalkSpeed(walkSpeed);
+            this.walkSpeed = null;
         }
-        player.setWalkSpeed(walkSpeed);
-        this.walkSpeed = null;
-    }
 
-    public void saveFlySpeed(float flySpeed) {
-        this.flySpeed = flySpeed;
-    }
-
-    public void resetFlySpeedIfPresent(Player player) {
-        if (this.flySpeed == null) {
-            return;
+        if (this.flySpeed != null) {
+            player.setFlySpeed(flySpeed);
+            this.flySpeed = null;
         }
-        player.setFlySpeed(flySpeed);
-        this.flySpeed = null;
     }
 
     /**
@@ -124,10 +124,8 @@ public class CachedValues {
     }
 
     public void resetCachedValues(Player player) {
-        resetGameModeIfPresent(player);
-        resetInventoryIfPresent(player);
-        resetWalkSpeedIfPresent(player);
-        resetFlySpeedIfPresent(player);
+        resetBuildStateIfPresent(player);
+        resetSpeedsIfPresent(player);
         resetArchiveStateIfPresent(player);
     }
 }

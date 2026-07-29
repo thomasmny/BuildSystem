@@ -72,16 +72,6 @@ public class ConfigurableProperty<T> implements PersistentProperty<T> {
     }
 
     /**
-     * Checks if this property has a specific capability.
-     *
-     * @param capability The class of the capability
-     * @return {@code true} if the capability is present, {@code false} otherwise
-     */
-    public boolean hasCapability(Class<? extends Capability> capability) {
-        return this.capabilities.containsKey(capability);
-    }
-
-    /**
      * Gets the capability instance if it exists.
      *
      * @param clazz The class of the capability

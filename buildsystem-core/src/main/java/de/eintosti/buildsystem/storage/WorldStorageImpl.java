@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.util.FileUtils;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
@@ -64,7 +65,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
             return null;
         }
 
-        UUID uuid = this.uuidByName.get(name.toLowerCase());
+        UUID uuid = this.uuidByName.get(name.toLowerCase(Locale.ROOT));
         if (uuid != null) {
             return this.buildWorldsByUuid.get(uuid);
         }
@@ -90,13 +91,13 @@ public abstract class WorldStorageImpl implements WorldStorage {
 
     public synchronized void addBuildWorld(BuildWorld buildWorld) {
         this.buildWorldsByUuid.put(buildWorld.getUniqueId(), buildWorld);
-        this.uuidByName.put(buildWorld.getName().toLowerCase(), buildWorld.getUniqueId());
+        this.uuidByName.put(buildWorld.getName().toLowerCase(Locale.ROOT), buildWorld.getUniqueId());
     }
 
     public synchronized void removeBuildWorld(BuildWorld buildWorld) {
         UUID worldId = buildWorld.getUniqueId();
         this.buildWorldsByUuid.remove(worldId);
-        this.uuidByName.remove(buildWorld.getName().toLowerCase());
+        this.uuidByName.remove(buildWorld.getName().toLowerCase(Locale.ROOT));
 
         Folder assignedFolder = buildWorld.getFolder();
         if (assignedFolder != null) {
@@ -105,8 +106,8 @@ public abstract class WorldStorageImpl implements WorldStorage {
     }
 
     public synchronized void rename(BuildWorld buildWorld, String oldName, String newName) {
-        String oldKey = oldName.toLowerCase();
-        String newKey = newName.toLowerCase();
+        String oldKey = oldName.toLowerCase(Locale.ROOT);
+        String newKey = newName.toLowerCase(Locale.ROOT);
         // Publish the new name before dropping the old one so a concurrent (async) reader never sees the world vanish.
         // Guard the removal: a case-only rename maps both names to the same key, which must stay resolvable.
         this.uuidByName.put(newKey, buildWorld.getUniqueId());

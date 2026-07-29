@@ -19,9 +19,9 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.util.Permissions;
-import java.util.Map;
 import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -42,7 +42,7 @@ public class SkullCommand extends CommandBase {
         switch (args.length) {
             case 0 -> {
                 addSkull(player, "§b" + player.getName(), Profileable.of(player));
-                messages.sendMessage(player, "skull_player_received", Map.entry("%player%", player.getName()));
+                messages.sendMessage(player, "skull_player_received", Placeholders.of("%player%", player.getName()));
             }
             case 1 -> {
                 String identifier = args[0];
@@ -51,7 +51,7 @@ public class SkullCommand extends CommandBase {
                     messages.sendMessage(player, "skull_custom_received");
                 } else {
                     addSkull(player, "§b" + identifier, Profileable.detect(identifier));
-                    messages.sendMessage(player, "skull_player_received", Map.entry("%player%", identifier));
+                    messages.sendMessage(player, "skull_player_received", Placeholders.of("%player%", identifier));
                 }
             }
             default -> messages.sendMessage(player, "skull_usage");

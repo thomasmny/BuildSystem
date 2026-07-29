@@ -33,6 +33,7 @@ import de.eintosti.buildsystem.world.display.CategoryPermissions;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.List;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -88,18 +89,24 @@ public class NavigatorMenu extends ButtonMenu<MenuButton> {
 
     private MenuButton settingsButton() {
         return MenuButton.builder()
+                .permission(Permissions.SETTINGS)
                 .render((player, inventory, slot) -> ItemBuilder.skull(Profileable.detect(SkullTextures.SETTINGS))
                         .name(messages.getString("old_navigator_settings", player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
-                    if (!player.hasPermission(Permissions.SETTINGS)) {
-                        XSound.ENTITY_ITEM_BREAK.play(player);
-                        return;
-                    }
                     menus.openSettings(player);
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                 })
                 .build();
+    }
+
+    /**
+     * Keeps the navigator open on a denied click — the player is browsing, and closing the whole menu because one button
+     * is out of reach loses their place.
+     */
+    @Override
+    protected void onPermissionDenied(Player player, InventoryClickEvent event) {
+        XSound.ENTITY_ITEM_BREAK.play(player);
     }
 
     @Override

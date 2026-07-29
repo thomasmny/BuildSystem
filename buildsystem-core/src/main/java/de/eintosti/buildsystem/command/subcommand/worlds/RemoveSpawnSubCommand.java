@@ -22,8 +22,8 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import java.util.Map;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -52,7 +52,7 @@ public class RemoveSpawnSubCommand extends AbstractSubCommand {
 
         buildWorld.getData().set(WorldDataKey.CUSTOM_SPAWN, "");
         messages.sendMessage(
-                player, "worlds_removespawn_world_spawn_removed", Map.entry("%world%", buildWorld.getName()));
+                player, "worlds_removespawn_world_spawn_removed", Placeholders.of("%world%", buildWorld.getName()));
     }
 
     @Override

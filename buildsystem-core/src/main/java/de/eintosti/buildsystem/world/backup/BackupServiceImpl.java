@@ -69,7 +69,12 @@ public class BackupServiceImpl implements BackupService {
     private final Cache<UUID, BackupProfile> backupProfileCache =
             CacheBuilder.newBuilder().expireAfterAccess(3, TimeUnit.MINUTES).build();
 
-    private BackupStorage backupStorage;
+    /**
+     * Volatile because {@link #reload()} replaces it on the main thread while backup executor threads read it through
+     * {@link #getStorage()}.
+     */
+    private volatile BackupStorage backupStorage;
+
     private @Nullable BukkitTask autoBackupTask;
 
     public BackupServiceImpl(
@@ -285,8 +290,12 @@ public class BackupServiceImpl implements BackupService {
         }
     }
 
+    /**
+     * Profiles resolve the storage per operation rather than capturing it, so a {@code /buildsystem reload} that swaps
+     * the backend does not leave cached profiles writing into the closed one.
+     */
     private BackupProfile createProfile(BuildWorld buildWorld) {
         return new BackupProfileImpl(
-                plugin, configService, messages, worldService, spawnService.get(), this.backupStorage, buildWorld);
+                plugin, configService, messages, worldService, spawnService.get(), this::getStorage, buildWorld);
     }
 }

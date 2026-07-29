@@ -73,8 +73,6 @@ public final class UpdateChecker {
     private final int pluginID;
     private final VersionScheme versionScheme;
 
-    private @Nullable UpdateResult lastResult = null;
-
     public UpdateChecker(JavaPlugin plugin, int pluginID) {
         this(plugin, pluginID, VERSION_SCHEME_DECIMAL);
     }
@@ -145,16 +143,6 @@ public final class UpdateChecker {
 
             return new UpdateResult(responseCode == 401 ? UpdateReason.UNAUTHORIZED_QUERY : UpdateReason.UNKNOWN_ERROR);
         });
-    }
-
-    /**
-     * Get the last update result that was queried by {@link #requestUpdateCheck()}. If no update check was performed
-     * since this class' initialization, this method will return {@code null}.
-     *
-     * @return the last update check result. {@code null} if none.
-     */
-    public @Nullable UpdateResult getLastResult() {
-        return lastResult;
     }
 
     /**
@@ -229,10 +217,6 @@ public final class UpdateChecker {
 
         private final UpdateReason reason;
         private final String newestVersion;
-
-        {
-            UpdateChecker.this.lastResult = this;
-        }
 
         private UpdateResult(UpdateReason reason, String newestVersion) {
             this.reason = reason;

@@ -155,64 +155,11 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
     protected abstract void reopen(Player player);
 
     /**
-     * Hook for a slot the preview reserves for something that is not a registry entry (the navigator's settings
-     * button). Reserved slots are skipped when placing entries and when searching for a free slot.
-     *
-     * @param slot The slot to test
-     * @return {@code true} if the slot is reserved
+     * {@return the non-entry item this layout keeps in its grid} Defaults to {@link LayoutOccupant#NONE}; a subclass
+     * that has one (the navigator's settings button) overrides this.
      */
-    protected boolean isReserved(int slot) {
-        return false;
-    }
-
-    /**
-     * Hook for rendering non-entry items into the preview.
-     *
-     * @param player The viewing player
-     * @param inventory The preview inventory
-     */
-    protected void renderPreviewExtras(Player player, Inventory inventory) {}
-
-    /**
-     * Hook for rendering non-entry items into the palette, after the entries.
-     *
-     * @param player The viewing player
-     * @param playerInventory The player's inventory
-     * @param notAddedCount How many entries precede the extras in the palette
-     */
-    protected void renderPaletteExtras(Player player, Inventory playerInventory, int notAddedCount) {}
-
-    /**
-     * Hook for a preview click that the shared machinery should not handle (picking up or placing the navigator's
-     * settings button).
-     *
-     * @param player The clicking player
-     * @param slot The clicked slot
-     * @return {@code true} if the click was consumed
-     */
-    protected boolean onExtraPreviewClick(Player player, int slot) {
-        return false;
-    }
-
-    /**
-     * Hook for a palette click that the shared machinery should not handle.
-     *
-     * @param player The clicking player
-     * @param slot The clicked slot
-     * @return {@code true} if the click was consumed
-     */
-    protected boolean onExtraPaletteClick(Player player, int slot) {
-        return false;
-    }
-
-    /**
-     * Hook for dropping a held non-entry item outside the inventory.
-     *
-     * @param player The clicking player
-     * @return {@code true} if the drop was consumed
-     */
-    protected boolean onExtraOutsideDrop(Player player) {
-        return false;
+    protected LayoutOccupant occupant() {
+        return LayoutOccupant.NONE;
     }
 
     /**
@@ -239,11 +186,11 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
             menuItems.addGlassPane(player, inventory, slot);
         }
 
-        renderPreviewExtras(player, inventory);
+        occupant().renderInPreview(player, inventory);
 
         for (T entry : registry().getAll()) {
             int slot = entry.getSlot();
-            if (!entry.isShown() || !isSlotValid(slot) || isReserved(slot) || isHeld(entry)) {
+            if (!entry.isShown() || !isSlotValid(slot) || occupant().occupies(slot) || isHeld(entry)) {
                 continue;
             }
             icon(entry, player)
@@ -285,7 +232,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
                     .into(playerInventory, PALETTE_FIRST_SLOT + i);
         }
 
-        renderPaletteExtras(player, playerInventory, notAdded.size());
+        occupant().renderInPalette(player, playerInventory, notAdded.size());
     }
 
     protected final List<T> notAdded() {
@@ -317,7 +264,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
         if (!isSlotValid(slot)) {
             return;
         }
-        if (onExtraPreviewClick(player, slot)) {
+        if (occupant().onPreviewClick(player, slot)) {
             return;
         }
         if (held.isHolding()) {
@@ -347,7 +294,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
             return;
         }
 
-        if (!displaceReserved(slot, held.getFromSlot())) {
+        if (!occupant().displacedBy(slot, held.getFromSlot())) {
             T occupant = entryAtSlot(slot);
             if (occupant != null && !occupant.getId().equals(heldEntry.getId())) {
                 if (held.getFromSlot() >= 0) {
@@ -371,7 +318,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
             deleteHeld(player);
             return;
         }
-        if (held.isHolding() || isHoldingExtra()) {
+        if (held.isHolding() || occupant().isBeingDragged()) {
             handleOutsideClickWhileHolding(player);
             return;
         }
@@ -391,7 +338,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
             promptReset(player, rightClick);
             return;
         }
-        if (onExtraPaletteClick(player, slot)) {
+        if (occupant().onPaletteClick(player, slot)) {
             return;
         }
 
@@ -421,7 +368,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
      * Dropping outside puts the held entry back in the palette rather than deleting it; deletion is the bin's job.
      */
     protected final void handleOutsideClickWhileHolding(Player player) {
-        if (!onExtraOutsideDrop(player)) {
+        if (!occupant().onDroppedOutside(player)) {
             T heldEntry = currentHeld();
             if (heldEntry != null) {
                 heldEntry.setShown(false);
@@ -480,39 +427,16 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
 
     protected final void clearHeld(Player player) {
         held.reset();
-        onClearHeld();
+        occupant().releaseDrag();
         setCursorNextTick(player, null);
     }
 
     /**
-     * Hook for placing an entry onto a {@link #isReserved(int) reserved} slot: the reserved occupant moves aside
-     * instead of an entry being displaced.
-     *
-     * @param slot The slot being placed into
-     * @param heldFromSlot The slot the held entry came from, or {@code -1} if it came from the palette
-     * @return {@code true} if the slot was reserved and has been vacated
-     */
-    protected boolean displaceReserved(int slot, int heldFromSlot) {
-        return false;
-    }
-
-    /**
-     * {@return whether a registry entry is currently on the cursor}
+     * {@return whether the player is dragging a registry entry} An {@link LayoutOccupant occupant} uses this to tell an
+     * entry drop apart from one of its own.
      */
     protected final boolean isHoldingEntry() {
         return held.isHolding();
-    }
-
-    /**
-     * Hook to clear any subclass-held cursor state alongside the shared one.
-     */
-    protected void onClearHeld() {}
-
-    /**
-     * {@return whether the subclass is holding something that is not a registry entry}
-     */
-    protected boolean isHoldingExtra() {
-        return false;
     }
 
     protected final void setCursorNextTick(Player player, @Nullable ItemStack cursor) {

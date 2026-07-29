@@ -20,13 +20,11 @@ package de.eintosti.buildsystem.world.menu;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.backup.Backup;
-import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.util.StringUtils;
-import java.util.Map;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -37,12 +35,10 @@ public class BackupsConfirmationMenu extends ButtonMenu<MenuButton> {
     private static final int SLOT_CANCEL = 15;
 
     private final Backup backup;
-    private final String dateFormat;
 
-    public BackupsConfirmationMenu(Messages messages, ConfigService configService, Backup backup, Player player) {
+    public BackupsConfirmationMenu(Messages messages, Backup backup, Player player) {
         super(messages, 27, messages.getString("restore_backup_title", player));
         this.backup = backup;
-        this.dateFormat = configService.current().settings().dateFormat();
 
         register(
                 SLOT_CONFIRM,
@@ -52,9 +48,7 @@ public class BackupsConfirmationMenu extends ButtonMenu<MenuButton> {
                                 .lore(messages.getStringList(
                                         "restore_backup_confirm_lore",
                                         p,
-                                        Map.entry(
-                                                "%timestamp%",
-                                                StringUtils.formatTime(backup.creationTime(), dateFormat))))
+                                        Placeholders.of("%timestamp%", messages.formatDateTime(backup.creationTime()))))
                                 .into(inventory, slot))
                         .onClick((p, event) -> {
                             p.closeInventory();

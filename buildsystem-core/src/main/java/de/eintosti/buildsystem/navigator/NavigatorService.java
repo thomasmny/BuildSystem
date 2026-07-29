@@ -32,9 +32,15 @@ import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.ArmorStand;
@@ -62,7 +68,12 @@ public class NavigatorService {
     private final NamespacedKey ownerKey;
     private final NamespacedKey categoryKey;
 
-    private final Set<Player> openNavigator;
+    /**
+     * Players with the armor-stand navigator open, keyed by UUID like {@link #armorStands} so the service has one
+     * identity model and never holds a {@link Player} reference past logout.
+     */
+    private final Set<UUID> openNavigator;
+
     private final Map<UUID, ArmorStand[]> armorStands;
 
     public NavigatorService(
@@ -167,16 +178,12 @@ public class NavigatorService {
         return ItemBuilder.icon(category, player).build();
     }
 
-    public Set<Player> getOpenNavigator() {
-        return Collections.unmodifiableSet(openNavigator);
-    }
-
     public boolean isNavigatorOpen(Player player) {
-        return openNavigator.contains(player);
+        return openNavigator.contains(player.getUniqueId());
     }
 
     public void markNavigatorOpen(Player player) {
-        openNavigator.add(player);
+        openNavigator.add(player.getUniqueId());
     }
 
     public void giveNavigator(Player player) {
@@ -198,7 +205,7 @@ public class NavigatorService {
     }
 
     public void closeNewNavigator(Player player) {
-        if (!openNavigator.contains(player)) {
+        if (!openNavigator.contains(player.getUniqueId())) {
             return;
         }
 
@@ -213,12 +220,11 @@ public class NavigatorService {
                 player, messages.getString("barrier_item", player), XMaterial.BARRIER, navigatorItems.create(player));
 
         CachedValues cachedValues = buildPlayer.getCachedValues();
-        cachedValues.resetWalkSpeedIfPresent(player);
-        cachedValues.resetFlySpeedIfPresent(player);
+        cachedValues.resetSpeedsIfPresent(player);
         player.removePotionEffect(XPotion.JUMP_BOOST.get());
         player.removePotionEffect(XPotion.BLINDNESS.get());
 
-        openNavigator.remove(player);
+        openNavigator.remove(player.getUniqueId());
     }
 
     private void initEntityChecker() {
@@ -226,9 +232,10 @@ public class NavigatorService {
     }
 
     private void checkForArmorStandNavigator() {
-        for (Player player : openNavigator) {
-            ArmorStand[] stands = armorStands.get(player.getUniqueId());
-            if (stands == null) {
+        for (UUID uuid : openNavigator) {
+            Player player = Bukkit.getPlayer(uuid);
+            ArmorStand[] stands = armorStands.get(uuid);
+            if (player == null || stands == null) {
                 continue;
             }
 

@@ -28,7 +28,9 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.config.PluginConfig.World.Defaults.Time;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.*;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.Permissions;
@@ -330,12 +332,12 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
     private void renderWorldInfo(Player player, Inventory inventory) {
         String displayName =
-                messages.getString("worldeditor_world_item", player, Map.entry("%world%", buildWorld.getName()));
+                messages.getString("worldeditor_world_item", player, Placeholders.of("%world%", buildWorld.getName()));
         boolean isHead = buildWorld.getIcon() == Material.PLAYER_HEAD;
         String loreKey = isHead ? "worldeditor_world_head_lore" : "worldeditor_world_lore";
         ItemBuilder.icon(buildWorld, player)
                 .name(displayName)
-                .lore(messages.getStringList(loreKey, player, Map.entry("%texture%", iconTextureLabel(player))))
+                .lore(messages.getStringList(loreKey, player, Placeholders.of("%texture%", iconTextureLabel(player))))
                 .into(inventory, SLOT_WORLD_INFO);
     }
 
@@ -411,7 +413,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
         ItemBuilder.of(material)
                 .name(messages.getString("worldeditor_time_item", player))
-                .lore(messages.getStringList("worldeditor_time_lore", player, Map.entry("%time%", value)))
+                .lore(messages.getStringList("worldeditor_time_lore", player, Placeholders.of("%time%", value)))
                 .into(inventory, SLOT_TIME);
     }
 
@@ -477,7 +479,9 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         ItemBuilder.of(material)
                 .name(messages.getString("worldeditor_difficulty_item", player))
                 .lore(messages.getStringList(
-                        "worldeditor_difficulty_lore", player, Map.entry("%difficulty%", getDifficultyName(player))))
+                        "worldeditor_difficulty_lore",
+                        player,
+                        Placeholders.of("%difficulty%", getDifficultyName(player))))
                 .into(inventory, SLOT_DIFFICULTY);
     }
 
@@ -488,7 +492,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                 .lore(messages.getStringList(
                         "worldeditor_status_lore",
                         player,
-                        Map.entry("%status%", ColorAPI.process(status.getStyledName()))))
+                        Placeholders.of("%status%", ColorAPI.process(status.getStyledName()))))
                 .into(inventory, SLOT_STATUS);
     }
 
@@ -498,7 +502,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                 .lore(messages.getStringList(
                         "worldeditor_project_lore",
                         player,
-                        Map.entry("%project%", buildWorld.getData().get(WorldDataKey.PROJECT))))
+                        Placeholders.of("%project%", buildWorld.getData().get(WorldDataKey.PROJECT))))
                 .into(inventory, SLOT_PROJECT);
     }
 
@@ -508,7 +512,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                 .lore(messages.getStringList(
                         "worldeditor_permission_lore",
                         player,
-                        Map.entry("%permission%", buildWorld.getData().get(WorldDataKey.PERMISSION))))
+                        Placeholders.of("%permission%", buildWorld.getData().get(WorldDataKey.PERMISSION))))
                 .into(inventory, SLOT_PERMISSION);
     }
 
@@ -625,7 +629,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
     }
 
     private void changeTime(Player player) {
-        var defaultTime = configService.current().world().defaults().time();
+        Time defaultTime = configService.current().world().defaults().time();
         int time =
                 switch (getWorldTime()) {
                     case SUNRISE -> defaultTime.noon();
@@ -656,6 +660,6 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                 });
 
         player.closeInventory();
-        messages.sendMessage(player, "worldeditor_butcher_removed", Map.entry("%amount%", entitiesRemoved.get()));
+        messages.sendMessage(player, "worldeditor_butcher_removed", Placeholders.of("%amount%", entitiesRemoved.get()));
     }
 }

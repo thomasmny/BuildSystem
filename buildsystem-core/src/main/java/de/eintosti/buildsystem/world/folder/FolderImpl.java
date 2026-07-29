@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.*;
@@ -119,7 +120,7 @@ public class FolderImpl implements Folder {
 
     @Override
     public String getDisplayName(Player player) {
-        return context.messages().getString("folder_item_title", player, Map.entry("%folder%", name));
+        return context.messages().getString("folder_item_title", player, Placeholders.of("%folder%", name));
     }
 
     @Override
@@ -164,9 +165,11 @@ public class FolderImpl implements Folder {
                 .getStringList(
                         "folder_item_lore",
                         player,
-                        Map.entry("%permission%", this.permission),
-                        Map.entry("%project%", this.project),
-                        Map.entry("%worlds%", String.valueOf(getWorldCount()))));
+                        Placeholders.of()
+                                .add("%permission%", this.permission)
+                                .add("%project%", this.project)
+                                .add("%worlds%", String.valueOf(getWorldCount()))
+                                .build()));
     }
 
     @Override

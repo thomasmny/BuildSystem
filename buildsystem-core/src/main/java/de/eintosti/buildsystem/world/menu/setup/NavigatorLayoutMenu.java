@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The navigator setup: the preview is a live copy of the inventory navigator, and categories are dragged into it from
@@ -63,7 +64,7 @@ public class NavigatorLayoutMenu extends LayoutEditorMenu<NavigatorCategory> {
             "setup_category_add_prompt");
 
     private final NavigatorCategoryRegistryImpl registry;
-    private boolean holdingSettings;
+    private final SettingsButton settingsButton = new SettingsButton();
 
     public NavigatorLayoutMenu(
             Messages messages,
@@ -107,89 +108,9 @@ public class NavigatorLayoutMenu extends LayoutEditorMenu<NavigatorCategory> {
         menus.openNavigatorLayout(player);
     }
 
-    // ---------------------------------------------------------------- the settings button
-
     @Override
-    protected boolean isReserved(int slot) {
-        return slot == registry.getSettingsSlot();
-    }
-
-    @Override
-    protected void renderPreviewExtras(Player player, Inventory inventory) {
-        int settingsSlot = registry.getSettingsSlot();
-        if (!holdingSettings && isSlotValid(settingsSlot)) {
-            ItemBuilder.skull(Profileable.detect(SkullTextures.SETTINGS))
-                    .name(messages.getString("old_navigator_settings", player))
-                    .lore(messages.getStringList("setup_navigator_settings_placed_lore", player))
-                    .into(inventory, settingsSlot);
-        }
-    }
-
-    @Override
-    protected void renderPaletteExtras(Player player, Inventory playerInventory, int notAddedCount) {
-        int slot = settingsPaletteSlot(notAddedCount);
-        if (!holdingSettings && registry.getSettingsSlot() < 0 && slot >= 0) {
-            ItemBuilder.skull(Profileable.detect(SkullTextures.SETTINGS))
-                    .name(messages.getString("old_navigator_settings", player))
-                    .lore(messages.getStringList("setup_navigator_settings_palette_lore", player))
-                    .into(playerInventory, slot);
-        }
-    }
-
-    @Override
-    protected boolean onExtraPreviewClick(Player player, int slot) {
-        if (holdingSettings) {
-            placeSettings(player, slot);
-            return true;
-        }
-        if (isHoldingEntry()) {
-            // A held category is placed by the shared machinery, even onto the settings slot.
-            return false;
-        }
-        if (slot == registry.getSettingsSlot()) {
-            pickUpSettings(player);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    protected boolean onExtraPaletteClick(Player player, int slot) {
-        if (registry.getSettingsSlot() < 0
-                && slot == settingsPaletteSlot(notAdded().size())) {
-            pickUpSettings(player);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    protected boolean onExtraOutsideDrop(Player player) {
-        if (!holdingSettings) {
-            return false;
-        }
-        registry.setSettingsSlot(-1);
-        return true;
-    }
-
-    @Override
-    protected boolean displaceReserved(int slot, int heldFromSlot) {
-        if (slot != registry.getSettingsSlot()) {
-            return false;
-        }
-        // The settings button takes the slot the category vacated, or any free slot when it came from the palette.
-        registry.setSettingsSlot(heldFromSlot >= 0 ? heldFromSlot : firstFreeSlot());
-        return true;
-    }
-
-    @Override
-    protected boolean isHoldingExtra() {
-        return holdingSettings;
-    }
-
-    @Override
-    protected void onClearHeld() {
-        holdingSettings = false;
+    protected LayoutOccupant occupant() {
+        return settingsButton;
     }
 
     /**
@@ -207,43 +128,6 @@ public class NavigatorLayoutMenu extends LayoutEditorMenu<NavigatorCategory> {
             created.setShown(false);
         }
         registry.persist(created);
-    }
-
-    private void placeSettings(Player player, int slot) {
-        NavigatorCategory occupant = entryAtSlot(slot);
-        if (occupant != null) {
-            int previousSettingsSlot = registry.getSettingsSlot();
-            if (isSlotValid(previousSettingsSlot)) {
-                // Swap: the displaced category takes the slot the settings button just vacated.
-                occupant.setSlot(previousSettingsSlot);
-            } else {
-                // Settings came from the palette (no slot to swap into); send the occupant to the palette rather than
-                // an invalid slot, which would hide it from the navigator entirely.
-                occupant.setShown(false);
-            }
-            registry.persist(occupant);
-        }
-        registry.setSettingsSlot(slot);
-        clearHeld(player);
-        refresh(player);
-    }
-
-    private void pickUpSettings(Player player) {
-        holdingSettings = true;
-        setCursorNextTick(
-                player,
-                ItemBuilder.skull(Profileable.detect(SkullTextures.SETTINGS))
-                        .name(messages.getString("old_navigator_settings", player))
-                        .build());
-
-        XSound.ITEM_ARMOR_EQUIP_LEATHER.play(player);
-        refresh(player);
-    }
-
-    /** The palette slot the settings token occupies, immediately after the not-yet-added categories. */
-    private int settingsPaletteSlot(int notAddedCount) {
-        int slot = PALETTE_FIRST_SLOT + notAddedCount;
-        return slot <= PALETTE_LAST_SLOT ? slot : -1;
     }
 
     /**
@@ -264,5 +148,127 @@ public class NavigatorLayoutMenu extends LayoutEditorMenu<NavigatorCategory> {
             }
         }
         return -1;
+    }
+
+    /**
+     * The settings button: a navigator slot holder that is not a category. It renders in the grid (or in the palette
+     * when it has been removed from the grid), can be picked up and dropped like a category, and steps aside when a
+     * category is placed onto its slot.
+     */
+    private final class SettingsButton implements LayoutOccupant {
+
+        private boolean held;
+
+        @Override
+        public boolean occupies(int slot) {
+            return slot == registry.getSettingsSlot();
+        }
+
+        @Override
+        public void renderInPreview(Player player, Inventory inventory) {
+            int settingsSlot = registry.getSettingsSlot();
+            if (!held && isSlotValid(settingsSlot)) {
+                icon(player, "setup_navigator_settings_placed_lore").into(inventory, settingsSlot);
+            }
+        }
+
+        @Override
+        public void renderInPalette(Player player, Inventory playerInventory, int entryCount) {
+            int slot = paletteSlot(entryCount);
+            if (!held && registry.getSettingsSlot() < 0 && slot >= 0) {
+                icon(player, "setup_navigator_settings_palette_lore").into(playerInventory, slot);
+            }
+        }
+
+        @Override
+        public boolean onPreviewClick(Player player, int slot) {
+            if (held) {
+                place(player, slot);
+                return true;
+            }
+            if (NavigatorLayoutMenu.this.isHoldingEntry()) {
+                // A held category is placed by the shared machinery, even onto the settings slot.
+                return false;
+            }
+            if (slot == registry.getSettingsSlot()) {
+                pickUp(player);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean onPaletteClick(Player player, int slot) {
+            if (registry.getSettingsSlot() < 0 && slot == paletteSlot(notAdded().size())) {
+                pickUp(player);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean onDroppedOutside(Player player) {
+            if (!held) {
+                return false;
+            }
+            registry.setSettingsSlot(-1);
+            return true;
+        }
+
+        @Override
+        public boolean displacedBy(int slot, int heldFromSlot) {
+            if (slot != registry.getSettingsSlot()) {
+                return false;
+            }
+            registry.setSettingsSlot(heldFromSlot >= 0 ? heldFromSlot : firstFreeSlot());
+            return true;
+        }
+
+        @Override
+        public boolean isBeingDragged() {
+            return held;
+        }
+
+        @Override
+        public void releaseDrag() {
+            held = false;
+        }
+
+        private void place(Player player, int slot) {
+            NavigatorCategory occupant = entryAtSlot(slot);
+            if (occupant != null) {
+                int previousSettingsSlot = registry.getSettingsSlot();
+                if (isSlotValid(previousSettingsSlot)) {
+                    occupant.setSlot(previousSettingsSlot);
+                } else {
+                    // Settings came from the palette (no slot to swap into); send the occupant to the palette rather
+                    // than an invalid slot, which would hide it from the navigator entirely.
+                    occupant.setShown(false);
+                }
+                registry.persist(occupant);
+            }
+            registry.setSettingsSlot(slot);
+            clearHeld(player);
+            refresh(player);
+        }
+
+        private void pickUp(Player player) {
+            held = true;
+            setCursorNextTick(player, icon(player, null).build());
+            XSound.ITEM_ARMOR_EQUIP_LEATHER.play(player);
+            refresh(player);
+        }
+
+        private ItemBuilder icon(Player player, @Nullable String loreKey) {
+            ItemBuilder builder = ItemBuilder.skull(Profileable.detect(SkullTextures.SETTINGS))
+                    .name(messages.getString("old_navigator_settings", player));
+            return loreKey != null ? builder.lore(messages.getStringList(loreKey, player)) : builder;
+        }
+
+        /** The palette slot the settings token occupies, immediately after the not-yet-added categories. */
+        private int paletteSlot(int entryCount) {
+            int slot = PALETTE_FIRST_SLOT + entryCount;
+            return slot <= PALETTE_LAST_SLOT ? slot : -1;
+        }
     }
 }

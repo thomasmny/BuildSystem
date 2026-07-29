@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.world.menu.setup;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
@@ -27,13 +28,11 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.Prompts;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -145,7 +144,8 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
 
                     ItemBuilder.of(on ? XMaterial.LIME_DYE : XMaterial.GRAY_DYE)
                             .name(messages.getString(nameKey, player))
-                            .lore(messages.getStringList(nameKey + "_lore", player, Map.entry("%state%", stateText)))
+                            .lore(messages.getStringList(
+                                    nameKey + "_lore", player, Placeholders.of("%state%", stateText)))
                             .glow(on)
                             .into(inventory, slot);
                 })
@@ -199,10 +199,17 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
      *
      * @param first The first group, in display order
      * @param second The second group, in display order
+     * @throws IllegalArgumentException if the groups do not fit the row
      */
     protected final void registerGrouped(List<MenuButton> first, List<MenuButton> second) {
         int groupGap = first.isEmpty() || second.isEmpty() ? 0 : 1;
         int totalWidth = first.size() + groupGap + second.size();
+        // Overflowing the row used to spill silently into the next one, overwriting the back button; fail at
+        // construction instead, where the subclass that added the button can see it.
+        if (totalWidth > ITEMS_PER_ROW) {
+            throw new IllegalArgumentException("Property row holds at most " + ITEMS_PER_ROW + " slots, but "
+                    + totalWidth + " were requested (including the group gap)");
+        }
         int slot = MIDDLE_ROW_START_SLOT + (ITEMS_PER_ROW - totalWidth) / 2;
 
         for (MenuButton button : first) {
@@ -218,10 +225,5 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
     protected void populate(Player player) {
         menuItems.fillAll(player, getInventory());
         renderButtons(player);
-    }
-
-    @Override
-    protected void onUnhandledClick(Player player, InventoryClickEvent event) {
-        // Filler clicks do nothing; navigation is via the explicit back button.
     }
 }

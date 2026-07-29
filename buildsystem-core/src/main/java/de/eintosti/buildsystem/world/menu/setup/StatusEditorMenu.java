@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.world.menu.setup;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuItems;
@@ -29,7 +30,6 @@ import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.data.WorldStatusImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import java.util.List;
-import java.util.Map;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -63,35 +63,37 @@ public class StatusEditorMenu extends RegistryEditorMenu {
                 messages.getString(
                         "setup_status_editor_title",
                         player,
-                        Map.entry("%status%", ColorAPI.process(status.getStyledName()))));
+                        Placeholders.of("%status%", ColorAPI.process(status.getStyledName()))));
 
         this.registry = worldStatusRegistry;
         this.status = (WorldStatusImpl) status;
 
-        registerCentered(createPropertyButtons());
+        registerCentered(propertyButtons());
         register(SLOT_BACK, backButton());
     }
 
-    private List<MenuButton> createPropertyButtons() {
+    private List<MenuButton> propertyButtons() {
         // Navigator visibility is decided by category membership (a status only appears in the navigator through the
         // categories that group it), so there is no separate per-status "shown in navigator" toggle.
         return List.of(
                 renameButton("setup_status_rename", "setup_status_rename_prompt", status::setDisplayName),
                 colorButton("setup_status_color", status::getColor, status::setColor),
                 iconButton("setup_status_icon", status::getIcon, status::setIcon),
-                createOrderButton(),
+                orderButton(),
                 toggleButton(
                         "setup_status_building",
                         status::isBuildingAllowed,
                         () -> status.setBuildingAllowed(!status.isBuildingAllowed())),
-                createProgressesButton());
+                progressesButton());
     }
 
-    private MenuButton createOrderButton() {
+    private MenuButton orderButton() {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.COMPARATOR)
                         .name(messages.getString(
-                                "setup_status_order", player, Map.entry("%order%", String.valueOf(status.getOrder()))))
+                                "setup_status_order",
+                                player,
+                                Placeholders.of("%order%", String.valueOf(status.getOrder()))))
                         .lore(messages.getStringList("setup_order_lore", player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
@@ -102,11 +104,13 @@ public class StatusEditorMenu extends RegistryEditorMenu {
                 .build();
     }
 
-    private MenuButton createProgressesButton() {
+    private MenuButton progressesButton() {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.ARROW)
                         .name(messages.getString(
-                                "setup_status_progresses", player, Map.entry("%target%", getProgressesLabel(player))))
+                                "setup_status_progresses",
+                                player,
+                                Placeholders.of("%target%", getProgressesLabel(player))))
                         .lore(messages.getStringList("setup_status_progresses_lore", player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {

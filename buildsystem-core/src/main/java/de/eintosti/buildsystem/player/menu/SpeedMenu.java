@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.player.menu;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
@@ -27,6 +28,7 @@ import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.Map;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -62,21 +64,27 @@ public class SpeedMenu extends ButtonMenu<MenuButton> {
 
     private MenuButton speedButton(SpeedOption option) {
         return MenuButton.builder()
+                .permission(Permissions.SPEED)
                 .render((player, inventory, slot) -> inventory.setItem(
                         slot,
                         ItemBuilder.skull(Profileable.detect(option.skullTexture()))
                                 .name(messages.getString(option.nameKey(), player))
                                 .build()))
                 .onClick((player, event) -> {
-                    if (!player.hasPermission(Permissions.SPEED)) {
-                        player.closeInventory();
-                        return;
-                    }
                     setSpeed(player, option.speed(), option.displayNumber());
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     player.closeInventory();
                 })
                 .build();
+    }
+
+    /**
+     * Closes without a message or sound, matching how this menu has always turned away a player who lacks
+     * {@code buildsystem.speed}.
+     */
+    @Override
+    protected void onPermissionDenied(Player player, InventoryClickEvent event) {
+        player.closeInventory();
     }
 
     @Override
@@ -99,10 +107,10 @@ public class SpeedMenu extends ButtonMenu<MenuButton> {
     private void setSpeed(Player player, float speed, int num) {
         if (player.isFlying()) {
             player.setFlySpeed(speed - 0.1f);
-            messages.sendMessage(player, "speed_set_flying", Map.entry("%speed%", num));
+            messages.sendMessage(player, "speed_set_flying", Placeholders.of("%speed%", num));
         } else {
             player.setWalkSpeed(speed);
-            messages.sendMessage(player, "speed_set_walking", Map.entry("%speed%", num));
+            messages.sendMessage(player, "speed_set_walking", Placeholders.of("%speed%", num));
         }
     }
 }
