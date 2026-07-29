@@ -17,9 +17,6 @@
  */
 package de.eintosti.buildsystem.util;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 import java.util.function.Predicate;
 import org.jspecify.annotations.NullMarked;
@@ -54,17 +51,5 @@ public final class StringUtils {
             id = base + "_" + suffix++;
         }
         return id;
-    }
-
-    /**
-     * Formats a given time in milliseconds to a human-readable string.
-     *
-     * @param millis The time in milliseconds to format
-     * @return A formatted string representing the date and time
-     */
-    public static String formatTime(long millis, String dateFormat) {
-        Date date = new Date(millis);
-        DateFormat formatter = new SimpleDateFormat(dateFormat + " HH:mm:ss");
-        return formatter.format(date);
     }
 }

@@ -92,8 +92,10 @@ public class SettingsService {
         }
 
         board.updateTitle(messages.getString("title", player));
-        BukkitTask scoreboardTask = Bukkit.getScheduler()
-                .runTaskTimerAsynchronously(plugin, () -> updateScoreboard(player, board), 0L, 20L);
+        // Synchronous: the update reads the player's world and its BuildWorld data, which Bukkit only guarantees on the
+        // main thread. The work is one lookup and a handful of string substitutions per player per second.
+        BukkitTask scoreboardTask =
+                Bukkit.getScheduler().runTaskTimer(plugin, () -> updateScoreboard(player, board), 0L, 20L);
         this.scoreboardTasks.put(player.getUniqueId(), scoreboardTask);
     }
 
@@ -116,17 +118,16 @@ public class SettingsService {
     }
 
     private void updateScoreboard(Player player, FastBoard board) {
-        List<String> body = messages.getStringList("body", player, (line) -> getPlaceholders(line, player));
+        // Resolved once per update, not once per line: this reads the player's world and formats four timestamps, and
+        // the scoreboard refreshes every second for every player.
+        Map.Entry<String, Object>[] placeholders = getPlaceholders(player);
+        List<String> body = messages.getStringList("body", player, line -> placeholders);
         board.updateLines(body);
     }
 
-    @Contract("_, _ -> new")
+    @Contract("_ -> new")
     @SuppressWarnings("unchecked")
-    private Map.Entry<String, Object>[] getPlaceholders(String originalString, Player player) {
-        if (!originalString.contains("%")) {
-            return new Map.Entry[0]; // Don't replace anything
-        }
-
+    private Map.Entry<String, Object>[] getPlaceholders(Player player) {
         String worldName = player.getWorld().getName();
         BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
 

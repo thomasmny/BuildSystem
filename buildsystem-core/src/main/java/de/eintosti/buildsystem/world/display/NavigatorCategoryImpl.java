@@ -116,11 +116,6 @@ public final class NavigatorCategoryImpl implements NavigatorCategory {
         return Collections.unmodifiableSet(visibilities);
     }
 
-    public void setVisibilities(Set<Visibility> visibilities) {
-        this.visibilities.clear();
-        this.visibilities.addAll(visibilities);
-    }
-
     public void toggleVisibility(Visibility visibility) {
         if (!visibilities.add(visibility)) {
             visibilities.remove(visibility);

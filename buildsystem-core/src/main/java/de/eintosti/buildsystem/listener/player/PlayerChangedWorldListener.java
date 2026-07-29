@@ -106,8 +106,7 @@ public class PlayerChangedWorldListener implements Listener {
         CachedValues cachedValues = BuildPlayerImpl.of(
                         playerManager.getPlayerStorage().getBuildPlayer(player))
                 .getCachedValues();
-        cachedValues.resetGameModeIfPresent(player);
-        cachedValues.resetInventoryIfPresent(player);
+        cachedValues.resetBuildStateIfPresent(player);
         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
         messages.sendMessage(player, "build_deactivated_self");
     }

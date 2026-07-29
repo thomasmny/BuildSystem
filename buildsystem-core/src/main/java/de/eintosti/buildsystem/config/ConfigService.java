@@ -74,17 +74,6 @@ public class ConfigService {
     }
 
     /**
-     * Sets the version of the plugin's configuration and saves the config file.
-     *
-     * @param version The version number to set
-     */
-    public void setVersion(int version) {
-        plugin.getConfig().set("version", version);
-        plugin.getConfig().setComments("version", List.of("Internal, do not change manually!"));
-        plugin.saveConfig();
-    }
-
-    /**
      * Gets the raw {@link FileConfiguration} for use by migration code.
      *
      * @return The raw file configuration

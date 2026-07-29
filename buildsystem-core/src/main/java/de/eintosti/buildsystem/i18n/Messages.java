@@ -21,10 +21,15 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.util.color.ColorAPI;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Unmodifiable;
@@ -34,13 +39,29 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class Messages {
 
+    /**
+     * Used when {@code settings.date-format} is not a pattern the formatter accepts, so a bad config line degrades to a
+     * readable date instead of throwing on every render.
+     */
+    private static final String FALLBACK_DATE_FORMAT = "dd/MM/yyyy";
+
+    private static final String TIME_SUFFIX = " HH:mm:ss";
+
     private final ConfigService configService;
     private final MessageStore store;
+    private final Logger logger;
     private volatile @Nullable TextResolver placeholderResolver;
+
+    /**
+     * The formatters built for the currently configured pattern. Cached because the scoreboard renders several
+     * timestamps per player per second, and rebuilt when a reload changes the pattern.
+     */
+    private volatile @Nullable Formatters formatters;
 
     public Messages(BuildSystemPlugin plugin, ConfigService configService) {
         this.configService = configService;
         this.store = new MessageStore(plugin);
+        this.logger = plugin.getLogger();
     }
 
     /**
@@ -70,7 +91,7 @@ public final class Messages {
     }
 
     public void reload() {
-        this.store.reload();
+        this.store.load();
     }
 
     public void sendPermissionError(CommandSender sender) {
@@ -119,6 +140,9 @@ public final class Messages {
     @Unmodifiable
     public List<String> getStringList(
             String key, @Nullable Player player, Function<String, Entry<String, Object>[]> placeholders) {
+        // Lore is looked up through here, so without this a mistyped lore key renders as an empty list with no warning
+        // at all, while the same mistake in a name is reported.
+        store.checkIfKeyPresent(key);
         String message = store.getRaw(key).replace("%prefix%", store.getPrefix());
         TextResolver resolver = this.placeholderResolver;
         return Arrays.stream(message.split("\n"))
@@ -128,11 +152,62 @@ public final class Messages {
                 .toList();
     }
 
+    /**
+     * Formats a timestamp as a date, using {@code settings.date-format}.
+     *
+     * @param millis The epoch milliseconds, or a non-positive value for "never"
+     * @return The formatted date, or {@code "-"} when there is no timestamp
+     */
     public String formatDate(long millis) {
-        return millis > 0
-                ? new SimpleDateFormat(configService.current().settings().dateFormat()).format(millis)
-                : "-";
+        return format(millis, formatters().date());
     }
+
+    /**
+     * Formats a timestamp as a date and time-of-day. Used where the exact moment matters, such as naming a backup.
+     *
+     * @param millis The epoch milliseconds, or a non-positive value for "never"
+     * @return The formatted timestamp, or {@code "-"} when there is no timestamp
+     */
+    public String formatDateTime(long millis) {
+        return format(millis, formatters().dateTime());
+    }
+
+    private static String format(long millis, DateTimeFormatter formatter) {
+        return millis > 0 ? formatter.format(Instant.ofEpochMilli(millis)) : "-";
+    }
+
+    private Formatters formatters() {
+        String pattern = configService.current().settings().dateFormat();
+        Formatters current = this.formatters;
+        if (current != null && current.pattern().equals(pattern)) {
+            return current;
+        }
+
+        Formatters rebuilt = buildFormatters(pattern);
+        this.formatters = rebuilt;
+        return rebuilt;
+    }
+
+    private Formatters buildFormatters(String pattern) {
+        try {
+            return new Formatters(pattern, formatter(pattern), formatter(pattern + TIME_SUFFIX));
+        } catch (IllegalArgumentException e) {
+            logger.warning("Invalid settings.date-format \"" + pattern + "\", falling back to " + FALLBACK_DATE_FORMAT
+                    + ": " + e.getMessage());
+            return new Formatters(
+                    pattern, formatter(FALLBACK_DATE_FORMAT), formatter(FALLBACK_DATE_FORMAT + TIME_SUFFIX));
+        }
+    }
+
+    private static DateTimeFormatter formatter(String pattern) {
+        return DateTimeFormatter.ofPattern(pattern).withZone(ZoneId.systemDefault());
+    }
+
+    /**
+     * The date and date-time formatters derived from one configured pattern. {@link DateTimeFormatter} is immutable and
+     * thread-safe, so these can be shared across the async scoreboard threads that render them.
+     */
+    private record Formatters(String pattern, DateTimeFormatter date, DateTimeFormatter dateTime) {}
 
     public static String getMessageKey(BuildWorldType type) {
         return switch (type) {

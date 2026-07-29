@@ -166,10 +166,6 @@ public final class Services {
         return checkNotNull(navigatorEditorService, "NavigatorEditorService");
     }
 
-    public CustomBlockManager customBlockManager() {
-        return checkNotNull(customBlockManager, "CustomBlockManager");
-    }
-
     public PlayerServiceImpl player() {
         return checkNotNull(playerService, "PlayerServiceImpl");
     }

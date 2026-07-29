@@ -100,8 +100,7 @@ public class PlayerQuitListener implements Listener {
         buildPlayer.setLogoutLocation(new LogoutLocation(player.getWorld().getName(), player.getLocation()));
 
         CachedValues cachedValues = buildPlayer.getCachedValues();
-        cachedValues.resetGameModeIfPresent(player);
-        cachedValues.resetInventoryIfPresent(player);
+        cachedValues.resetBuildStateIfPresent(player);
         playerManager.leaveBuildMode(player.getUniqueId());
 
         manageHidePlayer(player);

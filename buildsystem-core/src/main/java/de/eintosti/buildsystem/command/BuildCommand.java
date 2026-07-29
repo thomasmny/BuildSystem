@@ -101,8 +101,7 @@ public class BuildCommand extends CommandBase {
 
         if (isEnteringBuildMode) {
             playerService.enterBuildMode(targetUuid);
-            cachedValues.saveGameMode(target.getGameMode());
-            cachedValues.saveInventory(target.getInventory().getContents());
+            cachedValues.saveBuildState(target);
             target.setGameMode(GameMode.CREATIVE);
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
@@ -118,8 +117,7 @@ public class BuildCommand extends CommandBase {
                 return;
             }
 
-            cachedValues.resetGameModeIfPresent(target);
-            cachedValues.resetInventoryIfPresent(target);
+            cachedValues.resetBuildStateIfPresent(target);
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
             if (sender.equals(target)) {

@@ -32,7 +32,6 @@ import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
-import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.File;
@@ -246,11 +245,7 @@ public class BackupProfileImpl implements BackupProfile {
         messages.sendMessage(
                 player,
                 "worlds_backup_restoration_successful",
-                Map.entry(
-                        "%timestamp%",
-                        StringUtils.formatTime(
-                                backup.creationTime(),
-                                configService.current().settings().dateFormat())));
+                Map.entry("%timestamp%", messages.formatDateTime(backup.creationTime())));
     }
 
     /**

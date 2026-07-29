@@ -70,10 +70,6 @@ public final class TaskScheduler {
         return Bukkit.getScheduler().runTaskAsynchronously(plugin, task);
     }
 
-    public BukkitTask runTimerAsync(Runnable task, long delayTicks, long periodTicks) {
-        return Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, task, delayTicks, periodTicks);
-    }
-
     /**
      * {@return an {@link Executor} that runs each task on the server main thread} For marshalling a
      * {@link java.util.concurrent.CompletableFuture} stage back onto the main thread, e.g.

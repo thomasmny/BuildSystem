@@ -127,7 +127,7 @@ public final class Menus {
     }
 
     public void openBackupsConfirmation(Backup backup, Player player) {
-        new BackupsConfirmationMenu(services.messages(), services.config(), backup, player).open(player);
+        new BackupsConfirmationMenu(services.messages(), backup, player).open(player);
     }
 
     public void openEdit(BuildWorld buildWorld, Player player) {

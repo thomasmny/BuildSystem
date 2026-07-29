@@ -28,7 +28,6 @@ import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
-import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import java.util.Map;
@@ -121,14 +120,7 @@ public class BackupsMenu extends ButtonMenu<MenuButton> {
                         .name(messages.getString(
                                 "backups_backup_name",
                                 player,
-                                Map.entry(
-                                        "%timestamp%",
-                                        StringUtils.formatTime(
-                                                backup.creationTime(),
-                                                configService
-                                                        .current()
-                                                        .settings()
-                                                        .dateFormat()))))
+                                Map.entry("%timestamp%", messages.formatDateTime(backup.creationTime()))))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
                     player.closeInventory();

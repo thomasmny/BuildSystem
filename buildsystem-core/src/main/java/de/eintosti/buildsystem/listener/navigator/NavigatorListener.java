@@ -154,8 +154,7 @@ public class NavigatorListener implements Listener {
         CachedValues cachedValues = BuildPlayerImpl.of(
                         playerService.getPlayerStorage().getBuildPlayer(player))
                 .getCachedValues();
-        cachedValues.saveWalkSpeed(player.getWalkSpeed());
-        cachedValues.saveFlySpeed(player.getFlySpeed());
+        cachedValues.saveSpeeds(player);
 
         player.setSprinting(false);
         player.setWalkSpeed(0.0f);
