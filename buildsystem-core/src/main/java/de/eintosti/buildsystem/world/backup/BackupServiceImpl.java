@@ -87,7 +87,35 @@ public class BackupServiceImpl implements BackupService {
         this.worldStorage = worldService.getWorldStorage();
         this.backupStorage =
                 createStorageOrFallback(configService.current().world().backup().storage());
+        plugin.getLogger().info("Storing backups " + describe(this.backupStorage));
         scheduleAutoBackupIfEnabled();
+    }
+
+    /**
+     * {@return where the given storage puts backups, for the startup log} Says where rather than naming the class, so
+     * an operator can tell at a glance whether the configured backend was actually the one that loaded.
+     */
+    private String describe(BackupStorage storage) {
+        PluginConfig.World.Backup.StorageSettings settings =
+                configService.current().world().backup().storage();
+        switch (storage) {
+            case LocalBackupStorage _ -> {
+                String reason =
+                        settings instanceof PluginConfig.World.Backup.Local ? "" : " (configured backend failed)";
+                return "locally in plugins/BuildSystem/backups" + reason;
+            }
+            case S3BackupStorage _
+            when settings instanceof PluginConfig.World.Backup.S3 s3 -> {
+                String service = s3.url() == null || s3.url().isBlank() ? "Amazon S3" : s3.url();
+                return "on " + service + " in bucket '" + s3.bucket() + "'";
+            }
+            case SftpBackupStorage _
+            when settings instanceof PluginConfig.World.Backup.Sftp sftp -> {
+                return "over SFTP on " + sftp.host() + ":" + sftp.port();
+            }
+            default -> {}
+        }
+        return "using " + storage.getClass().getSimpleName();
     }
 
     private BackupStorage createStorage(PluginConfig.World.Backup.StorageSettings settings) {
@@ -181,6 +209,7 @@ public class BackupServiceImpl implements BackupService {
         this.backupStorage.close();
         this.backupStorage =
                 createStorageOrFallback(configService.current().world().backup().storage());
+        plugin.getLogger().info("Storing backups " + describe(this.backupStorage));
         scheduleAutoBackupIfEnabled();
     }
 
