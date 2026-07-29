@@ -33,6 +33,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jspecify.annotations.NullMarked;
@@ -47,6 +49,7 @@ public class WorldImportCoordinator {
     private final AtomicBoolean importingAllWorlds = new AtomicBoolean(false);
 
     private final BuildSystemPlugin plugin;
+    private final Logger logger;
     private final WorldServiceImpl worldService;
     private final WorldStorageImpl worldStorage;
     private final ConfigService configService;
@@ -59,6 +62,7 @@ public class WorldImportCoordinator {
             ConfigService configService,
             Messages messages) {
         this.plugin = plugin;
+        this.logger = plugin.getLogger();
         this.worldService = worldService;
         this.worldStorage = worldStorage;
         this.configService = configService;
@@ -71,7 +75,12 @@ public class WorldImportCoordinator {
                 player, "worlds_importall_started", Map.entry("%amount%", String.valueOf(worldList.length)));
         messages.sendMessage(player, "worlds_importall_delay", Map.entry("%delay%", String.valueOf(delay)));
 
-        importingAllWorlds.set(true);
+        if (!importingAllWorlds.compareAndSet(false, true)) {
+            // The subcommand checks isImportingAllWorlds() first, but that is check-then-act; claim it atomically so
+            // two bulk imports cannot overlap and clear each other's flag.
+            messages.sendMessage(player, "worlds_importall_already_started");
+            return;
+        }
         BulkImportListener listener = new BulkImportListener() {
             @Override
             public void skippedExisting(String worldName) {
@@ -91,6 +100,11 @@ public class WorldImportCoordinator {
             @Override
             public void imported(String worldName) {
                 messages.sendMessage(player, "worlds_importall_world_imported", Map.entry("%world%", worldName));
+            }
+
+            @Override
+            public void failed(String worldName) {
+                messages.sendMessage(player, "worlds_importall_world_failed", Map.entry("%world%", worldName));
             }
         };
         importStaggered(
@@ -116,14 +130,32 @@ public class WorldImportCoordinator {
             return CompletableFuture.completedFuture(0);
         }
 
+        // The API returns only a count, so without this every skipped or failed world would vanish without a trace.
+        BulkImportListener listener = new BulkImportListener() {
+            @Override
+            public void skippedExisting(String worldName) {
+                logger.info("Bulk import: skipping \"" + worldName + "\", already imported.");
+            }
+
+            @Override
+            public void invalidName(String worldName, String invalidChar) {
+                logger.warning("Bulk import: skipping \"" + worldName + "\", name contains '" + invalidChar + "'.");
+            }
+
+            @Override
+            public void failed(String worldName) {
+                logger.warning("Bulk import: failed to import \"" + worldName + "\".");
+            }
+        };
         return importStaggered(
                 directories,
-                new BulkImportListener() {},
+                listener,
                 worldName -> worldService.importWorld(worldName).build() != null);
     }
 
     /**
-     * Per-world progress callbacks for a staggered bulk import.
+     * Per-world progress callbacks for a staggered bulk import. Every outcome has a callback, so a world that is
+     * skipped or fails is reported rather than silently reducing the final count.
      */
     private interface BulkImportListener {
 
@@ -132,6 +164,8 @@ public class WorldImportCoordinator {
         default void invalidName(String worldName, String invalidChar) {}
 
         default void imported(String worldName) {}
+
+        default void failed(String worldName) {}
     }
 
     /**
@@ -153,13 +187,22 @@ public class WorldImportCoordinator {
             public void run() {
                 int i = index.getAndIncrement();
                 if (i >= worldNames.length) {
-                    this.cancel();
-                    importingAllWorlds.set(false);
-                    result.complete(imported.get());
+                    finish();
                     return;
                 }
 
                 String worldName = worldNames[i];
+                try {
+                    importOne(worldName);
+                } catch (RuntimeException e) {
+                    // One world that blows up must not strand the run: Bukkit keeps a repeating task alive after an
+                    // exception, so without this the flag stays set and no bulk import is ever permitted again.
+                    logger.log(Level.SEVERE, "Failed to import world \"" + worldName + "\"", e);
+                    listener.failed(worldName);
+                }
+            }
+
+            private void importOne(String worldName) {
                 if (worldStorage.worldExists(worldName)) {
                     listener.skippedExisting(worldName);
                     return;
@@ -174,7 +217,15 @@ public class WorldImportCoordinator {
                 if (importer.test(worldName)) {
                     imported.incrementAndGet();
                     listener.imported(worldName);
+                } else {
+                    listener.failed(worldName);
                 }
+            }
+
+            private void finish() {
+                this.cancel();
+                importingAllWorlds.set(false);
+                result.complete(imported.get());
             }
         }.runTaskTimer(plugin, 0, 20L * delay);
 

@@ -57,7 +57,7 @@ public class ConfigMigrationManager {
      *     registered with {@code fromVersion = 1}
      * @param migration The migration instance
      */
-    public void registerMigration(int fromVersion, Migration migration) {
+    private void registerMigration(int fromVersion, Migration migration) {
         this.migrations.put(fromVersion, migration);
     }
 

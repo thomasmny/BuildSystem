@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.backup.storage;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
@@ -29,24 +28,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public abstract class AbstractBackupStorage implements BackupStorage {
 
-    protected final @Nullable BuildSystemPlugin plugin;
-
     protected final Logger logger;
     private final Executor executor;
 
-    protected AbstractBackupStorage(BuildSystemPlugin plugin, Executor executor) {
-        this.plugin = plugin;
-        this.logger = plugin.getLogger();
-        this.executor = executor;
-    }
-
     AbstractBackupStorage(Logger logger, Executor executor) {
-        this.plugin = null;
         this.logger = logger;
         this.executor = executor;
     }
