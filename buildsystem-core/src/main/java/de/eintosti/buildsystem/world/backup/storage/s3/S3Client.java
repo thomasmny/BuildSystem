@@ -225,8 +225,7 @@ public final class S3Client implements AutoCloseable {
     }
 
     /**
-     * A reque
-     * st body, pairing the bytes that get signed with the publisher that sends them so the two cannot drift.
+     * A request body, pairing the bytes that get signed with the publisher that sends them so the two cannot drift.
      */
     private record Payload(byte[] bytes) {
 
