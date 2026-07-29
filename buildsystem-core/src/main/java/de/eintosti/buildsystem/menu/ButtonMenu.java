@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.menu;
 
+import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.i18n.Messages;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -103,12 +104,35 @@ public abstract class ButtonMenu<B extends MenuButton> extends Menu {
     public void handleClick(InventoryClickEvent event) {
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
+
         B button = buttonAt(event);
-        if (button != null) {
-            button.onClick(player, event);
-        } else {
+        if (button == null) {
             onUnhandledClick(player, event);
+            return;
         }
+
+        String permission = button.permission();
+        if (permission != null && !player.hasPermission(permission)) {
+            onPermissionDenied(player, event);
+            return;
+        }
+
+        button.onClick(player, event);
+    }
+
+    /**
+     * Hook for a click on a button whose {@link MenuButton#permission() permission} the player lacks. The default
+     * closes the inventory, sends the permission error and plays the deny sound, matching
+     * the guard it replaces. Menus that must keep the inventory open on a denied click (e.g. per-toggle
+     * settings) override this.
+     *
+     * @param player The clicking player
+     * @param event The click event (already cancelled)
+     */
+    protected void onPermissionDenied(Player player, InventoryClickEvent event) {
+        player.closeInventory();
+        messages.sendPermissionError(player);
+        XSound.ENTITY_ITEM_BREAK.play(player);
     }
 
     /**

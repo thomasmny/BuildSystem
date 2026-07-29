@@ -92,13 +92,12 @@ public class PhysicsMenu extends ButtonMenu<MenuButton> {
 
     private MenuButton toggleButton(Toggle toggle) {
         return MenuButton.builder()
+                .permission(PERMISSION)
                 .render((player, inventory, slot) ->
                         toggle.render(menuItems, buildWorld.getData(), player, inventory, slot))
                 .onClick((player, event) -> {
-                    if (requirePermission(player, PERMISSION)) {
-                        toggle.flip(buildWorld.getData());
-                        XSound.ENTITY_CHICKEN_EGG.play(player);
-                    }
+                    toggle.flip(buildWorld.getData());
+                    XSound.ENTITY_CHICKEN_EGG.play(player);
                     populate(player);
                 })
                 .build();
@@ -116,10 +115,10 @@ public class PhysicsMenu extends ButtonMenu<MenuButton> {
 
     @Override
     protected void onUnhandledClick(Player player, InventoryClickEvent event) {
-        // Only the menu's own slots return to the editor; clicks in the player inventory are ignored.
         if (event.getRawSlot() < 0 || event.getRawSlot() >= getInventory().getSize()) {
             return;
         }
+
         XSound.BLOCK_CHEST_OPEN.play(player);
         menus.openEdit(buildWorld, player);
     }

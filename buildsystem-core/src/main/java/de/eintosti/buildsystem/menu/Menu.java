@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.menu;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.i18n.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -91,27 +90,6 @@ public abstract class Menu implements InventoryHolder {
     public void open(Player player) {
         populate(player);
         player.openInventory(inventory);
-    }
-
-    /**
-     * Shared click-time permission guard: if the player lacks the permission, closes the menu, sends the permission
-     * error, and plays the deny sound.
-     *
-     * <p>Note that this <strong>closes the inventory</strong> on denial. Menus that must keep the inventory open on a
-     * denied click (e.g. per-toggle settings) deliberately do their own inline check instead of calling this.
-     *
-     * @param player The clicking player
-     * @param permission The required permission
-     * @return {@code true} if the player may proceed, {@code false} if denied (UX already handled)
-     */
-    protected boolean requirePermission(Player player, String permission) {
-        if (player.hasPermission(permission)) {
-            return true;
-        }
-        player.closeInventory();
-        messages.sendPermissionError(player);
-        XSound.ENTITY_ITEM_BREAK.play(player);
-        return false;
     }
 
     /**
