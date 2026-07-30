@@ -27,7 +27,8 @@ import org.jspecify.annotations.NullMarked;
  * so an admin who hides a category from the navigator also disables its shortcut, and vice versa.
  *
  * <p>The node is <strong>default-allow</strong>: like the navigator, which shows every category to everyone out of the
- * box, a player may access a category unless {@code buildsystem.navigator.<id>} has been explicitly set to {@code false}.
+ * box, a player may access a category unless {@code buildsystem.navigator.category.<id>} has been explicitly set to
+ * {@code false}.
  * It is consulted through {@link Player#isPermissionSet(String)} rather than registered with a default, because category
  * ids are dynamic and cannot be declared up front in {@code plugin.yml}.
  */

@@ -21,12 +21,12 @@ import java.util.Locale;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Every permission node the plugin checks. Nodes are declared here rather than inline so a typo is a compile error
- * instead of a check that silently never passes, and so the full set the plugin ships can be read in one place.
+ * The complete, fixed set of permission nodes is the static constants below; declaring them here turns a typo into a
+ * compile error instead of a check that silently never passes.
  *
- * <p>Nodes whose last segment is supplied at runtime (world types, templates, generators, navigator categories,
- * statuses, settings toggles, gamemodes) are built by the helper methods at the bottom rather than by concatenating
- * a prefix at the call site.
+ * <p>The factory methods at the bottom are different: each produces an open-ended family of nodes whose members are
+ * not fixed here but depend on ids minted elsewhere at runtime (world types, templates, generators, navigator
+ * categories, statuses, settings toggles, gamemodes).
  */
 @NullMarked
 public final class Permissions {
@@ -44,11 +44,9 @@ public final class Permissions {
     public static final String BUILDERS = "buildsystem.builders";
     public static final String BYPASS_ARCHIVE = "buildsystem.bypass.archive";
     public static final String BYPASS_BUILDERS = "buildsystem.bypass.builders";
-    public static final String BYPASS_PERMISSION = "buildsystem.bypass.permission";
     public static final String BYPASS_PERMISSION_ARCHIVE = "buildsystem.bypass.permission.archive";
     public static final String BYPASS_PERMISSION_PRIVATE = "buildsystem.bypass.permission.private";
     public static final String BYPASS_PERMISSION_PUBLIC = "buildsystem.bypass.permission.public";
-    public static final String BYPASS_SETTINGS = "buildsystem.bypass.settings";
     public static final String COLOR_CHAT = "buildsystem.color.chat";
     public static final String COLOR_SIGN = "buildsystem.color.sign";
     public static final String CONFIG = "buildsystem.config";
@@ -142,21 +140,24 @@ public final class Permissions {
     }
 
     /**
-     * {@return the permission to create a world in the given navigator category}
+     * {@return the permission to create a world in the given navigator category} Namespaced under {@code category} so
+     * a category id can never collide with the reserved {@code buildsystem.create.*} nodes (e.g. {@link #CREATE_FOLDER}).
      *
      * @param categoryId The category id
      */
     public static String createInCategory(String categoryId) {
-        return "buildsystem.create." + categoryId;
+        return "buildsystem.create.category." + categoryId;
     }
 
     /**
      * {@return the permission to see the given navigator category and use its {@code /worlds <category>} shortcut}
+     * Namespaced under {@code category} so a category id can never collide with the reserved
+     * {@code buildsystem.navigator.*} nodes (e.g. {@link #NAVIGATOR_ITEM}).
      *
      * @param categoryId The category id
      */
     public static String navigatorCategory(String categoryId) {
-        return "buildsystem.navigator." + categoryId;
+        return "buildsystem.navigator.category." + categoryId;
     }
 
     /**
