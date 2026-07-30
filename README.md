@@ -72,10 +72,11 @@ Optional integrations: LuckPerms, PlaceholderAPI, WorldEdit, AxiomPaper.
 
 * Browse worlds through an interactive navigator, or switch to a plain GUI
 * Categories group worlds by who can see them and what state they are in. Public, Archive and
-  Private are set up for you, and you can add your own
-* Per-world statuses track progress: Not Started, In Progress, Almost Finished, Finished, Archive
-  and Hidden
-* Rename, recolour, reorder or delete any status or category in-game, each with its own icon
+  Private are the defaults
+* Statuses track how far along a world is. Not Started, In Progress, Almost Finished, Finished,
+  Archive and Hidden are the defaults
+* Neither list is fixed. Add your own statuses and categories, or rename, recolour, reorder and
+  delete the built-in ones, each with its own icon, all in-game
 * Sort and filter worlds, and group them into folders
 * Pin a world to keep it at the top of every list
 
