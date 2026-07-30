@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.menu;
 
+import java.util.function.Predicate;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -55,12 +56,43 @@ public interface MenuButton {
     /**
      * {@return the permission required to click this button, or {@code null} if it is unrestricted}
      *
-     * <p>This is <em>enforced</em>: {@link ButtonMenu#handleClick} checks it before dispatching to
+     * <p>This is <em>enforced</em> through {@link #canClick} before {@link ButtonMenu#handleClick} dispatches to
      * {@link #onClick}, so a button that declares a permission never has to check it again. Denial is handled by
-     * {@link ButtonMenu#onPermissionDenied}.
+     * {@link ButtonMenu#onPermissionDenied}. For access a single node cannot express, see {@link #usableBy()}.
      */
     default @Nullable String permission() {
         return null;
+    }
+
+    /**
+     * {@return a test the clicking player must pass, or {@code null} if there is none}
+     *
+     * <p>Exists because {@link #permission()} can only express a single node, while access is often scoped to the
+     * resource the menu is acting on &mdash; whether the player created this world, whether they are under their world
+     * limit. Both are inputs to {@link #canClick}; neither is enforced on its own.
+     */
+    default @Nullable Predicate<Player> usableBy() {
+        return null;
+    }
+
+    /**
+     * {@return whether the player is allowed to click this button}
+     *
+     * <p>The single place {@link #permission()} and {@link #usableBy()} are combined, and the only thing
+     * {@link ButtonMenu#handleClick} consults &mdash; so declaring either one is enough to have it enforced, and a
+     * button never re-checks access inside {@link #onClick}. Hand-rolled checks in a click handler are what let
+     * authorization drift out of step with what was rendered.
+     *
+     * @param player The clicking player
+     */
+    default boolean canClick(Player player) {
+        String permission = permission();
+        if (permission != null && !player.hasPermission(permission)) {
+            return false;
+        }
+
+        Predicate<Player> usableBy = usableBy();
+        return usableBy == null || usableBy.test(player);
     }
 
     /**
@@ -111,6 +143,7 @@ public interface MenuButton {
         private Renderer renderer = (player, inventory, slot) -> {};
         private ClickHandler clickHandler = (player, event) -> {};
         private @Nullable String permission;
+        private @Nullable Predicate<Player> usableBy;
 
         private Builder() {}
 
@@ -123,6 +156,19 @@ public interface MenuButton {
          */
         public Builder permission(@Nullable String permission) {
             this.permission = permission;
+            return this;
+        }
+
+        /**
+         * Restricts the button to players passing the given test, for access that a single permission node cannot
+         * express because it depends on the resource being acted on. Combined with the permission by
+         * {@link MenuButton#canClick(Player)}.
+         *
+         * @param usableBy The test, or {@code null} for no restriction
+         * @return This builder
+         */
+        public Builder usableBy(@Nullable Predicate<Player> usableBy) {
+            this.usableBy = usableBy;
             return this;
         }
 
@@ -155,6 +201,7 @@ public interface MenuButton {
             Renderer builtRenderer = renderer;
             ClickHandler builtClickHandler = clickHandler;
             String builtPermission = permission;
+            Predicate<Player> builtUsableBy = usableBy;
 
             return new MenuButton() {
                 @Override
@@ -170,6 +217,11 @@ public interface MenuButton {
                 @Override
                 public @Nullable String permission() {
                     return builtPermission;
+                }
+
+                @Override
+                public @Nullable Predicate<Player> usableBy() {
+                    return builtUsableBy;
                 }
             };
         }
