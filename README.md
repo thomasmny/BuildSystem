@@ -19,10 +19,9 @@
 
 ## Introduction
 
-**BuildSystem** is a simple but powerful world management plugin made for builders, packed with
-features for everyday use. Manage all your worlds from a single navigator, set each one's permission,
-project and status with ease, and let every player choose the settings that suit them best.
-Everything builders need is here, so you can get straight to building.
+**BuildSystem** is a world management plugin for builders. A single navigator lists every world on
+the server, each with its own permission, project and status. Players choose the settings they
+prefer, and admins set up statuses, categories and icons in-game rather than in a config file.
 
 ## Requirements
 
@@ -57,9 +56,8 @@ Optional integrations: LuckPerms, PlaceholderAPI, WorldEdit, AxiomPaper.
 
 * Create worlds from predefined types, from custom generators provided by other plugins, or from
   your own templates, optionally with a custom seed
-* Import worlds individually or all at once, and delete, rename or clone them with ease
-* Protect your builds with automatic and manual backups, stored locally or on S3 or SFTP and
-  restored from an in-game menu
+* Import worlds individually or all at once, then rename, clone or delete them
+* Automatic and manual backups, kept locally or on S3 or SFTP, and restored from an in-game menu
 * Assign multiple builders to a world, and optionally keep WorldEdit limited to them
 * Automatically unload inactive worlds to save server resources
 * Configure every world individually: join permission, project, difficulty, gamerules, world border,
@@ -68,41 +66,40 @@ Optional integrations: LuckPerms, PlaceholderAPI, WorldEdit, AxiomPaper.
   connections, falling blocks, fluid flow, leaf decay, growth, spreading, block forming and fading)
   can each be re-allowed while the rest stay off
 * Choose the block placed at a void world's spawn, or turn it off
-* Give each world its own item to tell them apart at a glance
+* Give each world its own item, or a player head, so they are easy to tell apart
 
 ### Navigator
 
-* Browse your worlds through an interactive navigator, or switch to a classic GUI
-* Worlds are organised into categories, Public, Archive and Private out of the box, grouped by who
-  can see them and their current state
-* Track progress with per-world statuses: Not Started, In Progress, Almost Finished, Finished, plus
-  Archive and Hidden
-* Rename, recolour, reorder or remove any status or category in-game, each with its own icon
-* Organise worlds into folders, with full sorting and filtering
-* Pin the worlds you use most so they stay at the top of every list
+* Browse worlds through an interactive navigator, or switch to a plain GUI
+* Categories group worlds by who can see them and what state they are in. Public, Archive and
+  Private are set up for you, and you can add your own
+* Per-world statuses track progress: Not Started, In Progress, Almost Finished, Finished, Archive
+  and Hidden
+* Rename, recolour, reorder or delete any status or category in-game, each with its own icon
+* Sort and filter worlds, and group them into folders
+* Pin a world to keep it at the top of every list
 
 ### Build mode
 
-* In finished worlds players become invisible and fly in adventure mode, so they can explore without
-  changing anything (use `/build` to bypass)
-* Players keep their items on death, and archived worlds behave exactly how you configure them
+* In finished worlds players turn invisible and fly in adventure mode, so they can look around
+  without changing anything. `/build` bypasses this
+* Players keep their items on death, and archived worlds behave however you configure them
 
 ### Player settings & building tools
 
-* Per-player settings including the scoreboard, night vision, no-clip, hiding other players, slab
-  breaking, opening iron doors and trapdoors, instant sign placement and more
-* A full set of building tools: adjustable fly and walk speed, block physics toggle, world time
-  control, player skulls, mob AI and explosion toggles, a secret blocks menu, gamemode switching,
-  and quick teleports with `/back`, `/top` and `/spawn`
+* Per-player settings: scoreboard, night vision, no-clip, hiding other players, slab breaking,
+  opening iron doors and trapdoors, instant sign placement, and more
+* Building tools: adjustable fly and walk speed, block physics and explosion toggles, world time
+  control, mob AI, player skulls, a secret blocks menu, gamemode switching, and quick teleports with
+  `/back`, `/top` and `/spawn`
 
-### Customization & integrations
+### Customisation & integrations
 
-* Configure the plugin in-game through `/setup`: default world-type icons, statuses, and the
-  navigator layout, all with a drag-and-drop editor and colour and item pickers
-* **100% customisable** messages and scoreboard
-* Built to work alongside LuckPerms, PlaceholderAPI, WorldEdit and AxiomPaper
-* A developer API with events, so you can build your own integrations on top (see
-  [below](#developer-api))
+* `/setup` configures default world-type icons, statuses and the navigator layout in-game, using a
+  drag-and-drop editor with colour and item pickers
+* Every message and the scoreboard can be rewritten
+* Works alongside LuckPerms, PlaceholderAPI, WorldEdit and AxiomPaper
+* A developer API with events for your own integrations, described [below](#developer-api)
 
 ## Statistics
 
@@ -150,12 +147,9 @@ BuildSystem api = getServer().getServicesManager()
 
 Alternatively, use the static shorthand `BuildSystemProvider.get()`.
 
-The main entry points are `WorldService` (creating, importing and looking up worlds) and `PlayerService`
-(per-player settings). `getStatusRegistry()` and `getNavigatorCategoryRegistry()` expose the statuses and
-categories, so a plugin can add its own or rearrange the existing ones. Per-world settings are read and
-written through a typed key catalog, for example
-`world.getData().set(WorldDataKey.BLOCK_BREAKING, false)`. Unless a method's documentation states otherwise, all API calls must be made from the server
-main thread; methods that perform I/O return a `CompletableFuture` and document which thread it completes on.
+`WorldService` handles worlds, `PlayerService` per-player settings, and separate registries hold the
+statuses and navigator categories. Calls belong on the server main thread unless documented otherwise;
+anything doing I/O returns a `CompletableFuture` and says which thread it completes on.
 
 ## Contributing
 
@@ -165,22 +159,21 @@ Build requires **Java 25**.
 
 #### On Windows
 
-1. Shift + right-click the folder with the directory’s files and click "Open command prompt".
+1. Shift + right-click the project folder and choose "Open command prompt".
 2. `gradlew clean build`
 
 #### On Linux, BSD, or Mac OS X
 
-1. In your terminal, navigate to the folder with directory’s files (cd /folder/of/buildsystem/files)
+1. In a terminal, `cd` into the project folder.
 2. `./gradlew clean build`
 
 ### Then you will find...
 
-* the **BuildSystem** plugin jar `BuildSystem-<version>` in **build/libs** (the repo root)
+* the plugin jar `BuildSystem-<version>.jar` in **build/libs** at the repo root
 
 ### Other commands
 
-* `./gradlew runServer` will download a Paper server and start it with the freshly-built plugin for
-  local testing.
+* `./gradlew runServer` downloads a Paper server and starts it with the plugin you just built.
 * `./gradlew idea` will generate an [IntelliJ IDEA](https://www.jetbrains.com/idea/) module for each
   folder.
 
