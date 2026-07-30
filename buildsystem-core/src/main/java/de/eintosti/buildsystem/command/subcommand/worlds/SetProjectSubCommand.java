@@ -64,11 +64,18 @@ public class SetProjectSubCommand extends AbstractSubCommand {
 
     public void getProjectInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
         prompts.prompt(player).title("enter_world_project").request(input -> {
-            buildWorld.getData().set(WorldDataKey.PROJECT, input.trim());
+            String project = input.trim();
+            buildWorld.getData().set(WorldDataKey.PROJECT, project);
             settingsService.forceUpdateSidebar(buildWorld);
 
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
             messages.sendMessage(player, "worlds_setproject_set", Placeholders.of("%world%", buildWorld.getName()));
+
+            // The world's folder can override this value, in which case the stored project is not the one shown.
+            String effective = buildWorld.getData().get(WorldDataKey.PROJECT);
+            if (!project.equals(effective)) {
+                messages.sendMessage(player, "worlds_setproject_overridden", Placeholders.of("%project%", effective));
+            }
 
             if (closeInventory) {
                 player.closeInventory();

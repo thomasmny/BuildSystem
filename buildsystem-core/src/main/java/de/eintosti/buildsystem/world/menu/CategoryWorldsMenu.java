@@ -38,7 +38,8 @@ import org.jspecify.annotations.NullMarked;
  * <p>World creation is offered dynamically: a category shows the "create world" item only when a freshly created world
  * — which always starts at the registry's {@link de.eintosti.buildsystem.api.world.data.WorldStatusRegistry#getDefault()
  * default status} — would actually be grouped into this category, and the player holds the per-category create
- * permission {@code buildsystem.create.<categoryId>} (e.g. {@code buildsystem.create.public}). This is why the archive
+ * permission {@code buildsystem.create.category.<categoryId>} (e.g. {@code buildsystem.create.category.public}). This
+ * is why the archive
  * category, which never contains the default status, never offers world creation.
  */
 @NullMarked
@@ -47,9 +48,7 @@ public class CategoryWorldsMenu extends DisplayablesMenu {
     static final String CREATE_WORLD_PROFILE = SkullTextures.ADD_ITEM;
     static final String CREATE_FOLDER_PROFILE = "69b861aabb316c4ed73b4e5428305782e735565ba2a053912e1efd834fa5a6f";
 
-    private static final int SLOT_CREATE_WORLD = 48;
-    private static final int SLOT_CREATE_FOLDER = 50;
-    private static final int SLOT_CREATE_CENTER = 49;
+    private static final int SLOT_CREATE_CENTER = FIRST_CREATE_FOLDER_SLOT;
 
     private final WorldStatusRegistryImpl worldStatusRegistry;
 
@@ -79,7 +78,7 @@ public class CategoryWorldsMenu extends DisplayablesMenu {
         }
         if (player.hasPermission(Permissions.CREATE_FOLDER)) {
             // With the create-world button hidden, centre the lone folder button instead of leaving it off to the side.
-            int folderSlot = createWorld ? SLOT_CREATE_FOLDER : SLOT_CREATE_CENTER;
+            int folderSlot = createWorld ? LAST_CREATE_FOLDER_SLOT : SLOT_CREATE_CENTER;
             ItemBuilder.skull(Profileable.detect(CREATE_FOLDER_PROFILE))
                     .name(messages.getString("world_navigator_create_folder", player))
                     .into(inventory, folderSlot);
@@ -100,7 +99,8 @@ public class CategoryWorldsMenu extends DisplayablesMenu {
 
     /**
      * Admins may create worlds in any category; everyone else needs the per-category create node
-     * {@code buildsystem.create.<categoryId>}. This mirrors how the admin permission grants an unlimited world count.
+     * {@code buildsystem.create.category.<categoryId>}. This mirrors how the admin permission grants an unlimited
+     * world count.
      */
     private boolean hasCreatePermission(Player player) {
         return player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)
