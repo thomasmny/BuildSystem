@@ -66,7 +66,7 @@ Optional integrations: LuckPerms, PlaceholderAPI, WorldEdit, AxiomPaper.
   connections, falling blocks, fluid flow, leaf decay, growth, spreading, block forming and fading)
   can each be re-allowed while the rest stay off
 * Choose the block placed at a void world's spawn, or turn it off
-* Give each world its own item, or a player head, so they are easy to tell apart
+* Give each world its own icon, either a block or a player head, so they are easy to tell apart
 
 ### Navigator
 
