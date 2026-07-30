@@ -197,21 +197,36 @@ public class SftpBackupStorage extends AbstractBackupStorage {
             long timestamp = System.currentTimeMillis();
             String backupDirectory = getBackupDirectory(buildWorld);
             String remotePath = backupDirectory + backupName(timestamp);
+            String tempRemotePath = remotePath + ".part";
 
             byte[] zipBytes = FileUtils.zipWorldToMemory(buildWorld);
 
             SftpClient sftp = getSftpClient();
             createDirectoryIfNotExists(sftp, backupDirectory);
 
-            try (OutputStream out = sftp.write(remotePath);
-                    BufferedOutputStream bufferedOut = new BufferedOutputStream(out, BUFFER_SIZE)) {
-                bufferedOut.write(zipBytes);
-                bufferedOut.flush();
+            try {
+                try (OutputStream out = sftp.write(tempRemotePath);
+                        BufferedOutputStream bufferedOut = new BufferedOutputStream(out, BUFFER_SIZE)) {
+                    bufferedOut.write(zipBytes);
+                    bufferedOut.flush();
+                }
+                sftp.rename(tempRemotePath, remotePath, SftpClient.CopyMode.Overwrite);
+            } catch (IOException e) {
+                removePartialUpload(sftp, tempRemotePath, e);
+                throw e;
             }
 
             logDuration(buildWorld, timestamp);
             return new BackupImpl(profileProvider.apply(buildWorld), timestamp, remotePath);
         });
+    }
+
+    private void removePartialUpload(SftpClient sftp, String tempRemotePath, IOException cause) {
+        try {
+            sftp.remove(tempRemotePath);
+        } catch (IOException suppressed) {
+            cause.addSuppressed(suppressed);
+        }
     }
 
     @Override
