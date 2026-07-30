@@ -5,6 +5,7 @@
 ## Table of contents
 
 * [Introduction](#introduction)
+* [Requirements](#requirements)
 * [Links and Contacts](#links-and-contacts)
 * [Features](#features)
 * [Statistics](#statistics)
@@ -22,6 +23,13 @@
 features for everyday use. Manage all your worlds from a single navigator, set each one's permission,
 project and status with ease, and let every player choose the settings that suit them best.
 Everything builders need is here, so you can get straight to building.
+
+## Requirements
+
+* **Minecraft 26.1 or newer**, on Paper or Spigot
+* **Java 25**
+
+Optional integrations: LuckPerms, PlaceholderAPI, WorldEdit, AxiomPaper.
 
 ## Links and Contacts
 
@@ -48,14 +56,18 @@ Everything builders need is here, so you can get straight to building.
 ### World management
 
 * Create worlds from predefined types, from custom generators provided by other plugins, or from
-  your own templates
+  your own templates, optionally with a custom seed
 * Import worlds individually or all at once, and delete, rename or clone them with ease
 * Protect your builds with automatic and manual backups, stored locally or on S3 or SFTP and
   restored from an in-game menu
 * Assign multiple builders to a world, and optionally keep WorldEdit limited to them
 * Automatically unload inactive worlds to save server resources
 * Configure every world individually: join permission, project, difficulty, gamerules, world border,
-  spawn, weather, block physics, explosions and mob AI
+  spawn, weather, explosions and mob AI
+* Disable block physics per world without freezing it entirely: nine behaviours (block updates,
+  connections, falling blocks, fluid flow, leaf decay, growth, spreading, block forming and fading)
+  can each be re-allowed while the rest stay off
+* Choose the block placed at a void world's spawn, or turn it off
 * Give each world its own item to tell them apart at a glance
 
 ### Navigator
@@ -67,6 +79,7 @@ Everything builders need is here, so you can get straight to building.
   Archive and Hidden
 * Rename, recolour, reorder or remove any status or category in-game, each with its own icon
 * Organise worlds into folders, with full sorting and filtering
+* Pin the worlds you use most so they stay at the top of every list
 
 ### Build mode
 
@@ -84,6 +97,8 @@ Everything builders need is here, so you can get straight to building.
 
 ### Customization & integrations
 
+* Configure the plugin in-game through `/setup`: default world-type icons, statuses, and the
+  navigator layout, all with a drag-and-drop editor and colour and item pickers
 * **100% customisable** messages and scoreboard
 * Built to work alongside LuckPerms, PlaceholderAPI, WorldEdit and AxiomPaper
 * A developer API with events, so you can build your own integrations on top (see
@@ -136,7 +151,10 @@ BuildSystem api = getServer().getServicesManager()
 Alternatively, use the static shorthand `BuildSystemProvider.get()`.
 
 The main entry points are `WorldService` (creating, importing and looking up worlds) and `PlayerService`
-(per-player settings). Unless a method's documentation states otherwise, all API calls must be made from the server
+(per-player settings). `getStatusRegistry()` and `getNavigatorCategoryRegistry()` expose the statuses and
+categories, so a plugin can add its own or rearrange the existing ones. Per-world settings are read and
+written through a typed key catalog, for example
+`world.getData().set(WorldDataKey.BLOCK_BREAKING, false)`. Unless a method's documentation states otherwise, all API calls must be made from the server
 main thread; methods that perform I/O return a `CompletableFuture` and document which thread it completes on.
 
 ## Contributing
