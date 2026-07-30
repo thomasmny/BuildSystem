@@ -23,7 +23,6 @@ import com.cryptomorin.xseries.XSound;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
@@ -34,7 +33,6 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.*;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.Permissions;
-import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -165,6 +163,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
     private final Prompts prompts;
     private final Menus menus;
     private final BuildWorld buildWorld;
+    private final EditMenuRenderer renderer;
 
     public EditMenu(
             Messages messages,
@@ -182,6 +181,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         this.prompts = prompts;
         this.menus = menus;
         this.buildWorld = buildWorld;
+        this.renderer = new EditMenuRenderer(messages, menuItems, configService, buildWorld);
         buildButtons();
     }
 
@@ -191,7 +191,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                 EditButton.builder()
                         .permission(Permissions.EDIT_ICON)
                         .outcome(ClickOutcome.SUBMENU)
-                        .render(this::renderWorldInfo)
+                        .render((player, inventory) -> renderer.renderWorldInfo(player, inventory, SLOT_WORLD_INFO))
                         .onClick(this::onWorldInfoClick)
                         .build());
 
@@ -213,7 +213,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                 EditButton.builder()
                         .permission(Permissions.EDIT_TIME)
                         .outcome(ClickOutcome.REOPEN)
-                        .render(this::renderTime)
+                        .render((player, inventory) -> renderer.renderTime(player, inventory, SLOT_TIME))
                         .onClick((player, event) -> {
                             changeTime(player);
                             reopen(player);
@@ -225,7 +225,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                 EditButton.builder()
                         .permission(Permissions.EDIT_ENTITIES)
                         .outcome(ClickOutcome.CLOSE)
-                        .render(this::renderButcher)
+                        .render((player, inventory) -> renderer.renderButcher(player, inventory, SLOT_BUTCHER))
                         .onClick((player, event) -> removeEntities(player))
                         .build());
 
@@ -268,7 +268,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                 EditButton.builder()
                         .permission(Permissions.EDIT_GAMERULES)
                         .outcome(ClickOutcome.SUBMENU)
-                        .render(this::renderGameRules)
+                        .render((player, inventory) -> renderer.renderGameRules(player, inventory, SLOT_GAMERULES))
                         .onClick((player, event) -> {
                             XSound.BLOCK_CHEST_OPEN.play(player);
                             menus.openGameRules(buildWorld, player);
@@ -280,7 +280,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                 EditButton.builder()
                         .permission(Permissions.EDIT_DIFFICULTY)
                         .outcome(ClickOutcome.REOPEN)
-                        .render(this::renderDifficulty)
+                        .render((player, inventory) -> renderer.renderDifficulty(player, inventory, SLOT_DIFFICULTY))
                         .onClick((player, event) -> {
                             cycleDifficulty();
                             reopen(player);
@@ -292,7 +292,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                 EditButton.builder()
                         .permission(Permissions.EDIT_STATUS)
                         .outcome(ClickOutcome.SUBMENU)
-                        .render(this::renderStatus)
+                        .render((player, inventory) -> renderer.renderStatus(player, inventory, SLOT_STATUS))
                         .onClick((player, event) -> {
                             XSound.ENTITY_CHICKEN_EGG.play(player);
                             menus.openStatus(buildWorld, player);
@@ -304,7 +304,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                 EditButton.builder()
                         .permission(Permissions.EDIT_PROJECT)
                         .outcome(ClickOutcome.INPUT)
-                        .render(this::renderProject)
+                        .render((player, inventory) -> renderer.renderProject(player, inventory, SLOT_PROJECT))
                         .onClick((player, event) -> {
                             XSound.ENTITY_CHICKEN_EGG.play(player);
                             menus.promptWorldProject(buildWorld, player);
@@ -316,7 +316,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                 EditButton.builder()
                         .permission(Permissions.EDIT_PERMISSION)
                         .outcome(ClickOutcome.INPUT)
-                        .render(this::renderPermission)
+                        .render((player, inventory) -> renderer.renderPermission(player, inventory, SLOT_PERMISSION))
                         .onClick((player, event) -> {
                             XSound.ENTITY_CHICKEN_EGG.play(player);
                             menus.promptWorldPermission(buildWorld, player);
@@ -330,17 +330,6 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         renderButtons(player);
     }
 
-    private void renderWorldInfo(Player player, Inventory inventory) {
-        String displayName =
-                messages.getString("worldeditor_world_item", player, Placeholders.of("%world%", buildWorld.getName()));
-        boolean isHead = buildWorld.getIcon() == Material.PLAYER_HEAD;
-        String loreKey = isHead ? "worldeditor_world_head_lore" : "worldeditor_world_lore";
-        ItemBuilder.icon(buildWorld, player)
-                .name(displayName)
-                .lore(messages.getStringList(loreKey, player, Placeholders.of("%texture%", iconTextureLabel(player))))
-                .into(inventory, SLOT_WORLD_INFO);
-    }
-
     /**
      * The world-icon button mirrors the category icon control: left-click opens the item picker to choose the material,
      * and when that material is a player head a right-click prompts for the head texture (a texture, {@code viewer} for
@@ -351,6 +340,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
             promptIconTexture(player);
             return;
         }
+
         XSound.BLOCK_CHEST_OPEN.play(player);
         menus.openMaterialPicker(
                 player,
@@ -382,50 +372,12 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         }
     }
 
-    private String iconTextureLabel(Player player) {
-        String texture = buildWorld.getIconSkullTexture();
-        if (texture == null || texture.isBlank()) {
-            return messages.getString("worldeditor_world_skull_none", player);
-        }
-        if (ItemBuilder.VIEWER_HEAD.equals(texture)) {
-            return messages.getString("worldeditor_world_skull_viewer", player);
-        }
-        return messages.getString("worldeditor_world_skull_custom", player);
-    }
-
-    private void renderTime(Player player, Inventory inventory) {
-        XMaterial material;
-        String value;
-        switch (getWorldTime()) {
-            case NIGHT -> {
-                material = XMaterial.BLUE_STAINED_GLASS;
-                value = messages.getString("worldeditor_time_lore_night", player);
-            }
-            case NOON -> {
-                material = XMaterial.YELLOW_STAINED_GLASS;
-                value = messages.getString("worldeditor_time_lore_noon", player);
-            }
-            default -> {
-                material = XMaterial.ORANGE_STAINED_GLASS;
-                value = messages.getString("worldeditor_time_lore_sunrise", player);
-            }
-        }
-
-        ItemBuilder.of(material)
-                .name(messages.getString("worldeditor_time_item", player))
-                .lore(messages.getStringList("worldeditor_time_lore", player, Placeholders.of("%time%", value)))
-                .into(inventory, SLOT_TIME);
-    }
-
-    private void renderButcher(Player player, Inventory inventory) {
-        ItemBuilder.of(XMaterial.DIAMOND_SWORD)
-                .name(messages.getString("worldeditor_butcher_item", player))
-                .lore(messages.getStringList("worldeditor_butcher_lore", player))
-                .into(inventory, SLOT_BUTCHER);
+    private boolean canManageBuilders(Player player) {
+        return buildWorld.getBuilders().isCreator(player) || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION);
     }
 
     private void renderBuilders(Player player, Inventory inventory) {
-        if (buildWorld.getBuilders().isCreator(player) || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
+        if (canManageBuilders(player)) {
             menuItems.addToggleItem(
                     player,
                     inventory,
@@ -442,11 +394,15 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         }
     }
 
+    private boolean canChangeVisibility(Player player, boolean isPrivate) {
+        return playerManager.canCreateWorld(player, Visibility.matchVisibility(isPrivate));
+    }
+
     private void renderVisibility(Player player, Inventory inventory) {
         String displayName = messages.getString("worldeditor_visibility_item", player);
         boolean isPrivate = buildWorld.getData().get(WorldDataKey.VISIBILITY).isPrivate();
 
-        if (!playerManager.canCreateWorld(player, Visibility.matchVisibility(isPrivate))) {
+        if (!canChangeVisibility(player, isPrivate)) {
             ItemBuilder.of(XMaterial.BARRIER)
                     .name("§c§m" + ChatColor.stripColor(displayName))
                     .into(inventory, SLOT_VISIBILITY);
@@ -458,71 +414,6 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
                 isPrivate ? "worldeditor_visibility_lore_private" : "worldeditor_visibility_lore_public", player);
 
         ItemBuilder.of(material).name(displayName).lore(lore).into(inventory, SLOT_VISIBILITY);
-    }
-
-    private void renderGameRules(Player player, Inventory inventory) {
-        ItemBuilder.of(XMaterial.FILLED_MAP)
-                .name(messages.getString("worldeditor_gamerules_item", player))
-                .lore(messages.getStringList("worldeditor_gamerules_lore", player))
-                .into(inventory, SLOT_GAMERULES);
-    }
-
-    private void renderDifficulty(Player player, Inventory inventory) {
-        XMaterial material =
-                switch (buildWorld.getData().get(WorldDataKey.DIFFICULTY)) {
-                    case EASY -> XMaterial.GOLDEN_HELMET;
-                    case NORMAL -> XMaterial.IRON_HELMET;
-                    case HARD -> XMaterial.DIAMOND_HELMET;
-                    default -> XMaterial.LEATHER_HELMET;
-                };
-
-        ItemBuilder.of(material)
-                .name(messages.getString("worldeditor_difficulty_item", player))
-                .lore(messages.getStringList(
-                        "worldeditor_difficulty_lore",
-                        player,
-                        Placeholders.of("%difficulty%", getDifficultyName(player))))
-                .into(inventory, SLOT_DIFFICULTY);
-    }
-
-    private void renderStatus(Player player, Inventory inventory) {
-        BuildWorldStatus status = buildWorld.getData().get(WorldDataKey.STATUS);
-        ItemBuilder.of(status.getIcon())
-                .name(messages.getString("worldeditor_status_item", player))
-                .lore(messages.getStringList(
-                        "worldeditor_status_lore",
-                        player,
-                        Placeholders.of("%status%", ColorAPI.process(status.getStyledName()))))
-                .into(inventory, SLOT_STATUS);
-    }
-
-    private void renderProject(Player player, Inventory inventory) {
-        ItemBuilder.of(XMaterial.ANVIL)
-                .name(messages.getString("worldeditor_project_item", player))
-                .lore(messages.getStringList(
-                        "worldeditor_project_lore",
-                        player,
-                        Placeholders.of("%project%", buildWorld.getData().get(WorldDataKey.PROJECT))))
-                .into(inventory, SLOT_PROJECT);
-    }
-
-    private void renderPermission(Player player, Inventory inventory) {
-        ItemBuilder.of(XMaterial.PAPER)
-                .name(messages.getString("worldeditor_permission_item", player))
-                .lore(messages.getStringList(
-                        "worldeditor_permission_lore",
-                        player,
-                        Placeholders.of("%permission%", buildWorld.getData().get(WorldDataKey.PERMISSION))))
-                .into(inventory, SLOT_PERMISSION);
-    }
-
-    private String getDifficultyName(Player player) {
-        return switch (buildWorld.getData().get(WorldDataKey.DIFFICULTY)) {
-            case PEACEFUL -> messages.getString("difficulty_peaceful", player);
-            case EASY -> messages.getString("difficulty_easy", player);
-            case NORMAL -> messages.getString("difficulty_normal", player);
-            case HARD -> messages.getString("difficulty_hard", player);
-        };
     }
 
     @Override
@@ -552,13 +443,12 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
     }
 
     /**
-     * The builders button mixes behaviors, so it cannot share the toggle closure: a barrier icon (player is not the
-     * creator) only plays the deny sound, a right-click opens the {@link BuilderMenu}, and a left-click flips the
-     * builders flag and re-opens. Re-opening happens only on the successful left-click path.
+     * The builders button mixes behaviors, so it cannot share the toggle closure: a player who cannot manage builders
+     * only plays the deny sound, a right-click opens the {@link BuilderMenu}, and a left-click flips the builders flag
+     * and re-opens. Re-opening happens only on the successful left-click path.
      */
     private void onBuildersClick(Player player, InventoryClickEvent event) {
-        ItemStack itemStack = event.getCurrentItem();
-        if (itemStack != null && itemStack.getType() == XMaterial.BARRIER.get()) {
+        if (!canManageBuilders(player)) {
             XSound.ENTITY_ITEM_BREAK.play(player);
             return;
         }
@@ -575,21 +465,17 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
     }
 
     /**
-     * The visibility button guards against the barrier icon (player cannot create the target visibility): a barrier
-     * click only plays the deny sound and does not re-open. Every other click re-opens, matching the original behavior
-     * even when the permission check itself denies.
+     * The visibility button guards against a player who cannot create the target visibility: such a click only plays
+     * the deny sound and does not re-open. Every other click re-opens.
      */
     private void onVisibilityClick(Player player, InventoryClickEvent event) {
-        ItemStack itemStack = event.getCurrentItem();
-        if (itemStack != null && itemStack.getType() == XMaterial.BARRIER.get()) {
+        boolean isPrivate = buildWorld.getData().get(WorldDataKey.VISIBILITY).isPrivate();
+        if (!canChangeVisibility(player, isPrivate)) {
             XSound.ENTITY_ITEM_BREAK.play(player);
             return;
         }
 
-        WorldData worldData = buildWorld.getData();
-        worldData.set(
-                WorldDataKey.VISIBILITY,
-                worldData.get(WorldDataKey.VISIBILITY).isPrivate() ? Visibility.EVERYONE : Visibility.ADDED_PLAYERS);
+        buildWorld.getData().set(WorldDataKey.VISIBILITY, isPrivate ? Visibility.EVERYONE : Visibility.ADDED_PLAYERS);
         reopen(player);
     }
 

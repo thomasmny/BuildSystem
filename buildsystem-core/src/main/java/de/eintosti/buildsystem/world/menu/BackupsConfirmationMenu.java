@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.util.Permissions;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -34,11 +35,8 @@ public class BackupsConfirmationMenu extends ButtonMenu<MenuButton> {
     private static final int SLOT_CONFIRM = 11;
     private static final int SLOT_CANCEL = 15;
 
-    private final Backup backup;
-
     public BackupsConfirmationMenu(Messages messages, Backup backup, Player player) {
         super(messages, 27, messages.getString("restore_backup_title", player));
-        this.backup = backup;
 
         register(
                 SLOT_CONFIRM,
@@ -50,6 +48,7 @@ public class BackupsConfirmationMenu extends ButtonMenu<MenuButton> {
                                         p,
                                         Placeholders.of("%timestamp%", messages.formatDateTime(backup.creationTime()))))
                                 .into(inventory, slot))
+                        .permission(Permissions.BACKUP)
                         .onClick((p, event) -> {
                             p.closeInventory();
                             XSound.ENTITY_PLAYER_LEVELUP.play(p);

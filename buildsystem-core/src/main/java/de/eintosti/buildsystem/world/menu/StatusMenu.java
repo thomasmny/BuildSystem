@@ -30,6 +30,7 @@ import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import org.bukkit.ChatColor;
@@ -89,13 +90,15 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
     private MenuButton statusButton(BuildWorldStatus status) {
         return MenuButton.builder()
                 .permission(status.getPermission())
+                .usableBy(player -> buildWorld.getPermissions().canPerformCommand(player, Permissions.SETSTATUS))
                 .render((player, inventory, slot) -> {
                     Material material = status.getIcon();
                     String displayName = ColorAPI.process(status.getStyledName());
 
                     if (!player.hasPermission(status.getPermission())) {
                         material = Material.BARRIER;
-                        displayName = "§c§m" + ChatColor.stripColor(displayName);
+                        displayName = "%s%s%s"
+                                .formatted(ChatColor.RED, ChatColor.STRIKETHROUGH, ChatColor.stripColor(displayName));
                     }
 
                     ItemBuilder.of(material)

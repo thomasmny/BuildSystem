@@ -33,6 +33,7 @@ import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.Permissions;
+import de.eintosti.buildsystem.world.WorldNameInputOptions;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import java.io.File;
@@ -41,6 +42,7 @@ import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -165,7 +167,8 @@ public class CreateMenu extends PaginatedMenu {
                     Material material = canCreate ? customizableIcons.getIcon(worldType) : Material.BARRIER;
                     String displayName = messages.getString(PREDEFINED_MESSAGE_KEYS.get(worldType), player);
                     if (!canCreate) {
-                        displayName = "§c§m" + ChatColor.stripColor(displayName);
+                        displayName = "%s%s%s"
+                                .formatted(ChatColor.RED, ChatColor.STRIKETHROUGH, ChatColor.stripColor(displayName));
                     }
                     ItemBuilder itemBuilder = ItemBuilder.of(material).name(displayName);
                     if (canCreate) {
@@ -173,13 +176,14 @@ public class CreateMenu extends PaginatedMenu {
                     }
                     itemBuilder.into(inventory, slot);
                 })
+                .usableBy(player -> canCreateType(player, worldType))
                 .onClick((player, event) -> {
-                    if (!canCreateType(player, worldType)) {
-                        XSound.ENTITY_ITEM_BREAK.play(player);
-                        return;
-                    }
                     worldService.startWorldNameInput(
-                            player, worldType, null, createPrivateWorld, event.isShiftClick(), folder);
+                            player,
+                            worldType,
+                            null,
+                            new WorldNameInputOptions(createPrivateWorld, event.isShiftClick()),
+                            folder);
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                 })
                 .build();
@@ -187,6 +191,24 @@ public class CreateMenu extends PaginatedMenu {
 
     private static boolean canCreateType(Player player, BuildWorldType worldType) {
         return player.hasPermission(Permissions.createType(worldType.name()));
+    }
+
+    /**
+     * Template names are dynamic and cannot be pre-registered in {@code plugin.yml}, so default-allow is emulated: a
+     * template is permitted unless an admin has explicitly denied its specific node.
+     */
+    private static boolean isTemplateAllowed(Player player, String rawTemplateName) {
+        String templateNode = Permissions.createTemplate(rawTemplateName);
+        return !player.isPermissionSet(templateNode) || player.hasPermission(templateNode);
+    }
+
+    /**
+     * Plays the deny sound but keeps the menu open, so a click on a barred world type or template does not eject the
+     * player from the creation flow.
+     */
+    @Override
+    protected void onPermissionDenied(Player player, InventoryClickEvent event) {
+        XSound.ENTITY_ITEM_BREAK.play(player);
     }
 
     private void registerGenerator(Player player) {
@@ -203,7 +225,11 @@ public class CreateMenu extends PaginatedMenu {
                                 .into(inventory, slot))
                         .onClick((p, event) -> {
                             worldService.startWorldNameInput(
-                                    p, BuildWorldType.CUSTOM, null, createPrivateWorld, false, folder);
+                                    p,
+                                    BuildWorldType.CUSTOM,
+                                    null,
+                                    new WorldNameInputOptions(createPrivateWorld, false),
+                                    folder);
                             XSound.ENTITY_CHICKEN_EGG.play(p);
                         })
                         .build());
@@ -243,15 +269,8 @@ public class CreateMenu extends PaginatedMenu {
                         .name(messages.getString(
                                 "create_template", player, Placeholders.of("%template%", rawTemplateName)))
                         .into(inventory, slot))
+                .usableBy(player -> isTemplateAllowed(player, rawTemplateName))
                 .onClick((player, event) -> {
-                    // Template names are dynamic and cannot be pre-registered in plugin.yml, so default-allow is
-                    // emulated: a template is permitted unless an admin has explicitly denied its specific node.
-                    String templateNode = Permissions.createTemplate(rawTemplateName);
-                    if (player.isPermissionSet(templateNode) && !player.hasPermission(templateNode)) {
-                        XSound.ENTITY_ITEM_BREAK.play(player);
-                        return;
-                    }
-
                     ItemStack itemStack = event.getCurrentItem();
                     if (itemStack == null || itemStack.getItemMeta() == null) {
                         return;
@@ -261,8 +280,7 @@ public class CreateMenu extends PaginatedMenu {
                             player,
                             BuildWorldType.TEMPLATE,
                             itemStack.getItemMeta().getDisplayName(),
-                            createPrivateWorld,
-                            false,
+                            new WorldNameInputOptions(createPrivateWorld, false),
                             folder);
                 })
                 .build();

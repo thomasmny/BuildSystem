@@ -112,7 +112,20 @@ public final class MenuItems {
         ItemBuilder.of(XMaterial.PLAYER_HEAD).name(name).lore(lore).into(inventory, slot);
     }
 
-    private void applyHeadProfileAsync(
+    /**
+     * Renders a placeholder head into a menu slot immediately, then resolves the given head profile asynchronously and
+     * swaps in the finished stack on the main thread once it's ready. For callers that derive both the icon type and
+     * the name/lore from a {@link Displayable}, use {@link #renderDisplayable} instead; this method is for callers
+     * that already know they want a head and supply their own name/lore (e.g. an editor's world-icon button).
+     *
+     * @param inventory The inventory to add the item to
+     * @param slot The slot to add the item at
+     * @param profile The head profile to resolve
+     * @param fallback The profile to fall back to if {@code profile} cannot be resolved, or {@code null} for none
+     * @param name The already-styled display name to apply
+     * @param lore The lore to apply
+     */
+    public void applyHeadProfileAsync(
             Inventory inventory,
             int slot,
             Profileable profile,
