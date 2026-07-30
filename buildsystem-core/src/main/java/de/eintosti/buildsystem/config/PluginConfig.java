@@ -133,7 +133,17 @@ public record PluginConfig(Settings settings, World world, Folder folder) {
                     @Nullable String username,
                     @Nullable String password,
                     @Nullable String path)
-                    implements StorageSettings {}
+                    implements StorageSettings {
+
+                /**
+                 * Overridden so the password never appears in a log or pasted support output.
+                 */
+                @Override
+                public String toString() {
+                    return "Sftp[host=%s, port=%d, username=%s, password=%s, path=%s]"
+                            .formatted(host, port, username, password == null ? null : "***", path);
+                }
+            }
 
             public record S3(
                     @Nullable String url,
@@ -142,7 +152,23 @@ public record PluginConfig(Settings settings, World world, Folder folder) {
                     @Nullable String region,
                     @Nullable String bucket,
                     @Nullable String path)
-                    implements StorageSettings {}
+                    implements StorageSettings {
+
+                /**
+                 * Overridden so the access key and secret key never appear in a log or pasted support output.
+                 */
+                @Override
+                public String toString() {
+                    return "S3[url=%s, accessKey=%s, secretKey=%s, region=%s, bucket=%s, path=%s]"
+                            .formatted(
+                                    url,
+                                    accessKey == null ? null : "***",
+                                    secretKey == null ? null : "***",
+                                    region,
+                                    bucket,
+                                    path);
+                }
+            }
 
             public record AutoBackup(boolean enabled, boolean onlyActiveWorlds, int interval) {}
         }

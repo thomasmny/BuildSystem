@@ -19,7 +19,10 @@ package de.eintosti.buildsystem.storage.yaml;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,16 +79,52 @@ public final class YamlStore {
         return true;
     }
 
-    /** Writes the configuration to disk. Callers needing atomicity with a preceding mutation use {@link #atomicSave}. */
+    /**
+     * Writes the configuration to disk. Callers needing this synchronized with a preceding mutation use
+     * {@link #atomicSave}.
+     *
+     * <p>Writes to a sibling temp file first and moves it onto {@code file}, so a crash or power loss mid-write
+     * never leaves a truncated file in place — {@link #reload} either reads the previous complete file or the new
+     * complete one, never a partial one.
+     */
     public void save() {
+        File temp = new File(file.getParentFile(), file.getName() + ".tmp");
         try {
-            configuration.save(file);
+            configuration.save(temp);
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Failed to save configuration file: " + file.getName(), e);
+            logger.log(Level.SEVERE, "Failed to save configuration file: %s".formatted(file.getName()), e);
+            deleteQuietly(temp);
+            return;
+        }
+
+        Path tempPath = temp.toPath();
+        Path targetPath = file.toPath();
+        try {
+            Files.move(tempPath, targetPath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } catch (AtomicMoveNotSupportedException e) {
+            try {
+                Files.move(tempPath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e2) {
+                logger.log(Level.SEVERE, "Failed to save configuration file: %s".formatted(file.getName()), e2);
+                deleteQuietly(temp);
+            }
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Failed to save configuration file: %s".formatted(file.getName()), e);
+            deleteQuietly(temp);
         }
     }
 
-    /** Applies {@code mutation} to the configuration and persists it, both under the I/O lock. */
+    private void deleteQuietly(File file) {
+        try {
+            Files.deleteIfExists(file.toPath());
+        } catch (IOException ignored) {
+            // ignored
+        }
+    }
+
+    /**
+     * Applies {@code mutation} to the configuration and persists it, both under the I/O lock guarding the file.
+     */
     public void atomicSave(Runnable mutation) {
         synchronized (ioLock) {
             mutation.run();
@@ -93,7 +132,9 @@ public final class YamlStore {
         }
     }
 
-    /** Runs {@code work} under the I/O lock — for read/load sequences that must not race a concurrent save. */
+    /**
+     * Runs {@code work} under the I/O lock — for read/load sequences that must not race a concurrent save.
+     */
     public <T> T locked(Supplier<T> work) {
         synchronized (ioLock) {
             return work.get();

@@ -119,14 +119,17 @@ public class BuildSystemPlugin extends JavaPlugin {
 
         reloadConfigData(false);
         saveConfig();
+
+        // Cancelling only stops future ticks, not one already running,
+        // so this must happen before the join() below
+        if (this.configSaveTask != null) {
+            this.configSaveTask.cancel();
+        }
+
         try {
             saveBuildConfig().join();
         } catch (CompletionException e) {
-            getLogger().severe("Error while waiting for saves: " + e.getCause());
-        }
-
-        if (this.configSaveTask != null) {
-            this.configSaveTask.cancel();
+            getLogger().severe("Error while waiting for saves: %s".formatted(e.getCause()));
         }
 
         // Shut the shared background pool down only after the final saves above have completed.
@@ -149,26 +152,42 @@ public class BuildSystemPlugin extends JavaPlugin {
             return;
         }
 
-        updateChecker.requestUpdateCheck().whenComplete((result, e) -> {
-            if (result.requiresUpdate()) {
-                Bukkit.getConsoleSender()
-                        .sendMessage(ChatColor.YELLOW + "[BuildSystem] Great! a new update is available: "
-                                + ChatColor.GREEN + "v" + result.getNewestVersion());
-                Bukkit.getConsoleSender()
-                        .sendMessage(ChatColor.YELLOW + " ➥ Your current version: " + ChatColor.RED
-                                + this.getDescription().getVersion());
-                return;
-            }
+        updateChecker
+                .requestUpdateCheck()
+                .whenCompleteAsync(
+                        (result, e) -> {
+                            if (result == null) {
+                                return;
+                            }
 
-            UpdateChecker.UpdateReason reason = result.getReason();
-            switch (reason) {
-                case COULD_NOT_CONNECT, INVALID_JSON, UNAUTHORIZED_QUERY, UNKNOWN_ERROR, UNSUPPORTED_VERSION_SCHEME ->
-                    Bukkit.getConsoleSender()
-                            .sendMessage(ChatColor.RED
-                                    + "[BuildSystem] Could not check for a new version of BuildSystem. Reason: "
-                                    + reason);
-            }
-        });
+                            if (result.requiresUpdate()) {
+                                Bukkit.getConsoleSender()
+                                        .sendMessage("%s[BuildSystem] Great! a new update is available: %sv%s"
+                                                .formatted(
+                                                        ChatColor.YELLOW, ChatColor.GREEN, result.getNewestVersion()));
+                                Bukkit.getConsoleSender()
+                                        .sendMessage("%s ➥ Your current version: %s%s"
+                                                .formatted(
+                                                        ChatColor.YELLOW,
+                                                        ChatColor.RED,
+                                                        this.getDescription().getVersion()));
+                                return;
+                            }
+
+                            UpdateChecker.UpdateReason reason = result.getReason();
+                            switch (reason) {
+                                case COULD_NOT_CONNECT,
+                                        INVALID_JSON,
+                                        UNAUTHORIZED_QUERY,
+                                        UNKNOWN_ERROR,
+                                        UNSUPPORTED_VERSION_SCHEME ->
+                                    Bukkit.getConsoleSender()
+                                            .sendMessage(
+                                                    "%s[BuildSystem] Could not check for a new version of BuildSystem. Reason: %s"
+                                                            .formatted(ChatColor.RED, reason));
+                            }
+                        },
+                        services.scheduler().mainThread());
     }
 
     private void createTemplateFolder() {
