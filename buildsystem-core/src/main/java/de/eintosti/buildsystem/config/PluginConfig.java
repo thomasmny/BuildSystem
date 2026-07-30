@@ -77,6 +77,14 @@ public record PluginConfig(Settings settings, World world, Folder folder) {
          */
         public record VoidBlock(boolean enabled, Material material) {}
 
+        /**
+         * Fallback world-creation limits, applied only to players holding no
+         * {@code buildsystem.create.<visibility>.<amount>} permission node, so a permission grant always wins. Counted
+         * per player and per visibility; {@code -1} means unlimited.
+         *
+         * @param publicWorlds Default maximum number of public worlds one player may create
+         * @param privateWorlds Default maximum number of private worlds one player may create
+         */
         public record Limits(int publicWorlds, int privateWorlds) {}
 
         public record Defaults(

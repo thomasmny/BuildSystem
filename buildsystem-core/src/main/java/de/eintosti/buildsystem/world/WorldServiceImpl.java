@@ -197,7 +197,7 @@ public class WorldServiceImpl implements WorldService {
         if (single) {
             world.getTeleporter().teleport(player);
         }
-        
+
         return true;
     }
 

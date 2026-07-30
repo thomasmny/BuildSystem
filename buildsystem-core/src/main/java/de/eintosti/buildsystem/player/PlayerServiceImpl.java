@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlPlayerStorage;
@@ -92,23 +93,28 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public boolean canCreateWorld(Player player, Visibility visibility) {
-        boolean showPrivateWorlds = visibility == Visibility.ADDED_PLAYERS;
-        WorldStorageImpl worldStorage = worldService.get().getWorldStorage();
-
-        int maxWorldAmountConfig = showPrivateWorlds
-                ? configService.current().world().limits().privateWorlds()
-                : configService.current().world().limits().publicWorlds();
-        if (maxWorldAmountConfig >= 0 && worldStorage.getBuildWorlds().size() >= maxWorldAmountConfig) {
-            return false;
+        if (player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
+            return true;
         }
 
-        int maxWorldAmountPlayer =
-                getMaxWorlds(player, showPrivateWorlds ? Visibility.ADDED_PLAYERS : Visibility.EVERYONE);
-        return maxWorldAmountPlayer < 0
-                || worldStorage
-                                .getBuildWorldsCreatedByPlayer(player, visibility)
-                                .size()
-                        < maxWorldAmountPlayer;
+        int max = getMaxWorlds(player, visibility);
+        if (max < 0) {
+            max = configuredLimit(visibility);
+        }
+        if (max < 0) {
+            return true;
+        }
+
+        WorldStorageImpl worldStorage = worldService.get().getWorldStorage();
+        return worldStorage.getBuildWorldsCreatedByPlayer(player, visibility).size() < max;
+    }
+
+    /**
+     * {@return the configured fallback limit for the given visibility, or {@code -1} for unlimited}
+     */
+    private int configuredLimit(Visibility visibility) {
+        PluginConfig.World.Limits limits = configService.current().world().limits();
+        return visibility == Visibility.ADDED_PLAYERS ? limits.privateWorlds() : limits.publicWorlds();
     }
 
     @Override

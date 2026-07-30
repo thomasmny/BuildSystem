@@ -118,7 +118,7 @@ public final class YamlStore {
         try {
             Files.deleteIfExists(file.toPath());
         } catch (IOException ignored) {
-            // ignored
+            // A leftover temp file is harmless: the next successful save overwrites it.
         }
     }
 
