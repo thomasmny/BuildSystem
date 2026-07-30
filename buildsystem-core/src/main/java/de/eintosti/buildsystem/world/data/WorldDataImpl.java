@@ -23,8 +23,6 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.util.Permissions;
-import de.eintosti.buildsystem.world.data.type.Bypassable;
 import de.eintosti.buildsystem.world.data.type.ConfigurableProperty;
 import de.eintosti.buildsystem.world.data.type.Overridable;
 import de.eintosti.buildsystem.world.data.type.PersistentProperty;
@@ -87,7 +85,6 @@ public class WorldDataImpl implements WorldData {
         register(
                 WorldDataKey.PERMISSION,
                 new ConfigurableProperty<>(builder.permission)
-                        .withCapability(Bypassable.class, new Bypassable(Permissions.BYPASS_PERMISSION))
                         .withCapability(
                                 Overridable.class,
                                 folderOverride(builder.permissionOverrideEnabled, Folder::getPermission)));
@@ -107,12 +104,11 @@ public class WorldDataImpl implements WorldData {
         register(
                 WorldDataKey.STATUS,
                 new ConfigurableProperty<>(Objects.requireNonNull(builder.status, "status"))
-                        .withConfigFormatter(BuildWorldStatus::getId)
-                        .withCapability(Bypassable.class, new Bypassable(Permissions.BYPASS_ARCHIVE)));
+                        .withConfigFormatter(BuildWorldStatus::getId));
 
-        register(WorldDataKey.BLOCK_BREAKING, settingsBypassable(builder.blockBreaking));
-        register(WorldDataKey.BLOCK_INTERACTIONS, settingsBypassable(builder.blockInteractions));
-        register(WorldDataKey.BLOCK_PLACEMENT, settingsBypassable(builder.blockPlacement));
+        register(WorldDataKey.BLOCK_BREAKING, new ConfigurableProperty<>(builder.blockBreaking));
+        register(WorldDataKey.BLOCK_INTERACTIONS, new ConfigurableProperty<>(builder.blockInteractions));
+        register(WorldDataKey.BLOCK_PLACEMENT, new ConfigurableProperty<>(builder.blockPlacement));
         register(WorldDataKey.BUILDERS_ENABLED, new ConfigurableProperty<>(builder.buildersEnabled));
         register(WorldDataKey.EXPLOSIONS, new ConfigurableProperty<>(builder.explosions));
         register(WorldDataKey.MOB_AI, new ConfigurableProperty<>(builder.mobAi));
@@ -168,14 +164,6 @@ public class WorldDataImpl implements WorldData {
             throw new IllegalArgumentException("Unknown world data key: " + key.id());
         }
         return (PersistentProperty<T>) property;
-    }
-
-    /**
-     * Builds a boolean setting property that may be bypassed with the {@code buildsystem.bypass.settings} permission.
-     */
-    private static ConfigurableProperty<Boolean> settingsBypassable(boolean defaultValue) {
-        return new ConfigurableProperty<>(defaultValue)
-                .withCapability(Bypassable.class, new Bypassable(Permissions.BYPASS_SETTINGS));
     }
 
     /**

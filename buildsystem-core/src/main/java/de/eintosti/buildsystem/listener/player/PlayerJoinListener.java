@@ -216,16 +216,21 @@ public class PlayerJoinListener implements Listener {
             return;
         }
 
-        updateChecker.requestUpdateCheck().whenComplete((result, e) -> {
-            if (result.requiresUpdate()) {
-                StringBuilder stringBuilder = new StringBuilder();
-                messages.getStringList("update_available", player)
-                        .forEach(line -> stringBuilder
-                                .append(line.replace("%new_version%", result.getNewestVersion())
-                                        .replace("%current_version%", updateChecker.getCurrentVersion()))
-                                .append("\n"));
-                player.sendMessage(stringBuilder.toString());
-            }
-        });
+        updateChecker
+                .requestUpdateCheck()
+                .whenCompleteAsync(
+                        (result, e) -> {
+                            if (result == null || !result.requiresUpdate()) {
+                                return;
+                            }
+
+                            Placeholders placeholders = Placeholders.of()
+                                    .add("%new_version%", result.getNewestVersion())
+                                    .add("%current_version%", updateChecker.getCurrentVersion())
+                                    .build();
+                            player.sendMessage(String.join(
+                                    "\n", messages.getStringList("update_available", player, placeholders)));
+                        },
+                        scheduler.mainThread());
     }
 }

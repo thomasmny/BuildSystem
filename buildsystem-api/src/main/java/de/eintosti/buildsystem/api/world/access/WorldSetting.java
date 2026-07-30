@@ -33,17 +33,17 @@ public enum WorldSetting {
     /**
      * Whether blocks may be broken in the world.
      */
-    BLOCK_BREAKING("buildsystem.bypass.settings", WorldDataKey.BLOCK_BREAKING),
+    BLOCK_BREAKING(bypassSettings(), WorldDataKey.BLOCK_BREAKING),
 
     /**
      * Whether blocks may be placed in the world.
      */
-    BLOCK_PLACEMENT("buildsystem.bypass.settings", WorldDataKey.BLOCK_PLACEMENT),
+    BLOCK_PLACEMENT(bypassSettings(), WorldDataKey.BLOCK_PLACEMENT),
 
     /**
      * Whether blocks may be interacted with in the world.
      */
-    BLOCK_INTERACTIONS("buildsystem.bypass.settings", WorldDataKey.BLOCK_INTERACTIONS);
+    BLOCK_INTERACTIONS(bypassSettings(), WorldDataKey.BLOCK_INTERACTIONS);
 
     private final String bypassPermission;
     private final WorldDataKey<Boolean> key;
@@ -51,6 +51,13 @@ public enum WorldSetting {
     WorldSetting(String bypassPermission, WorldDataKey<Boolean> key) {
         this.bypassPermission = bypassPermission;
         this.key = key;
+    }
+
+    /**
+     * The single source of truth for the permission node shared by every {@link WorldSetting}.
+     */
+    private static String bypassSettings() {
+        return "buildsystem.bypass.settings";
     }
 
     /**

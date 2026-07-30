@@ -38,11 +38,11 @@ public abstract class AbstractYamlStorage {
     }
 
     public void loadFile() {
-        store.reload();
+        store.locked(store::reload);
     }
 
     public void saveFile() {
-        store.save();
+        store.atomicSave(() -> {});
     }
 
     public @Nullable FileConfiguration getFile() {

@@ -15,15 +15,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world.data.type;
+package de.eintosti.buildsystem.world;
 
 import org.jspecify.annotations.NullMarked;
 
 /**
- * A {@link Capability} that marks a {@link Property} as being bypassable with a specific permission.
+ * The two flags that shape a {@link WorldServiceImpl#startWorldNameInput} prompt flow, grouped so call sites carry
+ * named components instead of two adjacent, easily transposed booleans.
  *
- * @param permission The permission node required to bypass this type
- * @since 3.0.1
+ * @param privateWorld Whether the created world should be private
+ * @param promptSeed Whether the flow should ask the player for a seed before building the world
  */
 @NullMarked
-public record Bypassable(String permission) implements Capability {}
+public record WorldNameInputOptions(boolean privateWorld, boolean promptSeed) {}

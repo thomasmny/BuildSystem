@@ -31,6 +31,7 @@ import de.eintosti.buildsystem.util.TaskScheduler;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.plugin.Plugin;
@@ -41,16 +42,22 @@ import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 
 /**
- * Drives a {@link Prompts.PromptFlow} through the real {@link PlayerChatInput} machinery under MockBukkit, pinning the
- * routing contract: a step that rejects its input is re-prompted, an accepting step advances, and the completion
- * callback fires only after the final step accepts.
+ * Drives a {@link Prompts.PromptFlow} through the real {@link PlayerChatInput} machinery, pinning the routing
+ * contract: a step that rejects its input is re-prompted, an accepting step advances, and the completion callback
+ * fires only after the final step accepts.
+ *
+ * <p>The player is a Mockito mock rather than a real MockBukkit player, so that the sound {@link PlayerChatInput}
+ * plays no-ops instead of hitting MockBukkit's unimplemented {@code playSound}. Chat lines are delivered straight to
+ * {@link PlayerChatInput.ChatInputListener#onPlayerChat} instead of through the plugin manager's event dispatch,
+ * since nothing under test depends on Bukkit's own event routing.
  */
 class PromptFlowTest {
 
-    private ServerMock server;
     private TaskScheduler scheduler;
     private Prompts prompts;
     private Player player;
+    private PlayerChatInput.ChatInputListener listener;
+    private ServerMock server;
 
     @BeforeEach
     void setUp() {
@@ -62,8 +69,9 @@ class PromptFlowTest {
         when(messages.getString(anyString(), any())).thenReturn("Title");
         prompts = new Prompts(messages, mock(ConfigService.class), scheduler);
 
-        server.getPluginManager().registerEvents(new PlayerChatInput.ChatInputListener(), plugin);
-        player = server.addPlayer();
+        listener = new PlayerChatInput.ChatInputListener();
+        player = mock(Player.class);
+        when(player.getUniqueId()).thenReturn(UUID.randomUUID());
     }
 
     @AfterEach
@@ -72,9 +80,9 @@ class PromptFlowTest {
         MockBukkit.unmock();
     }
 
-    /** Sends a chat line, then ticks the scheduler so the queued completion callback runs. */
+    /** Delivers a chat line to the listener directly, then ticks the scheduler so the queued callback runs. */
     private void chat(String message) {
-        server.getPluginManager().callEvent(new AsyncPlayerChatEvent(false, player, message, new HashSet<>()));
+        listener.onPlayerChat(new AsyncPlayerChatEvent(false, player, message, new HashSet<>()));
         server.getScheduler().performOneTick();
     }
 

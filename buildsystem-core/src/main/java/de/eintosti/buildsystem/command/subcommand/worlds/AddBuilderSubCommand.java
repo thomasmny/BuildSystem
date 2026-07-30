@@ -63,16 +63,13 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
     public void execute(Player player, String worldName, String[] args) {
         BuildWorld buildWorld =
                 worldService.getWorldStorage().getBuildWorld(player.getWorld().getName());
-        if (buildWorld != null
-                && !buildWorld
-                        .getPermissions()
-                        .canPerformCommand(player, getArgument().getPermission())) {
-            messages.sendPermissionError(player);
+        if (buildWorld == null) {
+            messages.sendMessage(player, "worlds_addbuilder_unknown_world");
             return;
         }
 
-        if (buildWorld == null) {
-            messages.sendMessage(player, "worlds_addbuilder_unknown_world");
+        if (!hasAddBuilderPermission(player, buildWorld)) {
+            messages.sendPermissionError(player);
             return;
         }
 
@@ -146,10 +143,25 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
     }
 
     public void getAddBuilderInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
+        if (!hasAddBuilderPermission(player, buildWorld)) {
+            messages.sendPermissionError(player);
+            return;
+        }
+
         prompts.prompt(player).title("enter_player_name").request(input -> {
             String builderName = input.trim();
             addBuilder(player, buildWorld, builderName, closeInventory);
         });
+    }
+
+    /**
+     * Whether {@code player} may add builders to {@code buildWorld}, per the argument's permission node. Shared by the
+     * command entry point and the GUI prompt so both are gated by the same check.
+     */
+    private boolean hasAddBuilderPermission(Player player, BuildWorld buildWorld) {
+        return buildWorld
+                .getPermissions()
+                .canPerformCommand(player, getArgument().getPermission());
     }
 
     @Override

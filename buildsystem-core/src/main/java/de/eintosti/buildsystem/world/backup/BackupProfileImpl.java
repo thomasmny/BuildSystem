@@ -104,13 +104,17 @@ public class BackupProfileImpl implements BackupProfile {
 
     @Override
     public CompletableFuture<Backup> createBackup() {
-        this.buildWorld.getWorld().ifPresent(World::save);
-
         synchronized (this.creationLock) {
             // handle() before the compose: a failed backup must not poison every later backup of this world.
+            // World::save is main-thread-only and this is public API, so it must not run on the caller's thread.
             CompletableFuture<Backup> next = this.pendingCreation
                     .handle((backup, throwable) -> null)
-                    .thenCompose(ignored -> storeWithRetention());
+                    .thenComposeAsync(
+                            ignored -> {
+                                this.buildWorld.getWorld().ifPresent(World::save);
+                                return storeWithRetention();
+                            },
+                            mainThreadExecutor());
             this.pendingCreation = next.handle((backup, throwable) -> backup);
             return next;
         }
@@ -218,12 +222,19 @@ public class BackupProfileImpl implements BackupProfile {
         Location spawn = spawnService.getSpawn();
         boolean isSpawn = spawn != null && Objects.equals(spawn.getWorld(), world);
 
-        this.buildWorld.getUnloader().forceUnload(SaveBehavior.DISCARD);
         File targetDirectory = FileUtils.worldFolder(worldName);
+
+        // Must happen before the world is deleted: a corrupt archive would otherwise only be detected once there
+        // was nothing left to restore.
+        validateBackup(backupFile, targetDirectory);
+
+        this.buildWorld.getUnloader().forceUnload(SaveBehavior.DISCARD);
         try {
             FileUtils.deleteDirectory(targetDirectory);
         } catch (IOException e) {
-            plugin.getLogger().log(Level.SEVERE, "Error while deleting world directory before restore", e);
+            // Extracting over a half-deleted world would produce a corrupt mix of both.
+            throw new IOException(
+                    "Aborting restore: failed to delete world directory %s".formatted(targetDirectory), e);
         }
 
         if (!targetDirectory.isDirectory() && !targetDirectory.mkdirs()) {
@@ -249,18 +260,40 @@ public class BackupProfileImpl implements BackupProfile {
     }
 
     /**
-     * Extracts a backup archive into {@code targetDirectory}, rejecting any entry whose resolved path escapes that
-     * directory (zip-slip / path traversal) before anything is written to disk.
+     * Checks that {@code backupFile} is a readable archive and that no entry's resolved path escapes
+     * {@code targetDirectory} (zip-slip / path traversal).
+     *
+     * <p>Called before the world is deleted, so a corrupt archive fails the restore while the world is still
+     * intact. Reading the central directory is what detects truncation.
+     *
+     * @param backupFile The downloaded archive
+     * @param targetDirectory The directory the archive would be extracted into
+     * @throws IOException If the archive cannot be read or an entry escapes the target directory
+     */
+    private void validateBackup(File backupFile, File targetDirectory) throws IOException {
+        try (ZipFile zip = new ZipFile(backupFile)) {
+            List<FileHeader> headers = zip.getFileHeaders();
+            if (headers.isEmpty()) {
+                throw new IOException(
+                        "Refusing to restore backup: archive contains no entries: %s".formatted(backupFile));
+            }
+
+            for (FileHeader header : headers) {
+                File resolved = new File(targetDirectory, header.getFileName());
+                if (StringCleaner.isPathEscape(targetDirectory, resolved)) {
+                    throw new IOException("Refusing to restore backup: archive entry escapes the world directory: %s"
+                            .formatted(header.getFileName()));
+                }
+            }
+        }
+    }
+
+    /**
+     * Extracts a backup archive into {@code targetDirectory}. Entries are validated by
+     * {@link #validateBackup(File, File)} before the world is deleted.
      */
     private void extractBackup(File backupFile, File targetDirectory) throws IOException {
         try (ZipFile zip = new ZipFile(backupFile)) {
-            for (FileHeader header : zip.getFileHeaders()) {
-                File resolved = new File(targetDirectory, header.getFileName());
-                if (StringCleaner.isPathEscape(targetDirectory, resolved)) {
-                    throw new IOException("Refusing to restore backup: archive entry escapes the world directory: "
-                            + header.getFileName());
-                }
-            }
             zip.extractAll(targetDirectory.getPath());
         }
     }

@@ -32,12 +32,13 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
- * Compile-guard: ensures BuildSystemPlugin has no static self-referencing singleton. Fails if someone re-adds a static
- * BuildSystemPlugin instance field or get() method. Parses class file structure without loading the class (avoids full
- * plugin classpath).
+ * Bytecode-level guard against reintroducing a static singleton accessor on {@code BuildSystemPlugin}: it parses the
+ * compiled class file and asserts there is no static field of type {@code BuildSystemPlugin} and no static
+ * {@code get()} method returning one. This is a compile-time guard only — it never loads or instantiates the plugin,
+ * so it does not exercise (and cannot verify) any runtime double-enable protection.
  */
 @NullMarked
-class BuildSystemPluginSingletonGuardTest {
+class BuildSystemPluginNoStaticSelfReferenceTest {
 
     private static final String CLASS_RESOURCE = "de/eintosti/buildsystem/BuildSystemPlugin.class";
     private static final String SELF_DESCRIPTOR = "Lde/eintosti/buildsystem/BuildSystemPlugin;";
@@ -50,8 +51,9 @@ class BuildSystemPluginSingletonGuardTest {
 
     @BeforeAll
     static void loadClassFile() throws Exception {
-        InputStream is =
-                BuildSystemPluginSingletonGuardTest.class.getClassLoader().getResourceAsStream(CLASS_RESOURCE);
+        InputStream is = BuildSystemPluginNoStaticSelfReferenceTest.class
+                .getClassLoader()
+                .getResourceAsStream(CLASS_RESOURCE);
         assumeTrue(is != null, "BuildSystemPlugin.class not found on classpath — skipping guard");
 
         try (DataInputStream dis = new DataInputStream(is)) {

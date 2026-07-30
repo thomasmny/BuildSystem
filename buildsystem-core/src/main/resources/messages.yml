@@ -342,6 +342,7 @@ worlds_setproject_usage: "%prefix% &7Usage: &b/worlds setProject <world>"
 worlds_setproject_unknown_world: "%prefix% &cUnknown world."
 worlds_setproject_error: "%prefix% &cPlease try again."
 worlds_setproject_set: "%prefix% &b%world%&7's project was successfully changed."
+worlds_setproject_overridden: "%prefix% &7Saved, but this world's folder currently overrides it with &b%project%&7."
 
 worlds_setstatus_usage: "%prefix% &7Usage: &b/worlds setStatus <world>"
 worlds_setstatus_unknown_world: "%prefix% &cUnknown world."
@@ -352,6 +353,9 @@ worlds_setpermission_unknown_world: "%prefix% &cUnknown world."
 worlds_setpermission_error: "%prefix% &cPlease try again."
 worlds_setpermission_set: "%prefix% &b%world%&7's permission was successfully changed."
 worlds_setpermission_not_allowed: "%prefix% &cThat permission is not allowed."
+worlds_setpermission_overridden: "%prefix% &7Saved, but this world's folder currently overrides it with &b%permission%&7."
+
+worlds_create_limit_reached: "%prefix% &cYou have reached the maximum number of worlds you may create."
 
 worlds_setspawn_world_not_imported: "%prefix% &cWorld must be imported: /worlds import <world>"
 worlds_setspawn_world_spawn_set: "%prefix% &b%world%&7's spawnpoint was set."

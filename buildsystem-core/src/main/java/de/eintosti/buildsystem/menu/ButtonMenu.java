@@ -19,8 +19,10 @@ package de.eintosti.buildsystem.menu;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.i18n.Messages;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -46,6 +48,12 @@ public abstract class ButtonMenu<B extends MenuButton> extends Menu {
     private final Map<Integer, B> buttons = new LinkedHashMap<>();
 
     /**
+     * Slots registered since the last {@link #renderButtons} (or {@link #clearButtons}). Bounds collision detection to a
+     * single population pass, so re-populating a menu with the same slots on reopen is not mistaken for a collision.
+     */
+    private final Set<Integer> registeredThisPass = new HashSet<>();
+
+    /**
      * Creates the menu and its backing inventory.
      *
      * @param messages The message provider
@@ -57,12 +65,18 @@ public abstract class ButtonMenu<B extends MenuButton> extends Menu {
     }
 
     /**
-     * Registers (or replaces) the button shown at the given slot.
+     * Registers the button shown at the given slot.
      *
      * @param slot The inventory slot
      * @param button The button to place at the slot
+     * @throws IllegalStateException if the slot was already registered in this population pass (i.e. since the last
+     *     {@link #renderButtons} or {@link #clearButtons}), which almost always means two catalogs disagree about which
+     *     slot a button belongs to
      */
     protected final void register(int slot, B button) {
+        if (!registeredThisPass.add(slot)) {
+            throw new IllegalStateException("Slot %d is already registered".formatted(slot));
+        }
         buttons.put(slot, button);
     }
 
@@ -72,6 +86,7 @@ public abstract class ButtonMenu<B extends MenuButton> extends Menu {
      */
     protected final void clearButtons() {
         buttons.clear();
+        registeredThisPass.clear();
     }
 
     /**
@@ -83,14 +98,17 @@ public abstract class ButtonMenu<B extends MenuButton> extends Menu {
     }
 
     /**
-     * Renders every registered button into this menu's inventory. Subclasses typically call this from
-     * {@link #populate(Player)} after filling any background items.
+     * Renders every registered button into this menu's inventory and closes out the current population pass, so the next
+     * round of {@link #register} calls (e.g. from a later reopen) is free to reuse the same slots.
+     *
+     * <p>Subclasses typically call this from {@link #populate(Player)} after filling any background items.
      *
      * @param player The viewing player
      */
     protected final void renderButtons(Player player) {
         Inventory inventory = getInventory();
         buttons.forEach((slot, button) -> button.render(player, inventory, slot));
+        registeredThisPass.clear();
     }
 
     /**
@@ -111,8 +129,7 @@ public abstract class ButtonMenu<B extends MenuButton> extends Menu {
             return;
         }
 
-        String permission = button.permission();
-        if (permission != null && !player.hasPermission(permission)) {
+        if (!button.canClick(player)) {
             onPermissionDenied(player, event);
             return;
         }
@@ -121,10 +138,9 @@ public abstract class ButtonMenu<B extends MenuButton> extends Menu {
     }
 
     /**
-     * Hook for a click on a button whose {@link MenuButton#permission() permission} the player lacks. The default
-     * closes the inventory, sends the permission error and plays the deny sound, matching
-     * the guard it replaces. Menus that must keep the inventory open on a denied click (e.g. per-toggle
-     * settings) override this.
+     * Hook for a click the player is not allowed to make, i.e. one rejected by
+     * {@link MenuButton#canClick(Player)}. The default closes the inventory, sends the permission error and plays the deny sound, matching the guard it
+     * replaces. Menus that must keep the inventory open on a denied click (e.g. per-toggle settings) override this.
      *
      * @param player The clicking player
      * @param event The click event (already cancelled)

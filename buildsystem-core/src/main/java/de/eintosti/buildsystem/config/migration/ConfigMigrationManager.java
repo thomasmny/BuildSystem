@@ -18,9 +18,14 @@
 package de.eintosti.buildsystem.config.migration;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
 
@@ -68,22 +73,60 @@ public class ConfigMigrationManager {
      */
     public void migrate() {
         Logger logger = plugin.getLogger();
+        int fromVersion = plugin.getConfig().getInt("version", 1);
+        if (fromVersion >= LATEST_VERSION) {
+            logger.info("Config is at the latest version: %d".formatted(fromVersion));
+            return;
+        }
+
+        if (!backupConfig(fromVersion, logger)) {
+            return;
+        }
 
         while (plugin.getConfig().getInt("version", 1) < LATEST_VERSION) {
             int currentVersion = plugin.getConfig().getInt("version", 1);
             Migration migration = migrations.get(currentVersion);
             if (migration == null) {
                 throw new IllegalStateException(
-                        "Missing migration from version " + currentVersion + " to " + (currentVersion + 1));
+                        "Missing migration from version %d to %d".formatted(currentVersion, currentVersion + 1));
             }
 
-            logger.info("Migrating from version " + currentVersion + " to " + (currentVersion + 1) + "...");
+            logger.info("Migrating from version %d to %d...".formatted(currentVersion, currentVersion + 1));
             migration.migrate(plugin.getConfig());
             plugin.getConfig().set("version", currentVersion + 1);
             plugin.getConfig().setComments("version", List.of("Internal, do not change manually!"));
             plugin.saveConfig();
         }
 
-        logger.info("Config is at the latest version: " + plugin.getConfig().getInt("version", 1));
+        logger.info("Config is at the latest version: %d"
+                .formatted(plugin.getConfig().getInt("version", 1)));
+    }
+
+    /**
+     * Copies {@code config.yml} to a sibling {@code config.yml.v<fromVersion>.bak} before the first migration
+     * mutates it in place.
+     *
+     * @return {@code true} if the backup succeeded (or the config file does not exist yet), {@code false} if
+     *     migration must be aborted because the pre-migration state could not be preserved
+     */
+    private boolean backupConfig(int fromVersion, Logger logger) {
+        File configFile = new File(plugin.getDataFolder(), "config.yml");
+        if (!configFile.exists()) {
+            return true;
+        }
+
+        File backup = new File(plugin.getDataFolder(), "config.yml.v%d.bak".formatted(fromVersion));
+        try {
+            Files.copy(configFile.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            logger.log(
+                    Level.SEVERE,
+                    "Failed to back up config.yml to %s; aborting migration".formatted(backup.getName()),
+                    e);
+            return false;
+        }
+
+        logger.info("Backed up config.yml to %s".formatted(backup.getName()));
+        return true;
     }
 }

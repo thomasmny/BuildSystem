@@ -133,7 +133,14 @@ public final class S3Client implements AutoCloseable {
      * @throws IOException If the request fails or S3 returns an error
      */
     public void get(String key, Path target) throws IOException {
-        HttpResponse<Path> response = request("GET", key, Map.of(), Payload.empty(), BodyHandlers.ofFile(target));
+        HttpResponse<Path> response;
+        try {
+            response = request("GET", key, Map.of(), Payload.empty(), BodyHandlers.ofFile(target));
+        } catch (IOException e) {
+            Files.deleteIfExists(target);
+            throw e;
+        }
+
         if (!isSuccess(response)) {
             // The handler has already written the error document to the target; it is not a backup.
             Files.deleteIfExists(target);

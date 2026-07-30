@@ -89,6 +89,13 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
             XSound.ENTITY_PLAYER_LEVELUP.play(player);
             messages.sendMessage(player, "worlds_setpermission_set", Placeholders.of("%world%", buildWorld.getName()));
 
+            // A folder override means the stored permission is not the one being enforced.
+            String effective = buildWorld.getData().get(WorldDataKey.PERMISSION);
+            if (!permission.equals(effective)) {
+                messages.sendMessage(
+                        player, "worlds_setpermission_overridden", Placeholders.of("%permission%", effective));
+            }
+
             if (closeInventory) {
                 player.closeInventory();
             } else {

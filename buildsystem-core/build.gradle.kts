@@ -240,7 +240,6 @@ bukkit {
         }
         register("buildsystem.create") {
             children = listOf(
-                "buildsystem.create.private",
                 "buildsystem.create.type.normal",
                 "buildsystem.create.type.flat",
                 "buildsystem.create.type.nether",
@@ -249,6 +248,11 @@ bukkit {
             )
             description = "Permission for creating world types."
             default = BukkitPluginDescription.Permission.Default.TRUE
+        }
+        register("buildsystem.create.category") {
+            description =
+                "Create a world in a navigator category. Category ids are dynamic; grant buildsystem.create.category.<id> to allow a specific category."
+            default = BukkitPluginDescription.Permission.Default.OP
         }
         register("buildsystem.create.template") {
             description = "Select a template when creating a world. Template names are dynamic; deny buildsystem.create.template.<name> to restrict a specific template."

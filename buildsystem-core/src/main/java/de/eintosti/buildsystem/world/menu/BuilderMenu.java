@@ -129,11 +129,14 @@ public class BuilderMenu extends PaginatedMenu {
                 .build();
     }
 
+    private boolean canManageBuilders(Player player) {
+        return buildWorld.getBuilders().isCreator(player) || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION);
+    }
+
     private MenuButton addBuilderButton() {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
-                    if (buildWorld.getBuilders().isCreator(player)
-                            || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {
+                    if (canManageBuilders(player)) {
                         inventory.setItem(
                                 slot,
                                 ItemBuilder.skull(Profileable.detect(SkullTextures.ADD_ITEM))
@@ -146,12 +149,8 @@ public class BuilderMenu extends PaginatedMenu {
                                         .build());
                     }
                 })
+                .usableBy(this::canManageBuilders)
                 .onClick((player, event) -> {
-                    if (event.getCurrentItem() == null
-                            || event.getCurrentItem().getType() != XMaterial.PLAYER_HEAD.get()) {
-                        returnToEditor(player);
-                        return;
-                    }
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     menus.promptAddBuilder(buildWorld, player);
                 })
@@ -170,6 +169,7 @@ public class BuilderMenu extends PaginatedMenu {
                                 .lore(messages.getStringList("worldeditor_builders_builder_lore", player))
                                 .pdc(this.builderNameKey, PersistentDataType.STRING, builder.getName())
                                 .build()))
+                .usableBy(this::canManageBuilders)
                 .onClick((player, event) -> {
                     // Only a shift-click removes a builder; a plain click returns to the editor.
                     if (!event.isShiftClick()) {
@@ -183,6 +183,16 @@ public class BuilderMenu extends PaginatedMenu {
 
     @Override
     protected void onUnhandledClick(Player player, InventoryClickEvent event) {
+        returnToEditor(player);
+    }
+
+    /**
+     * Sends a player who may not manage builders back to the editor instead of closing the inventory with an error.
+     * They see a filler pane rather than the add-builder head, so a click on it reads as "go back", not as an attempt
+     * to do something forbidden.
+     */
+    @Override
+    protected void onPermissionDenied(Player player, InventoryClickEvent event) {
         returnToEditor(player);
     }
 

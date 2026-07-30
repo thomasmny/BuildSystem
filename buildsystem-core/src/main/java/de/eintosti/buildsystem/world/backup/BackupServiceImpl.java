@@ -249,14 +249,29 @@ public class BackupServiceImpl implements BackupService {
             worlds.addAll(worldStorage.getBuildWorlds());
         }
 
-        worlds.forEach(buildWorld -> {
+        boolean backedUpOneThisTick = false;
+        for (BuildWorld buildWorld : worlds) {
             WorldData worldData = buildWorld.getData();
             int elapsed = worldData.get(WorldDataKey.TIME_SINCE_BACKUP) + (int) UPDATE_PERIOD_SECONDS;
             if (elapsed > autoBackup.interval()) {
-                getProfile(buildWorld).createBackup();
+                if (backedUpOneThisTick) {
+                    worldData.set(WorldDataKey.TIME_SINCE_BACKUP, elapsed);
+                    continue;
+                }
+                backedUpOneThisTick = true;
+                autoBackup(buildWorld);
                 elapsed = 0;
             }
             worldData.set(WorldDataKey.TIME_SINCE_BACKUP, elapsed);
+        }
+    }
+
+    private void autoBackup(BuildWorld buildWorld) {
+        getProfile(buildWorld).createBackup().whenComplete((backup, throwable) -> {
+            if (throwable != null) {
+                String message = "Automatic backup failed for world '%s'".formatted(buildWorld.getName());
+                plugin.getLogger().log(Level.SEVERE, message, throwable);
+            }
         });
     }
 

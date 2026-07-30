@@ -257,7 +257,9 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
     }
 
     public void persist(NavigatorCategory category) {
-        // The registry only ever hands out its own instances, so anything it is asked to persist is one of them.
+        if (!this.categories.containsKey(category.getId())) {
+            return;
+        }
         storage.save((NavigatorCategoryImpl) category);
     }
 

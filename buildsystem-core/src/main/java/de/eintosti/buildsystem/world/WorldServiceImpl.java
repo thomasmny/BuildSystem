@@ -34,6 +34,7 @@ import de.eintosti.buildsystem.api.world.creation.WorldImporter;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -43,6 +44,7 @@ import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlFolderStorage;
 import de.eintosti.buildsystem.storage.yaml.YamlWorldStorage;
 import de.eintosti.buildsystem.util.FileUtils;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.creation.WorldBuilderImpl;
 import de.eintosti.buildsystem.world.creation.WorldCreationPrompts;
@@ -112,32 +114,47 @@ public class WorldServiceImpl implements WorldService {
     @Override
     @Contract("_ -> new")
     public WorldBuilder newWorld(String name) {
-        // Defense-in-depth: the menus sanitize names before they reach here, but this is public API. Reject any name
-        // that would resolve outside the world container so a caller cannot create a directory in, say, plugins/.
-        if (StringCleaner.isReservedName(name)) {
-            throw new IllegalArgumentException("World name '" + name + "' is reserved and cannot be used");
-        }
-        File worldDirectory = new File(Bukkit.getWorldContainer(), name);
-        if (StringCleaner.isPathEscape(Bukkit.getWorldContainer(), worldDirectory)) {
-            throw new IllegalArgumentException("World name '" + name + "' resolves outside the world container");
-        }
+        validateWorldName(name);
         return new WorldBuilderImpl(services.worldContext(), worldStorage, plugin.getDataFolder(), name);
     }
 
     @Override
     @Contract("_ -> new")
     public WorldImporter importWorld(String name) {
+        validateWorldName(name);
         return new WorldImporterImpl(services.worldContext(), worldStorage, name);
+    }
+
+    /**
+     * Rejects a world name that is reserved or would resolve outside the world container. Defense-in-depth: the
+     * menus sanitize names before they reach here, but both {@link #newWorld} and {@link #importWorld(String)} are
+     * public API, so a caller must not be able to create or import into a directory outside the world container
+     * (e.g. {@code plugins/}) by passing a crafted name.
+     */
+    private static void validateWorldName(String name) {
+        if (StringCleaner.isReservedName(name)) {
+            throw new IllegalArgumentException("World name '%s' is reserved and cannot be used".formatted(name));
+        }
+        File worldDirectory = new File(Bukkit.getWorldContainer(), name);
+        if (StringCleaner.isPathEscape(Bukkit.getWorldContainer(), worldDirectory)) {
+            throw new IllegalArgumentException("World name '%s' resolves outside the world container".formatted(name));
+        }
     }
 
     public void startWorldNameInput(
             Player player,
             BuildWorldType worldType,
             @Nullable String template,
-            boolean privateWorld,
-            boolean promptSeed,
+            WorldNameInputOptions options,
             @Nullable Folder folder) {
-        this.creationPrompts.startWorldNameInput(player, worldType, template, privateWorld, promptSeed, folder);
+        Visibility visibility = Visibility.matchVisibility(options.privateWorld());
+        if (!services.player().canCreateWorld(player, visibility)) {
+            messages.sendMessage(player, "worlds_create_limit_reached");
+            return;
+        }
+
+        this.creationPrompts.startWorldNameInput(
+                player, worldType, template, options.privateWorld(), options.promptSeed(), folder);
     }
 
     public boolean importWorld(
@@ -176,9 +193,11 @@ public class WorldServiceImpl implements WorldService {
         if (world == null) {
             return false;
         }
+
         if (single) {
             world.getTeleporter().teleport(player);
         }
+
         return true;
     }
 
@@ -204,7 +223,18 @@ public class WorldServiceImpl implements WorldService {
         return this.worldStorage.delete(buildWorld);
     }
 
+    /**
+     * Deletes a world on behalf of a player, having first checked that they are allowed to. This overload exists
+     * for menu/command call sites where the player is the source of the request; {@link #deleteWorld(BuildWorld)}
+     * has no such check because it is the public API entry point, used by internal callers and API consumers who
+     * have either already authorized the request themselves or are not acting on behalf of a specific player.
+     */
     public void deleteWorld(Player player, BuildWorld buildWorld) {
+        if (!buildWorld.getPermissions().canPerformCommand(player, Permissions.DELETE)) {
+            messages.sendPermissionError(player);
+            return;
+        }
+
         String worldName = buildWorld.getName();
         messages.sendMessage(player, "worlds_delete_started", Placeholders.of("%world%", worldName));
         deleteWorld(buildWorld)
@@ -224,7 +254,8 @@ public class WorldServiceImpl implements WorldService {
                             plugin.getLogger()
                                     .log(
                                             Level.SEVERE,
-                                            "An unexpected error occurred while deleting the world: " + worldName,
+                                            "An unexpected error occurred while deleting the world: %s"
+                                                    .formatted(worldName),
                                             cause);
                         }
                     }
@@ -250,7 +281,7 @@ public class WorldServiceImpl implements WorldService {
         Bukkit.getServer().getPluginManager().callEvent(deleteEvent);
         if (deleteEvent.isCancelled()) {
             return CompletableFuture.failedFuture(new WorldDeletionCancelledException(
-                    "Deletion of world '" + worldName + "' was cancelled by an event listener"));
+                    "Deletion of world '%s' was cancelled by an event listener".formatted(worldName)));
         }
 
         buildWorld.setFolder(null);
@@ -270,8 +301,8 @@ public class WorldServiceImpl implements WorldService {
                                 FileUtils.deleteDirectory(deleteFolder);
                             } catch (IOException e) {
                                 throw new CompletionException(new WorldDeletionException(
-                                        "An unexpected error occurred during directory deletion for world: "
-                                                + worldName,
+                                        "An unexpected error occurred during directory deletion for world: %s"
+                                                .formatted(worldName),
                                         e));
                             }
                             scheduler.runTask(

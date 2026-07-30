@@ -50,21 +50,21 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public abstract class DisplayablesMenu extends PaginatedMenu {
 
-    private static final int MAX_WORLDS_PER_PAGE = 36;
-    private static final int FIRST_WORLD_SLOT = 9;
-    private static final int LAST_WORLD_SLOT = 44;
+    protected static final int MAX_WORLDS_PER_PAGE = 36;
+    protected static final int FIRST_WORLD_SLOT = 9;
+    protected static final int LAST_WORLD_SLOT = 44;
 
-    private static final int SLOT_NO_WORLDS = 22;
-    private static final int SLOT_WORLD_SORT = 45;
-    private static final int SLOT_WORLD_FILTER = 46;
-    private static final int SLOT_CREATE_WORLD = 48;
-    private static final int FIRST_CREATE_FOLDER_SLOT = 49;
-    private static final int LAST_CREATE_FOLDER_SLOT = 50;
-    private static final int SLOT_BACK = 51;
-    private static final int SLOT_PREVIOUS_PAGE = 52;
-    private static final int SLOT_NEXT_PAGE = 53;
-    private static final int FIRST_BOTTOM_BAR_SLOT = 45;
-    private static final int LAST_BOTTOM_BAR_SLOT = 53;
+    protected static final int SLOT_NO_WORLDS = 22;
+    protected static final int SLOT_WORLD_SORT = 45;
+    protected static final int SLOT_WORLD_FILTER = 46;
+    protected static final int SLOT_CREATE_WORLD = 48;
+    protected static final int FIRST_CREATE_FOLDER_SLOT = 49;
+    protected static final int LAST_CREATE_FOLDER_SLOT = 50;
+    protected static final int SLOT_BACK = 51;
+    protected static final int SLOT_PREVIOUS_PAGE = 52;
+    protected static final int SLOT_NEXT_PAGE = 53;
+    protected static final int FIRST_BOTTOM_BAR_SLOT = 45;
+    protected static final int LAST_BOTTOM_BAR_SLOT = 53;
 
     private static final String NO_WORLDS_SKULL_PROFILE =
             "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6";
@@ -84,6 +84,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
 
     private final @Nullable String noWorldsMessage;
     private @Nullable List<Displayable> cachedDisplayables;
+
+    private final DisplayBar displayBar = new DisplayBar();
 
     protected DisplayablesMenu(DisplayablesContext context, Player player, Options options) {
         super(context.messages(), 54, options.title());
@@ -163,15 +165,32 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         return cachedDisplayables != null ? cachedDisplayables.size() : 0;
     }
 
+    /**
+     * Recomputes {@link #cachedDisplayables} from the current folder/world storage state. Called on every {@link #open},
+     * so navigating to or reopening this menu always reflects the latest data.
+     *
+     * <p>A page flip does not go through here: {@link PaginatedMenu}'s page-arrow buttons call {@link #populate} directly,
+     * which re-renders the already-collected list for the new page instead of recollecting and re-filtering everything.
+     */
+    private void refreshData() {
+        this.cachedDisplayables = collectDisplayables();
+    }
+
+    @Override
+    public void open(Player player) {
+        refreshData();
+        super.open(player);
+    }
+
     @Override
     protected void populate(Player player) {
-        this.cachedDisplayables = collectDisplayables();
+        List<Displayable> displayables = cachedDisplayables != null ? cachedDisplayables : List.of();
         Inventory inv = getInventory();
 
         clearButtons();
         menuItems.fillWithGlass(inv, player);
-        addWorldSortItem(inv);
-        addWorldFilterItem(inv);
+        displayBar.renderSort(inv);
+        displayBar.renderFilter(inv);
         addExtraItems(inv, player);
         register(SLOT_PREVIOUS_PAGE, previousPageButton(SkullTextures.PREVIOUS_PAGE, MAX_WORLDS_PER_PAGE));
         register(SLOT_NEXT_PAGE, nextPageButton(SkullTextures.NEXT_PAGE, MAX_WORLDS_PER_PAGE));
@@ -180,12 +199,12 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
             inv.setItem(i, null);
         }
 
-        if (cachedDisplayables.isEmpty() && noWorldsMessage != null) {
+        if (displayables.isEmpty() && noWorldsMessage != null) {
             ItemBuilder.skull(Profileable.detect(NO_WORLDS_SKULL_PROFILE))
                     .name(noWorldsMessage)
                     .into(inv, SLOT_NO_WORLDS);
         } else {
-            registerPageItems(FIRST_WORLD_SLOT, MAX_WORLDS_PER_PAGE, cachedDisplayables, this::displayableButton);
+            registerPageItems(FIRST_WORLD_SLOT, MAX_WORLDS_PER_PAGE, displayables, this::displayableButton);
         }
 
         renderButtons(player);
@@ -257,50 +276,6 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         return Bukkit.getWorld(buildWorld.getName()) != null || !buildWorld.isLoaded();
     }
 
-    private void addWorldSortItem(Inventory inventory) {
-        Settings settings = settingsManager.getSettings(player);
-        WorldSort worldSort = settings.getWorldDisplay().getWorldSort();
-
-        String messageKey =
-                switch (worldSort) {
-                    case NAME_A_TO_Z -> "world_sort_name_az";
-                    case NAME_Z_TO_A -> "world_sort_name_za";
-                    case PROJECT_A_TO_Z -> "world_sort_project_az";
-                    case PROJECT_Z_TO_A -> "world_sort_project_za";
-                    case STATUS_NOT_STARTED -> "world_sort_status_not_started";
-                    case STATUS_FINISHED -> "world_sort_status_finished";
-                    case NEWEST_FIRST -> "world_sort_date_newest";
-                    case OLDEST_FIRST -> "world_sort_date_oldest";
-                };
-
-        ItemBuilder.of(XMaterial.BOOK)
-                .name(messages.getString("world_sort_title", player))
-                .lore(messages.getString(messageKey, player))
-                .into(inventory, SLOT_WORLD_SORT);
-    }
-
-    private void addWorldFilterItem(Inventory inventory) {
-        Settings settings = settingsManager.getSettings(player);
-        WorldFilter worldFilter = settings.getWorldDisplay().getWorldFilter();
-
-        String loreKey =
-                switch (worldFilter.getMode()) {
-                    case NONE -> "world_filter_mode_none";
-                    case STARTS_WITH -> "world_filter_mode_starts_with";
-                    case CONTAINS -> "world_filter_mode_contains";
-                    case MATCHES -> "world_filter_mode_matches";
-                };
-
-        List<String> lore = new ArrayList<>();
-        lore.add(messages.getString(loreKey, player, Placeholders.of("%text%", worldFilter.getText())));
-        lore.addAll(messages.getStringList("world_filter_lore", player));
-
-        ItemBuilder.of(XMaterial.HOPPER)
-                .name(messages.getString("world_filter_title", player))
-                .lore(lore)
-                .into(inventory, SLOT_WORLD_FILTER);
-    }
-
     @Override
     protected void onUnhandledClick(Player player, InventoryClickEvent event) {
         // Page arrows are registered buttons; everything else is handled here. Ignore clicks outside this inventory.
@@ -317,29 +292,11 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         WorldDisplay worldDisplay = settings.getWorldDisplay();
 
         switch (slot) {
-            case SLOT_WORLD_SORT -> {
-                WorldSort currentSort = worldDisplay.getWorldSort();
-                worldDisplay.setWorldSort(event.isLeftClick() ? currentSort.getNext() : currentSort.getPrevious());
-                resetPage();
-                open(player);
-            }
-            case SLOT_WORLD_FILTER -> handleFilterClick(event, worldDisplay);
-            case SLOT_CREATE_WORLD -> {
-                if (itemStack.getType() == XMaterial.PLAYER_HEAD.get()) {
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
-                    beginWorldCreation();
-                    return;
-                }
-                goBack(player, itemStack);
-            }
-            case FIRST_CREATE_FOLDER_SLOT, LAST_CREATE_FOLDER_SLOT -> {
-                if (itemStack.getType() == XMaterial.PLAYER_HEAD.get()) {
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
-                    beginFolderCreation(player);
-                    return;
-                }
-                goBack(player, itemStack);
-            }
+            case SLOT_WORLD_SORT -> displayBar.handleSortClick(event, worldDisplay);
+            case SLOT_WORLD_FILTER -> displayBar.handleFilterClick(event, worldDisplay);
+            case SLOT_CREATE_WORLD -> handleCreateButtonClick(itemStack, this::beginWorldCreation);
+            case FIRST_CREATE_FOLDER_SLOT, LAST_CREATE_FOLDER_SLOT ->
+                handleCreateButtonClick(itemStack, () -> beginFolderCreation(player));
             case SLOT_BACK -> goBack(player, itemStack);
             default -> {
                 if (slot >= FIRST_BOTTOM_BAR_SLOT && slot <= LAST_BOTTOM_BAR_SLOT) {
@@ -347,6 +304,20 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                 }
             }
         }
+    }
+
+    /**
+     * Runs {@code onCreate} for a click on a create-world/create-folder slot, but only when that slot actually holds
+     * the create button. The same slot renders as filler glass instead when the player lacks permission or the
+     * category doesn't offer creation, and glass in the bottom bar behaves like every other slot there: it goes back.
+     */
+    private void handleCreateButtonClick(ItemStack itemStack, Runnable onCreate) {
+        if (itemStack.getType() == XMaterial.PLAYER_HEAD.get()) {
+            XSound.ENTITY_CHICKEN_EGG.play(player);
+            onCreate.run();
+            return;
+        }
+        goBack(player, itemStack);
     }
 
     private void goBack(Player player, ItemStack itemStack) {
@@ -387,32 +358,6 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         menus.openNavigator(this.player);
     }
 
-    private void handleFilterClick(InventoryClickEvent event, WorldDisplay worldDisplay) {
-        WorldFilter worldFilter = worldDisplay.getWorldFilter();
-        Mode currentMode = worldFilter.getMode();
-
-        if (event.isShiftClick()) {
-            worldFilter.setMode(Mode.NONE);
-            worldFilter.setText("");
-        } else if (event.isLeftClick()) {
-            player.closeInventory();
-            prompts.prompt(player)
-                    .title("world_filter_title")
-                    .onCancel(() -> open(player))
-                    .request(input -> {
-                        worldFilter.setText(input.replace("\"", ""));
-                        resetPage();
-                        open(player);
-                    });
-            return;
-        } else if (event.isRightClick()) {
-            worldFilter.setMode(currentMode.getNext());
-        }
-
-        resetPage();
-        open(player);
-    }
-
     private void manageWorldItemClick(InventoryClickEvent event, BuildWorld buildWorld) {
         Player player = (Player) event.getWhoClicked();
         if (event.isLeftClick()
@@ -429,6 +374,92 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
             player.closeInventory();
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
             player.sendTitle(" ", messages.getString("world_not_loaded", player), 5, 70, 20);
+        }
+    }
+
+    /**
+     * The sort and filter items in the bottom bar of every {@link DisplayablesMenu}: their rendering reflects the
+     * player's current {@link WorldDisplay} settings, and clicking them cycles or edits those settings before
+     * refreshing the menu. Kept as an inner class, rather than threading callbacks through a standalone one, since
+     * every operation here ends by calling back into the enclosing menu's {@link #resetPage()} and {@link #open}.
+     */
+    private final class DisplayBar {
+
+        void renderSort(Inventory inventory) {
+            Settings settings = settingsManager.getSettings(player);
+            WorldSort worldSort = settings.getWorldDisplay().getWorldSort();
+
+            String messageKey =
+                    switch (worldSort) {
+                        case NAME_A_TO_Z -> "world_sort_name_az";
+                        case NAME_Z_TO_A -> "world_sort_name_za";
+                        case PROJECT_A_TO_Z -> "world_sort_project_az";
+                        case PROJECT_Z_TO_A -> "world_sort_project_za";
+                        case STATUS_NOT_STARTED -> "world_sort_status_not_started";
+                        case STATUS_FINISHED -> "world_sort_status_finished";
+                        case NEWEST_FIRST -> "world_sort_date_newest";
+                        case OLDEST_FIRST -> "world_sort_date_oldest";
+                    };
+
+            ItemBuilder.of(XMaterial.BOOK)
+                    .name(messages.getString("world_sort_title", player))
+                    .lore(messages.getString(messageKey, player))
+                    .into(inventory, SLOT_WORLD_SORT);
+        }
+
+        void renderFilter(Inventory inventory) {
+            Settings settings = settingsManager.getSettings(player);
+            WorldFilter worldFilter = settings.getWorldDisplay().getWorldFilter();
+
+            String loreKey =
+                    switch (worldFilter.getMode()) {
+                        case NONE -> "world_filter_mode_none";
+                        case STARTS_WITH -> "world_filter_mode_starts_with";
+                        case CONTAINS -> "world_filter_mode_contains";
+                        case MATCHES -> "world_filter_mode_matches";
+                    };
+
+            List<String> lore = new ArrayList<>();
+            lore.add(messages.getString(loreKey, player, Placeholders.of("%text%", worldFilter.getText())));
+            lore.addAll(messages.getStringList("world_filter_lore", player));
+
+            ItemBuilder.of(XMaterial.HOPPER)
+                    .name(messages.getString("world_filter_title", player))
+                    .lore(lore)
+                    .into(inventory, SLOT_WORLD_FILTER);
+        }
+
+        void handleSortClick(InventoryClickEvent event, WorldDisplay worldDisplay) {
+            WorldSort currentSort = worldDisplay.getWorldSort();
+            worldDisplay.setWorldSort(event.isLeftClick() ? currentSort.getNext() : currentSort.getPrevious());
+            resetPage();
+            open(player);
+        }
+
+        void handleFilterClick(InventoryClickEvent event, WorldDisplay worldDisplay) {
+            WorldFilter worldFilter = worldDisplay.getWorldFilter();
+            Mode currentMode = worldFilter.getMode();
+
+            if (event.isShiftClick()) {
+                worldFilter.setMode(Mode.NONE);
+                worldFilter.setText("");
+            } else if (event.isLeftClick()) {
+                player.closeInventory();
+                prompts.prompt(player)
+                        .title("world_filter_title")
+                        .onCancel(() -> open(player))
+                        .request(input -> {
+                            worldFilter.setText(input.replace("\"", ""));
+                            resetPage();
+                            open(player);
+                        });
+                return;
+            } else if (event.isRightClick()) {
+                worldFilter.setMode(currentMode.getNext());
+            }
+
+            resetPage();
+            open(player);
         }
     }
 }

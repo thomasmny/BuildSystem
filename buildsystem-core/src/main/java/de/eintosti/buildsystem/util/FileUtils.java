@@ -32,9 +32,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.io.outputstream.ZipOutputStream;
 import net.lingala.zip4j.model.ExcludeFileFilter;
 import net.lingala.zip4j.model.ZipParameters;
 import org.bukkit.Bukkit;
@@ -296,7 +295,9 @@ public final class FileUtils {
                     .toList();
             for (Path file : files) {
                 Path relativePath = worldPath.relativize(file);
-                zipOut.putNextEntry(new ZipEntry(relativePath.toString().replace("\\", "/")));
+                ZipParameters zipParameters = new ZipParameters();
+                zipParameters.setFileNameInZip(relativePath.toString().replace("\\", "/"));
+                zipOut.putNextEntry(zipParameters);
                 Files.copy(file, zipOut);
                 zipOut.closeEntry();
             }
