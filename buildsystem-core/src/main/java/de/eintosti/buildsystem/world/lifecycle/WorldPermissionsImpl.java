@@ -86,7 +86,7 @@ public class WorldPermissionsImpl implements WorldPermissions {
             return true;
         }
 
-        if (hasAdminPermission(player) || canBypassBuildRestriction(player)) {
+        if (canBypassBuildRestriction(player) || hasAdminPermission(player)) {
             return true;
         }
 
@@ -96,11 +96,11 @@ public class WorldPermissionsImpl implements WorldPermissions {
         }
 
         if (setting != null) {
+            if (!setting.isEnabled(buildWorld.getData())) {
+                return player.hasPermission(setting.getBypassPermission());
+            }
             if (player.hasPermission(setting.getBypassPermission())) {
                 return true;
-            }
-            if (!setting.isEnabled(buildWorld.getData())) {
-                return false;
             }
         }
 

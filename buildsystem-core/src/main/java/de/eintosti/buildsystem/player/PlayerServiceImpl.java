@@ -28,10 +28,10 @@ import de.eintosti.buildsystem.storage.yaml.YamlPlayerStorage;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import org.bukkit.entity.Player;
@@ -58,7 +58,7 @@ public class PlayerServiceImpl implements PlayerService {
         this.worldService = worldService;
         this.playerStorage = new YamlPlayerStorage(plugin, scheduler);
         this.maxWorldsResolver = new MaxWorldsResolver(plugin.getLogger());
-        this.buildModePlayers = new HashSet<>();
+        this.buildModePlayers = ConcurrentHashMap.newKeySet();
     }
 
     public void init() {

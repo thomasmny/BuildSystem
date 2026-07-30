@@ -22,10 +22,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
+import java.io.StringReader;
 import java.net.URI;
-import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,11 +48,12 @@ public final class UpdateChecker {
     private static final String USER_AGENT = "CHOCO-update-checker";
     private static final String UPDATE_URL = "https://api.spigotmc.org/simple/0.1/index.php?action=getResource&id=%d";
     private static final Pattern DECIMAL_SCHEME_PATTERN = Pattern.compile("\\d+(?:\\.\\d+)*");
+    private static final Duration TIMEOUT = Duration.ofSeconds(5);
 
     /**
      * The default version scheme for this update checker
      */
-    public static final @Nullable VersionScheme VERSION_SCHEME_DECIMAL = (first, second) -> {
+    public static final VersionScheme VERSION_SCHEME_DECIMAL = (first, second) -> {
         String[] firstSplit = splitVersionInfo(first), secondSplit = splitVersionInfo(second);
         if (firstSplit == null || secondSplit == null) {
             return null;
@@ -72,6 +75,7 @@ public final class UpdateChecker {
     private final JavaPlugin plugin;
     private final int pluginID;
     private final VersionScheme versionScheme;
+    private final HttpClient httpClient;
 
     public UpdateChecker(JavaPlugin plugin, int pluginID) {
         this(plugin, pluginID, VERSION_SCHEME_DECIMAL);
@@ -82,6 +86,7 @@ public final class UpdateChecker {
         this.plugin = plugin;
         this.pluginID = pluginID;
         this.versionScheme = versionScheme;
+        this.httpClient = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
     }
 
     /**
@@ -109,14 +114,18 @@ public final class UpdateChecker {
             int responseCode;
 
             try {
-                URL url = URI.create(UPDATE_URL.formatted(pluginID)).toURL();
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.addRequestProperty("User-Agent", USER_AGENT);
-                responseCode = connection.getResponseCode();
+                HttpRequest request = HttpRequest.newBuilder(URI.create(UPDATE_URL.formatted(pluginID)))
+                        .timeout(TIMEOUT)
+                        .header("User-Agent", USER_AGENT)
+                        .GET()
+                        .build();
+                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+                responseCode = response.statusCode();
 
-                JsonReader reader = new JsonReader(new InputStreamReader(connection.getInputStream()));
-                JsonElement json = JsonParser.parseReader(reader);
-                reader.close();
+                JsonElement json;
+                try (JsonReader reader = new JsonReader(new StringReader(response.body()))) {
+                    json = JsonParser.parseReader(reader);
+                }
 
                 if (!json.isJsonObject()) {
                     return new UpdateResult(UpdateReason.INVALID_JSON);
@@ -138,6 +147,9 @@ public final class UpdateChecker {
                     return new UpdateResult(UpdateReason.NEW_UPDATE, latest);
                 }
             } catch (IOException e) {
+                return new UpdateResult(UpdateReason.COULD_NOT_CONNECT);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 return new UpdateResult(UpdateReason.COULD_NOT_CONNECT);
             }
 
