@@ -304,7 +304,9 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
     }
 
     public void persist(BuildWorldStatus status) {
-        // The registry only ever hands out its own instances, so anything it is asked to persist is one of them.
+        if (!this.statuses.containsKey(status.getId())) {
+            return;
+        }
         storage.save((WorldStatusImpl) status);
     }
 
