@@ -355,6 +355,8 @@ worlds_setpermission_set: "%prefix% &b%world%&7's permission was successfully ch
 worlds_setpermission_not_allowed: "%prefix% &cThat permission is not allowed."
 worlds_setpermission_overridden: "%prefix% &7Saved, but this world's folder currently overrides it with &b%permission%&7."
 
+worlds_create_limit_reached: "%prefix% &cYou have reached the maximum number of worlds you may create."
+
 worlds_setspawn_world_not_imported: "%prefix% &cWorld must be imported: /worlds import <world>"
 worlds_setspawn_world_spawn_set: "%prefix% &b%world%&7's spawnpoint was set."
 

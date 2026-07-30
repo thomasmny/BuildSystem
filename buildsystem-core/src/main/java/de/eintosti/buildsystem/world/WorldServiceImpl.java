@@ -34,6 +34,7 @@ import de.eintosti.buildsystem.api.world.creation.WorldImporter;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -146,6 +147,12 @@ public class WorldServiceImpl implements WorldService {
             @Nullable String template,
             WorldNameInputOptions options,
             @Nullable Folder folder) {
+        Visibility visibility = Visibility.matchVisibility(options.privateWorld());
+        if (!services.player().canCreateWorld(player, visibility)) {
+            messages.sendMessage(player, "worlds_create_limit_reached");
+            return;
+        }
+
         this.creationPrompts.startWorldNameInput(
                 player, worldType, template, options.privateWorld(), options.promptSeed(), folder);
     }
@@ -186,9 +193,11 @@ public class WorldServiceImpl implements WorldService {
         if (world == null) {
             return false;
         }
+
         if (single) {
             world.getTeleporter().teleport(player);
         }
+        
         return true;
     }
 
