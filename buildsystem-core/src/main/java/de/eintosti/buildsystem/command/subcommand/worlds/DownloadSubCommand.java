@@ -94,8 +94,7 @@ public class DownloadSubCommand extends AbstractSubCommand {
                         (url, throwable) -> {
                             preparing.remove(playerId);
                             if (throwable != null) {
-                                logger.log(
-                                        Level.SEVERE, "Failed to export world " + buildWorld.getName(), throwable);
+                                logger.log(Level.SEVERE, "Failed to export world " + buildWorld.getName(), throwable);
                                 messages.sendMessage(player, "worlds_download_failed", worldPlaceholder);
                                 return;
                             }
@@ -110,8 +109,10 @@ public class DownloadSubCommand extends AbstractSubCommand {
         String message = messages.getString(
                 "worlds_download_finished",
                 player,
-                Placeholders.of("%world%", buildWorld.getName())
-                        .add("%minutes%", String.valueOf(downloadService.getExpirationMinutes())));
+                Placeholders.of()
+                        .add("%world%", buildWorld.getName())
+                        .add("%minutes%", downloadService.getExpirationMinutes())
+                        .build());
 
         TextComponent component = new TextComponent(TextComponent.fromLegacyText(message));
         component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));

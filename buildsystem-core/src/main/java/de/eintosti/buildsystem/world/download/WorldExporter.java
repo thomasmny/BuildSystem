@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.world.download;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -165,6 +166,7 @@ public final class WorldExporter {
         if (lengthAt + 2 > nbt.length) {
             return nbt;
         }
+
         int oldLength = ((nbt[lengthAt] & 0xFF) << 8) | (nbt[lengthAt + 1] & 0xFF);
         int valueEnd = lengthAt + 2 + oldLength;
         if (valueEnd > nbt.length) {
@@ -195,7 +197,7 @@ public final class WorldExporter {
     }
 
     private static byte[] gunzip(byte[] compressed) throws IOException {
-        try (InputStream in = new GZIPInputStream(new java.io.ByteArrayInputStream(compressed))) {
+        try (InputStream in = new GZIPInputStream(new ByteArrayInputStream(compressed))) {
             return in.readAllBytes();
         }
     }

@@ -110,6 +110,17 @@ world:
         password: YOUR_SFTP_PASSWORD
         path: backups/worlds/
 
+  # Lets players download a world as a single-player save via /worlds download.
+  # Enabling this opens a port on the server that serves world archives, each
+  # reachable only through an unguessable link that expires with the archive.
+  download:
+    enabled: false
+    port: 8080
+    # The address players are sent to. Change it if the port is reached through
+    # a proxy or a domain, e.g. "https://downloads.example.com"
+    url: "http://localhost:8080"
+    expiration-minutes: 30
+
 folder:
   override-permissions: true
   override-projects: false

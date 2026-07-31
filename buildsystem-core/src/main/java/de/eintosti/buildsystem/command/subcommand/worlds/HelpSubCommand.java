@@ -132,6 +132,12 @@ public class HelpSubCommand extends PagedCommand implements SubCommand {
                 createComponent(
                         player, "/worlds delete <world>", "worlds_help_delete", "/worlds delete ", Permissions.DELETE),
                 createComponent(
+                        player,
+                        "/worlds download <world>",
+                        "worlds_help_download",
+                        "/worlds download ",
+                        Permissions.DOWNLOAD),
+                createComponent(
                         player, "/worlds import <world>", "worlds_help_import", "/worlds import ", Permissions.IMPORT),
                 createComponent(
                         player,

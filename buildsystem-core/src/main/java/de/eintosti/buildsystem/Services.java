@@ -37,6 +37,7 @@ import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
+import de.eintosti.buildsystem.world.download.WorldDownloadService;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import org.bukkit.NamespacedKey;
 import org.jspecify.annotations.NullMarked;
@@ -66,6 +67,7 @@ public final class Services {
     private @Nullable SpawnService spawnService;
     private @Nullable WorldServiceImpl worldService;
     private @Nullable BackupServiceImpl backupService;
+    private @Nullable WorldDownloadService worldDownloadService;
     private @Nullable CustomizableIcons customizableIcons;
     private @Nullable NavigatorCategoryRegistryImpl navigatorCategoryRegistry;
     private @Nullable WorldStatusRegistryImpl worldStatusRegistry;
@@ -122,6 +124,8 @@ public final class Services {
         this.noClipService = new NoClipService(plugin);
         this.worldService = new WorldServiceImpl(plugin, this);
         this.backupService = new BackupServiceImpl(plugin, config(), messages(), world(), this::spawn);
+        this.worldDownloadService =
+                new WorldDownloadService(config(), taskScheduler, plugin.getLogger(), plugin.getDataFolder());
         this.settingsService = new SettingsService(plugin, config(), messages(), player(), world());
         this.spawnService = new SpawnService(plugin, world(), taskScheduler);
         this.menuItems = new MenuItems(plugin, messages(), settings());
@@ -192,6 +196,10 @@ public final class Services {
 
     public BackupServiceImpl backup() {
         return checkNotNull(backupService, "BackupServiceImpl");
+    }
+
+    public WorldDownloadService worldDownload() {
+        return checkNotNull(worldDownloadService, "WorldDownloadService");
     }
 
     public CustomizableIcons customizableIcons() {

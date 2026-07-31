@@ -65,7 +65,8 @@ public record PluginConfig(Settings settings, World world, Folder folder) {
             Limits limits,
             Defaults defaults,
             Unload unload,
-            Backup backup) {
+            Backup backup,
+            Download download) {
 
         public World {
             deletionBlacklist = Set.copyOf(deletionBlacklist);
@@ -180,6 +181,17 @@ public record PluginConfig(Settings settings, World world, Folder folder) {
 
             public record AutoBackup(boolean enabled, boolean onlyActiveWorlds, int interval) {}
         }
+
+        /**
+         * The built-in HTTP server behind {@code /worlds download}, disabled by default: enabling it opens a port and
+         * hands out world archives, so it stays an explicit decision by the operator.
+         *
+         * @param enabled Whether the download server runs at all
+         * @param port The port the server listens on
+         * @param url The base URL players are sent, for servers reached through a proxy or a domain
+         * @param expirationMinutes How long a download link stays valid before the archive is deleted
+         */
+        public record Download(boolean enabled, int port, String url, int expirationMinutes) {}
     }
 
     public record Folder(boolean overridePermissions, boolean overrideProjects) {}

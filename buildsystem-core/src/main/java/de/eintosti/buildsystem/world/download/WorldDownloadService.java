@@ -65,7 +65,6 @@ public final class WorldDownloadService {
     private static final int TOKEN_BYTES = 32;
     private static final int HTTP_THREADS = 2;
     private static final long PURGE_INTERVAL_TICKS = Duration.ofMinutes(1).toSeconds() * 20L;
-    private static final long SHUTDOWN_GRACE_SECONDS = 5L;
 
     private final ConfigService configService;
     private final TaskScheduler scheduler;
@@ -181,7 +180,8 @@ public final class WorldDownloadService {
         String worldName = buildWorld.getName();
         String token = generateToken();
         Path archive = new File(downloadFolder, token + ".zip").toPath();
-        long expiresAt = System.currentTimeMillis() + Duration.ofMinutes(getExpirationMinutes()).toMillis();
+        long expiresAt = System.currentTimeMillis()
+                + Duration.ofMinutes(getExpirationMinutes()).toMillis();
 
         return CompletableFuture.supplyAsync(
                 () -> {

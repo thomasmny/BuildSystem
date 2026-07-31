@@ -29,6 +29,7 @@ public enum WorldsArgument implements Argument {
     BACKUP("backup", Permissions.BACKUP),
     BUILDERS("builders", Permissions.BUILDERS),
     DELETE("delete", Permissions.DELETE),
+    DOWNLOAD("download", Permissions.DOWNLOAD),
     EDIT("edit", Permissions.EDIT),
     FOLDER("folder", Permissions.FOLDER),
     HELP("help", Permissions.HELP_WORLDS),

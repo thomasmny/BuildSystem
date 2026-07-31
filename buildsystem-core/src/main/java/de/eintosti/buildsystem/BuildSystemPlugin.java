@@ -89,6 +89,8 @@ public class BuildSystemPlugin extends JavaPlugin {
             services.settings().displayScoreboard(pl);
         });
 
+        services.worldDownload().start();
+
         new BuildSystemMetrics(this, services.config(), services.player()).register();
 
         this.configSaveTask = Bukkit.getScheduler()
@@ -114,6 +116,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         });
         services.navigatorEditor().restoreAll();
 
+        services.worldDownload().stop();
         services.backup().close();
         services.world().cancelAllUnloadTasks();
 
@@ -218,6 +221,7 @@ public class BuildSystemPlugin extends JavaPlugin {
         services.config().load();
         if (isEnabled()) {
             services.backup().reload();
+            services.worldDownload().reload();
         }
 
         if (init) {

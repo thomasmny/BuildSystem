@@ -249,6 +249,10 @@ bukkit {
             description = "Permission for creating world types."
             default = BukkitPluginDescription.Permission.Default.TRUE
         }
+        register("buildsystem.download") {
+            description = "Download a world as a single-player save."
+            default = BukkitPluginDescription.Permission.Default.OP
+        }
         register("buildsystem.create.category") {
             description =
                 "Create a world in a navigator category. Category ids are dynamic; grant buildsystem.create.category.<id> to allow a specific category."
