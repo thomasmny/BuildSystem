@@ -212,7 +212,8 @@ worlds_download_progress: "&8[%bar%&8] &f%percent%% &7Packing &b%world% &7%spinn
 worlds_download_failed: "%prefix% &cUnable to prepare %world% for download. See the console for details."
 worlds_download_too_large: "%prefix% &c%world% is too large to download."
 worlds_download_storage_full: "%prefix% &cToo many downloads are pending. Try again once one expires."
-worlds_download_finished: "%prefix% &7&b%world% &7is ready: &a&nClick here to download&7. &8(&7Expires in &f%minutes% minutes&8)"
+worlds_download_finished: "%prefix% &b%world% &7is ready: %button%&7. &8(&7Expires in &f%minutes% minutes&8)"
+worlds_download_button: "&a&nClick here to download"
 
 worlds_edit_usage: "%prefix% &7Usage: &b/worlds edit <world>"
 worlds_edit_unknown_world: "%prefix% &cUnknown world."

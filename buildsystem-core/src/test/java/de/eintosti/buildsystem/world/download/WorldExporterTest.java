@@ -67,7 +67,8 @@ class WorldExporterTest {
 
         File level = levelFolder("MainLevel");
         Path archive = tempDir.resolve("out.zip");
-        WorldExporter.export("lobby", dimension.toFile(), level, archive, MAX_BYTES, WorldExporter.ExportProgress.IGNORED);
+        WorldExporter.export(
+                "lobby", dimension.toFile(), level, archive, MAX_BYTES, WorldExporter.ExportProgress.IGNORED);
 
         Map<String, byte[]> entries = read(archive);
         assertEquals("region-data", new String(entries.get("lobby/dimensions/minecraft/overworld/region/r.0.0.mca")));
@@ -89,7 +90,13 @@ class WorldExporterTest {
         Files.writeString(world.resolve("dimensions/minecraft/the_nether/marker"), "own nether");
 
         Path archive = tempDir.resolve("legacy.zip");
-        WorldExporter.export("legacy", world.toFile(), levelFolder("MainLevel"), archive, MAX_BYTES, WorldExporter.ExportProgress.IGNORED);
+        WorldExporter.export(
+                "legacy",
+                world.toFile(),
+                levelFolder("MainLevel"),
+                archive,
+                MAX_BYTES,
+                WorldExporter.ExportProgress.IGNORED);
 
         Map<String, byte[]> entries = read(archive);
         assertTrue(entries.containsKey("legacy/region/r.0.0.mca"));
@@ -110,7 +117,13 @@ class WorldExporterTest {
         Files.writeString(dimension.resolve("region/r.0.0.mca"), "region-data");
 
         Path archive = tempDir.resolve("reported-dimension.zip");
-        WorldExporter.export("lobby", dimension.toFile(), overworld.toFile(), archive, MAX_BYTES, WorldExporter.ExportProgress.IGNORED);
+        WorldExporter.export(
+                "lobby",
+                dimension.toFile(),
+                overworld.toFile(),
+                archive,
+                MAX_BYTES,
+                WorldExporter.ExportProgress.IGNORED);
 
         assertEquals("lobby", levelName(read(archive).get("lobby/level.dat")));
     }

@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -57,6 +58,11 @@ public class DownloadSubCommand extends AbstractSubCommand {
      * action bar itself fades after about three seconds, so it must be refreshed well inside that.
      */
     private static final long ANIMATION_PERIOD_TICKS = 5L;
+
+    /**
+     * Where the clickable button goes in the finished message, quoted because {@link String#split} takes a regex.
+     */
+    private static final String BUTTON_PLACEHOLDER = Pattern.quote("%button%");
 
     private final WorldDownloadService downloadService;
     private final TaskScheduler scheduler;
@@ -193,19 +199,31 @@ public class DownloadSubCommand extends AbstractSubCommand {
         }
     }
 
+    /**
+     * Sends the finished message with only its {@code %button%} segment carrying the link, so the rest of the line
+     * cannot be clicked by accident. A message customized without the placeholder still gets the button, appended.
+     */
     private void sendLink(Player player, BuildWorld buildWorld, String url) {
-        String message = messages.getString(
-                "worlds_download_finished",
-                player,
-                Placeholders.of()
-                        .add("%world%", buildWorld.getName())
-                        .add("%minutes%", downloadService.getExpirationMinutes())
-                        .build());
+        Placeholders placeholders = Placeholders.of()
+                .add("%world%", buildWorld.getName())
+                .add("%minutes%", downloadService.getExpirationMinutes())
+                .build();
+        String[] parts = messages.getString("worlds_download_finished", player, placeholders)
+                .split(BUTTON_PLACEHOLDER, 2);
 
-        TextComponent component = new TextComponent(TextComponent.fromLegacyText(message));
-        component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
-        component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(url)));
-        player.spigot().sendMessage(component);
+        TextComponent button = new TextComponent(
+                TextComponent.fromLegacyText(messages.getString("worlds_download_button", player, placeholders)));
+        button.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
+        button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(url)));
+
+        TextComponent message = new TextComponent();
+        message.addExtra(new TextComponent(TextComponent.fromLegacyText(parts[0])));
+        message.addExtra(button);
+        if (parts.length > 1) {
+            message.addExtra(new TextComponent(TextComponent.fromLegacyText(parts[1])));
+        }
+
+        player.spigot().sendMessage(message);
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
     }
 
