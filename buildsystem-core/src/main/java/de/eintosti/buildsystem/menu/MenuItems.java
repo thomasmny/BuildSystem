@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.menu;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
+import com.cryptomorin.xseries.profiles.exceptions.ProfileException;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
@@ -28,6 +29,7 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
 import java.util.stream.IntStream;
 import org.bukkit.Bukkit;
@@ -152,10 +154,26 @@ public final class MenuItems {
                     Bukkit.getScheduler().runTask(plugin, () -> inventory.setItem(slot, itemStack));
                 })
                 .exceptionally(throwable -> {
-                    plugin.getLogger()
-                            .log(Level.WARNING, "Failed to resolve head profile for menu item: " + name, throwable);
+                    logProfileFailure(name, throwable);
                     return null;
                 });
+    }
+
+    /**
+     * A head that Mojang does not know — an offline-mode UUID, a renamed account, a world name that is not a player —
+     * is routine: the slot keeps its plain placeholder head. Only unexpected failures (network, reflection) warrant a
+     * warning with a stack trace.
+     */
+    private void logProfileFailure(String name, Throwable throwable) {
+        Throwable cause = throwable instanceof CompletionException && throwable.getCause() != null
+                ? throwable.getCause()
+                : throwable;
+        if (cause instanceof ProfileException || cause.getCause() instanceof ProfileException) {
+            plugin.getLogger()
+                    .log(Level.FINE, () -> "No head profile for menu item " + name + ": " + cause.getMessage());
+            return;
+        }
+        plugin.getLogger().log(Level.WARNING, "Failed to resolve head profile for menu item: " + name, throwable);
     }
 
     /**
