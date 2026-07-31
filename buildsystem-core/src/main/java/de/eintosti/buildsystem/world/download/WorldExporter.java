@@ -60,6 +60,12 @@ public final class WorldExporter {
             Set.of("session.lock", "uid.dat", "paper-world.yml", "level.dat_old", ".DS_Store");
 
     private static final Set<String> VANILLA_DIMENSIONS = Set.of("overworld", "the_nether", "the_end");
+
+    /**
+     * How far below the level root a dimension folder sits: {@code dimensions/minecraft/<name>}.
+     */
+    private static final int DIMENSION_FOLDER_DEPTH = 3;
+
     private static final Pattern UNSAFE_NAME_CHARACTERS = Pattern.compile("[^A-Za-z0-9._-]");
 
     /**
@@ -184,9 +190,9 @@ public final class WorldExporter {
      * not all show up under the server's level name, and stripped of the tags that only describe this server.
      */
     private static byte[] levelDat(Path levelFolder, String worldName) throws IOException {
-        Path levelDat = levelFolder.resolve("level.dat");
-        if (!Files.isRegularFile(levelDat)) {
-            throw new IOException("No level.dat to export: " + levelDat);
+        Path levelDat = findLevelDat(levelFolder);
+        if (levelDat == null) {
+            throw new IOException("No level.dat to export at or above: " + levelFolder);
         }
 
         Nbt nbt = new Nbt();
@@ -206,6 +212,29 @@ public final class WorldExporter {
             nbt.toStream(root, out);
         }
         return bytes.toByteArray();
+    }
+
+    /**
+     * Finds the {@code level.dat} for a folder, searching upwards.
+     *
+     * <p>Paper reports a world's folder inconsistently across setups: for the main level it may be the level root or
+     * the overworld's dimension folder ({@code <level>/dimensions/minecraft/overworld}). Both lead to the same
+     * {@code level.dat}, one directly and one three levels up, so the search walks far enough to cover the deeper
+     * shape and no further.
+     *
+     * @param folder The folder to start at
+     * @return The level.dat, or {@code null} if there is none within reach
+     */
+    private static @Nullable Path findLevelDat(Path folder) {
+        Path candidate = folder;
+        for (int depth = 0; depth <= DIMENSION_FOLDER_DEPTH && candidate != null; depth++) {
+            Path levelDat = candidate.resolve("level.dat");
+            if (Files.isRegularFile(levelDat)) {
+                return levelDat;
+            }
+            candidate = candidate.getParent();
+        }
+        return null;
     }
 
     /**

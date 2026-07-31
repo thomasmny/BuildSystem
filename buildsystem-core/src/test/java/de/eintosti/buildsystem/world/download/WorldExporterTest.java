@@ -93,6 +93,24 @@ class WorldExporterTest {
         assertFalse(entries.containsKey("legacy/dimensions/minecraft/other/marker"));
     }
 
+    @Test
+    void findsTheLevelDatWhenPaperReportsTheOverworldDimensionFolder() throws IOException {
+        Path level = tempDir.resolve("level-Main");
+        Files.createDirectories(level);
+        Files.write(level.resolve("level.dat"), gzip(levelDat("Main")));
+        Path overworld = level.resolve("dimensions/minecraft/overworld");
+        Files.createDirectories(overworld);
+
+        Path dimension = level.resolve("dimensions/minecraft/lobby");
+        Files.createDirectories(dimension.resolve("region"));
+        Files.writeString(dimension.resolve("region/r.0.0.mca"), "region-data");
+
+        Path archive = tempDir.resolve("reported-dimension.zip");
+        WorldExporter.export("lobby", dimension.toFile(), overworld.toFile(), archive, MAX_BYTES);
+
+        assertEquals("lobby", levelName(read(archive).get("lobby/level.dat")));
+    }
+
     private File levelFolder(String levelName) throws IOException {
         Path level = tempDir.resolve("level-" + levelName);
         Files.createDirectories(level);
