@@ -120,6 +120,10 @@ world:
     # a proxy or a domain, e.g. "https://downloads.example.com"
     url: "http://localhost:8080"
     expiration-minutes: 30
+    # Largest single export, and the budget shared by all live downloads.
+    max-size-mb: 2048
+    max-storage-mb: 8192
+    max-concurrent-downloads: 3
 
 folder:
   override-permissions: true

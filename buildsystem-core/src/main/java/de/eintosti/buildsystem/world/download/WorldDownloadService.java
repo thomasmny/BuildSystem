@@ -31,15 +31,13 @@ import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.SecureRandom;
 import java.time.Duration;
-import java.util.HexFormat;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -55,15 +53,16 @@ import org.jspecify.annotations.Nullable;
  *
  * <p>Off by default. When enabled, an archive is only ever reachable through the unguessable, expiring token it was
  * registered under: the token is the whole URL path, so no request can name a file, and nothing outside the plugin's
- * {@code downloads} directory is served. Archives and their tokens are dropped together — on expiry, on reload and on
- * shutdown — so an export never outlives its link.
+ * {@code downloads} directory is served. A link is pinned to the first client that uses it, requests are rate limited
+ * per address, and concurrent transfers are capped so downloads cannot crowd each other out. Archives are deleted
+ * together with their token — on expiry, on reload and on shutdown.
  */
 @NullMarked
 public final class WorldDownloadService {
 
     private static final String CONTEXT_PATH = "/download/";
-    private static final int TOKEN_BYTES = 32;
-    private static final int HTTP_THREADS = 2;
+    private static final int MAX_REQUESTS_PER_WINDOW = 30;
+    private static final long RATE_LIMIT_WINDOW_MILLIS = Duration.ofMinutes(1).toMillis();
     private static final long PURGE_INTERVAL_TICKS = Duration.ofMinutes(1).toSeconds() * 20L;
 
     private final ConfigService configService;
@@ -71,11 +70,13 @@ public final class WorldDownloadService {
     private final Logger logger;
     private final File downloadFolder;
 
-    private final SecureRandom random = new SecureRandom();
-    private final Map<String, Download> downloads = new ConcurrentHashMap<>();
+    private final DownloadRegistry registry = new DownloadRegistry();
+    private final RequestRateLimiter rateLimiter =
+            new RequestRateLimiter(MAX_REQUESTS_PER_WINDOW, RATE_LIMIT_WINDOW_MILLIS);
 
     private @Nullable HttpServer server;
     private @Nullable ExecutorService httpExecutor;
+    private @Nullable Semaphore transferSlots;
     private @Nullable BukkitTask purgeTask;
 
     public WorldDownloadService(ConfigService configService, TaskScheduler scheduler, Logger logger, File dataFolder) {
@@ -101,7 +102,8 @@ public final class WorldDownloadService {
             return;
         }
 
-        ExecutorService executor = Executors.newFixedThreadPool(HTTP_THREADS, threadFactory());
+        int concurrentDownloads = Math.max(1, config.maxConcurrentDownloads());
+        ExecutorService executor = Executors.newFixedThreadPool(concurrentDownloads + 1, threadFactory());
         try {
             HttpServer httpServer = HttpServer.create(new InetSocketAddress(config.port()), 0);
             httpServer.createContext(CONTEXT_PATH, this::handle);
@@ -109,14 +111,16 @@ public final class WorldDownloadService {
             httpServer.start();
             this.server = httpServer;
             this.httpExecutor = executor;
+            this.transferSlots = new Semaphore(concurrentDownloads);
         } catch (IOException e) {
             executor.shutdownNow();
             logger.log(Level.SEVERE, "Failed to start the world download server on port " + config.port(), e);
             return;
         }
 
-        this.purgeTask = scheduler.runTimer(this::purgeExpired, PURGE_INTERVAL_TICKS, PURGE_INTERVAL_TICKS);
+        this.purgeTask = scheduler.runTimer(this::purge, PURGE_INTERVAL_TICKS, PURGE_INTERVAL_TICKS);
         logger.info("World downloads are available on port " + config.port());
+        warnAboutPlaintext(config);
     }
 
     /**
@@ -135,7 +139,9 @@ public final class WorldDownloadService {
             httpExecutor.shutdownNow();
             httpExecutor = null;
         }
-        downloads.clear();
+        transferSlots = null;
+        registry.clear();
+        rateLimiter.clear();
         clearDownloadFolder();
     }
 
@@ -170,6 +176,12 @@ public final class WorldDownloadService {
             return CompletableFuture.failedFuture(new IllegalStateException("World downloads are disabled"));
         }
 
+        PluginConfig.World.Download config = config();
+        long storageBudget = megabytes(config.maxStorageMb());
+        if (registry.totalBytes() >= storageBudget) {
+            return CompletableFuture.failedFuture(new StorageFullException());
+        }
+
         File worldFolder = FileUtils.worldFolder(buildWorld.getName());
         List<World> worlds = Bukkit.getWorlds();
         if (worlds.isEmpty()) {
@@ -178,37 +190,71 @@ public final class WorldDownloadService {
         File defaultLevelFolder = worlds.getFirst().getWorldFolder();
 
         String worldName = buildWorld.getName();
-        String token = generateToken();
-        Path archive = new File(downloadFolder, token + ".zip").toPath();
+        long maxArchiveBytes = Math.min(megabytes(config.maxSizeMb()), storageBudget - registry.totalBytes());
         long expiresAt = System.currentTimeMillis()
-                + Duration.ofMinutes(getExpirationMinutes()).toMillis();
+                + Duration.ofMinutes(config.expirationMinutes()).toMillis();
+        Path archive = new File(downloadFolder, worldName.hashCode() + "-" + System.nanoTime() + ".zip").toPath();
 
         return CompletableFuture.supplyAsync(
                 () -> {
                     try {
-                        WorldExporter.export(worldName, worldFolder, defaultLevelFolder, archive);
+                        WorldExporter.export(worldName, worldFolder, defaultLevelFolder, archive, maxArchiveBytes);
                     } catch (IOException e) {
                         throw new UncheckedIOException(e);
                     }
-                    downloads.put(token, new Download(archive, WorldExporter.fileName(worldName) + ".zip", expiresAt));
+                    String token = registry.register(archive, WorldExporter.fileName(worldName) + ".zip", expiresAt);
                     return url(token);
                 },
                 scheduler.background());
     }
 
+    /**
+     * Warns when links leave the server unencrypted. A token in a plaintext URL is readable by anything on the path,
+     * so the only safe plain-HTTP setup is one that terminates TLS in front of this server.
+     */
+    private void warnAboutPlaintext(PluginConfig.World.Download config) {
+        if (config.url().toLowerCase(Locale.ROOT).startsWith("https://")) {
+            return;
+        }
+        logger.warning("World downloads are served over plain HTTP. Anyone able to observe the traffic can reuse a "
+                + "download link. Put the port behind a TLS proxy and point world.download.url at it.");
+    }
+
     private void handle(HttpExchange exchange) throws IOException {
+        String clientAddress = clientAddress(exchange);
         try (exchange) {
+            if (!rateLimiter.allow(clientAddress)) {
+                respondEmpty(exchange, 429);
+                return;
+            }
+
             if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
                 respondEmpty(exchange, 405);
                 return;
             }
 
-            Download download = downloads.get(token(exchange));
-            if (download == null || download.isExpired() || !Files.isRegularFile(download.file())) {
+            DownloadRegistry.Download download = registry.claim(token(exchange), clientAddress);
+            if (download == null || !Files.isRegularFile(download.file())) {
                 respondEmpty(exchange, 404);
                 return;
             }
 
+            transfer(exchange, download);
+        } catch (IOException e) {
+            // A client that disconnects mid-download is routine and must not spam the console.
+            logger.log(Level.FINE, "World download aborted", e);
+        }
+    }
+
+    private void transfer(HttpExchange exchange, DownloadRegistry.Download download) throws IOException {
+        Semaphore slots = transferSlots;
+        if (slots == null || !slots.tryAcquire()) {
+            exchange.getResponseHeaders().set("Retry-After", "30");
+            respondEmpty(exchange, 503);
+            return;
+        }
+
+        try {
             exchange.getResponseHeaders().set("Content-Type", "application/zip");
             exchange.getResponseHeaders()
                     .set("Content-Disposition", "attachment; filename=\"" + download.fileName() + "\"");
@@ -219,9 +265,8 @@ public final class WorldDownloadService {
             try (OutputStream out = exchange.getResponseBody()) {
                 Files.copy(download.file(), out);
             }
-        } catch (IOException e) {
-            // A client that disconnects mid-download is routine and must not spam the console.
-            logger.log(Level.FINE, "World download aborted", e);
+        } finally {
+            slots.release();
         }
     }
 
@@ -234,14 +279,13 @@ public final class WorldDownloadService {
         return path.length() > CONTEXT_PATH.length() ? path.substring(CONTEXT_PATH.length()) : "";
     }
 
-    private void purgeExpired() {
-        downloads.values().removeIf(download -> {
-            if (!download.isExpired()) {
-                return false;
-            }
-            delete(download.file());
-            return true;
-        });
+    private static String clientAddress(HttpExchange exchange) {
+        return exchange.getRemoteAddress().getAddress().getHostAddress();
+    }
+
+    private void purge() {
+        registry.purgeExpired(this::delete);
+        rateLimiter.purgeStale();
     }
 
     private String url(String token) {
@@ -250,10 +294,8 @@ public final class WorldDownloadService {
         return trimmed + CONTEXT_PATH + token;
     }
 
-    private String generateToken() {
-        byte[] bytes = new byte[TOKEN_BYTES];
-        random.nextBytes(bytes);
-        return HexFormat.of().formatHex(bytes);
+    private static long megabytes(int megabytes) {
+        return megabytes * 1024L * 1024L;
     }
 
     private PluginConfig.World.Download config() {
@@ -292,10 +334,13 @@ public final class WorldDownloadService {
         };
     }
 
-    private record Download(Path file, String fileName, long expiresAt) {
+    /**
+     * Thrown when the live archives already fill the configured storage budget.
+     */
+    public static final class StorageFullException extends IOException {
 
-        boolean isExpired() {
-            return System.currentTimeMillis() > expiresAt;
+        StorageFullException() {
+            super("The world download storage budget is exhausted");
         }
     }
 }

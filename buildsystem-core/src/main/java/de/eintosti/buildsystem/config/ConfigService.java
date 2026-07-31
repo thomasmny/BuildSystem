@@ -203,7 +203,10 @@ public class ConfigService {
                 config.getBoolean("world.download.enabled", false),
                 downloadPort,
                 Objects.requireNonNullElse(config.getString("world.download.url"), "http://localhost:" + downloadPort),
-                Math.max(1, config.getInt("world.download.expiration-minutes", 30)));
+                Math.max(1, config.getInt("world.download.expiration-minutes", 30)),
+                Math.max(1, config.getInt("world.download.max-size-mb", 2048)),
+                Math.max(1, config.getInt("world.download.max-storage-mb", 8192)),
+                Math.max(1, config.getInt("world.download.max-concurrent-downloads", 3)));
 
         Set<String> deletionBlacklist = config.getStringList("world.deletion-blacklist").stream()
                 .map(name -> name.toLowerCase(Locale.ROOT))

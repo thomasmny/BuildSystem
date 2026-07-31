@@ -46,6 +46,8 @@ import org.junit.jupiter.api.io.TempDir;
 @NullMarked
 class WorldExporterTest {
 
+    private static final long MAX_BYTES = 64L * 1024 * 1024;
+
     @TempDir
     Path tempDir;
 
@@ -61,7 +63,7 @@ class WorldExporterTest {
 
         File level = levelFolder("MainLevel");
         Path archive = tempDir.resolve("out.zip");
-        WorldExporter.export("lobby", dimension.toFile(), level, archive);
+        WorldExporter.export("lobby", dimension.toFile(), level, archive, MAX_BYTES);
 
         Map<String, byte[]> entries = read(archive);
         assertEquals("region-data", new String(entries.get("lobby/dimensions/minecraft/overworld/region/r.0.0.mca")));
@@ -83,7 +85,7 @@ class WorldExporterTest {
         Files.writeString(world.resolve("dimensions/minecraft/the_nether/marker"), "own nether");
 
         Path archive = tempDir.resolve("legacy.zip");
-        WorldExporter.export("legacy", world.toFile(), levelFolder("MainLevel"), archive);
+        WorldExporter.export("legacy", world.toFile(), levelFolder("MainLevel"), archive, MAX_BYTES);
 
         Map<String, byte[]> entries = read(archive);
         assertTrue(entries.containsKey("legacy/region/r.0.0.mca"));

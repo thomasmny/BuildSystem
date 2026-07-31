@@ -191,7 +191,14 @@ public record PluginConfig(Settings settings, World world, Folder folder) {
          * @param url The base URL players are sent, for servers reached through a proxy or a domain
          * @param expirationMinutes How long a download link stays valid before the archive is deleted
          */
-        public record Download(boolean enabled, int port, String url, int expirationMinutes) {}
+        public record Download(
+                boolean enabled,
+                int port,
+                String url,
+                int expirationMinutes,
+                int maxSizeMb,
+                int maxStorageMb,
+                int maxConcurrentDownloads) {}
     }
 
     public record Folder(boolean overridePermissions, boolean overrideProjects) {}

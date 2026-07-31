@@ -27,9 +27,12 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.download.WorldDownloadService;
+import de.eintosti.buildsystem.world.download.WorldExporter;
+import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -94,8 +97,7 @@ public class DownloadSubCommand extends AbstractSubCommand {
                         (url, throwable) -> {
                             preparing.remove(playerId);
                             if (throwable != null) {
-                                logger.log(Level.SEVERE, "Failed to export world " + buildWorld.getName(), throwable);
-                                messages.sendMessage(player, "worlds_download_failed", worldPlaceholder);
+                                sendFailure(player, buildWorld, worldPlaceholder, throwable);
                                 return;
                             }
                             if (player.isOnline()) {
@@ -103,6 +105,30 @@ public class DownloadSubCommand extends AbstractSubCommand {
                             }
                         },
                         scheduler.mainThread());
+    }
+
+    /**
+     * Reports the failure in the player's terms. A world that outgrows its limit or a full storage budget is an
+     * operator-tunable condition rather than a bug, so neither is logged as one.
+     */
+    private void sendFailure(Player player, BuildWorld buildWorld, Placeholders worldPlaceholder, Throwable throwable) {
+        Throwable cause = throwable instanceof CompletionException && throwable.getCause() != null
+                ? throwable.getCause()
+                : throwable;
+        if (cause instanceof UncheckedIOException uncheckedIoException) {
+            cause = uncheckedIoException.getCause();
+        }
+
+        switch (cause) {
+            case WorldExporter.WorldTooLargeException ignored ->
+                messages.sendMessage(player, "worlds_download_too_large", worldPlaceholder);
+            case WorldDownloadService.StorageFullException ignored ->
+                messages.sendMessage(player, "worlds_download_storage_full", worldPlaceholder);
+            default -> {
+                logger.log(Level.SEVERE, "Failed to export world " + buildWorld.getName(), throwable);
+                messages.sendMessage(player, "worlds_download_failed", worldPlaceholder);
+            }
+        }
     }
 
     private void sendLink(Player player, BuildWorld buildWorld, String url) {
