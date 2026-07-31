@@ -198,6 +198,16 @@ public class ConfigService {
                 StorageSettingsFactory.fromConfig(config, logger),
                 autoBackup);
 
+        int downloadPort = config.getInt("world.download.port", 8080);
+        PluginConfig.World.Download download = new PluginConfig.World.Download(
+                config.getBoolean("world.download.enabled", false),
+                downloadPort,
+                Objects.requireNonNullElse(config.getString("world.download.url"), "http://localhost:" + downloadPort),
+                Math.max(1, config.getInt("world.download.expiration-minutes", 30)),
+                Math.max(1, config.getInt("world.download.max-size-mb", 2048)),
+                Math.max(1, config.getInt("world.download.max-storage-mb", 8192)),
+                Math.max(1, config.getInt("world.download.max-concurrent-downloads", 3)));
+
         Set<String> deletionBlacklist = config.getStringList("world.deletion-blacklist").stream()
                 .map(name -> name.toLowerCase(Locale.ROOT))
                 .collect(Collectors.toSet());
@@ -213,7 +223,8 @@ public class ConfigService {
                 limits,
                 defaults,
                 unload,
-                backup);
+                backup,
+                download);
     }
 
     private static PluginConfig.World.VoidBlock parseVoidBlock(FileConfiguration config, Logger logger) {

@@ -17,9 +17,10 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
+import com.cryptomorin.xseries.profiles.exceptions.ProfileException;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -29,7 +30,9 @@ import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class SetItemSubCommand extends AbstractSubCommand {
@@ -51,8 +54,24 @@ public class SetItemSubCommand extends AbstractSubCommand {
             return;
         }
 
-        buildWorld.getData().set(WorldDataKey.MATERIAL, itemStack.getType());
+        buildWorld.setIcon(itemStack.getType());
+        if (itemStack.getItemMeta() instanceof SkullMeta) {
+            buildWorld.setIconSkullTexture(skullTexture(itemStack));
+        }
         messages.sendMessage(player, "worlds_setitem_set", Placeholders.of("%world%", buildWorld.getName()));
+    }
+
+    /**
+     * Reads the texture off a held head, or {@code null} for a blank one (and for a head whose profile cannot be
+     * resolved without a Mojang lookup, which must not happen on the main thread).
+     */
+    private @Nullable String skullTexture(ItemStack itemStack) {
+        try {
+            Profileable profileable = Profileable.of(itemStack);
+            return profileable.isReady() ? profileable.getProfileValue() : null;
+        } catch (ProfileException e) {
+            return null;
+        }
     }
 
     @Override

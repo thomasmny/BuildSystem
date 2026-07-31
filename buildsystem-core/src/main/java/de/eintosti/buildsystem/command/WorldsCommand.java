@@ -33,6 +33,7 @@ import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
+import de.eintosti.buildsystem.world.download.WorldDownloadService;
 import java.io.File;
 import java.util.List;
 import java.util.logging.Logger;
@@ -61,6 +62,7 @@ public class WorldsCommand extends CommandBase {
         PlayerLookupService playerLookupService = services.playerLookup();
         NavigatorCategoryRegistryImpl navigatorCategoryRegistry = services.navigatorCategoryRegistry();
         BackupServiceImpl backupService = services.backup();
+        WorldDownloadService downloadService = services.worldDownload();
         Logger logger = plugin.getLogger();
         File dataFolder = plugin.getDataFolder();
         TaskScheduler scheduler = services.scheduler();
@@ -73,6 +75,7 @@ public class WorldsCommand extends CommandBase {
                         new BackupsSubCommand(messages, worldService, backupService, menus),
                         new BuildersSubCommand(messages, worldService, menus),
                         new DeleteSubCommand(messages, worldService, configService, menus),
+                        new DownloadSubCommand(messages, worldService, downloadService, scheduler, logger),
                         new EditSubCommand(messages, worldService, menus),
                         new FolderSubCommand(messages, worldService, navigatorCategoryRegistry, prompts),
                         new HelpSubCommand(messages, logger),

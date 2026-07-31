@@ -33,6 +33,7 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
+import de.eintosti.buildsystem.util.WorldFlush;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.File;
@@ -106,12 +107,13 @@ public class BackupProfileImpl implements BackupProfile {
     public CompletableFuture<Backup> createBackup() {
         synchronized (this.creationLock) {
             // handle() before the compose: a failed backup must not poison every later backup of this world.
-            // World::save is main-thread-only and this is public API, so it must not run on the caller's thread.
+            // Saving is main-thread-only and this is public API, so it must not run on the caller's thread. The save
+            // also waits for the chunk writer: without that the archive can catch region files mid-write.
             CompletableFuture<Backup> next = this.pendingCreation
                     .handle((backup, throwable) -> null)
                     .thenComposeAsync(
                             ignored -> {
-                                this.buildWorld.getWorld().ifPresent(World::save);
+                                this.buildWorld.getWorld().ifPresent(WorldFlush::saveAndFlush);
                                 return storeWithRetention();
                             },
                             mainThreadExecutor());

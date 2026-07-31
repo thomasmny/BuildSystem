@@ -53,6 +53,7 @@ public final class Permissions {
     public static final String CREATE_FOLDER = "buildsystem.create.folder";
     public static final String DAY = "buildsystem.day";
     public static final String DELETE = "buildsystem.delete";
+    public static final String DOWNLOAD = "buildsystem.download";
     public static final String EDIT = "buildsystem.edit";
     public static final String EDIT_BREAKING = "buildsystem.edit.breaking";
     public static final String EDIT_BUILDERS = "buildsystem.edit.builders";
