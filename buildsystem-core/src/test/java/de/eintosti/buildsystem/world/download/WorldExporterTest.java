@@ -167,6 +167,13 @@ class WorldExporterTest {
                 ExportProgressBar.bar(0.5, 1),
                 "the sweep moves between frames at the same progress");
         assertNotEquals(ExportProgressBar.spinner(0), ExportProgressBar.spinner(1));
+        assertEquals(
+                3,
+                ExportProgressBar.percentText(0.07).length(),
+                "the percentage is padded so the centered line does not jump a digit's width");
+        assertEquals(
+                ExportProgressBar.percentText(0.07).length(),
+                ExportProgressBar.percentText(1).length());
     }
 
     private File levelFolder(String levelName) throws IOException {

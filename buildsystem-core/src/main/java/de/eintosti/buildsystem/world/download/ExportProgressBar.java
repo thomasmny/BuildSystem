@@ -37,10 +37,14 @@ public final class ExportProgressBar {
     private static final String EMPTY_COLOR = "&8";
 
     /**
-     * Frames of the spinner. Plain ASCII: the client's default font renders these everywhere, which is not true of the
-     * braille and circle glyphs usually used for spinners.
+     * Frames of the spinner. Plain ASCII, because the client's default font renders it everywhere, which is not true
+     * of the braille and circle glyphs usually used for spinners.
+     *
+     * <p>Every frame must be the same width. The default font is variable-width and the action bar is centered, so a
+     * narrower frame shifts the whole line sideways for as long as it shows: these three all advance six pixels, while
+     * the {@code |} that would complete the rotation advances two and made the message jitter.
      */
-    private static final char[] SPINNER = {'|', '/', '-', '\\'};
+    private static final char[] SPINNER = {'/', '-', '\\'};
 
     private ExportProgressBar() {}
 
@@ -72,6 +76,14 @@ public final class ExportProgressBar {
 
     public static int percent(double fraction) {
         return (int) Math.round(clamp(fraction) * 100);
+    }
+
+    /**
+     * {@return the percentage padded to a fixed three characters} Keeps the line from jumping as the number grows a
+     * digit. A space is narrower than a digit, so this shrinks the shift rather than removing it.
+     */
+    public static String percentText(double fraction) {
+        return "%3d".formatted(percent(fraction));
     }
 
     private static double clamp(double fraction) {

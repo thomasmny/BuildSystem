@@ -41,6 +41,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -157,7 +158,7 @@ public class DownloadSubCommand extends AbstractSubCommand {
                                     Placeholders.of()
                                             .add("%world%", buildWorld.getName())
                                             .add("%bar%", ExportProgressBar.bar(fraction, currentFrame))
-                                            .add("%percent%", ExportProgressBar.percent(fraction))
+                                            .add("%percent%", ExportProgressBar.percentText(fraction))
                                             .add("%spinner%", ExportProgressBar.spinner(currentFrame))
                                             .build()));
                 },
@@ -201,30 +202,41 @@ public class DownloadSubCommand extends AbstractSubCommand {
 
     /**
      * Sends the finished message with only its {@code %button%} segment carrying the link, so the rest of the line
-     * cannot be clicked by accident. A message customized without the placeholder still gets the button, appended.
+     * cannot be clicked by accident.
+     *
+     * <p>A messages.yml written before the button existed has no {@code %button%} in it — an upgrade keeps the old
+     * line, since only missing keys are filled in. Such a message becomes clickable as a whole, the way it used to be:
+     * appending a button instead would print the words twice.
      */
     private void sendLink(Player player, BuildWorld buildWorld, String url) {
         Placeholders placeholders = Placeholders.of()
                 .add("%world%", buildWorld.getName())
                 .add("%minutes%", downloadService.getExpirationMinutes())
                 .build();
-        String[] parts = messages.getString("worlds_download_finished", player, placeholders)
-                .split(BUTTON_PLACEHOLDER, 2);
+        String text = messages.getString("worlds_download_finished", player, placeholders);
 
-        TextComponent button = new TextComponent(
-                TextComponent.fromLegacyText(messages.getString("worlds_download_button", player, placeholders)));
-        button.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
-        button.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(url)));
+        String[] parts = text.split(BUTTON_PLACEHOLDER, 2);
+        if (parts.length == 1) {
+            player.spigot().sendMessage(linked(TextComponent.fromLegacyText(text), url));
+            XSound.ENTITY_PLAYER_LEVELUP.play(player);
+            return;
+        }
 
         TextComponent message = new TextComponent();
         message.addExtra(new TextComponent(TextComponent.fromLegacyText(parts[0])));
-        message.addExtra(button);
-        if (parts.length > 1) {
-            message.addExtra(new TextComponent(TextComponent.fromLegacyText(parts[1])));
-        }
+        message.addExtra(linked(
+                TextComponent.fromLegacyText(messages.getString("worlds_download_button", player, placeholders)), url));
+        message.addExtra(new TextComponent(TextComponent.fromLegacyText(parts[1])));
 
         player.spigot().sendMessage(message);
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
+    }
+
+    private static TextComponent linked(BaseComponent[] text, String url) {
+        TextComponent component = new TextComponent(text);
+        component.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
+        component.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(url)));
+        return component;
     }
 
     @Override
