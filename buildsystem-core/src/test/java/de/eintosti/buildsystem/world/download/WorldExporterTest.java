@@ -62,6 +62,8 @@ class WorldExporterTest {
         Files.writeString(dimension.resolve("region/r.0.0.mca"), "region-data");
         Files.createDirectories(dimension.resolve("data/minecraft"));
         Files.writeString(dimension.resolve("data/minecraft/world_gen_settings.dat"), "gen");
+        Files.writeString(dimension.resolve("data/minecraft/game_rules.dat"), "rules");
+        Files.writeString(dimension.resolve("data/minecraft/world_border.dat"), "border");
         Files.writeString(dimension.resolve("session.lock"), "lock");
         Files.writeString(dimension.resolve("paper-world.yml"), "paper: config");
 
@@ -72,7 +74,14 @@ class WorldExporterTest {
 
         Map<String, byte[]> entries = read(archive);
         assertEquals("region-data", new String(entries.get("lobby/dimensions/minecraft/overworld/region/r.0.0.mca")));
-        assertTrue(entries.containsKey("lobby/dimensions/minecraft/overworld/data/minecraft/world_gen_settings.dat"));
+        // The client reads generator settings and game rules from the save root; Paper keeps its per-world copies
+        // inside the dimension folder, and a save that leaves them there does not load.
+        assertTrue(entries.containsKey("lobby/data/minecraft/world_gen_settings.dat"));
+        assertTrue(entries.containsKey("lobby/data/minecraft/game_rules.dat"));
+        assertFalse(entries.containsKey("lobby/dimensions/minecraft/overworld/data/minecraft/world_gen_settings.dat"));
+        assertTrue(
+                entries.containsKey("lobby/dimensions/minecraft/overworld/data/minecraft/world_border.dat"),
+                "dimension-scoped data stays in the dimension");
         assertEquals("lobby", levelName(entries.get("lobby/level.dat")));
         assertFalse(entries.containsKey("lobby/dimensions/minecraft/overworld/session.lock"));
         assertFalse(entries.containsKey("lobby/dimensions/minecraft/overworld/paper-world.yml"));

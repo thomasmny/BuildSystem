@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
@@ -65,6 +66,17 @@ public final class WorldExporter {
      * How far below the level root a dimension folder sits: {@code dimensions/minecraft/<name>}.
      */
     private static final int DIMENSION_FOLDER_DEPTH = 3;
+
+    /**
+     * The only saved data a client reads from inside a dimension. Everything else a Paper dimension folder holds is
+     * level-scoped and belongs in the save's root {@code data/minecraft}: Paper keeps a per-world copy of those files
+     * because each Bukkit world is a level of its own, but a single-player save has one set for the whole world, and a
+     * client that finds no {@code world_gen_settings.dat} there cannot build the level at all.
+     */
+    private static final Set<String> DIMENSION_SCOPED_DATA =
+            Set.of("raids.dat", "world_border.dat", "chunk_tickets.dat");
+
+    private static final String MINECRAFT_DATA_PREFIX = "data" + File.separator + "minecraft" + File.separator;
 
     private static final Pattern UNSAFE_NAME_CHARACTERS = Pattern.compile("[^A-Za-z0-9._-]");
 
@@ -124,10 +136,10 @@ public final class WorldExporter {
                 // Already a level folder: the pre-26.1 flat layout, or a world that is itself the main level. Its own
                 // nether and end come along; dimensions belonging to other worlds do not.
                 writeEntry(zip, rootDirectory + "/level.dat", levelDat(source, worldName));
-                copyTree(zip, source, rootDirectory + "/", files, progress);
+                copyTree(zip, source, files, progress, relative -> rootDirectory + "/" + slashed(relative));
             } else {
                 writeEntry(zip, rootDirectory + "/level.dat", levelDat(defaultLevelFolder.toPath(), worldName));
-                copyTree(zip, source, rootDirectory + "/dimensions/minecraft/overworld/", files, progress);
+                copyTree(zip, source, files, progress, relative -> dimensionEntry(rootDirectory, relative));
             }
         } catch (IOException e) {
             Files.deleteIfExists(target);
@@ -159,19 +171,40 @@ public final class WorldExporter {
     }
 
     private static void copyTree(
-            ZipOutputStream zip, Path root, String prefix, List<Path> files, ExportProgress progress)
+            ZipOutputStream zip,
+            Path root,
+            List<Path> files,
+            ExportProgress progress,
+            Function<Path, String> entryNamer)
             throws IOException {
         long total = totalBytes(files);
         long packed = 0L;
         for (Path file : files) {
-            Path relative = root.relativize(file);
-            zip.putNextEntry(new ZipEntry(prefix + relative.toString().replace(File.separatorChar, '/')));
+            zip.putNextEntry(new ZipEntry(entryNamer.apply(root.relativize(file))));
             Files.copy(file, zip);
             zip.closeEntry();
 
             packed += sizeOf(file);
             progress.update(packed, total);
         }
+    }
+
+    /**
+     * Places a file from a Paper dimension folder in the save, splitting its {@code data/minecraft} contents by scope:
+     * the client reads generator settings, game rules and the like from the save root, and only a few files from
+     * inside the dimension itself.
+     */
+    private static String dimensionEntry(String rootDirectory, Path relative) {
+        String path = relative.toString();
+        if (path.startsWith(MINECRAFT_DATA_PREFIX)
+                && !DIMENSION_SCOPED_DATA.contains(relative.getFileName().toString())) {
+            return rootDirectory + "/data/minecraft/" + relative.getFileName();
+        }
+        return rootDirectory + "/dimensions/minecraft/overworld/" + slashed(relative);
+    }
+
+    private static String slashed(Path relative) {
+        return relative.toString().replace(File.separatorChar, '/');
     }
 
     /**
