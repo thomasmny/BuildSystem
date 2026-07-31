@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.util.WorldFlush;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.download.ExportProgressBar;
 import de.eintosti.buildsystem.world.download.WorldDownloadService;
@@ -46,7 +47,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.NullMarked;
@@ -107,7 +107,7 @@ public class DownloadSubCommand extends AbstractSubCommand {
 
         Placeholders worldPlaceholder = Placeholders.of("%world%", buildWorld.getName());
         messages.sendMessage(player, "worlds_download_preparing", worldPlaceholder);
-        buildWorld.getWorld().ifPresent(World::save);
+        buildWorld.getWorld().ifPresent(WorldFlush::saveAndFlush);
 
         AtomicLong packedBytes = new AtomicLong();
         AtomicLong totalBytes = new AtomicLong();
