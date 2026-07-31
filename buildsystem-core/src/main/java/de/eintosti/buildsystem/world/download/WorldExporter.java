@@ -95,10 +95,17 @@ public final class WorldExporter {
      * @param defaultLevelFolder The main level's folder, the source of the {@code level.dat} a dimension world lacks
      * @param target The archive to write
      * @param maxBytes The size the archive may not exceed
+     * @param progress Notified as the world is packed, for a caller showing the player how far along it is
      * @throws WorldTooLargeException If the archive would grow past {@code maxBytes}
      * @throws IOException If the world cannot be read or the archive cannot be written
      */
-    public static void export(String worldName, File worldFolder, File defaultLevelFolder, Path target, long maxBytes)
+    public static void export(
+            String worldName,
+            File worldFolder,
+            File defaultLevelFolder,
+            Path target,
+            long maxBytes,
+            ExportProgress progress)
             throws IOException {
         Path source = worldFolder.toPath();
         if (!Files.isDirectory(source)) {
@@ -107,22 +114,40 @@ public final class WorldExporter {
 
         String rootDirectory = fileName(worldName);
         Files.createDirectories(target.getParent());
+        boolean isLevelFolder = Files.isRegularFile(source.resolve("level.dat"));
+        List<Path> files = collectFiles(source, isLevelFolder);
+        progress.update(0L, totalBytes(files));
 
         try (CountingOutputStream counter = new CountingOutputStream(Files.newOutputStream(target), maxBytes);
                 ZipOutputStream zip = new ZipOutputStream(counter)) {
-            if (Files.isRegularFile(source.resolve("level.dat"))) {
+            if (isLevelFolder) {
                 // Already a level folder: the pre-26.1 flat layout, or a world that is itself the main level. Its own
                 // nether and end come along; dimensions belonging to other worlds do not.
                 writeEntry(zip, rootDirectory + "/level.dat", levelDat(source, worldName));
-                copyTree(zip, source, rootDirectory + "/", true);
+                copyTree(zip, source, rootDirectory + "/", files, progress);
             } else {
                 writeEntry(zip, rootDirectory + "/level.dat", levelDat(defaultLevelFolder.toPath(), worldName));
-                copyTree(zip, source, rootDirectory + "/dimensions/minecraft/overworld/", false);
+                copyTree(zip, source, rootDirectory + "/dimensions/minecraft/overworld/", files, progress);
             }
         } catch (IOException e) {
             Files.deleteIfExists(target);
             throw e;
         }
+    }
+
+    /**
+     * Reports how much of a world has been packed. Called from the export thread, once per file.
+     */
+    @FunctionalInterface
+    public interface ExportProgress {
+
+        ExportProgress IGNORED = (packedBytes, totalBytes) -> {};
+
+        /**
+         * @param packedBytes Bytes packed so far
+         * @param totalBytes Bytes the finished export will have read
+         */
+        void update(long packedBytes, long totalBytes);
     }
 
     /**
@@ -133,19 +158,42 @@ public final class WorldExporter {
         return sanitized.isBlank() ? "world" : sanitized;
     }
 
-    private static void copyTree(ZipOutputStream zip, Path root, String prefix, boolean isLevelFolder)
+    private static void copyTree(
+            ZipOutputStream zip, Path root, String prefix, List<Path> files, ExportProgress progress)
             throws IOException {
+        long total = totalBytes(files);
+        long packed = 0L;
+        for (Path file : files) {
+            Path relative = root.relativize(file);
+            zip.putNextEntry(new ZipEntry(prefix + relative.toString().replace(File.separatorChar, '/')));
+            Files.copy(file, zip);
+            zip.closeEntry();
+
+            packed += sizeOf(file);
+            progress.update(packed, total);
+        }
+    }
+
+    /**
+     * The files the export will write, resolved up front so its size is known before the first byte is packed.
+     */
+    private static List<Path> collectFiles(Path root, boolean isLevelFolder) throws IOException {
         try (Stream<Path> walk = Files.walk(root)) {
-            List<Path> files = walk.filter(Files::isRegularFile).toList();
-            for (Path file : files) {
-                Path relative = root.relativize(file);
-                if (isExcluded(relative, isLevelFolder)) {
-                    continue;
-                }
-                zip.putNextEntry(new ZipEntry(prefix + relative.toString().replace(File.separatorChar, '/')));
-                Files.copy(file, zip);
-                zip.closeEntry();
-            }
+            return walk.filter(Files::isRegularFile)
+                    .filter(file -> !isExcluded(root.relativize(file), isLevelFolder))
+                    .toList();
+        }
+    }
+
+    private static long totalBytes(List<Path> files) {
+        return files.stream().mapToLong(WorldExporter::sizeOf).sum();
+    }
+
+    private static long sizeOf(Path file) {
+        try {
+            return Files.size(file);
+        } catch (IOException e) {
+            return 0L;
         }
     }
 

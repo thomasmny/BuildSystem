@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.download.ExportProgressBar;
 import de.eintosti.buildsystem.world.download.WorldDownloadService;
 import de.eintosti.buildsystem.world.download.WorldExporter;
 import java.io.UncheckedIOException;
@@ -34,18 +35,28 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class DownloadSubCommand extends AbstractSubCommand {
+
+    /**
+     * How often the action bar is redrawn. Four frames a second reads as motion without spamming packets, and the
+     * action bar itself fades after about three seconds, so it must be refreshed well inside that.
+     */
+    private static final long ANIMATION_PERIOD_TICKS = 5L;
 
     private final WorldDownloadService downloadService;
     private final TaskScheduler scheduler;
@@ -91,11 +102,20 @@ public class DownloadSubCommand extends AbstractSubCommand {
         messages.sendMessage(player, "worlds_download_preparing", worldPlaceholder);
         buildWorld.getWorld().ifPresent(World::save);
 
+        AtomicLong packedBytes = new AtomicLong();
+        AtomicLong totalBytes = new AtomicLong();
+        BukkitTask animation = startProgressAnimation(player, buildWorld, packedBytes, totalBytes);
+
         downloadService
-                .prepare(buildWorld)
+                .prepare(buildWorld, (packed, total) -> {
+                    packedBytes.set(packed);
+                    totalBytes.set(total);
+                })
                 .whenCompleteAsync(
                         (url, throwable) -> {
                             preparing.remove(playerId);
+                            animation.cancel();
+                            clearActionBar(player);
                             if (throwable != null) {
                                 sendFailure(player, buildWorld, worldPlaceholder, throwable);
                                 return;
@@ -105,6 +125,48 @@ public class DownloadSubCommand extends AbstractSubCommand {
                             }
                         },
                         scheduler.mainThread());
+    }
+
+    /**
+     * Drives the action bar while the export runs. The frame counter advances every tick of this task, so the bar
+     * keeps moving even while a single large region file is being packed.
+     */
+    private BukkitTask startProgressAnimation(
+            Player player, BuildWorld buildWorld, AtomicLong packedBytes, AtomicLong totalBytes) {
+        AtomicInteger frame = new AtomicInteger();
+        return scheduler.runTimer(
+                () -> {
+                    if (!player.isOnline()) {
+                        return;
+                    }
+                    long total = totalBytes.get();
+                    double fraction = total <= 0 ? 0 : (double) packedBytes.get() / total;
+                    int currentFrame = frame.getAndIncrement();
+
+                    sendActionBar(
+                            player,
+                            messages.getString(
+                                    "worlds_download_progress",
+                                    player,
+                                    Placeholders.of()
+                                            .add("%world%", buildWorld.getName())
+                                            .add("%bar%", ExportProgressBar.bar(fraction, currentFrame))
+                                            .add("%percent%", ExportProgressBar.percent(fraction))
+                                            .add("%spinner%", ExportProgressBar.spinner(currentFrame))
+                                            .build()));
+                },
+                0L,
+                ANIMATION_PERIOD_TICKS);
+    }
+
+    private static void sendActionBar(Player player, String message) {
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
+    }
+
+    private static void clearActionBar(Player player) {
+        if (player.isOnline()) {
+            sendActionBar(player, "");
+        }
     }
 
     /**

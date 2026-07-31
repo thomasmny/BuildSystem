@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.download;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -29,8 +30,11 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
@@ -63,7 +67,7 @@ class WorldExporterTest {
 
         File level = levelFolder("MainLevel");
         Path archive = tempDir.resolve("out.zip");
-        WorldExporter.export("lobby", dimension.toFile(), level, archive, MAX_BYTES);
+        WorldExporter.export("lobby", dimension.toFile(), level, archive, MAX_BYTES, WorldExporter.ExportProgress.IGNORED);
 
         Map<String, byte[]> entries = read(archive);
         assertEquals("region-data", new String(entries.get("lobby/dimensions/minecraft/overworld/region/r.0.0.mca")));
@@ -85,7 +89,7 @@ class WorldExporterTest {
         Files.writeString(world.resolve("dimensions/minecraft/the_nether/marker"), "own nether");
 
         Path archive = tempDir.resolve("legacy.zip");
-        WorldExporter.export("legacy", world.toFile(), levelFolder("MainLevel"), archive, MAX_BYTES);
+        WorldExporter.export("legacy", world.toFile(), levelFolder("MainLevel"), archive, MAX_BYTES, WorldExporter.ExportProgress.IGNORED);
 
         Map<String, byte[]> entries = read(archive);
         assertTrue(entries.containsKey("legacy/region/r.0.0.mca"));
@@ -106,9 +110,50 @@ class WorldExporterTest {
         Files.writeString(dimension.resolve("region/r.0.0.mca"), "region-data");
 
         Path archive = tempDir.resolve("reported-dimension.zip");
-        WorldExporter.export("lobby", dimension.toFile(), overworld.toFile(), archive, MAX_BYTES);
+        WorldExporter.export("lobby", dimension.toFile(), overworld.toFile(), archive, MAX_BYTES, WorldExporter.ExportProgress.IGNORED);
 
         assertEquals("lobby", levelName(read(archive).get("lobby/level.dat")));
+    }
+
+    @Test
+    void reportsProgressUpToTheTotal() throws IOException {
+        Path dimension = tempDir.resolve("dimensions/minecraft/progress");
+        Files.createDirectories(dimension.resolve("region"));
+        for (int region = 0; region < 4; region++) {
+            Files.writeString(dimension.resolve("region/r." + region + ".0.mca"), "x".repeat(1000));
+        }
+
+        List<Long> packed = new ArrayList<>();
+        AtomicLong total = new AtomicLong();
+        WorldExporter.export(
+                "progress",
+                dimension.toFile(),
+                levelFolder("MainLevel"),
+                tempDir.resolve("progress.zip"),
+                MAX_BYTES,
+                (packedBytes, totalBytes) -> {
+                    packed.add(packedBytes);
+                    total.set(totalBytes);
+                });
+
+        assertEquals(4000L, total.get());
+        assertEquals(List.of(0L, 1000L, 2000L, 3000L, 4000L), packed);
+    }
+
+    @Test
+    void barFillsAndAnimatesWithinTheFilledPart() {
+        assertEquals(0, ExportProgressBar.percent(0));
+        assertEquals(50, ExportProgressBar.percent(0.5));
+        assertEquals(100, ExportProgressBar.percent(1.5), "an over-full fraction is clamped");
+        assertEquals(0, ExportProgressBar.percent(Double.NaN), "an unknown total reads as zero, not NaN");
+
+        assertFalse(ExportProgressBar.bar(0, 0).contains("&f"), "an empty bar has nothing to highlight");
+        assertTrue(ExportProgressBar.bar(0.5, 0).contains("&f"), "a half-full bar carries the sweep");
+        assertNotEquals(
+                ExportProgressBar.bar(0.5, 0),
+                ExportProgressBar.bar(0.5, 1),
+                "the sweep moves between frames at the same progress");
+        assertNotEquals(ExportProgressBar.spinner(0), ExportProgressBar.spinner(1));
     }
 
     private File levelFolder(String levelName) throws IOException {

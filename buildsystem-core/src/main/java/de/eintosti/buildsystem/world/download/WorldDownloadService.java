@@ -169,9 +169,10 @@ public final class WorldDownloadService {
      * before the export moves off it.
      *
      * @param buildWorld The world to export
+     * @param progress Notified as the world is packed, for showing the player how far along it is
      * @return A future completed with the download URL, or completed exceptionally if the export fails
      */
-    public CompletableFuture<String> prepare(BuildWorld buildWorld) {
+    public CompletableFuture<String> prepare(BuildWorld buildWorld, WorldExporter.ExportProgress progress) {
         if (server == null) {
             return CompletableFuture.failedFuture(new IllegalStateException("World downloads are disabled"));
         }
@@ -198,7 +199,8 @@ public final class WorldDownloadService {
         return CompletableFuture.supplyAsync(
                 () -> {
                     try {
-                        WorldExporter.export(worldName, worldFolder, defaultLevelFolder, archive, maxArchiveBytes);
+                        WorldExporter.export(
+                                worldName, worldFolder, defaultLevelFolder, archive, maxArchiveBytes, progress);
                     } catch (IOException e) {
                         throw new UncheckedIOException(e);
                     }
