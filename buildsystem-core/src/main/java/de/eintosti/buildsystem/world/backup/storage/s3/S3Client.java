@@ -17,7 +17,10 @@
  */
 package de.eintosti.buildsystem.world.backup.storage.s3;
 
+import com.google.common.io.ByteStreams;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -33,8 +36,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.LongConsumer;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.w3c.dom.Element;
 
 /**
  * A minimal S3 client covering the four operations the backup storage needs: list, put, get and delete. Written
@@ -49,6 +54,23 @@ public final class S3Client implements AutoCloseable {
 
     private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(30);
     private static final Duration REQUEST_TIMEOUT = Duration.ofMinutes(5);
+
+    /**
+     * Uploading a world archive is bounded by the server's uplink rather than by S3, so it gets its own budget: a
+     * gigabyte over a slow connection legitimately takes longer than the timeout the small requests use.
+     */
+    private static final Duration UPLOAD_TIMEOUT = Duration.ofHours(2);
+
+    /**
+     * The part size used until a file is large enough to need bigger ones. Comfortably above the five megabytes S3
+     * requires of every part but the last, and small enough that a failed part is cheap to lose.
+     */
+    private static final long MIN_PART_SIZE = 16L * 1024 * 1024;
+
+    /**
+     * The most parts S3 accepts in one upload.
+     */
+    private static final long MAX_PARTS = 10_000L;
 
     private final HttpClient http;
     private final AwsV4Signer signer;
@@ -125,6 +147,126 @@ public final class S3Client implements AutoCloseable {
     }
 
     /**
+     * Uploads a file as a multipart upload, streaming each part off disk so neither the heap nor the five-gigabyte
+     * ceiling on a single {@code PUT} bounds how large the file may be.
+     *
+     * <p>A failed upload is aborted rather than abandoned. An incomplete multipart upload does not show up in a
+     * listing but is still billed for.
+     *
+     * @param key The object key
+     * @param file The file to upload
+     * @param uploaded Notified with the running total of bytes accepted by S3, for reporting progress
+     * @throws IOException If the request fails or S3 returns an error
+     */
+    public void putFile(String key, Path file, LongConsumer uploaded) throws IOException {
+        long size = Files.size(file);
+        long partSize = partSize(size);
+        String uploadId = createMultipartUpload(key);
+
+        try {
+            List<String> etags = new ArrayList<>();
+            long offset = 0L;
+            while (offset < size || etags.isEmpty()) {
+                long length = Math.min(partSize, size - offset);
+                etags.add(uploadPart(key, uploadId, etags.size() + 1, file, offset, length));
+                offset += length;
+                uploaded.accept(offset);
+            }
+            completeMultipartUpload(key, uploadId, etags);
+        } catch (IOException | RuntimeException e) {
+            abortMultipartUpload(key, uploadId, e);
+            throw e;
+        }
+    }
+
+    /**
+     * {@return the part size to split a file of {@code size} into} Grown when the file would otherwise need more than
+     * the ten thousand parts S3 allows, so the part count is bounded rather than the file size.
+     */
+    static long partSize(long size) {
+        long needed = (size + MAX_PARTS - 1) / MAX_PARTS;
+        return Math.max(MIN_PART_SIZE, needed);
+    }
+
+    private String createMultipartUpload(String key) throws IOException {
+        byte[] xml = body(
+                request("POST", key, Map.of("uploads", ""), Payload.empty(), BodyHandlers.ofByteArray()),
+                "start a multipart upload of " + key);
+        return S3Xml.required(S3Xml.parse(xml, "multipart upload").getDocumentElement(), "UploadId");
+    }
+
+    /**
+     * {@return the part's ETag, which the completion request must quote back}
+     */
+    private String uploadPart(String key, String uploadId, int partNumber, Path file, long offset, long length)
+            throws IOException {
+        Map<String, String> query = Map.of("partNumber", Integer.toString(partNumber), "uploadId", uploadId);
+        HttpResponse<byte[]> response = request(
+                "PUT",
+                key,
+                query,
+                Payload.ofFileRange(file, offset, length),
+                BodyHandlers.ofByteArray(),
+                UPLOAD_TIMEOUT);
+        body(response, "upload part " + partNumber + " of " + key);
+
+        return response.headers()
+                .firstValue("ETag")
+                .orElseThrow(() -> new IOException("S3 did not return an ETag for part " + partNumber + " of " + key));
+    }
+
+    private void completeMultipartUpload(String key, String uploadId, List<String> etags) throws IOException {
+        StringBuilder xml = new StringBuilder("<CompleteMultipartUpload>");
+        for (int i = 0; i < etags.size(); i++) {
+            xml.append("<Part><PartNumber>")
+                    .append(i + 1)
+                    .append("</PartNumber><ETag>")
+                    .append(S3Xml.escape(etags.get(i)))
+                    .append("</ETag></Part>");
+        }
+        xml.append("</CompleteMultipartUpload>");
+
+        byte[] response = body(
+                request(
+                        "POST",
+                        key,
+                        Map.of("uploadId", uploadId),
+                        Payload.of(xml.toString().getBytes(StandardCharsets.UTF_8)),
+                        BodyHandlers.ofByteArray()),
+                "complete the multipart upload of " + key);
+
+        // S3 answers 200 and only then reports a failure inside the document, so the status alone proves nothing.
+        Element root = S3Xml.parse(response, "multipart completion").getDocumentElement();
+        if ("Error".equals(root.getTagName())) {
+            throw new IOException("S3 failed to complete the multipart upload of " + key + " - "
+                    + new String(response, StandardCharsets.UTF_8).trim());
+        }
+    }
+
+    /**
+     * Discards a half-finished upload, keeping the original failure as the one that surfaces.
+     */
+    private void abortMultipartUpload(String key, String uploadId, Throwable cause) {
+        try {
+            request("DELETE", key, Map.of("uploadId", uploadId), Payload.empty(), BodyHandlers.ofByteArray());
+        } catch (IOException | RuntimeException e) {
+            cause.addSuppressed(new IOException("Failed to abort the multipart upload of " + key, e));
+        }
+    }
+
+    /**
+     * {@return a URL that grants anyone holding it a single object for a limited time} Nothing is sent to S3 to make
+     * one: the URL carries its own signature, so it can be handed out and followed by a plain browser.
+     *
+     * @param key The object key
+     * @param expiry How long the URL stays valid, capped at the seven days S3 allows
+     */
+    public String presignedGetUrl(String key, Duration expiry) {
+        String query = signer.presignGet(endpoint.host(), endpoint.pathOf(key), expiry, Instant.now());
+        return endpoint.urlOf(key, query);
+    }
+
+    /**
      * Downloads an object to a file, streaming it rather than buffering: a world backup can be far larger than the
      * heap the server has spare.
      *
@@ -161,18 +303,23 @@ public final class S3Client implements AutoCloseable {
     private <T> HttpResponse<T> request(
             String method, String key, Map<String, String> query, Payload payload, BodyHandler<T> handler)
             throws IOException {
-        String canonicalQuery = canonicalQuery(query);
+        return request(method, key, query, payload, handler, REQUEST_TIMEOUT);
+    }
+
+    private <T> HttpResponse<T> request(
+            String method,
+            String key,
+            Map<String, String> query,
+            Payload payload,
+            BodyHandler<T> handler,
+            Duration timeout)
+            throws IOException {
+        String canonicalQuery = PercentEncoding.query(query);
         Map<String, String> headers = signer.sign(
-                method,
-                endpoint.host(),
-                endpoint.pathOf(key),
-                canonicalQuery,
-                Map.of(),
-                payload.bytes(),
-                Instant.now());
+                method, endpoint.host(), endpoint.pathOf(key), canonicalQuery, Map.of(), payload.hash(), Instant.now());
 
         HttpRequest.Builder request = HttpRequest.newBuilder(URI.create(endpoint.urlOf(key, canonicalQuery)))
-                .timeout(REQUEST_TIMEOUT)
+                .timeout(timeout)
                 .method(method, payload.publisher());
         headers.forEach(request::header);
 
@@ -212,42 +359,47 @@ public final class S3Client implements AutoCloseable {
         return "S3 request failed to " + action + " (HTTP " + status + ")" + detail;
     }
 
-    /**
-     * {@return the query string in the sorted, encoded form SigV4 requires}
-     */
-    private static String canonicalQuery(Map<String, String> query) {
-        StringBuilder canonical = new StringBuilder();
-        new TreeMap<>(query).forEach((name, value) -> {
-            if (!canonical.isEmpty()) {
-                canonical.append('&');
-            }
-            canonical.append(PercentEncoding.encode(name)).append('=').append(PercentEncoding.encode(value));
-        });
-        return canonical.toString();
-    }
-
     @Override
     public void close() {
         http.close();
     }
 
     /**
-     * A request body, pairing the bytes that get signed with the publisher that sends them so the two cannot drift.
+     * A request body, pairing the hash that gets signed with the publisher that sends it so the two cannot drift.
      */
-    private record Payload(byte[] bytes) {
+    private record Payload(String hash, HttpRequest.BodyPublisher publisher) {
 
         static Payload empty() {
-            return new Payload(new byte[0]);
+            return new Payload(AwsV4Signer.hex(AwsV4Signer.sha256(new byte[0])), HttpRequest.BodyPublishers.noBody());
         }
 
         static Payload of(byte[] bytes) {
-            return new Payload(bytes);
+            return new Payload(
+                    AwsV4Signer.hex(AwsV4Signer.sha256(bytes)), HttpRequest.BodyPublishers.ofByteArray(bytes));
         }
 
-        HttpRequest.BodyPublisher publisher() {
-            return bytes.length == 0
-                    ? HttpRequest.BodyPublishers.noBody()
-                    : HttpRequest.BodyPublishers.ofByteArray(bytes);
+        /**
+         * {@return a payload streamed from a slice of a file} S3 rejects a chunked body, so the length is declared up
+         * front and the bytes are read on demand, keeping the part out of memory.
+         *
+         * <p>Sent unsigned: hashing the body first would mean reading the archive a second time. The signature covers
+         * the request but not its contents, which TLS protects in transit.
+         *
+         * @param file The file to read from
+         * @param offset Where the slice starts
+         * @param length How many bytes the slice holds
+         */
+        static Payload ofFileRange(Path file, long offset, long length) {
+            HttpRequest.BodyPublisher slice = HttpRequest.BodyPublishers.ofInputStream(() -> {
+                try {
+                    InputStream in = Files.newInputStream(file);
+                    in.skipNBytes(offset);
+                    return ByteStreams.limit(in, length);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            });
+            return new Payload(AwsV4Signer.UNSIGNED_PAYLOAD, HttpRequest.BodyPublishers.fromPublisher(slice, length));
         }
     }
 }

@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.world.backup.storage.s3;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -57,6 +58,34 @@ class AwsV4SignerTest {
                         + "SignedHeaders=host;range;x-amz-content-sha256;x-amz-date, "
                         + "Signature=f0e8bdb87c964420e857bd35b5d6ed310bd44f0170aba48dd91039c6036bdb41",
                 signed.get("Authorization"));
+    }
+
+    @Test
+    @DisplayName("The documented pre-signed URL example produces the documented signature")
+    void presignedUrlExampleMatchesPublishedSignature() {
+        AwsV4Signer signer = new AwsV4Signer(ACCESS_KEY, SECRET_KEY, "us-east-1");
+
+        String query = signer.presignGet(
+                "examplebucket.s3.amazonaws.com", "/test.txt", Duration.ofSeconds(86400), SIGNING_TIME);
+
+        assertEquals(
+                "X-Amz-Algorithm=AWS4-HMAC-SHA256"
+                        + "&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request"
+                        + "&X-Amz-Date=20130524T000000Z"
+                        + "&X-Amz-Expires=86400"
+                        + "&X-Amz-SignedHeaders=host"
+                        + "&X-Amz-Signature=aeeed9bbccd4d02ee5c0109b86d86835f995330da4c265957d157751f604d404",
+                query);
+    }
+
+    @Test
+    @DisplayName("A pre-signed URL cannot outlive the seven days S3 allows")
+    void presignedExpiryIsCapped() {
+        AwsV4Signer signer = new AwsV4Signer(ACCESS_KEY, SECRET_KEY, "us-east-1");
+
+        String query = signer.presignGet("b.s3.amazonaws.com", "/k.zip", Duration.ofDays(30), SIGNING_TIME);
+
+        assertTrue(query.contains("X-Amz-Expires=604800"), query);
     }
 
     @Test

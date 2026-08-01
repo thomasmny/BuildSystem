@@ -209,6 +209,7 @@ worlds_download_disabled: "%prefix% &cWorld downloads are disabled on this serve
 worlds_download_in_progress: "%prefix% &cYou are already preparing a download."
 worlds_download_preparing: "%prefix% &7Preparing &b%world% &7for download..."
 worlds_download_progress: "&8[%bar%&8] &f%percent%% &7Packing &b%world% &7%spinner%"
+worlds_download_uploading: "&8[%bar%&8] &f%percent%% &7Uploading &b%world% &7%spinner%"
 worlds_download_failed: "%prefix% &cUnable to prepare %world% for download. See the console for details."
 worlds_download_too_large: "%prefix% &c%world% is too large to download."
 worlds_download_storage_full: "%prefix% &cToo many downloads are pending. Try again once one expires."

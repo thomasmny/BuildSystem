@@ -201,8 +201,10 @@ public class ConfigService {
         int downloadPort = config.getInt("world.download.port", 8080);
         PluginConfig.World.Download download = new PluginConfig.World.Download(
                 config.getBoolean("world.download.enabled", false),
+                downloadStorage(config, logger),
                 downloadPort,
                 Objects.requireNonNullElse(config.getString("world.download.url"), "http://localhost:" + downloadPort),
+                config.getBoolean("world.download.behind-proxy", false),
                 Math.max(1, config.getInt("world.download.expiration-minutes", 30)),
                 Math.max(1, config.getInt("world.download.max-size-mb", 2048)),
                 Math.max(1, config.getInt("world.download.max-storage-mb", 8192)),
@@ -225,6 +227,23 @@ public class ConfigService {
                 unload,
                 backup,
                 download);
+    }
+
+    /**
+     * {@return where prepared world archives are served from} An unrecognised value falls back to the built-in server
+     * rather than disabling downloads, so a typo does not silently take the feature away.
+     */
+    private static PluginConfig.World.Download.Storage downloadStorage(FileConfiguration config, Logger logger) {
+        String type = Objects.requireNonNullElse(config.getString("world.download.storage"), "local")
+                .toLowerCase(Locale.ROOT);
+        return switch (type) {
+            case "local" -> PluginConfig.World.Download.Storage.LOCAL;
+            case "s3" -> PluginConfig.World.Download.Storage.S3;
+            default -> {
+                logger.warning("Unknown download storage type '" + type + "', defaulting to local storage.");
+                yield PluginConfig.World.Download.Storage.LOCAL;
+            }
+        };
     }
 
     private static PluginConfig.World.VoidBlock parseVoidBlock(FileConfiguration config, Logger logger) {

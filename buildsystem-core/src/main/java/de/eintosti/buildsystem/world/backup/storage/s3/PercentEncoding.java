@@ -18,6 +18,8 @@
 package de.eintosti.buildsystem.world.backup.storage.s3;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.TreeMap;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -66,6 +68,23 @@ final class PercentEncoding {
             encoded.append(encode(segment));
         }
         return encoded.toString();
+    }
+
+    /**
+     * {@return the parameters as a query string, sorted and encoded the way SigV4 canonicalises them} The same string
+     * is both signed and sent, so a request can never disagree with its own signature.
+     *
+     * @param parameters The query parameters
+     */
+    static String query(Map<String, String> parameters) {
+        StringBuilder query = new StringBuilder();
+        new TreeMap<>(parameters).forEach((name, value) -> {
+            if (!query.isEmpty()) {
+                query.append('&');
+            }
+            query.append(encode(name)).append('=').append(encode(value));
+        });
+        return query.toString();
     }
 
     private static boolean isUnreserved(char c) {

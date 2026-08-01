@@ -18,21 +18,16 @@
 package de.eintosti.buildsystem.world.backup.storage.s3;
 
 import de.eintosti.buildsystem.world.backup.storage.s3.S3Client.S3Object;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  * One page of a {@code ListObjectsV2} response.
@@ -51,58 +46,26 @@ record Listing(List<S3Object> objects, @Nullable String nextContinuationToken) {
      * @throws IOException If the document is not a listing this client understands
      */
     static Listing parse(byte[] xml) throws IOException {
-        Document document = parseSafely(xml);
+        Document document = S3Xml.parse(xml, "listing");
+        Element root = document.getDocumentElement();
 
         List<S3Object> objects = new ArrayList<>();
         NodeList contents = document.getElementsByTagName("Contents");
         for (int i = 0; i < contents.getLength(); i++) {
             Element entry = (Element) contents.item(i);
-            objects.add(new S3Object(required(entry, "Key"), lastModified(entry)));
+            objects.add(new S3Object(S3Xml.required(entry, "Key"), lastModified(entry)));
         }
 
-        boolean truncated = Boolean.parseBoolean(optional(document, "IsTruncated"));
-        return new Listing(objects, truncated ? optional(document, "NextContinuationToken") : null);
+        boolean truncated = Boolean.parseBoolean(S3Xml.optional(root, "IsTruncated"));
+        return new Listing(objects, truncated ? S3Xml.optional(root, "NextContinuationToken") : null);
     }
 
     private static Instant lastModified(Element entry) throws IOException {
-        String value = required(entry, "LastModified");
+        String value = S3Xml.required(entry, "LastModified");
         try {
             return Instant.parse(value);
         } catch (DateTimeParseException e) {
             throw new IOException("S3 returned an unreadable LastModified: " + value, e);
         }
-    }
-
-    /**
-     * {@return the document parsed with entity resolution disabled} The response is remote input, so a hostile or
-     * compromised endpoint must not be able to make the parser read local files or fetch URLs.
-     */
-    private static Document parseSafely(byte[] xml) throws IOException {
-        try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
-            factory.setXIncludeAware(false);
-            factory.setExpandEntityReferences(false);
-            return factory.newDocumentBuilder().parse(new ByteArrayInputStream(xml));
-        } catch (ParserConfigurationException | SAXException e) {
-            throw new IOException("Could not parse the S3 listing", e);
-        }
-    }
-
-    private static String required(Element parent, String tag) throws IOException {
-        NodeList nodes = parent.getElementsByTagName(tag);
-        if (nodes.getLength() == 0 || nodes.item(0).getTextContent() == null) {
-            throw new IOException("S3 listing entry is missing <" + tag + ">");
-        }
-        return nodes.item(0).getTextContent().trim();
-    }
-
-    private static @Nullable String optional(Document document, String tag) {
-        NodeList nodes = document.getElementsByTagName(tag);
-        return nodes.getLength() == 0 ? null : nodes.item(0).getTextContent().trim();
     }
 }

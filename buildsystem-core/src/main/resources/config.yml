@@ -111,16 +111,29 @@ world:
         path: backups/worlds/
 
   # Lets players download a world as a single-player save via /worlds download.
-  # Enabling this opens a port on the server that serves world archives, each
-  # reachable only through an unguessable link that expires with the archive.
+  # Enabling this hands out world archives, each reachable only through an
+  # unguessable link that expires with the archive.
   download:
     enabled: false
+    # Where a prepared archive is served from.
+    # "local" uses the port below.
+    # "s3" uploads it to the bucket the backups use and hands out an expiring
+    # pre-signed link instead, so no port has to be opened. It needs
+    # world.backup.storage.type to be "s3", and puts no limit on world size.
+    storage: local
+    # The port the built-in server listens on, and the address players are sent
+    # to. Change the url if the port is reached through a proxy or a domain,
+    # e.g. "https://downloads.example.com". Both are ignored when storage is s3.
     port: 8080
-    # The address players are sent to. Change it if the port is reached through
-    # a proxy or a domain, e.g. "https://downloads.example.com"
     url: "http://localhost:8080"
+    # Enable only when the port is reachable solely through a reverse proxy.
+    # Links are then pinned and rate limited per player rather than per proxy,
+    # using X-Forwarded-For. Leave it false if the port is reachable directly:
+    # anyone could otherwise send that header and claim any address.
+    behind-proxy: false
     expiration-minutes: 30
-    # Largest single export, and the budget shared by all live downloads.
+    # Largest single export, and the budget shared by all live downloads. Only
+    # apply to local storage, where every archive sits on this server's disk.
     max-size-mb: 2048
     max-storage-mb: 8192
     max-concurrent-downloads: 3

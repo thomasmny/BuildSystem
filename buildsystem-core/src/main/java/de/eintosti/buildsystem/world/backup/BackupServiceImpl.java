@@ -144,8 +144,8 @@ public class BackupServiceImpl implements BackupService {
                         s.path());
             }
             case PluginConfig.World.Backup.S3 s3 -> {
-                String accessKey = envOrConfig("AWS_ACCESS_KEY_ID", s3.accessKey());
-                String secretKey = envOrConfig("AWS_SECRET_ACCESS_KEY", s3.secretKey());
+                String accessKey = s3.resolvedAccessKey();
+                String secretKey = s3.resolvedSecretKey();
                 requireNonBlank(accessKey, "backup.s3.access-key (or AWS_ACCESS_KEY_ID)");
                 requireNonBlank(secretKey, "backup.s3.secret-key (or AWS_SECRET_ACCESS_KEY)");
                 requireNonBlank(s3.region(), "backup.s3.region");

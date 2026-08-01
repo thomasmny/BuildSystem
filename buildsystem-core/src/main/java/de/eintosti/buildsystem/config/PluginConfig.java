@@ -164,6 +164,26 @@ public record PluginConfig(Settings settings, World world, Folder folder) {
                     implements StorageSettings {
 
                 /**
+                 * {@return the access key, preferring {@code AWS_ACCESS_KEY_ID}} Lets operators keep the secret out of
+                 * config.yml.
+                 */
+                public @Nullable String resolvedAccessKey() {
+                    return envOrConfig("AWS_ACCESS_KEY_ID", accessKey);
+                }
+
+                /**
+                 * {@return the secret key, preferring {@code AWS_SECRET_ACCESS_KEY}}
+                 */
+                public @Nullable String resolvedSecretKey() {
+                    return envOrConfig("AWS_SECRET_ACCESS_KEY", secretKey);
+                }
+
+                private static @Nullable String envOrConfig(String envKey, @Nullable String configValue) {
+                    String env = System.getenv(envKey);
+                    return env == null || env.isBlank() ? configValue : env;
+                }
+
+                /**
                  * Overridden so the access key and secret key never appear in a log or pasted support output.
                  */
                 @Override
@@ -187,18 +207,40 @@ public record PluginConfig(Settings settings, World world, Folder folder) {
          * hands out world archives, so it stays an explicit decision by the operator.
          *
          * @param enabled Whether the download server runs at all
+         * @param storage Where a prepared archive is served from
          * @param port The port the server listens on
          * @param url The base URL players are sent, for servers reached through a proxy or a domain
+         * @param behindProxy Whether to take the client's address from {@code X-Forwarded-For} rather than the socket
          * @param expirationMinutes How long a download link stays valid before the archive is deleted
          */
         public record Download(
                 boolean enabled,
+                Storage storage,
                 int port,
                 String url,
+                boolean behindProxy,
                 int expirationMinutes,
                 int maxSizeMb,
                 int maxStorageMb,
-                int maxConcurrentDownloads) {}
+                int maxConcurrentDownloads) {
+
+            /**
+             * Where a prepared archive lives while a player fetches it.
+             */
+            public enum Storage {
+
+                /**
+                 * Served by the plugin's own HTTP server, from the port above.
+                 */
+                LOCAL,
+
+                /**
+                 * Uploaded to the bucket the backups already use and handed out as a pre-signed link, so no port has
+                 * to be opened. Requires {@code world.backup.storage.type: s3}.
+                 */
+                S3
+            }
+        }
     }
 
     public record Folder(boolean overridePermissions, boolean overrideProjects) {}
