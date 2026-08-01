@@ -101,21 +101,20 @@ public class BackupServiceImpl implements BackupService {
      * an operator can tell at a glance whether the configured backend was actually the one that loaded.
      */
     private String describe(BackupStorage storage) {
-        PluginConfig.World.Backup.StorageSettings settings =
-                configService.current().world().backup().storage();
+        PluginConfig current = configService.current();
+        PluginConfig.Storage.Type configured = current.world().backup().storage();
         switch (storage) {
             case LocalBackupStorage _ -> {
-                String reason =
-                        settings instanceof PluginConfig.World.Backup.Local ? "" : " (configured backend failed)";
+                String reason = configured == PluginConfig.Storage.Type.LOCAL ? "" : " (configured backend failed)";
                 return "locally in plugins/BuildSystem/backups" + reason;
             }
-            case S3BackupStorage _
-            when settings instanceof PluginConfig.World.Backup.S3 s3 -> {
+            case S3BackupStorage _ -> {
+                PluginConfig.Storage.S3 s3 = current.storage().s3();
                 String service = s3.url() == null || s3.url().isBlank() ? "Amazon S3" : s3.url();
                 return "on " + service + " in bucket '" + s3.bucket() + "'";
             }
-            case SftpBackupStorage _
-            when settings instanceof PluginConfig.World.Backup.Sftp sftp -> {
+            case SftpBackupStorage _ -> {
+                PluginConfig.Storage.Sftp sftp = current.storage().sftp();
                 return "over SFTP on " + sftp.host() + ":" + sftp.port();
             }
             default -> {}
@@ -123,33 +122,37 @@ public class BackupServiceImpl implements BackupService {
         return "using " + storage.getClass().getSimpleName();
     }
 
-    private BackupStorage createStorage(PluginConfig.World.Backup.StorageSettings settings) {
-        return switch (settings) {
-            case PluginConfig.World.Backup.Local ignored -> localStorage();
-            case PluginConfig.World.Backup.Sftp s -> {
-                String password = envOrConfig("BUILDSYSTEM_SFTP_PASSWORD", s.password());
-                requireNonBlank(s.host(), "backup.sftp.host");
-                requireNonBlank(s.username(), "backup.sftp.username");
-                requireNonBlank(password, "backup.sftp.password (or BUILDSYSTEM_SFTP_PASSWORD)");
+    private BackupStorage createStorage(PluginConfig.Storage.Type type) {
+        PluginConfig current = configService.current();
+        String path = current.world().backup().path();
+        return switch (type) {
+            case LOCAL -> localStorage();
+            case SFTP -> {
+                PluginConfig.Storage.Sftp sftp = current.storage().sftp();
+                String password = sftp.resolvedPassword();
+                requireNonBlank(sftp.host(), "storage.sftp.host");
+                requireNonBlank(sftp.username(), "storage.sftp.username");
+                requireNonBlank(password, "storage.sftp.password (or BUILDSYSTEM_SFTP_PASSWORD)");
                 yield new SftpBackupStorage(
                         plugin.getLogger(),
                         executor,
                         plugin.getDataFolder(),
                         configService,
                         this::getProfile,
-                        s.host(),
-                        s.port(),
-                        s.username(),
+                        sftp.host(),
+                        sftp.port(),
+                        sftp.username(),
                         password,
-                        s.path());
+                        path);
             }
-            case PluginConfig.World.Backup.S3 s3 -> {
-                String accessKey = envOrConfig("AWS_ACCESS_KEY_ID", s3.accessKey());
-                String secretKey = envOrConfig("AWS_SECRET_ACCESS_KEY", s3.secretKey());
-                requireNonBlank(accessKey, "backup.s3.access-key (or AWS_ACCESS_KEY_ID)");
-                requireNonBlank(secretKey, "backup.s3.secret-key (or AWS_SECRET_ACCESS_KEY)");
-                requireNonBlank(s3.region(), "backup.s3.region");
-                requireNonBlank(s3.bucket(), "backup.s3.bucket");
+            case S3 -> {
+                PluginConfig.Storage.S3 s3 = current.storage().s3();
+                String accessKey = s3.resolvedAccessKey();
+                String secretKey = s3.resolvedSecretKey();
+                requireNonBlank(accessKey, "storage.s3.access-key (or AWS_ACCESS_KEY_ID)");
+                requireNonBlank(secretKey, "storage.s3.secret-key (or AWS_SECRET_ACCESS_KEY)");
+                requireNonBlank(s3.region(), "storage.s3.region");
+                requireNonBlank(s3.bucket(), "storage.s3.bucket");
                 yield new S3BackupStorage(
                         plugin.getLogger(),
                         executor,
@@ -161,14 +164,14 @@ public class BackupServiceImpl implements BackupService {
                         secretKey,
                         s3.region(),
                         s3.bucket(),
-                        s3.path());
+                        path);
             }
         };
     }
 
-    private BackupStorage createStorageOrFallback(PluginConfig.World.Backup.StorageSettings settings) {
+    private BackupStorage createStorageOrFallback(PluginConfig.Storage.Type type) {
         try {
-            return createStorage(settings);
+            return createStorage(type);
         } catch (IllegalArgumentException e) {
             plugin.getLogger().severe("Backup storage disabled, falling back to local storage: " + e.getMessage());
             return localStorage();

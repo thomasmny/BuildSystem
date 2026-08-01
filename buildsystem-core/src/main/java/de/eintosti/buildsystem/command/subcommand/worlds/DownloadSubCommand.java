@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.WorldFlush;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.download.DownloadProgress;
 import de.eintosti.buildsystem.world.download.ExportProgressBar;
 import de.eintosti.buildsystem.world.download.WorldDownloadService;
 import de.eintosti.buildsystem.world.download.WorldExporter;
@@ -38,6 +39,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -109,14 +111,18 @@ public class DownloadSubCommand extends AbstractSubCommand {
         messages.sendMessage(player, "worlds_download_preparing", worldPlaceholder);
         buildWorld.getWorld().ifPresent(WorldFlush::saveAndFlush);
 
-        AtomicLong packedBytes = new AtomicLong();
+        AtomicLong doneBytes = new AtomicLong();
         AtomicLong totalBytes = new AtomicLong();
-        BukkitTask animation = startProgressAnimation(player, buildWorld, packedBytes, totalBytes);
+        AtomicReference<DownloadProgress.Phase> phase = new AtomicReference<>(DownloadProgress.Phase.PACKING);
+        BukkitTask animation = startProgressAnimation(player, buildWorld, phase, doneBytes, totalBytes);
 
         downloadService
-                .prepare(buildWorld, (packed, total) -> {
-                    packedBytes.set(packed);
+                .prepare(buildWorld, (currentPhase, done, total) -> {
+                    // Set the phase last: it is what the animation reads to pick its message, so flipping it before
+                    // the counters would draw the new phase with the old one's numbers.
+                    doneBytes.set(done);
                     totalBytes.set(total);
+                    phase.set(currentPhase);
                 })
                 .whenCompleteAsync(
                         (url, throwable) -> {
@@ -135,11 +141,16 @@ public class DownloadSubCommand extends AbstractSubCommand {
     }
 
     /**
-     * Drives the action bar while the export runs. The frame counter advances every tick of this task, so the bar
-     * keeps moving even while a single large region file is being packed.
+     * Drives the action bar while the download is prepared. The frame counter advances every tick of this task, so the
+     * bar keeps moving even while a single large region file is being packed, and the message follows the phase so a
+     * full bar is never left standing over work that is still running.
      */
     private BukkitTask startProgressAnimation(
-            Player player, BuildWorld buildWorld, AtomicLong packedBytes, AtomicLong totalBytes) {
+            Player player,
+            BuildWorld buildWorld,
+            AtomicReference<DownloadProgress.Phase> phase,
+            AtomicLong doneBytes,
+            AtomicLong totalBytes) {
         AtomicInteger frame = new AtomicInteger();
         return scheduler.runTimer(
                 () -> {
@@ -147,13 +158,13 @@ public class DownloadSubCommand extends AbstractSubCommand {
                         return;
                     }
                     long total = totalBytes.get();
-                    double fraction = total <= 0 ? 0 : (double) packedBytes.get() / total;
+                    double fraction = total <= 0 ? 0 : (double) doneBytes.get() / total;
                     int currentFrame = frame.getAndIncrement();
 
                     sendActionBar(
                             player,
                             messages.getString(
-                                    "worlds_download_progress",
+                                    messageKey(phase.get()),
                                     player,
                                     Placeholders.of()
                                             .add("%world%", buildWorld.getName())
@@ -164,6 +175,13 @@ public class DownloadSubCommand extends AbstractSubCommand {
                 },
                 0L,
                 ANIMATION_PERIOD_TICKS);
+    }
+
+    private static String messageKey(DownloadProgress.Phase phase) {
+        return switch (phase) {
+            case PACKING -> "worlds_download_progress";
+            case PUBLISHING -> "worlds_download_uploading";
+        };
     }
 
     private static void sendActionBar(Player player, String message) {

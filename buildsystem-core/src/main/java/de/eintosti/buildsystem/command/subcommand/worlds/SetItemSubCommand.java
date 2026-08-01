@@ -56,7 +56,12 @@ public class SetItemSubCommand extends AbstractSubCommand {
 
         buildWorld.setIcon(itemStack.getType());
         if (itemStack.getItemMeta() instanceof SkullMeta) {
-            buildWorld.setIconSkullTexture(skullTexture(itemStack));
+            // Only overwrite a stored texture with one we actually read. A head whose profile needs a Mojang lookup
+            // reads as null here, and taking that as "no texture" would wipe whatever was configured before.
+            String texture = skullTexture(itemStack);
+            if (texture != null) {
+                buildWorld.setIconSkullTexture(texture);
+            }
         }
         messages.sendMessage(player, "worlds_setitem_set", Placeholders.of("%world%", buildWorld.getName()));
     }

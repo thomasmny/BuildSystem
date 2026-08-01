@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.world.backup.storage.s3;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -45,6 +46,18 @@ final class AwsV4Signer {
 
     private static final String ALGORITHM = "AWS4-HMAC-SHA256";
     private static final String SERVICE = "s3";
+
+    /**
+     * Stands in for the payload hash when the body is too large to hash before sending. S3 accepts it in place of a
+     * real digest, at the cost of the signature no longer covering the body.
+     */
+    static final String UNSIGNED_PAYLOAD = "UNSIGNED-PAYLOAD";
+
+    /**
+     * The longest life S3 grants a pre-signed URL.
+     */
+    private static final Duration MAX_PRESIGNED_EXPIRY = Duration.ofDays(7);
+
     private static final DateTimeFormatter AMZ_DATE =
             DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'").withZone(ZoneOffset.UTC);
     private static final DateTimeFormatter SCOPE_DATE =
@@ -81,9 +94,31 @@ final class AwsV4Signer {
             Map<String, String> headers,
             byte[] payload,
             Instant timestamp) {
+        return sign(method, host, canonicalUri, canonicalQuery, headers, hex(sha256(payload)), timestamp);
+    }
+
+    /**
+     * Signs a request whose body has already been hashed, for one too large to hold in memory.
+     *
+     * @param method The HTTP method
+     * @param host The request host, which must match the {@code Host} header actually sent
+     * @param canonicalUri The already-encoded path, beginning with {@code /}
+     * @param canonicalQuery The already-encoded and sorted query string, or empty
+     * @param headers Additional headers to sign
+     * @param payloadHash The hex-encoded SHA-256 of the body, or {@link #UNSIGNED_PAYLOAD}
+     * @param timestamp The signing time
+     * @return The headers to send, including the signature
+     */
+    Map<String, String> sign(
+            String method,
+            String host,
+            String canonicalUri,
+            String canonicalQuery,
+            Map<String, String> headers,
+            String payloadHash,
+            Instant timestamp) {
         String amzDate = AMZ_DATE.format(timestamp);
         String scopeDate = SCOPE_DATE.format(timestamp);
-        String payloadHash = hex(sha256(payload));
 
         SortedMap<String, String> canonicalHeaders = new TreeMap<>();
         headers.forEach((name, value) -> {
@@ -112,17 +147,8 @@ final class AwsV4Signer {
                 + '\n'
                 + payloadHash;
 
-        String scope = scopeDate + "/" + region + "/" + SERVICE + "/aws4_request";
-        String stringToSign = ALGORITHM
-                + '\n'
-                + amzDate
-                + '\n'
-                + scope
-                + '\n'
-                + hex(sha256(canonicalRequest.getBytes(StandardCharsets.UTF_8)));
-
-        byte[] signingKey = signingKey(scopeDate);
-        String signature = hex(hmac(signingKey, stringToSign));
+        String scope = scope(scopeDate);
+        String signature = hex(hmac(signingKey(scopeDate), stringToSign(amzDate, scope, canonicalRequest)));
 
         Map<String, String> signed = new LinkedHashMap<>(headers);
         signed.put("x-amz-date", amzDate);
@@ -132,6 +158,56 @@ final class AwsV4Signer {
                 ALGORITHM + " Credential=" + accessKey + "/" + scope + ", SignedHeaders=" + signedHeaders
                         + ", Signature=" + signature);
         return signed;
+    }
+
+    /**
+     * Signs a {@code GET} as a pre-signed URL: everything that would be a signature header moves into the query, so
+     * the URL alone authorises the request and any HTTP client can follow it without credentials.
+     *
+     * @param host The request host
+     * @param canonicalUri The already-encoded path, beginning with {@code /}
+     * @param expiry How long the URL stays valid, capped at the seven days S3 allows
+     * @param timestamp The signing time
+     * @return The encoded query string to append to the URL
+     */
+    String presignGet(String host, String canonicalUri, Duration expiry, Instant timestamp) {
+        String amzDate = AMZ_DATE.format(timestamp);
+        String scopeDate = SCOPE_DATE.format(timestamp);
+        String scope = scope(scopeDate);
+
+        Map<String, String> parameters = new TreeMap<>();
+        parameters.put("X-Amz-Algorithm", ALGORITHM);
+        parameters.put("X-Amz-Credential", accessKey + "/" + scope);
+        parameters.put("X-Amz-Date", amzDate);
+        parameters.put("X-Amz-Expires", Long.toString(expirySeconds(expiry)));
+        parameters.put("X-Amz-SignedHeaders", "host");
+        String canonicalQuery = PercentEncoding.query(parameters);
+
+        // Only the host is signed, and the body is a response rather than a request, so there is nothing to hash.
+        String canonicalRequest =
+                "GET\n" + canonicalUri + '\n' + canonicalQuery + "\nhost:" + host + "\n\nhost\n" + UNSIGNED_PAYLOAD;
+
+        String signature = hex(hmac(signingKey(scopeDate), stringToSign(amzDate, scope, canonicalRequest)));
+        return canonicalQuery + "&X-Amz-Signature=" + signature;
+    }
+
+    private static long expirySeconds(Duration expiry) {
+        Duration capped = expiry.compareTo(MAX_PRESIGNED_EXPIRY) > 0 ? MAX_PRESIGNED_EXPIRY : expiry;
+        return Math.max(1L, capped.toSeconds());
+    }
+
+    private String scope(String scopeDate) {
+        return scopeDate + "/" + region + "/" + SERVICE + "/aws4_request";
+    }
+
+    private static String stringToSign(String amzDate, String scope, String canonicalRequest) {
+        return ALGORITHM
+                + '\n'
+                + amzDate
+                + '\n'
+                + scope
+                + '\n'
+                + hex(sha256(canonicalRequest.getBytes(StandardCharsets.UTF_8)));
     }
 
     /**

@@ -71,8 +71,7 @@ class PluginConfigTest {
         assertEquals("01:00:00", cfg.world().unload().timeUntilUnload());
         // World - Backup
         assertEquals(5, cfg.world().backup().maxBackupsPerWorld());
-        assertInstanceOf(
-                PluginConfig.World.Backup.Local.class, cfg.world().backup().storage());
+        assertEquals(PluginConfig.Storage.Type.LOCAL, cfg.world().backup().storage());
         assertTrue(cfg.world().backup().autoBackup().enabled());
         assertEquals(900, cfg.world().backup().autoBackup().interval());
         assertTrue(cfg.world().backup().autoBackup().onlyActiveWorlds());
@@ -276,27 +275,25 @@ class PluginConfigTest {
                       enabled: true
                       interval: 900
                       only-active-worlds: true
-                    storage:
-                      type: s3
-                      s3:
-                        url: "https://example.com"
-                        access-key: "MYACCESSKEY"
-                        secret-key: "MYSECRETKEY"
-                        region: "eu-central-1"
-                        bucket: "my-bucket"
-                        path: "backups/"
+                    storage: s3
+                    path: "backups/"
+                storage:
+                  s3:
+                    url: "https://example.com"
+                    access-key: "MYACCESSKEY"
+                    secret-key: "MYSECRETKEY"
+                    region: "eu-central-1"
+                    bucket: "my-bucket"
                 """);
 
-        assertInstanceOf(
-                PluginConfig.World.Backup.S3.class, cfg.world().backup().storage());
-        PluginConfig.World.Backup.S3 s3 =
-                (PluginConfig.World.Backup.S3) cfg.world().backup().storage();
+        assertEquals(PluginConfig.Storage.Type.S3, cfg.world().backup().storage());
+        assertEquals("backups/", cfg.world().backup().path());
+        PluginConfig.Storage.S3 s3 = cfg.storage().s3();
         assertEquals("https://example.com", s3.url());
         assertEquals("MYACCESSKEY", s3.accessKey());
         assertEquals("MYSECRETKEY", s3.secretKey());
         assertEquals("eu-central-1", s3.region());
         assertEquals("my-bucket", s3.bucket());
-        assertEquals("backups/", s3.path());
     }
 
     // -----------------------------------------------------------------------
@@ -315,25 +312,23 @@ class PluginConfigTest {
                       enabled: true
                       interval: 900
                       only-active-worlds: true
-                    storage:
-                      type: sftp
-                      sftp:
-                        host: "sftp.example.com"
-                        port: 22
-                        username: "user"
-                        password: "pass"
-                        path: "/backups/"
+                    storage: sftp
+                    path: "/backups/"
+                storage:
+                  sftp:
+                    host: "sftp.example.com"
+                    port: 22
+                    username: "user"
+                    password: "pass"
                 """);
 
-        assertInstanceOf(
-                PluginConfig.World.Backup.Sftp.class, cfg.world().backup().storage());
-        PluginConfig.World.Backup.Sftp sftp =
-                (PluginConfig.World.Backup.Sftp) cfg.world().backup().storage();
+        assertEquals(PluginConfig.Storage.Type.SFTP, cfg.world().backup().storage());
+        assertEquals("/backups/", cfg.world().backup().path());
+        PluginConfig.Storage.Sftp sftp = cfg.storage().sftp();
         assertEquals("sftp.example.com", sftp.host());
         assertEquals(22, sftp.port());
         assertEquals("user", sftp.username());
         assertEquals("pass", sftp.password());
-        assertEquals("/backups/", sftp.path());
     }
 
     @Test
@@ -343,16 +338,15 @@ class PluginConfigTest {
         PluginConfig cfg = parse("""
                 world:
                   backup:
-                    storage:
-                      type: s3
-                      s3:
-                        url: "https://example.com"
-                        access-key: "MYACCESSKEY"
-                        secret-key: "MYSECRETKEY"
+                    storage: s3
+                storage:
+                  s3:
+                    url: "https://example.com"
+                    access-key: "MYACCESSKEY"
+                    secret-key: "MYSECRETKEY"
                 """);
 
-        assertInstanceOf(
-                PluginConfig.World.Backup.Local.class, cfg.world().backup().storage());
+        assertEquals(PluginConfig.Storage.Type.LOCAL, cfg.world().backup().storage());
     }
 
     // -----------------------------------------------------------------------
@@ -371,12 +365,48 @@ class PluginConfigTest {
                       enabled: true
                       interval: 900
                       only-active-worlds: true
-                    storage:
-                      type: unknown_type
+                    storage: unknown_type
                 """);
 
-        assertInstanceOf(
-                PluginConfig.World.Backup.Local.class, cfg.world().backup().storage());
+        assertEquals(PluginConfig.Storage.Type.LOCAL, cfg.world().backup().storage());
+    }
+
+    @Test
+    void downloadStorage_sftp_fallsBackToLocal() {
+        // SFTP cannot hand out a link, so downloads must refuse it rather than start a delivery that cannot work.
+        PluginConfig cfg = parse("""
+                world:
+                  download:
+                    storage: sftp
+                storage:
+                  sftp:
+                    host: "sftp.example.com"
+                    username: "user"
+                    password: "pass"
+                """);
+
+        assertEquals(PluginConfig.Storage.Type.LOCAL, cfg.world().download().storage());
+    }
+
+    @Test
+    void downloadStorage_s3_doesNotRequireBackupsOnS3() {
+        // The credentials are shared, not owned by backups: downloads on S3 must work while backups stay local.
+        PluginConfig cfg = parse("""
+                world:
+                  backup:
+                    storage: local
+                  download:
+                    storage: s3
+                storage:
+                  s3:
+                    access-key: "MYACCESSKEY"
+                    secret-key: "MYSECRETKEY"
+                    region: "eu-central-1"
+                    bucket: "my-bucket"
+                """);
+
+        assertEquals(PluginConfig.Storage.Type.S3, cfg.world().download().storage());
+        assertEquals(PluginConfig.Storage.Type.LOCAL, cfg.world().backup().storage());
     }
 
     // -----------------------------------------------------------------------

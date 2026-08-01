@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.world.download;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpServer;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
@@ -26,20 +24,15 @@ import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.UncheckedIOException;
-import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
@@ -49,35 +42,43 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Serves world exports over HTTP so players can download a world as a single-player save.
+ * Packs a world into a single-player save and hands the player a link to it.
  *
- * <p>Off by default. When enabled, an archive is only ever reachable through the unguessable, expiring token it was
- * registered under: the token is the whole URL path, so no request can name a file, and nothing outside the plugin's
- * {@code downloads} directory is served. A link is pinned to the first client that uses it, requests are rate limited
- * per address, and concurrent transfers are capped so downloads cannot crowd each other out. Archives are deleted
- * together with their token — on expiry, on reload and on shutdown.
+ * <p>Off by default, since either way of serving the archive exposes it outside the game. The packing is the same
+ * whichever way that is; where the archive then goes is the {@link DownloadDelivery}'s business —
+ * {@link LocalDownloadDelivery the built-in HTTP server} or {@link S3DownloadDelivery a pre-signed S3 link}. Archives
+ * are cleared on reload and on shutdown, and each is dropped when its link expires.
  */
 @NullMarked
 public final class WorldDownloadService {
 
-    private static final String CONTEXT_PATH = "/download/";
-    private static final int MAX_REQUESTS_PER_WINDOW = 30;
-    private static final long RATE_LIMIT_WINDOW_MILLIS = Duration.ofMinutes(1).toMillis();
     private static final long PURGE_INTERVAL_TICKS = Duration.ofMinutes(1).toSeconds() * 20L;
+
+    /**
+     * Free space kept clear of the staging archive. The game server writes its own worlds and player data to the same
+     * disk, so an export must not be allowed to consume the last byte of it.
+     */
+    private static final long RESERVED_DISK_BYTES = 1024L * 1024 * 1024;
 
     private final ConfigService configService;
     private final TaskScheduler scheduler;
     private final Logger logger;
     private final File downloadFolder;
 
-    private final DownloadRegistry registry = new DownloadRegistry();
-    private final RequestRateLimiter rateLimiter =
-            new RequestRateLimiter(MAX_REQUESTS_PER_WINDOW, RATE_LIMIT_WINDOW_MILLIS);
+    /**
+     * Guards against a slow purge overlapping the next tick of the timer.
+     */
+    private final AtomicBoolean purging = new AtomicBoolean();
 
-    private @Nullable HttpServer server;
-    private @Nullable ExecutorService httpExecutor;
-    private @Nullable Semaphore transferSlots;
+    private @Nullable DownloadDelivery delivery;
     private @Nullable BukkitTask purgeTask;
+    private @Nullable ExecutorService exportExecutor;
+
+    /**
+     * Bumped by every {@link #stop()}. An export carries the value it started under, so one that outlives a reload is
+     * discarded instead of publishing to a delivery that is already closed.
+     */
+    private volatile int epoch;
 
     public WorldDownloadService(ConfigService configService, TaskScheduler scheduler, Logger logger, File dataFolder) {
         this.configService = configService;
@@ -87,8 +88,8 @@ public final class WorldDownloadService {
     }
 
     /**
-     * Starts the download server if it is enabled in the config. Any archive left behind by a previous run is deleted:
-     * its token did not survive the restart, so the file is unreachable.
+     * Starts world downloads if they are enabled in the config. Any archive left behind by a previous run is deleted:
+     * its link did not survive the restart, so the file is unreachable.
      */
     public void start() {
         PluginConfig.World.Download config = config();
@@ -102,52 +103,56 @@ public final class WorldDownloadService {
             return;
         }
 
-        int concurrentDownloads = Math.max(1, config.maxConcurrentDownloads());
-        ExecutorService executor = Executors.newFixedThreadPool(concurrentDownloads + 1, threadFactory());
-        try {
-            HttpServer httpServer = HttpServer.create(new InetSocketAddress(config.port()), 0);
-            httpServer.createContext(CONTEXT_PATH, this::handle);
-            httpServer.setExecutor(executor);
-            httpServer.start();
-            this.server = httpServer;
-            this.httpExecutor = executor;
-            this.transferSlots = new Semaphore(concurrentDownloads);
-        } catch (IOException e) {
-            executor.shutdownNow();
-            logger.log(Level.SEVERE, "Failed to start the world download server on port " + config.port(), e);
+        this.delivery = switch (config.storage()) {
+            case LOCAL -> LocalDownloadDelivery.open(configService, logger);
+            case S3 -> S3DownloadDelivery.open(configService, logger, scheduler.background());
+            case SFTP -> {
+                // Unreachable: the config parser downgrades a backend the feature cannot use to local.
+                logger.severe("World downloads cannot be served over SFTP; downloads are disabled.");
+                yield null;
+            }
+        };
+        if (delivery == null) {
             return;
         }
 
+        // Exports get their own thread rather than the shared background pool: packing a world holds a thread for
+        // minutes, and on that pool it would starve backups and world saves. One at a time also keeps two exports
+        // from thrashing the same disk.
+        this.exportExecutor = Executors.newSingleThreadExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "BuildSystem-Export");
+            thread.setDaemon(true);
+            return thread;
+        });
         this.purgeTask = scheduler.runTimer(this::purge, PURGE_INTERVAL_TICKS, PURGE_INTERVAL_TICKS);
-        logger.info("World downloads are available on port " + config.port());
-        warnAboutPlaintext(config);
     }
 
     /**
-     * Stops the download server and deletes every archive it was serving.
+     * Stops world downloads and drops every archive being served.
      */
     public void stop() {
+        epoch++;
         if (purgeTask != null) {
             purgeTask.cancel();
             purgeTask = null;
         }
-        if (server != null) {
-            server.stop(0);
-            server = null;
+        if (exportExecutor != null) {
+            // shutdown(), not shutdownNow(): a queued export that got dropped would leave its future hanging, and the
+            // player who asked for it stuck behind their own "already preparing" guard forever. Queued exports run
+            // instead, see the bumped epoch immediately, and fail.
+            exportExecutor.shutdown();
+            exportExecutor = null;
         }
-        if (httpExecutor != null) {
-            httpExecutor.shutdownNow();
-            httpExecutor = null;
+        if (delivery != null) {
+            delivery.close();
+            delivery = null;
         }
-        transferSlots = null;
-        registry.clear();
-        rateLimiter.clear();
         clearDownloadFolder();
     }
 
     /**
-     * Applies a changed config by restarting the server, so toggling downloads off takes effect immediately rather
-     * than at the next restart.
+     * Applies a changed config by restarting, so toggling downloads off takes effect immediately rather than at the
+     * next restart.
      */
     public void reload() {
         stop();
@@ -155,7 +160,7 @@ public final class WorldDownloadService {
     }
 
     public boolean isEnabled() {
-        return server != null;
+        return delivery != null;
     }
 
     public int getExpirationMinutes() {
@@ -163,141 +168,118 @@ public final class WorldDownloadService {
     }
 
     /**
-     * Exports {@code buildWorld} on a background thread and registers it for download.
+     * Exports {@code buildWorld} on a background thread and makes it downloadable.
      *
      * <p>Must be called from the main thread: the world's folder and the main level's are resolved through the server
      * before the export moves off it.
      *
      * @param buildWorld The world to export
-     * @param progress Notified as the world is packed, for showing the player how far along it is
+     * @param progress Notified as the world is packed and published, for showing the player how far along it is
      * @return A future completed with the download URL, or completed exceptionally if the export fails
      */
-    public CompletableFuture<String> prepare(BuildWorld buildWorld, WorldExporter.ExportProgress progress) {
-        if (server == null) {
+    public CompletableFuture<String> prepare(BuildWorld buildWorld, DownloadProgress progress) {
+        DownloadDelivery target = delivery;
+        ExecutorService executor = exportExecutor;
+        if (target == null || executor == null) {
             return CompletableFuture.failedFuture(new IllegalStateException("World downloads are disabled"));
         }
 
-        PluginConfig.World.Download config = config();
-        long storageBudget = megabytes(config.maxStorageMb());
-        if (registry.totalBytes() >= storageBudget) {
+        // The archive is staged on this disk whichever delivery takes it, so the free space bounds every export -
+        // including one the delivery itself would not limit.
+        long usableDisk = downloadFolder.getUsableSpace() - RESERVED_DISK_BYTES;
+        if (usableDisk <= 0) {
+            logger.warning("Refusing a world export: less than 1 GB is free on the world download disk.");
             return CompletableFuture.failedFuture(new StorageFullException());
         }
+
+        long reserved = target.reserve();
+        if (reserved <= 0) {
+            return CompletableFuture.failedFuture(new StorageFullException());
+        }
+        long capacity = Math.min(reserved, usableDisk);
 
         File worldFolder = FileUtils.worldFolder(buildWorld.getName());
         List<World> worlds = Bukkit.getWorlds();
         if (worlds.isEmpty()) {
+            target.release(reserved);
             return CompletableFuture.failedFuture(new IllegalStateException("No main level is loaded"));
         }
         File defaultLevelFolder = worlds.getFirst().getWorldFolder();
 
         String worldName = buildWorld.getName();
-        long maxArchiveBytes = Math.min(megabytes(config.maxSizeMb()), storageBudget - registry.totalBytes());
-        long expiresAt = System.currentTimeMillis()
-                + Duration.ofMinutes(config.expirationMinutes()).toMillis();
+        String fileName = WorldExporter.fileName(worldName) + ".zip";
         Path archive = new File(downloadFolder, worldName.hashCode() + "-" + System.nanoTime() + ".zip").toPath();
+        int startedUnder = epoch;
 
         return CompletableFuture.supplyAsync(
                 () -> {
                     try {
+                        // Queued behind another export when downloads were stopped: there is nothing to pack for.
+                        if (startedUnder != epoch) {
+                            throw new IOException("World downloads were restarted before the export began");
+                        }
+
                         WorldExporter.export(
-                                worldName, worldFolder, defaultLevelFolder, archive, maxArchiveBytes, progress);
+                                worldName,
+                                worldFolder,
+                                defaultLevelFolder,
+                                archive,
+                                capacity,
+                                (packed, total) -> progress.update(DownloadProgress.Phase.PACKING, packed, total));
+
+                        // Downloads may have been stopped or reloaded while this ran. The delivery captured above is
+                        // closed by now and the staging folder has been wiped, so there is nothing left to publish to.
+                        if (startedUnder != epoch) {
+                            deleteQuietly(archive);
+                            throw new IOException("World downloads were restarted while the export was running");
+                        }
+
+                        if (target.reportsPublishProgress()) {
+                            progress.update(DownloadProgress.Phase.PUBLISHING, 0L, 0L);
+                        }
+                        // A lifetime, not a deadline: the delivery starts the clock when it hands the link out, so
+                        // neither packing nor uploading eats into the window the player was promised.
+                        return target.publish(
+                                archive,
+                                fileName,
+                                Duration.ofMinutes(config().expirationMinutes()),
+                                (published, total) ->
+                                        progress.update(DownloadProgress.Phase.PUBLISHING, published, total));
                     } catch (IOException e) {
                         throw new UncheckedIOException(e);
+                    } finally {
+                        target.release(reserved);
                     }
-                    String token = registry.register(archive, WorldExporter.fileName(worldName) + ".zip", expiresAt);
-                    return url(token);
                 },
-                scheduler.background());
+                executor);
     }
 
     /**
-     * Warns when links leave the server unencrypted. A token in a plaintext URL is readable by anything on the path,
-     * so the only safe plain-HTTP setup is one that terminates TLS in front of this server.
+     * Hands the purge to a background thread. Dropping an S3 upload is an HTTPS round trip per object, which on the
+     * main thread would stall the tick for as long as the bucket takes to answer.
      */
-    private void warnAboutPlaintext(PluginConfig.World.Download config) {
-        if (config.url().toLowerCase(Locale.ROOT).startsWith("https://")) {
-            return;
-        }
-        logger.warning("World downloads are served over plain HTTP. Anyone able to observe the traffic can reuse a "
-                + "download link. Put the port behind a TLS proxy and point world.download.url at it.");
-    }
-
-    private void handle(HttpExchange exchange) throws IOException {
-        String clientAddress = clientAddress(exchange);
-        try (exchange) {
-            if (!rateLimiter.allow(clientAddress)) {
-                respondEmpty(exchange, 429);
-                return;
-            }
-
-            if (!"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
-                respondEmpty(exchange, 405);
-                return;
-            }
-
-            DownloadRegistry.Download download = registry.claim(token(exchange), clientAddress);
-            if (download == null || !Files.isRegularFile(download.file())) {
-                respondEmpty(exchange, 404);
-                return;
-            }
-
-            transfer(exchange, download);
-        } catch (IOException e) {
-            // A client that disconnects mid-download is routine and must not spam the console.
-            logger.log(Level.FINE, "World download aborted", e);
-        }
-    }
-
-    private void transfer(HttpExchange exchange, DownloadRegistry.Download download) throws IOException {
-        Semaphore slots = transferSlots;
-        if (slots == null || !slots.tryAcquire()) {
-            exchange.getResponseHeaders().set("Retry-After", "30");
-            respondEmpty(exchange, 503);
-            return;
-        }
-
-        try {
-            exchange.getResponseHeaders().set("Content-Type", "application/zip");
-            exchange.getResponseHeaders()
-                    .set("Content-Disposition", "attachment; filename=\"" + download.fileName() + "\"");
-            exchange.getResponseHeaders().set("X-Content-Type-Options", "nosniff");
-            exchange.getResponseHeaders().set("Cache-Control", "no-store");
-            exchange.sendResponseHeaders(200, Files.size(download.file()));
-
-            try (OutputStream out = exchange.getResponseBody()) {
-                Files.copy(download.file(), out);
-            }
-        } finally {
-            slots.release();
-        }
-    }
-
-    /**
-     * {@return the requested token, or the empty string for any request shaped differently} The token is the entire
-     * path below the context, so a request can neither name a file nor escape the download folder.
-     */
-    private String token(HttpExchange exchange) {
-        String path = exchange.getRequestURI().getPath();
-        return path.length() > CONTEXT_PATH.length() ? path.substring(CONTEXT_PATH.length()) : "";
-    }
-
-    private static String clientAddress(HttpExchange exchange) {
-        return exchange.getRemoteAddress().getAddress().getHostAddress();
-    }
-
     private void purge() {
-        registry.purgeExpired(this::delete);
-        rateLimiter.purgeStale();
+        DownloadDelivery target = delivery;
+        if (target == null || !purging.compareAndSet(false, true)) {
+            return;
+        }
+        scheduler.background().execute(() -> {
+            try {
+                target.purgeExpired();
+            } catch (RuntimeException e) {
+                logger.log(Level.WARNING, "Failed to purge expired world downloads", e);
+            } finally {
+                purging.set(false);
+            }
+        });
     }
 
-    private String url(String token) {
-        String baseUrl = config().url();
-        String trimmed = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
-        return trimmed + CONTEXT_PATH + token;
-    }
-
-    private static long megabytes(int megabytes) {
-        return megabytes * 1024L * 1024L;
+    private void deleteQuietly(Path file) {
+        try {
+            Files.deleteIfExists(file);
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Failed to delete the abandoned world export " + file, e);
+        }
     }
 
     private PluginConfig.World.Download config() {
@@ -313,27 +295,6 @@ public final class WorldDownloadService {
         } catch (IOException e) {
             logger.log(Level.WARNING, "Failed to clear the world download folder", e);
         }
-    }
-
-    private void delete(Path file) {
-        try {
-            Files.deleteIfExists(file);
-        } catch (IOException e) {
-            logger.log(Level.WARNING, "Failed to delete expired world download " + file, e);
-        }
-    }
-
-    private static void respondEmpty(HttpExchange exchange, int status) throws IOException {
-        exchange.sendResponseHeaders(status, -1);
-    }
-
-    private static ThreadFactory threadFactory() {
-        AtomicInteger counter = new AtomicInteger();
-        return runnable -> {
-            Thread thread = new Thread(runnable, "BuildSystem-Download-" + counter.incrementAndGet());
-            thread.setDaemon(true);
-            return thread;
-        };
     }
 
     /**
