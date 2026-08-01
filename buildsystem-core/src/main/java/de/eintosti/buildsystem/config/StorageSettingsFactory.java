@@ -17,97 +17,123 @@
  */
 package de.eintosti.buildsystem.config;
 
-import de.eintosti.buildsystem.config.PluginConfig.World.Backup.Local;
-import de.eintosti.buildsystem.config.PluginConfig.World.Backup.S3;
-import de.eintosti.buildsystem.config.PluginConfig.World.Backup.Sftp;
-import de.eintosti.buildsystem.config.PluginConfig.World.Backup.StorageSettings;
+import de.eintosti.buildsystem.config.PluginConfig.Storage;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Logger;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Builds the backup {@link StorageSettings} from config, validating that a chosen remote backend actually has its
- * required credentials before selecting it. A misconfigured remote logs exactly which key is missing and falls back to
- * {@link Local local} storage, rather than constructing a remote with {@code null} fields that fails only later at
- * connection time.
+ * Reads the root {@code storage} section and resolves which backend a feature may use.
+ *
+ * <p>A backend is only selected once its credentials are actually present: a misconfigured one logs exactly which key
+ * is missing and falls back to {@link Storage.Type#LOCAL local} storage, rather than being handed out and failing later
+ * at connection time.
  */
 @NullMarked
 final class StorageSettingsFactory {
 
-    private static final String BASE = "world.backup.storage.";
+    private static final String BASE = "storage.";
 
     private StorageSettingsFactory() {}
 
-    static StorageSettings fromConfig(FileConfiguration config, Logger logger) {
-        String type = config.getString(BASE + "type", "local").toLowerCase(Locale.ROOT);
-        return switch (type) {
-            case "s3" -> s3(config, logger);
-            case "sftp" -> sftp(config, logger);
-            case "local" -> new Local();
-            default -> {
-                logger.warning("Unknown backup storage type '" + type + "', defaulting to local storage.");
-                yield new Local();
-            }
-        };
-    }
-
-    private static StorageSettings s3(FileConfiguration config, Logger logger) {
-        String prefix = BASE + "s3.";
-        // Only what must come from the config: url is optional (absent means AWS rather than an S3-compatible
-        // service), and the credentials may instead be supplied through AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY,
-        // which are resolved after this runs.
-        Map<String, String> required = new LinkedHashMap<>();
-        required.put(prefix + "region", config.getString(prefix + "region"));
-        required.put(prefix + "bucket", config.getString(prefix + "bucket"));
-
-        if (fallbackOnMissing(required, "s3", logger)) {
-            return new Local();
-        }
-        return new S3(
-                config.getString(prefix + "url"),
-                config.getString(prefix + "access-key"),
-                config.getString(prefix + "secret-key"),
-                config.getString(prefix + "region"),
-                config.getString(prefix + "bucket"),
-                config.getString(prefix + "path"));
-    }
-
-    private static StorageSettings sftp(FileConfiguration config, Logger logger) {
-        String prefix = BASE + "sftp.";
-        // The password may instead come from BUILDSYSTEM_SFTP_PASSWORD, which is resolved after this runs.
-        Map<String, String> required = new LinkedHashMap<>();
-        required.put(prefix + "host", config.getString(prefix + "host"));
-        required.put(prefix + "username", config.getString(prefix + "username"));
-
-        if (fallbackOnMissing(required, "sftp", logger)) {
-            return new Local();
-        }
-
-        return new Sftp(
-                config.getString(prefix + "host"),
-                config.getInt(prefix + "port", 22),
-                config.getString(prefix + "username"),
-                config.getString(prefix + "password"),
-                config.getString(prefix + "path"));
+    /**
+     * {@return the credentials for every backend, whether or not a feature selected it}
+     */
+    static Storage fromConfig(FileConfiguration config) {
+        String s3 = BASE + "s3.";
+        String sftp = BASE + "sftp.";
+        return new Storage(
+                new Storage.S3(
+                        config.getString(s3 + "url"),
+                        config.getString(s3 + "access-key"),
+                        config.getString(s3 + "secret-key"),
+                        config.getString(s3 + "region"),
+                        config.getString(s3 + "bucket")),
+                new Storage.Sftp(
+                        config.getString(sftp + "host"),
+                        config.getInt(sftp + "port", 22),
+                        config.getString(sftp + "username"),
+                        config.getString(sftp + "password")));
     }
 
     /**
-     * {@return whether a required value is missing} Logs the first blank/absent key together with the backend name when
-     * so, signalling the caller to fall back to local storage.
+     * {@return the backend named at {@code path}, or {@link Storage.Type#LOCAL} when it is unknown, unsupported by the
+     * feature, or missing its credentials}
+     *
+     * @param config The raw configuration
+     * @param path The key naming the backend, e.g. {@code world.backup.storage}
+     * @param storage The parsed credentials, checked for whichever backend was named
+     * @param supported The backends this feature can actually use
+     * @param logger The plugin logger
      */
-    private static boolean fallbackOnMissing(Map<String, String> required, String backend, Logger logger) {
-        for (Map.Entry<String, String> entry : required.entrySet()) {
-            if (isBlank(entry.getValue())) {
-                logger.warning("Backup storage '" + backend + "' is missing required setting '" + entry.getKey()
-                        + "'; falling back to local storage.");
+    static Storage.Type typeAt(
+            FileConfiguration config, String path, Storage storage, Set<Storage.Type> supported, Logger logger) {
+        String name =
+                Objects.requireNonNullElse(config.getString(path), "local").toLowerCase(Locale.ROOT);
+        Storage.Type type =
+                switch (name) {
+                    case "local" -> Storage.Type.LOCAL;
+                    case "s3" -> Storage.Type.S3;
+                    case "sftp" -> Storage.Type.SFTP;
+                    default -> {
+                        logger.warning(
+                                "Unknown storage type '" + name + "' at " + path + "; falling back to local storage.");
+                        yield Storage.Type.LOCAL;
+                    }
+                };
+
+        if (type != Storage.Type.LOCAL && !supported.contains(type)) {
+            logger.warning(path + " does not support '" + name + "' storage; falling back to local storage.");
+            return Storage.Type.LOCAL;
+        }
+        return hasCredentials(type, storage, logger) ? type : Storage.Type.LOCAL;
+    }
+
+    /**
+     * {@return whether the backend has everything it needs to connect} Logs the first missing key when it does not.
+     */
+    private static boolean hasCredentials(Storage.Type type, Storage storage, Logger logger) {
+        Map<String, @Nullable String> required = new LinkedHashMap<>();
+        switch (type) {
+            case LOCAL -> {
                 return true;
             }
+            case S3 -> {
+                // url is optional: absent means AWS rather than an S3-compatible service. The credentials may be
+                // supplied through AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY instead of the config.
+                required.put(BASE + "s3.region", storage.s3().region());
+                required.put(BASE + "s3.bucket", storage.s3().bucket());
+                required.put(
+                        BASE + "s3.access-key (or AWS_ACCESS_KEY_ID)",
+                        storage.s3().resolvedAccessKey());
+                required.put(
+                        BASE + "s3.secret-key (or AWS_SECRET_ACCESS_KEY)",
+                        storage.s3().resolvedSecretKey());
+            }
+            case SFTP -> {
+                // The password may be supplied through BUILDSYSTEM_SFTP_PASSWORD instead of the config.
+                required.put(BASE + "sftp.host", storage.sftp().host());
+                required.put(BASE + "sftp.username", storage.sftp().username());
+                required.put(
+                        BASE + "sftp.password (or BUILDSYSTEM_SFTP_PASSWORD)",
+                        storage.sftp().resolvedPassword());
+            }
         }
-        return false;
+
+        for (Map.Entry<String, @Nullable String> entry : required.entrySet()) {
+            if (isBlank(entry.getValue())) {
+                logger.warning("Storage '" + type.name().toLowerCase(Locale.ROOT) + "' is missing required setting '"
+                        + entry.getKey() + "'; falling back to local storage.");
+                return false;
+            }
+        }
+        return true;
     }
 
     private static boolean isBlank(@Nullable String value) {

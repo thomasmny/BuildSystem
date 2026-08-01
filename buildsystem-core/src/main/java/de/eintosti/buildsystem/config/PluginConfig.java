@@ -30,7 +30,105 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public record PluginConfig(Settings settings, World world, Folder folder) {
+public record PluginConfig(Settings settings, Storage storage, World world, Folder folder) {
+
+    /**
+     * Credentials for the external services the plugin can talk to, defined once at the root rather than inside the
+     * feature that happened to need them first. Backups and world downloads both select a backend by name and read it
+     * from here, so a bucket configured for one is the same bucket for the other.
+     *
+     * @param s3 The S3 or S3-compatible service
+     * @param sftp The SFTP server
+     */
+    public record Storage(S3 s3, Sftp sftp) {
+
+        /**
+         * Which backend a feature stores its files on.
+         */
+        public enum Type {
+
+            /**
+             * The server's own disk, under the plugin folder.
+             */
+            LOCAL,
+
+            /**
+             * The bucket configured in {@code storage.s3}.
+             */
+            S3,
+
+            /**
+             * The server configured in {@code storage.sftp}.
+             */
+            SFTP
+        }
+
+        public record Sftp(
+                @Nullable String host,
+                int port,
+                @Nullable String username,
+                @Nullable String password) {
+
+            /**
+             * {@return the password, preferring {@code BUILDSYSTEM_SFTP_PASSWORD}} Lets operators keep the secret out
+             * of config.yml.
+             */
+            public @Nullable String resolvedPassword() {
+                return envOrConfig("BUILDSYSTEM_SFTP_PASSWORD", password);
+            }
+
+            /**
+             * Overridden so the password never appears in a log or pasted support output.
+             */
+            @Override
+            public String toString() {
+                return "Sftp[host=%s, port=%d, username=%s, password=%s]"
+                        .formatted(host, port, username, password == null ? null : "***");
+            }
+        }
+
+        public record S3(
+                @Nullable String url,
+                @Nullable String accessKey,
+                @Nullable String secretKey,
+                @Nullable String region,
+                @Nullable String bucket) {
+
+            /**
+             * {@return the access key, preferring {@code AWS_ACCESS_KEY_ID}} Lets operators keep the secret out of
+             * config.yml.
+             */
+            public @Nullable String resolvedAccessKey() {
+                return envOrConfig("AWS_ACCESS_KEY_ID", accessKey);
+            }
+
+            /**
+             * {@return the secret key, preferring {@code AWS_SECRET_ACCESS_KEY}}
+             */
+            public @Nullable String resolvedSecretKey() {
+                return envOrConfig("AWS_SECRET_ACCESS_KEY", secretKey);
+            }
+
+            /**
+             * Overridden so the access key and secret key never appear in a log or pasted support output.
+             */
+            @Override
+            public String toString() {
+                return "S3[url=%s, accessKey=%s, secretKey=%s, region=%s, bucket=%s]"
+                        .formatted(
+                                url,
+                                accessKey == null ? null : "***",
+                                secretKey == null ? null : "***",
+                                region,
+                                bucket);
+            }
+        }
+
+        private static @Nullable String envOrConfig(String envKey, @Nullable String configValue) {
+            String env = System.getenv(envKey);
+            return env == null || env.isBlank() ? configValue : env;
+        }
+    }
 
     public record Settings(
             boolean updateChecker,
@@ -130,74 +228,13 @@ public record PluginConfig(Settings settings, World world, Folder folder) {
             }
         }
 
-        public record Backup(int maxBackupsPerWorld, StorageSettings storage, AutoBackup autoBackup) {
-
-            public sealed interface StorageSettings permits Local, Sftp, S3 {}
-
-            public record Local() implements StorageSettings {}
-
-            public record Sftp(
-                    @Nullable String host,
-                    int port,
-                    @Nullable String username,
-                    @Nullable String password,
-                    @Nullable String path)
-                    implements StorageSettings {
-
-                /**
-                 * Overridden so the password never appears in a log or pasted support output.
-                 */
-                @Override
-                public String toString() {
-                    return "Sftp[host=%s, port=%d, username=%s, password=%s, path=%s]"
-                            .formatted(host, port, username, password == null ? null : "***", path);
-                }
-            }
-
-            public record S3(
-                    @Nullable String url,
-                    @Nullable String accessKey,
-                    @Nullable String secretKey,
-                    @Nullable String region,
-                    @Nullable String bucket,
-                    @Nullable String path)
-                    implements StorageSettings {
-
-                /**
-                 * {@return the access key, preferring {@code AWS_ACCESS_KEY_ID}} Lets operators keep the secret out of
-                 * config.yml.
-                 */
-                public @Nullable String resolvedAccessKey() {
-                    return envOrConfig("AWS_ACCESS_KEY_ID", accessKey);
-                }
-
-                /**
-                 * {@return the secret key, preferring {@code AWS_SECRET_ACCESS_KEY}}
-                 */
-                public @Nullable String resolvedSecretKey() {
-                    return envOrConfig("AWS_SECRET_ACCESS_KEY", secretKey);
-                }
-
-                private static @Nullable String envOrConfig(String envKey, @Nullable String configValue) {
-                    String env = System.getenv(envKey);
-                    return env == null || env.isBlank() ? configValue : env;
-                }
-
-                /**
-                 * Overridden so the access key and secret key never appear in a log or pasted support output.
-                 */
-                @Override
-                public String toString() {
-                    return "S3[url=%s, accessKey=%s, secretKey=%s, region=%s, bucket=%s, path=%s]"
-                            .formatted(
-                                    url,
-                                    accessKey == null ? null : "***",
-                                    secretKey == null ? null : "***",
-                                    region,
-                                    bucket,
-                                    path);
-                }
-            }
+        /**
+         * @param maxBackupsPerWorld How many backups are kept per world
+         * @param storage Which backend backups are written to, configured under the root {@code storage} section
+         * @param path Where backups live within that backend
+         * @param autoBackup The scheduled backup settings
+         */
+        public record Backup(int maxBackupsPerWorld, Storage.Type storage, String path, AutoBackup autoBackup) {
 
             public record AutoBackup(boolean enabled, boolean onlyActiveWorlds, int interval) {}
         }
@@ -215,32 +252,14 @@ public record PluginConfig(Settings settings, World world, Folder folder) {
          */
         public record Download(
                 boolean enabled,
-                Storage storage,
+                Storage.Type storage,
                 int port,
                 String url,
                 boolean behindProxy,
                 int expirationMinutes,
                 int maxSizeMb,
                 int maxStorageMb,
-                int maxConcurrentDownloads) {
-
-            /**
-             * Where a prepared archive lives while a player fetches it.
-             */
-            public enum Storage {
-
-                /**
-                 * Served by the plugin's own HTTP server, from the port above.
-                 */
-                LOCAL,
-
-                /**
-                 * Uploaded to the bucket the backups already use and handed out as a pre-signed link, so no port has
-                 * to be opened. Requires {@code world.backup.storage.type: s3}.
-                 */
-                S3
-            }
-        }
+                int maxConcurrentDownloads) {}
     }
 
     public record Folder(boolean overridePermissions, boolean overrideProjects) {}

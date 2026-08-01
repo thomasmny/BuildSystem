@@ -35,14 +35,14 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Uploads archives to the bucket the backups already use and hands out pre-signed links.
+ * Uploads archives to the configured bucket and hands out pre-signed links.
  *
  * <p>No port has to be opened, and the uplink carries the world once rather than once per player. The trade is that a
  * pre-signed URL is a plain bearer token: unlike a local link it cannot be pinned to one client or rate limited, so
  * whoever it is forwarded to can use it until it expires.
  *
- * <p>Credentials, bucket and endpoint come from {@code world.backup.storage.s3}, so the two features cannot drift
- * apart.
+ * <p>Credentials, bucket and endpoint come from the root {@code storage.s3} section, so downloads and backups share
+ * one definition without either owning it. Backups do not have to be on S3 for this to work.
  */
 @NullMarked
 final class S3DownloadDelivery implements DownloadDelivery {
@@ -75,18 +75,13 @@ final class S3DownloadDelivery implements DownloadDelivery {
      * @param background Where the leftovers of a previous run are cleared, which must not hold up startup
      */
     static @Nullable S3DownloadDelivery open(ConfigService configService, Logger logger, Executor background) {
-        if (!(configService.current().world().backup().storage() instanceof PluginConfig.World.Backup.S3 settings)) {
-            logger.severe("world.download.storage is 's3' but backups are not stored on S3."
-                    + " Set world.backup.storage.type to 's3', or world.download.storage back to 'local'."
-                    + " World downloads are disabled.");
-            return null;
-        }
-
+        PluginConfig.Storage.S3 settings = configService.current().storage().s3();
         String accessKey = settings.resolvedAccessKey();
         String secretKey = settings.resolvedSecretKey();
         if (isBlank(accessKey) || isBlank(secretKey) || isBlank(settings.region()) || isBlank(settings.bucket())) {
             logger.severe("World downloads are disabled:"
-                    + " the S3 backup storage is missing its credentials, region or bucket.");
+                    + " world.download.storage is 's3' but the storage.s3 section is missing its credentials,"
+                    + " region or bucket.");
             return null;
         }
 

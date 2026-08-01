@@ -61,7 +61,16 @@ class ConfigDefaultsDriftTest {
             "world.deletionBlacklist",
             "world.unload.blacklistedWorlds",
             "settings.worldPermissionWhitelist",
-            "world.defaults.gameRules");
+            "world.defaults.gameRules",
+            // Placeholders showing the shape of a credential, not values anything should fall back to. A server that
+            // never configures a backend must see null here rather than inherit "YOUR_ACCESS_KEY".
+            "storage.s3.accessKey",
+            "storage.s3.secretKey",
+            "storage.s3.region",
+            "storage.s3.bucket",
+            "storage.sftp.host",
+            "storage.sftp.username",
+            "storage.sftp.password");
 
     @Test
     @DisplayName("Every parser default matches the value shipped in config.yml")

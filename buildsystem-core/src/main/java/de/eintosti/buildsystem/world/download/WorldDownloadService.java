@@ -106,6 +106,11 @@ public final class WorldDownloadService {
         this.delivery = switch (config.storage()) {
             case LOCAL -> LocalDownloadDelivery.open(configService, logger);
             case S3 -> S3DownloadDelivery.open(configService, logger, scheduler.background());
+            case SFTP -> {
+                // Unreachable: the config parser downgrades a backend the feature cannot use to local.
+                logger.severe("World downloads cannot be served over SFTP; downloads are disabled.");
+                yield null;
+            }
         };
         if (delivery == null) {
             return;

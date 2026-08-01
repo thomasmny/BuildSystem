@@ -101,7 +101,12 @@ public class ConfigService {
      * @return The parsed {@link PluginConfig}
      */
     static PluginConfig parse(FileConfiguration config, Logger logger, XMaterial worldEditWand) {
-        return new PluginConfig(parseSettings(config, worldEditWand), parseWorld(config, logger), parseFolder(config));
+        PluginConfig.Storage storage = StorageSettingsFactory.fromConfig(config);
+        return new PluginConfig(
+                parseSettings(config, worldEditWand),
+                storage,
+                parseWorld(config, storage, logger),
+                parseFolder(config));
     }
 
     private static PluginConfig.Settings parseSettings(FileConfiguration config, XMaterial worldEditWand) {
@@ -139,7 +144,8 @@ public class ConfigService {
                 navigator);
     }
 
-    private static PluginConfig.World parseWorld(FileConfiguration config, Logger logger) {
+    private static PluginConfig.World parseWorld(
+            FileConfiguration config, PluginConfig.Storage storage, Logger logger) {
         PluginConfig.World.VoidBlock voidBlock = parseVoidBlock(config, logger);
 
         PluginConfig.World.Limits limits = new PluginConfig.World.Limits(
@@ -195,13 +201,25 @@ public class ConfigService {
 
         PluginConfig.World.Backup backup = new PluginConfig.World.Backup(
                 Math.min(config.getInt("world.backup.max-backups-per-world", 5), 18),
-                StorageSettingsFactory.fromConfig(config, logger),
+                StorageSettingsFactory.typeAt(
+                        config,
+                        "world.backup.storage",
+                        storage,
+                        EnumSet.allOf(PluginConfig.Storage.Type.class),
+                        logger),
+                Objects.requireNonNullElse(config.getString("world.backup.path"), "backups/worlds/"),
                 autoBackup);
 
         int downloadPort = config.getInt("world.download.port", 8080);
         PluginConfig.World.Download download = new PluginConfig.World.Download(
                 config.getBoolean("world.download.enabled", false),
-                downloadStorage(config, logger),
+                // Downloads hand out a link, which SFTP has no way to produce.
+                StorageSettingsFactory.typeAt(
+                        config,
+                        "world.download.storage",
+                        storage,
+                        EnumSet.of(PluginConfig.Storage.Type.LOCAL, PluginConfig.Storage.Type.S3),
+                        logger),
                 downloadPort,
                 Objects.requireNonNullElse(config.getString("world.download.url"), "http://localhost:" + downloadPort),
                 config.getBoolean("world.download.behind-proxy", false),
@@ -227,23 +245,6 @@ public class ConfigService {
                 unload,
                 backup,
                 download);
-    }
-
-    /**
-     * {@return where prepared world archives are served from} An unrecognised value falls back to the built-in server
-     * rather than disabling downloads, so a typo does not silently take the feature away.
-     */
-    private static PluginConfig.World.Download.Storage downloadStorage(FileConfiguration config, Logger logger) {
-        String type = Objects.requireNonNullElse(config.getString("world.download.storage"), "local")
-                .toLowerCase(Locale.ROOT);
-        return switch (type) {
-            case "local" -> PluginConfig.World.Download.Storage.LOCAL;
-            case "s3" -> PluginConfig.World.Download.Storage.S3;
-            default -> {
-                logger.warning("Unknown download storage type '" + type + "', defaulting to local storage.");
-                yield PluginConfig.World.Download.Storage.LOCAL;
-            }
-        };
     }
 
     private static PluginConfig.World.VoidBlock parseVoidBlock(FileConfiguration config, Logger logger) {
