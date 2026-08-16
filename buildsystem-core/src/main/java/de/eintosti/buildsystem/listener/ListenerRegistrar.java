@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.integration.axiom.WorldManipulateByAxiomListener;
+import de.eintosti.buildsystem.integration.essentials.WarpWorldLoadListener;
 import de.eintosti.buildsystem.integration.worldedit.EditSessionListener;
 import de.eintosti.buildsystem.listener.color.AsyncPlayerChatListener;
 import de.eintosti.buildsystem.listener.color.SignChangeListener;
@@ -47,6 +48,7 @@ import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import org.bukkit.event.Listener;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.jspecify.annotations.NullMarked;
 
@@ -153,6 +155,11 @@ public final class ListenerRegistrar {
     private void registerIntegrations(ConfigService configService) {
         if (pluginManager.getPlugin("AxiomPaper") != null) {
             register(new WorldManipulateByAxiomListener(services.world().getWorldStorage(), plugin.getLogger()));
+        }
+
+        Plugin essentials = pluginManager.getPlugin("Essentials");
+        if (essentials != null) {
+            register(new WarpWorldLoadListener(services.world().getWorldStorage(), essentials, plugin.getLogger()));
         }
 
         boolean isWorldEdit =
