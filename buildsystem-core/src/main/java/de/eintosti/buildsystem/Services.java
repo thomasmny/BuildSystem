@@ -117,18 +117,18 @@ public final class Services {
                 new WorldStatusRegistryImpl(plugin, navigatorCategoryRegistry(), messages(), this::world);
         this.customizableIcons = new CustomizableIcons(plugin);
 
-        this.customBlockManager = new CustomBlockManager(plugin, this::world);
-        this.playerLookupService = new PlayerLookupService(plugin);
+        this.customBlockManager = new CustomBlockManager(plugin, taskScheduler, this::world);
+        this.playerLookupService = new PlayerLookupService(plugin, taskScheduler.background());
         (this.playerService = new PlayerServiceImpl(plugin, config(), this::world, taskScheduler)).init();
         this.navigatorEditorService = new NavigatorEditorService();
-        this.noClipService = new NoClipService(plugin);
+        this.noClipService = new NoClipService(taskScheduler);
         this.worldService = new WorldServiceImpl(plugin, this);
-        this.backupService = new BackupServiceImpl(plugin, config(), messages(), world(), this::spawn);
+        this.backupService = new BackupServiceImpl(plugin, taskScheduler, config(), messages(), world(), this::spawn);
         this.worldDownloadService =
                 new WorldDownloadService(config(), taskScheduler, plugin.getLogger(), plugin.getDataFolder());
-        this.settingsService = new SettingsService(plugin, config(), messages(), player(), world());
+        this.settingsService = new SettingsService(plugin, taskScheduler, config(), messages(), player(), world());
         this.spawnService = new SpawnService(plugin, world(), taskScheduler);
-        this.menuItems = new MenuItems(plugin, messages(), settings());
+        this.menuItems = new MenuItems(plugin, taskScheduler, messages(), settings());
         this.navigatorItems = new NavigatorItems(plugin, config(), messages());
         this.navigatorService = new NavigatorService(
                 navigatorCategoryRegistry(),

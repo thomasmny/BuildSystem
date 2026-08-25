@@ -30,8 +30,12 @@ import org.jspecify.annotations.NullMarked;
  * The plugin's single scheduling seam. Wraps the Bukkit scheduler (owning the {@link Plugin} handle so collaborators
  * depend on this one injectable instead of the whole {@code BuildSystemPlugin}) and owns the bounded executor that backs
  * all off-main work. Exposing {@link #mainThread()} and {@link #background()} as {@link Executor}s lets
- * {@link java.util.concurrent.CompletableFuture} stages hop threads through the same seam, so there is no longer a mix of
- * raw {@code Bukkit.getScheduler()} calls, ad-hoc {@code mainThreadExecutor} lambdas and the common ForkJoinPool.
+ * {@link java.util.concurrent.CompletableFuture} stages hop threads through the same seam, instead of a mix of raw
+ * {@code Bukkit.getScheduler()} calls, ad-hoc {@code mainThreadExecutor} lambdas and the common ForkJoinPool.
+ *
+ * <p>One deliberate exception remains, in {@code WorldServiceImpl#deleteWorld}: it holds a raw {@code BukkitScheduler}
+ * because the stage that uses it runs on a pool thread, and going through this class would defer the
+ * {@code Bukkit.getScheduler()} static until it got there.
  *
  * <p>The background pool is bounded and daemon-threaded; nothing running on it blocks on another background task (chains
  * use non-blocking {@code CompletableFuture} composition), so a single shared pool cannot self-deadlock. Call

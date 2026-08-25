@@ -22,6 +22,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import de.eintosti.buildsystem.util.ServerModeChecker;
 import de.eintosti.buildsystem.util.ServerModeChecker.ServerMode;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -58,10 +59,15 @@ public final class PlayerLookupService {
     private final Map<String, UUID> uuidCache = new ConcurrentHashMap<>();
     private final Map<UUID, String> nameCache = new ConcurrentHashMap<>();
 
-    public PlayerLookupService(JavaPlugin plugin) {
+    /**
+     * @param plugin The plugin, used for logging
+     * @param asyncExecutor Runs the Mojang lookups off the main thread; in production this is
+     *     {@link TaskScheduler#background()}
+     */
+    public PlayerLookupService(JavaPlugin plugin, Executor asyncExecutor) {
         this.plugin = plugin;
         this.httpClient = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
-        this.asyncExecutor = runnable -> Bukkit.getScheduler().runTaskAsynchronously(plugin, runnable);
+        this.asyncExecutor = asyncExecutor;
     }
 
     /**

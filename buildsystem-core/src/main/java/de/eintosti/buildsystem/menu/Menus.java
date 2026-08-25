@@ -158,15 +158,17 @@ public final class Menus {
     }
 
     /**
-     * Opens the world-project chat prompt. A transitional bridge that reuses the subcommand's input flow so the editor
-     * menu need not depend on the plugin; folds into the command layer once that is constructor-injected.
+     * Opens the world-project chat prompt by borrowing the subcommand's input flow, so the menu and {@code
+     * /worlds setProject} cannot drift apart. The subcommand is built per call because it is a plain object over
+     * {@link Services}; lifting the flow into its own collaborator would be the tidier shape, but it is untested
+     * prompt logic and moving it buys nothing today.
      */
     public void promptWorldProject(BuildWorld buildWorld, Player player) {
         new SetProjectSubCommand(services.messages(), services.world(), this, services.prompts(), services.settings())
                 .getProjectInput(player, buildWorld, false);
     }
 
-    /** Opens the world-permission chat prompt; transitional bridge, see {@link #promptWorldProject}. */
+    /** Opens the world-permission chat prompt; borrows the subcommand's flow, see {@link #promptWorldProject}. */
     public void promptWorldPermission(BuildWorld buildWorld, Player player) {
         new SetPermissionSubCommand(
                         services.messages(),
@@ -178,7 +180,7 @@ public final class Menus {
                 .getPermissionInput(player, buildWorld, false);
     }
 
-    /** Opens the add-builder chat prompt; transitional bridge, see {@link #promptWorldProject}. */
+    /** Opens the add-builder chat prompt; borrows the subcommand's flow, see {@link #promptWorldProject}. */
     public void promptAddBuilder(BuildWorld buildWorld, Player player) {
         new AddBuilderSubCommand(
                         services.messages(),

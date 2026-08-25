@@ -24,13 +24,13 @@ import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.logging.Level;
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.jspecify.annotations.NullMarked;
 
@@ -45,13 +45,16 @@ public class WorldLoadBootstrap {
     private final FolderStorageImpl folderStorage;
     private final WorldStorageImpl worldStorage;
     private final ConfigService configService;
+    private final TaskScheduler scheduler;
 
     public WorldLoadBootstrap(
             BuildSystemPlugin plugin,
+            TaskScheduler scheduler,
             FolderStorageImpl folderStorage,
             WorldStorageImpl worldStorage,
             ConfigService configService) {
         this.plugin = plugin;
+        this.scheduler = scheduler;
         this.folderStorage = folderStorage;
         this.worldStorage = worldStorage;
         this.configService = configService;
@@ -60,7 +63,7 @@ public class WorldLoadBootstrap {
     public void loadWorlds() {
         this.worldStorage
                 .load()
-                .thenAccept(worlds -> Bukkit.getScheduler().runTask(plugin, () -> {
+                .thenAccept(worlds -> scheduler.run(() -> {
                     worlds.forEach(worldStorage::addBuildWorld);
                     assignWorldsToFolders();
 

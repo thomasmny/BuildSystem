@@ -30,6 +30,7 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.storage.LocalBackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.S3BackupStorage;
@@ -59,6 +60,7 @@ public class BackupServiceImpl implements BackupService {
     private static final int BACKUP_PROFILE_POOL_SIZE = 3;
 
     private final BuildSystemPlugin plugin;
+    private final TaskScheduler scheduler;
     private final ConfigService configService;
     private final Messages messages;
     private final WorldServiceImpl worldService;
@@ -79,11 +81,13 @@ public class BackupServiceImpl implements BackupService {
 
     public BackupServiceImpl(
             BuildSystemPlugin plugin,
+            TaskScheduler scheduler,
             ConfigService configService,
             Messages messages,
             WorldServiceImpl worldService,
             Supplier<SpawnService> spawnService) {
         this.plugin = plugin;
+        this.scheduler = scheduler;
         this.configService = configService;
         this.messages = messages;
         this.worldService = worldService;
@@ -200,8 +204,8 @@ public class BackupServiceImpl implements BackupService {
     private void scheduleAutoBackupIfEnabled() {
         PluginConfig.World.Backup backupConfig = configService.current().world().backup();
         if (backupConfig.autoBackup().enabled() && plugin.isEnabled()) {
-            this.autoBackupTask = Bukkit.getScheduler()
-                    .runTaskTimer(plugin, this::incrementTimeSinceBackup, UPDATE_PERIOD_TICKS, UPDATE_PERIOD_TICKS);
+            this.autoBackupTask =
+                    scheduler.runTimer(this::incrementTimeSinceBackup, UPDATE_PERIOD_TICKS, UPDATE_PERIOD_TICKS);
         }
     }
 
@@ -289,9 +293,9 @@ public class BackupServiceImpl implements BackupService {
         getProfile(buildWorld).createBackup().whenComplete((backup, throwable) -> {
             if (throwable != null) {
                 plugin.getLogger().log(Level.SEVERE, "Backup failed", throwable);
-                Bukkit.getScheduler().runTask(plugin, onFailure);
+                scheduler.run(onFailure);
             } else {
-                Bukkit.getScheduler().runTask(plugin, onSuccess);
+                scheduler.run(onSuccess);
             }
         });
     }
@@ -314,6 +318,13 @@ public class BackupServiceImpl implements BackupService {
      */
     private BackupProfile createProfile(BuildWorld buildWorld) {
         return new BackupProfileImpl(
-                plugin, configService, messages, worldService, spawnService.get(), this::getStorage, buildWorld);
+                plugin,
+                scheduler,
+                configService,
+                messages,
+                worldService,
+                spawnService.get(),
+                this::getStorage,
+                buildWorld);
     }
 }

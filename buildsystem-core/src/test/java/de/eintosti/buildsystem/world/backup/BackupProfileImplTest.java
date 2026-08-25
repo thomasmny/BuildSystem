@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.backup;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
@@ -32,6 +33,7 @@ import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.List;
@@ -90,10 +92,25 @@ class BackupProfileImplTest {
         bukkit.close();
     }
 
+    /** A scheduler that runs "main thread" work inline, so the post-delete events fire within the test. */
+    private static TaskScheduler inlineScheduler() {
+        TaskScheduler scheduler = mock(TaskScheduler.class);
+        lenient().when(scheduler.mainThread()).thenReturn(Runnable::run);
+        lenient()
+                .doAnswer(invocation -> {
+                    invocation.getArgument(0, Runnable.class).run();
+                    return null;
+                })
+                .when(scheduler)
+                .run(any());
+        return scheduler;
+    }
+
     private BackupProfileImpl profile(int maxBackupsPerWorld) {
         when(configService.current().world().backup().maxBackupsPerWorld()).thenReturn(maxBackupsPerWorld);
         return new BackupProfileImpl(
                 plugin,
+                inlineScheduler(),
                 configService,
                 mock(Messages.class),
                 mock(WorldServiceImpl.class),

@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import fr.mrmicky.fastboard.FastBoard;
@@ -45,6 +46,7 @@ import org.jspecify.annotations.NullMarked;
 public class SettingsService {
 
     private final BuildSystemPlugin plugin;
+    private final TaskScheduler scheduler;
     private final ConfigService configService;
     private final Messages messages;
     private final PlayerServiceImpl playerService;
@@ -55,11 +57,13 @@ public class SettingsService {
 
     public SettingsService(
             BuildSystemPlugin plugin,
+            TaskScheduler scheduler,
             ConfigService configService,
             Messages messages,
             PlayerServiceImpl playerService,
             WorldServiceImpl worldService) {
         this.plugin = plugin;
+        this.scheduler = scheduler;
         this.configService = configService;
         this.messages = messages;
         this.playerService = playerService;
@@ -95,8 +99,7 @@ public class SettingsService {
         board.updateTitle(messages.getString("title", player));
         // Synchronous: the update reads the player's world and its BuildWorld data, which Bukkit only guarantees on the
         // main thread. The work is one lookup and a handful of string substitutions per player per second.
-        BukkitTask scoreboardTask =
-                Bukkit.getScheduler().runTaskTimer(plugin, () -> updateScoreboard(player, board), 0L, 20L);
+        BukkitTask scoreboardTask = scheduler.runTimer(() -> updateScoreboard(player, board), 0L, 20L);
         this.scoreboardTasks.put(player.getUniqueId(), scoreboardTask);
     }
 

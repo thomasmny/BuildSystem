@@ -35,7 +35,7 @@ class PlayerLookupServiceTest {
 
     @Test
     void cachedUuidLookupCompletesImmediately() throws ExecutionException, InterruptedException {
-        PlayerLookupService service = new PlayerLookupService(null);
+        PlayerLookupService service = new PlayerLookupService(null, Runnable::run);
         UUID uuid = UUID.randomUUID();
         service.cacheUser(uuid, "Notch");
 
@@ -46,7 +46,7 @@ class PlayerLookupServiceTest {
 
     @Test
     void cachedNameLookupIsCaseInsensitive() throws ExecutionException, InterruptedException {
-        PlayerLookupService service = new PlayerLookupService(null);
+        PlayerLookupService service = new PlayerLookupService(null, Runnable::run);
         UUID uuid = UUID.randomUUID();
         service.cacheUser(uuid, "Steve");
 

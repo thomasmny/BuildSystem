@@ -28,13 +28,13 @@ import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.stream.IntStream;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -51,11 +51,13 @@ import org.jspecify.annotations.Nullable;
 public final class MenuItems {
 
     private final JavaPlugin plugin;
+    private final TaskScheduler scheduler;
     private final Messages messages;
     private final SettingsService settingsService;
 
-    public MenuItems(JavaPlugin plugin, Messages messages, SettingsService settingsService) {
+    public MenuItems(JavaPlugin plugin, TaskScheduler scheduler, Messages messages, SettingsService settingsService) {
         this.plugin = plugin;
+        this.scheduler = scheduler;
         this.messages = messages;
         this.settingsService = settingsService;
     }
@@ -285,7 +287,7 @@ public final class MenuItems {
                     itemMeta.setDisplayName(name);
                     itemMeta.setLore(lore);
                     itemStack.setItemMeta(itemMeta);
-                    Bukkit.getScheduler().runTask(plugin, () -> onResolved.accept(itemStack));
+                    scheduler.run(() -> onResolved.accept(itemStack));
                 })
                 .exceptionally(throwable -> {
                     logProfileFailure(name, throwable);

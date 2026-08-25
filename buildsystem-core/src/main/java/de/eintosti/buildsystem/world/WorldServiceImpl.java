@@ -90,7 +90,8 @@ public class WorldServiceImpl implements WorldService {
         this.messages = services.messages();
         this.worldStorage = new YamlWorldStorage(plugin, services);
         this.folderStorage = new YamlFolderStorage(plugin, this.worldStorage, services);
-        this.loadBootstrap = new WorldLoadBootstrap(plugin, this.folderStorage, this.worldStorage, services.config());
+        this.loadBootstrap = new WorldLoadBootstrap(
+                plugin, services.scheduler(), this.folderStorage, this.worldStorage, services.config());
         this.creationPrompts = new WorldCreationPrompts(this, services::prompts, services.messages());
         this.importCoordinator =
                 new WorldImportCoordinator(plugin, this, this.worldStorage, services.config(), services.messages());
@@ -296,8 +297,9 @@ public class WorldServiceImpl implements WorldService {
         buildWorld.setFolder(null);
         removePlayersFromWorld(worldName, "worlds_delete_players_world");
 
-        // Resolve the scheduler on the calling (main) thread so the async stage below does not touch
-        // Bukkit statics from a pool thread.
+        // The one place a raw BukkitScheduler is held rather than TaskScheduler: the stage below runs on a pool
+        // thread, and TaskScheduler.run() would only reach Bukkit.getScheduler() once it got there. Resolving the
+        // handle here keeps every Bukkit static access on the main thread.
         BukkitScheduler scheduler = Bukkit.getScheduler();
 
         // Registry removal and metadata persistence are awaited before folder deletion so a crash mid-delete leaves an

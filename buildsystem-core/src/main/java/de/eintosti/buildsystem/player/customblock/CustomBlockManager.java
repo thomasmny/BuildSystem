@@ -21,9 +21,9 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.function.Supplier;
-import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
@@ -37,11 +37,12 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class CustomBlockManager implements Listener {
 
-    private final BuildSystemPlugin plugin;
+    private final TaskScheduler scheduler;
     private final Supplier<WorldServiceImpl> worldService;
 
-    public CustomBlockManager(BuildSystemPlugin plugin, Supplier<WorldServiceImpl> worldService) {
-        this.plugin = plugin;
+    public CustomBlockManager(
+            BuildSystemPlugin plugin, TaskScheduler scheduler, Supplier<WorldServiceImpl> worldService) {
+        this.scheduler = scheduler;
         this.worldService = worldService;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
@@ -93,7 +94,7 @@ public class CustomBlockManager implements Listener {
         Player player = event.getPlayer();
         Block block = event.getBlockPlaced();
 
-        Bukkit.getScheduler().runTask(plugin, () -> {
+        scheduler.run(() -> {
             if (customBlock.place(block, player)) {
                 event.setCancelled(true);
             }

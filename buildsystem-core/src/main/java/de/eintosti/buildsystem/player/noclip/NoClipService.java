@@ -17,9 +17,15 @@
  */
 package de.eintosti.buildsystem.player.noclip;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import java.util.*;
+import de.eintosti.buildsystem.util.TaskScheduler;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -27,19 +33,19 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class NoClipService {
 
-    private final BuildSystemPlugin plugin;
     private final Map<UUID, GameMode> previousGameMode;
     private final Set<UUID> noClipPlayers;
+    private final TaskScheduler scheduler;
 
-    public NoClipService(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+    public NoClipService(TaskScheduler scheduler) {
+        this.scheduler = scheduler;
         this.noClipPlayers = new HashSet<>();
         this.previousGameMode = new HashMap<>();
         runBlockCheckTask();
     }
 
     private void runBlockCheckTask() {
-        Bukkit.getScheduler().runTaskTimer(plugin, this::checkForBlocks, 0L, 4L);
+        scheduler.runTimer(this::checkForBlocks, 0L, 4L);
     }
 
     private void checkForBlocks() {

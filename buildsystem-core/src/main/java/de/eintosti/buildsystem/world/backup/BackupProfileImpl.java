@@ -33,6 +33,7 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.WorldFlush;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
@@ -61,6 +62,7 @@ import org.jspecify.annotations.Nullable;
 public class BackupProfileImpl implements BackupProfile {
 
     private final BuildSystemPlugin plugin;
+    private final TaskScheduler scheduler;
     private final ConfigService configService;
     private final Messages messages;
     private final WorldServiceImpl worldService;
@@ -83,6 +85,7 @@ public class BackupProfileImpl implements BackupProfile {
 
     public BackupProfileImpl(
             BuildSystemPlugin plugin,
+            TaskScheduler scheduler,
             ConfigService configService,
             Messages messages,
             WorldServiceImpl worldService,
@@ -90,6 +93,7 @@ public class BackupProfileImpl implements BackupProfile {
             Supplier<BackupStorage> storage,
             BuildWorld buildWorld) {
         this.plugin = plugin;
+        this.scheduler = scheduler;
         this.configService = configService;
         this.messages = messages;
         this.worldService = worldService;
@@ -166,7 +170,7 @@ public class BackupProfileImpl implements BackupProfile {
      * Backup futures complete on async threads, but Bukkit events must be fired on the main thread.
      */
     private void fireEventSync(Event event) {
-        Bukkit.getScheduler().runTask(plugin, () -> Bukkit.getPluginManager().callEvent(event));
+        scheduler.run(() -> Bukkit.getPluginManager().callEvent(event));
     }
 
     @Override
@@ -309,6 +313,6 @@ public class BackupProfileImpl implements BackupProfile {
      * must happen.
      */
     private Executor mainThreadExecutor() {
-        return task -> Bukkit.getScheduler().runTask(plugin, task);
+        return scheduler.mainThread();
     }
 }
