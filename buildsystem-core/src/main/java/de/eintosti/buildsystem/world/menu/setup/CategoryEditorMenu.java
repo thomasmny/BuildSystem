@@ -119,10 +119,13 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                     String loreKey = isHeadIcon() ? "setup_category_icon_head_lore" : "setup_category_icon_lore";
                     String textureLabel = skullProcessor.getLabel(player);
 
-                    ItemBuilder.icon(category, player)
-                            .name(messages.getString("setup_category_icon", player))
-                            .lore(messages.getStringList(loreKey, player, Placeholders.of("%texture%", textureLabel)))
-                            .into(inventory, slot);
+                    menuItems.renderCategoryIcon(
+                            inventory,
+                            slot,
+                            category,
+                            player,
+                            messages.getString("setup_category_icon", player),
+                            messages.getStringList(loreKey, player, Placeholders.of("%texture%", textureLabel)));
                 })
                 .onClick((player, event) -> {
                     if (isHeadIcon() && event.isRightClick()) {

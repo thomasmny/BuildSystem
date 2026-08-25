@@ -30,6 +30,7 @@ import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.bukkit.entity.Player;
@@ -94,8 +95,9 @@ public class NavigatorLayoutMenu extends LayoutEditorMenu<NavigatorCategory> {
     }
 
     @Override
-    protected ItemBuilder icon(NavigatorCategory category, Player player) {
-        return ItemBuilder.icon(category, player);
+    protected void renderIcon(
+            NavigatorCategory category, Player player, Inventory inventory, int slot, String name, List<String> lore) {
+        menuItems.renderCategoryIcon(inventory, slot, category, player, name, lore);
     }
 
     @Override
@@ -109,7 +111,7 @@ public class NavigatorLayoutMenu extends LayoutEditorMenu<NavigatorCategory> {
     }
 
     @Override
-    protected LayoutOccupant occupant() {
+    LayoutOccupant occupant() {
         return settingsButton;
     }
 

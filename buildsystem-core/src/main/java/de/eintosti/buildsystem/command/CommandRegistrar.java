@@ -55,7 +55,7 @@ public final class CommandRegistrar {
         register("physics", new PhysicsCommand(messages, logger, worldStorage));
         register("settings", new SettingsCommand(messages, logger, menus));
         register("setup", new SetupCommand(messages, logger, menus));
-        register("skull", new SkullCommand(messages, logger));
+        register("skull", new SkullCommand(messages, logger, services.menuItems()));
         register("spawn", new SpawnCommand(messages, logger, services.config(), services.spawn(), worldStorage));
         register("speed", new SpeedCommand(messages, logger, menus));
         TimeCommand timeCommand = new TimeCommand(messages, logger, services.config(), worldStorage);

@@ -134,6 +134,7 @@ public final class Services {
                 navigatorCategoryRegistry(),
                 config(),
                 navigatorItems(),
+                menuItems(),
                 player(),
                 messages(),
                 taskScheduler,

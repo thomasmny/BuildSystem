@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.menu;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.exceptions.ProfileException;
+import com.cryptomorin.xseries.profiles.objects.ProfileInputType;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
@@ -30,6 +31,7 @@ import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionException;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.stream.IntStream;
 import org.bukkit.Bukkit;
@@ -83,10 +85,72 @@ public final class MenuItems {
     }
 
     /**
-     * Renders a {@link Displayable} into a menu slot. This is the single rendering path for every displayable: a
-     * non-head icon or a configured {@link Displayable#getIconSkullTexture() skull texture} is applied synchronously,
-     * while a {@link HeadProfileSource}'s default head profile (e.g. a world's creator) is resolved asynchronously so
-     * opening a menu never blocks on profile lookups.
+     * Renders an icon into a menu slot. A non-head icon is applied synchronously; a player head is resolved
+     * asynchronously — the slot shows a plain head until the profile arrives — because resolving a username or UUID
+     * profile talks to Mojang and would otherwise freeze the server thread. A configured {@code texture} wins over
+     * {@code defaultProfile}; when neither is present the slot keeps its plain head.
+     *
+     * @param inventory The inventory to add the item to
+     * @param slot The slot to add the item at
+     * @param icon The icon material
+     * @param texture The configured skull texture, the {@link ItemBuilder#VIEWER_HEAD} sentinel, or {@code null}
+     * @param defaultProfile The head profile used when no texture is configured, or {@code null} for none
+     * @param fallback The profile to fall back to if the chosen one cannot be resolved, or {@code null} for none
+     * @param viewer The player viewing the inventory
+     * @param name The already-styled display name to apply
+     * @param lore The lore to apply
+     */
+    public void renderIcon(
+            Inventory inventory,
+            int slot,
+            XMaterial icon,
+            @Nullable String texture,
+            @Nullable Profileable defaultProfile,
+            @Nullable Profileable fallback,
+            Player viewer,
+            String name,
+            List<String> lore) {
+        if (icon != XMaterial.PLAYER_HEAD) {
+            ItemBuilder.of(icon).name(name).lore(lore).into(inventory, slot);
+            return;
+        }
+
+        if (texture != null && !texture.isBlank() && decodesLocally(texture)) {
+            ItemBuilder.skull(Profileable.detect(texture)).name(name).lore(lore).into(inventory, slot);
+            return;
+        }
+
+        Profileable profile = texture != null && !texture.isBlank() ? profileFor(texture, viewer) : defaultProfile;
+        if (profile == null) {
+            ItemBuilder.of(XMaterial.PLAYER_HEAD).name(name).lore(lore).into(inventory, slot);
+            return;
+        }
+        applyHeadProfileAsync(inventory, slot, profile, fallback, name, lore, null);
+    }
+
+    /**
+     * {@return whether a configured skull texture carries the skin itself} A base64 blob, a texture URL or a bare
+     * texture hash decodes locally in microseconds and is applied straight away — only the inputs that name a player
+     * (a username, a UUID, the {@link ItemBuilder#VIEWER_HEAD} sentinel) need the asynchronous path, and sending those
+     * through it too would make every static menu icon flicker for a tick.
+     */
+    private static boolean decodesLocally(String texture) {
+        ProfileInputType type = ProfileInputType.typeOf(texture);
+        return type == ProfileInputType.BASE64
+                || type == ProfileInputType.TEXTURE_URL
+                || type == ProfileInputType.TEXTURE_HASH;
+    }
+
+    /**
+     * {@return the profile a configured skull texture refers to} The {@link ItemBuilder#VIEWER_HEAD} sentinel resolves
+     * to the viewing player, anything else is detected from the texture string itself.
+     */
+    public static Profileable profileFor(String texture, Player viewer) {
+        return Profileable.detect(ItemBuilder.VIEWER_HEAD.equals(texture) ? viewer.getName() : texture);
+    }
+
+    /**
+     * Renders a {@link Displayable} into a menu slot using its own name and lore.
      *
      * @param inventory The inventory to add the item to
      * @param slot The slot to add the item at
@@ -94,31 +158,67 @@ public final class MenuItems {
      * @param viewer The player viewing the inventory
      */
     public void renderDisplayable(Inventory inventory, int slot, Displayable displayable, Player viewer) {
-        XMaterial icon = XMaterial.matchXMaterial(displayable.getIcon());
-        String name = displayable.getDisplayName(viewer);
-        List<String> lore = displayable.getLore(viewer);
+        renderDisplayable(
+                inventory, slot, displayable, viewer, displayable.getDisplayName(viewer), displayable.getLore(viewer));
+    }
 
-        String texture = displayable.getIconSkullTexture();
-        if (icon != XMaterial.PLAYER_HEAD || (texture != null && !texture.isBlank())) {
-            ItemBuilder.icon(icon, texture, viewer).name(name).lore(lore).into(inventory, slot);
-            return;
-        }
+    /**
+     * Variant of {@link #renderDisplayable(Inventory, int, Displayable, Player)} for callers that label the item
+     * themselves (the world editor's icon button). The icon, its configured texture and — for an untextured head — the
+     * {@link HeadProfileSource} default profile (e.g. a world's creator) still come from the displayable.
+     *
+     * @param inventory The inventory to add the item to
+     * @param slot The slot to add the item at
+     * @param displayable The displayable whose icon is rendered
+     * @param viewer The player viewing the inventory
+     * @param name The already-styled display name to apply
+     * @param lore The lore to apply
+     */
+    public void renderDisplayable(
+            Inventory inventory, int slot, Displayable displayable, Player viewer, String name, List<String> lore) {
+        HeadProfileSource source = displayable instanceof HeadProfileSource head ? head : null;
+        renderIcon(
+                inventory,
+                slot,
+                XMaterial.matchXMaterial(displayable.getIcon()),
+                displayable.getIconSkullTexture(),
+                source != null ? source.getHeadProfile() : null,
+                source != null ? source.getHeadFallbackProfile() : null,
+                viewer,
+                name,
+                lore);
+    }
 
-        if (displayable instanceof HeadProfileSource source) {
-            Profileable headProfile = source.getHeadProfile();
-            if (headProfile != null) {
-                applyHeadProfileAsync(inventory, slot, headProfile, source.getHeadFallbackProfile(), name, lore);
-                return;
-            }
-        }
-        ItemBuilder.of(XMaterial.PLAYER_HEAD).name(name).lore(lore).into(inventory, slot);
+    /**
+     * Renders a {@link NavigatorCategory}'s icon into a menu slot, applying the texture chosen by
+     * {@link ItemBuilder#categoryTexture(NavigatorCategory)}.
+     *
+     * @param inventory The inventory to add the item to
+     * @param slot The slot to add the item at
+     * @param category The category whose icon is rendered
+     * @param viewer The player viewing the inventory
+     * @param name The already-styled display name to apply
+     * @param lore The lore to apply
+     */
+    public void renderCategoryIcon(
+            Inventory inventory, int slot, NavigatorCategory category, Player viewer, String name, List<String> lore) {
+        renderIcon(
+                inventory,
+                slot,
+                XMaterial.matchXMaterial(category.getIcon()),
+                ItemBuilder.categoryTexture(category),
+                null,
+                null,
+                viewer,
+                name,
+                lore);
     }
 
     /**
      * Renders a placeholder head into a menu slot immediately, then resolves the given head profile asynchronously and
-     * swaps in the finished stack on the main thread once it's ready. For callers that derive both the icon type and
-     * the name/lore from a {@link Displayable}, use {@link #renderDisplayable} instead; this method is for callers
-     * that already know they want a head and supply their own name/lore (e.g. an editor's world-icon button).
+     * swaps in the finished stack on the main thread once it's ready. The swap is skipped when the slot no longer holds
+     * the placeholder: the layout editor renders into the player's own inventory, which is restored when the editor
+     * closes, and clobbering a restored item would lose it.
      *
      * @param inventory The inventory to add the item to
      * @param slot The slot to add the item at
@@ -126,6 +226,8 @@ public final class MenuItems {
      * @param fallback The profile to fall back to if {@code profile} cannot be resolved, or {@code null} for none
      * @param name The already-styled display name to apply
      * @param lore The lore to apply
+     * @param finisher Applied to both the placeholder and the resolved stack, for decoration the swap must not drop
+     *     (e.g. persistent data a click handler reads back); may be {@code null}
      */
     public void applyHeadProfileAsync(
             Inventory inventory,
@@ -133,11 +235,43 @@ public final class MenuItems {
             Profileable profile,
             @Nullable Profileable fallback,
             String name,
-            List<String> lore) {
+            List<String> lore,
+            @Nullable Consumer<ItemStack> finisher) {
         ItemStack placeholder =
                 ItemBuilder.of(XMaterial.PLAYER_HEAD).name(name).lore(lore).build();
+        if (finisher != null) {
+            finisher.accept(placeholder);
+        }
         inventory.setItem(slot, placeholder);
 
+        resolveHeadAsync(profile, fallback, name, lore, itemStack -> {
+            if (finisher != null) {
+                finisher.accept(itemStack);
+            }
+            if (placeholder.isSimilar(inventory.getItem(slot))) {
+                inventory.setItem(slot, itemStack);
+            }
+        });
+    }
+
+    /**
+     * Resolves a head profile off the main thread and hands the finished, named and lored stack to {@code onResolved}
+     * back on the main thread; nothing is called when the profile cannot be resolved. For inventory slots use
+     * {@link #applyHeadProfileAsync}, which also places a placeholder — this is the primitive for the heads that are
+     * not menu items, such as an armour stand's helmet or an item handed straight to a player.
+     *
+     * @param profile The head profile to resolve
+     * @param fallback The profile to fall back to if {@code profile} cannot be resolved, or {@code null} for none
+     * @param name The already-styled display name to apply
+     * @param lore The lore to apply
+     * @param onResolved Receives the finished stack on the main thread
+     */
+    public void resolveHeadAsync(
+            Profileable profile,
+            @Nullable Profileable fallback,
+            String name,
+            List<String> lore,
+            Consumer<ItemStack> onResolved) {
         XSkull.createItem()
                 .profile(profile)
                 .fallback(fallback != null ? new Profileable[] {fallback} : new Profileable[0])
@@ -151,7 +285,7 @@ public final class MenuItems {
                     itemMeta.setDisplayName(name);
                     itemMeta.setLore(lore);
                     itemStack.setItemMeta(itemMeta);
-                    Bukkit.getScheduler().runTask(plugin, () -> inventory.setItem(slot, itemStack));
+                    Bukkit.getScheduler().runTask(plugin, () -> onResolved.accept(itemStack));
                 })
                 .exceptionally(throwable -> {
                     logProfileFailure(name, throwable);
@@ -174,34 +308,6 @@ public final class MenuItems {
             return;
         }
         plugin.getLogger().log(Level.WARNING, "Failed to resolve head profile for menu item: " + name, throwable);
-    }
-
-    /**
-     * Renders a {@link NavigatorCategory}'s icon into a menu slot, resolving any player-head skin asynchronously so the
-     * live navigator never blocks the main thread on a profile lookup (an admin-configured username texture, or the
-     * viewer's own head used by the {@code private}-style categories). Non-head icons render synchronously. Mirrors
-     * {@link ItemBuilder#icon(NavigatorCategory, Player)}'s default-texture choice.
-     *
-     * @param inventory The inventory to add the item to
-     * @param slot The slot to add the item at
-     * @param category The category whose icon is rendered
-     * @param viewer The player viewing the inventory
-     * @param name The already-styled display name to apply
-     * @param lore The lore to apply
-     */
-    public void renderCategoryIcon(
-            Inventory inventory, int slot, NavigatorCategory category, Player viewer, String name, List<String> lore) {
-        XMaterial icon = XMaterial.matchXMaterial(category.getIcon());
-        String texture = ItemBuilder.categoryTexture(category);
-        if (icon != XMaterial.PLAYER_HEAD || texture == null || texture.isBlank()) {
-            ItemBuilder.icon(icon, texture, viewer).name(name).lore(lore).into(inventory, slot);
-            return;
-        }
-
-        Profileable profile = ItemBuilder.VIEWER_HEAD.equals(texture)
-                ? Profileable.detect(viewer.getName())
-                : Profileable.detect(texture);
-        applyHeadProfileAsync(inventory, slot, profile, null, name, lore);
     }
 
     /**

@@ -41,7 +41,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.jspecify.annotations.NullMarked;
 
@@ -113,18 +113,23 @@ public class BuilderMenu extends PaginatedMenu {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
                     Builder creator = buildWorld.getBuilders().getCreator();
-                    ItemStack item = creator == null
-                            ? ItemBuilder.of(XMaterial.BARRIER)
-                                    .name(messages.getString("worldeditor_builders_no_creator_item", player))
-                                    .build()
-                            : ItemBuilder.skull(Profileable.of(creator.getUniqueId()))
-                                    .name(messages.getString("worldeditor_builders_creator_item", player))
-                                    .lore(messages.getString(
-                                            "worldeditor_builders_creator_lore",
-                                            player,
-                                            Placeholders.of("%creator%", creator.getName())))
-                                    .build();
-                    inventory.setItem(slot, item);
+                    if (creator == null) {
+                        ItemBuilder.of(XMaterial.BARRIER)
+                                .name(messages.getString("worldeditor_builders_no_creator_item", player))
+                                .into(inventory, slot);
+                        return;
+                    }
+                    menuItems.applyHeadProfileAsync(
+                            inventory,
+                            slot,
+                            Profileable.of(creator.getUniqueId()),
+                            null,
+                            messages.getString("worldeditor_builders_creator_item", player),
+                            List.of(messages.getString(
+                                    "worldeditor_builders_creator_lore",
+                                    player,
+                                    Placeholders.of("%creator%", creator.getName()))),
+                            null);
                 })
                 .build();
     }
@@ -159,16 +164,26 @@ public class BuilderMenu extends PaginatedMenu {
 
     private MenuButton builderButton(Builder builder) {
         return MenuButton.builder()
-                .render((player, inventory, slot) -> inventory.setItem(
+                .render((player, inventory, slot) -> menuItems.applyHeadProfileAsync(
+                        inventory,
                         slot,
-                        ItemBuilder.skull(Profileable.username(builder.getName()))
-                                .name(messages.getString(
-                                        "worldeditor_builders_builder_item",
-                                        player,
-                                        Placeholders.of("%builder%", builder.getName())))
-                                .lore(messages.getStringList("worldeditor_builders_builder_lore", player))
-                                .pdc(this.builderNameKey, PersistentDataType.STRING, builder.getName())
-                                .build()))
+                        Profileable.username(builder.getName()),
+                        null,
+                        messages.getString(
+                                "worldeditor_builders_builder_item",
+                                player,
+                                Placeholders.of("%builder%", builder.getName())),
+                        messages.getStringList("worldeditor_builders_builder_lore", player),
+                        // The swap replaces the whole stack, so the name the click handler reads back has to be
+                        // written onto the resolved head too, not just the placeholder.
+                        itemStack -> {
+                            ItemMeta itemMeta = itemStack.getItemMeta();
+                            if (itemMeta != null) {
+                                itemMeta.getPersistentDataContainer()
+                                        .set(this.builderNameKey, PersistentDataType.STRING, builder.getName());
+                                itemStack.setItemMeta(itemMeta);
+                            }
+                        }))
                 .usableBy(this::canManageBuilders)
                 .onClick((player, event) -> {
                     // Only a shift-click removes a builder; a plain click returns to the editor.

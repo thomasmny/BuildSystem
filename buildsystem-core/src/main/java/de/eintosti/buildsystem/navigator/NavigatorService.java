@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
+import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
@@ -62,6 +63,7 @@ public class NavigatorService {
     private final NavigatorCategoryRegistryImpl navigatorCategoryRegistry;
     private final ConfigService configService;
     private final NavigatorItems navigatorItems;
+    private final MenuItems menuItems;
     private final PlayerServiceImpl playerService;
     private final Messages messages;
     private final TaskScheduler scheduler;
@@ -80,6 +82,7 @@ public class NavigatorService {
             NavigatorCategoryRegistryImpl navigatorCategoryRegistry,
             ConfigService configService,
             NavigatorItems navigatorItems,
+            MenuItems menuItems,
             PlayerServiceImpl playerService,
             Messages messages,
             TaskScheduler scheduler,
@@ -88,6 +91,7 @@ public class NavigatorService {
         this.navigatorCategoryRegistry = navigatorCategoryRegistry;
         this.configService = configService;
         this.navigatorItems = navigatorItems;
+        this.menuItems = menuItems;
         this.playerService = playerService;
         this.messages = messages;
         this.scheduler = scheduler;
@@ -161,7 +165,7 @@ public class NavigatorService {
         armorStand.setVisible(false);
         armorStand.setGravity(false);
         armorStand.setCanPickupItems(false);
-        armorStand.getEquipment().setHelmet(helmetFor(player, category));
+        applyHelmet(player, category, armorStand);
 
         PersistentDataContainer pdc = armorStand.getPersistentDataContainer();
         pdc.set(ownerKey, PersistentDataType.STRING, player.getUniqueId().toString());
@@ -171,11 +175,32 @@ public class NavigatorService {
     }
 
     /**
-     * Builds the floating head shown for a category, delegating the texture resolution (configured texture, viewer head
-     * for added-players categories, or the navigator texture) to {@link ItemBuilder#icon(NavigatorCategory, Player)}.
+     * Puts the floating head on a category's armour stand. The texture choice (configured texture, viewer head for
+     * added-players categories, or the navigator texture) comes from
+     * {@link ItemBuilder#categoryTexture(NavigatorCategory)}; a head is resolved off the main thread and swapped in
+     * once ready, since a viewer or username skin means a Mojang lookup.
      */
-    private ItemStack helmetFor(Player player, NavigatorCategory category) {
-        return ItemBuilder.icon(category, player).build();
+    private void applyHelmet(Player player, NavigatorCategory category, ArmorStand armorStand) {
+        XMaterial icon = XMaterial.matchXMaterial(category.getIcon());
+        String texture = ItemBuilder.categoryTexture(category);
+        if (icon != XMaterial.PLAYER_HEAD || texture == null || texture.isBlank()) {
+            armorStand.getEquipment().setHelmet(ItemBuilder.of(icon).build());
+            return;
+        }
+
+        armorStand
+                .getEquipment()
+                .setHelmet(ItemBuilder.of(XMaterial.PLAYER_HEAD).build());
+        menuItems.resolveHeadAsync(
+                MenuItems.profileFor(texture, player),
+                null,
+                ColorAPI.process(category.getStyledName()),
+                List.of(),
+                helmet -> {
+                    if (!armorStand.isDead()) {
+                        armorStand.getEquipment().setHelmet(helmet);
+                    }
+                });
     }
 
     public boolean isNavigatorOpen(Player player) {

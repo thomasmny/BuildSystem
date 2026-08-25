@@ -27,7 +27,9 @@ import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
+import java.util.List;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -81,8 +83,9 @@ public class StatusLayoutMenu extends LayoutEditorMenu<BuildWorldStatus> {
     }
 
     @Override
-    protected ItemBuilder icon(BuildWorldStatus status, Player player) {
-        return ItemBuilder.of(status.getIcon());
+    protected void renderIcon(
+            BuildWorldStatus status, Player player, Inventory inventory, int slot, String name, List<String> lore) {
+        ItemBuilder.of(status.getIcon()).name(name).lore(lore).into(inventory, slot);
     }
 
     @Override

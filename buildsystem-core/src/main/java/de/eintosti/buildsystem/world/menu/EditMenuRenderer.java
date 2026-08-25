@@ -18,14 +18,12 @@
 package de.eintosti.buildsystem.world.menu;
 
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
-import de.eintosti.buildsystem.menu.HeadProfileSource;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.util.color.ColorAPI;
@@ -34,7 +32,6 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Renders {@link EditMenu}'s render-only, non-authorization-sensitive slots: the world-icon button, time, butcher,
@@ -65,27 +62,7 @@ final class EditMenuRenderer {
         List<String> lore =
                 messages.getStringList(loreKey, player, Placeholders.of("%texture%", iconTextureLabel(player)));
 
-        Profileable headProfile = defaultHeadProfile();
-        if (headProfile == null) {
-            ItemBuilder.icon(buildWorld, player).name(displayName).lore(lore).into(inventory, slot);
-            return;
-        }
-
-        Profileable fallback = ((HeadProfileSource) buildWorld).getHeadFallbackProfile();
-        menuItems.applyHeadProfileAsync(inventory, slot, headProfile, fallback, displayName, lore);
-    }
-
-    /**
-     * The head profile {@link #renderWorldInfo} should resolve asynchronously: {@code null} when the icon isn't an
-     * untextured player head, or the world's default head profile (if any) otherwise.
-     */
-    private @Nullable Profileable defaultHeadProfile() {
-        XMaterial material = XMaterial.matchXMaterial(buildWorld.getIcon());
-        String texture = buildWorld.getIconSkullTexture();
-        if (material != XMaterial.PLAYER_HEAD || (texture != null && !texture.isBlank())) {
-            return null;
-        }
-        return buildWorld instanceof HeadProfileSource source ? source.getHeadProfile() : null;
+        menuItems.renderDisplayable(inventory, slot, buildWorld, player, displayName, lore);
     }
 
     private String iconTextureLabel(Player player) {

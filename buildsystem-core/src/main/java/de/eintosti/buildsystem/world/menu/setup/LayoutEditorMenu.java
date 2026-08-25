@@ -38,6 +38,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -132,12 +133,19 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
     protected abstract Registry<T> registry();
 
     /**
-     * {@return a builder for the entry's icon, already resolved but not yet named}
+     * Renders the entry's icon into a slot, already named and lored. Implementations that can show a player head must
+     * render it asynchronously (see {@link MenuItems#renderIcon}), because resolving a skin on the server thread
+     * freezes the server.
      *
      * @param entry The entry to render
      * @param player The viewing player
+     * @param inventory The inventory to render into
+     * @param slot The slot to render at
+     * @param name The already-styled display name to apply
+     * @param lore The lore to apply
      */
-    protected abstract ItemBuilder icon(T entry, Player player);
+    protected abstract void renderIcon(
+            T entry, Player player, Inventory inventory, int slot, String name, List<String> lore);
 
     /**
      * Opens the per-entry editor, reached by shift-clicking an entry.
@@ -158,7 +166,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
      * {@return the non-entry item this layout keeps in its grid} Defaults to {@link LayoutOccupant#NONE}; a subclass
      * that has one (the navigator's settings button) overrides this.
      */
-    protected LayoutOccupant occupant() {
+    LayoutOccupant occupant() {
         return LayoutOccupant.NONE;
     }
 
@@ -193,10 +201,13 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
             if (!entry.isShown() || !isSlotValid(slot) || occupant().occupies(slot) || isHeld(entry)) {
                 continue;
             }
-            icon(entry, player)
-                    .name(ColorAPI.process(entry.getStyledName()))
-                    .lore(messages.getStringList(keys.placedLore(), player))
-                    .into(inventory, slot);
+            renderIcon(
+                    entry,
+                    player,
+                    inventory,
+                    slot,
+                    ColorAPI.process(entry.getStyledName()),
+                    messages.getStringList(keys.placedLore(), player));
         }
     }
 
@@ -226,10 +237,13 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
             if (isHeld(entry)) {
                 continue;
             }
-            icon(entry, player)
-                    .name(ColorAPI.process(entry.getStyledName()))
-                    .lore(messages.getStringList(keys.paletteLore(), player))
-                    .into(playerInventory, PALETTE_FIRST_SLOT + i);
+            renderIcon(
+                    entry,
+                    player,
+                    playerInventory,
+                    PALETTE_FIRST_SLOT + i,
+                    ColorAPI.process(entry.getStyledName()),
+                    messages.getStringList(keys.paletteLore(), player));
         }
 
         occupant().renderInPalette(player, playerInventory, notAdded.size());
@@ -279,7 +293,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
         if (shiftClick) {
             openEditor(occupant, player);
         } else {
-            pickUp(player, occupant.getId(), slot);
+            pickUp(player, occupant.getId(), slot, getInventory().getItem(slot));
         }
     }
 
@@ -352,7 +366,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
         if (shiftClick) {
             openEditor(clicked, player);
         } else {
-            pickUp(player, clicked.getId(), -1);
+            pickUp(player, clicked.getId(), -1, player.getInventory().getItem(slot));
         }
     }
 
@@ -411,14 +425,26 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
 
     // ---------------------------------------------------------------- cursor
 
-    protected final void pickUp(Player player, String entryId, int fromSlot) {
+    /**
+     * Picks the entry up onto the cursor. The cursor item is the stack that was clicked rather than a freshly built
+     * icon: the slot already holds the finished icon, skin and all, so nothing has to be resolved a second time. Only
+     * the lore is dropped, since the placed/palette hints do not belong on a dragged item.
+     *
+     * @param player The viewing player
+     * @param entryId The entry being picked up
+     * @param fromSlot The preview slot it came from, or {@code -1} when it came from the palette
+     * @param clicked The stack in the clicked slot, used as the cursor item
+     */
+    protected final void pickUp(Player player, String entryId, int fromSlot, @Nullable ItemStack clicked) {
         held.track(entryId, fromSlot);
-        T entry = registry().get(entryId).orElse(null);
-        ItemStack cursor = entry == null
-                ? null
-                : icon(entry, player)
-                        .name(ColorAPI.process(entry.getStyledName()))
-                        .build();
+        ItemStack cursor = clicked == null ? null : clicked.clone();
+        if (cursor != null) {
+            ItemMeta cursorMeta = cursor.getItemMeta();
+            if (cursorMeta != null) {
+                cursorMeta.setLore(null);
+                cursor.setItemMeta(cursorMeta);
+            }
+        }
 
         setCursorNextTick(player, cursor);
         XSound.ITEM_ARMOR_EQUIP_LEATHER.play(player);

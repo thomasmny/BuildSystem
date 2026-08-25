@@ -20,8 +20,9 @@ package de.eintosti.buildsystem.command;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
-import de.eintosti.buildsystem.menu.ItemBuilder;
+import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.util.Permissions;
+import java.util.List;
 import java.util.logging.Logger;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -29,8 +30,11 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SkullCommand extends CommandBase {
 
-    public SkullCommand(Messages messages, Logger logger) {
+    private final MenuItems menuItems;
+
+    public SkullCommand(Messages messages, Logger logger, MenuItems menuItems) {
         super(messages, logger, true);
+        this.menuItems = menuItems;
     }
 
     @Override
@@ -40,26 +44,44 @@ public class SkullCommand extends CommandBase {
         }
 
         switch (args.length) {
-            case 0 -> {
-                addSkull(player, "§b" + player.getName(), Profileable.of(player));
-                messages.sendMessage(player, "skull_player_received", Placeholders.of("%player%", player.getName()));
-            }
+            case 0 ->
+                addSkull(
+                        player,
+                        "§b" + player.getName(),
+                        Profileable.of(player),
+                        () -> messages.sendMessage(
+                                player, "skull_player_received", Placeholders.of("%player%", player.getName())));
             case 1 -> {
                 String identifier = args[0];
                 if (identifier.length() > 16) {
-                    addSkull(player, messages.getString("custom_skull_item", player), Profileable.detect(identifier));
-                    messages.sendMessage(player, "skull_custom_received");
+                    addSkull(
+                            player,
+                            messages.getString("custom_skull_item", player),
+                            Profileable.detect(identifier),
+                            () -> messages.sendMessage(player, "skull_custom_received"));
                 } else {
-                    addSkull(player, "§b" + identifier, Profileable.detect(identifier));
-                    messages.sendMessage(player, "skull_player_received", Placeholders.of("%player%", identifier));
+                    addSkull(
+                            player,
+                            "§b" + identifier,
+                            Profileable.detect(identifier),
+                            () -> messages.sendMessage(
+                                    player, "skull_player_received", Placeholders.of("%player%", identifier)));
                 }
             }
             default -> messages.sendMessage(player, "skull_usage");
         }
     }
 
-    private void addSkull(Player player, String displayName, Profileable profileable) {
-        player.getInventory()
-                .addItem(ItemBuilder.skull(profileable).name(displayName).build());
+    /**
+     * Resolving a player skull asks Mojang for the skin, so the head is built off the main thread and handed over once
+     * it arrives — the player may well have logged off by then. {@code onGiven} runs only when the head really lands in
+     * the inventory, so the player is never told about a skull they did not get.
+     */
+    private void addSkull(Player player, String displayName, Profileable profileable, Runnable onGiven) {
+        menuItems.resolveHeadAsync(profileable, null, displayName, List.of(), skull -> {
+            if (player.isOnline() && player.getInventory().addItem(skull).isEmpty()) {
+                onGiven.run();
+            }
+        });
     }
 }
