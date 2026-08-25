@@ -22,6 +22,10 @@ repositories {
         url = uri("https://maven.enginehub.org/repo/")
     }
     maven {
+        name = "EssentialsX"
+        url = uri("https://repo.essentialsx.net/releases/")
+    }
+    maven {
         name = "PlaceholderAPI"
         url = uri("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     }
@@ -56,6 +60,7 @@ dependencies {
         exclude(group = "com.google.guava")
         exclude(group = "com.google.code.gson")
     }
+    compileOnly(libs.essentialsx) { isTransitive = false }
     compileOnly(libs.luckperms)
     compileOnly(libs.placeholderapi)
     compileOnly(libs.worldedit) {
@@ -145,7 +150,7 @@ bukkit {
 
     main = "de.eintosti.buildsystem.BuildSystemPlugin"
     apiVersion = "26.1"
-    softDepend = listOf("LuckPerms", "PlaceholderAPI", "WorldEdit", "AxiomPaper")
+    softDepend = listOf("Essentials", "LuckPerms", "PlaceholderAPI", "WorldEdit", "AxiomPaper")
 
     commands {
         register("back") {

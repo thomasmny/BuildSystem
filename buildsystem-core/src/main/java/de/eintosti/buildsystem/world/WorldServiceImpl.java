@@ -216,6 +216,15 @@ public class WorldServiceImpl implements WorldService {
 
     @Override
     public CompletableFuture<Void> unimportWorld(BuildWorld buildWorld, SaveBehavior saveBehavior) {
+        return unimportWorldQuietly(buildWorld, saveBehavior)
+                .thenRun(() -> plugin.getLogger().info("*** Unimported world \"" + buildWorld.getName() + "\" ***"));
+    }
+
+    /**
+     * Unimports without logging, so a deletion (which unimports as its first step) is reported as a single
+     * operation.
+     */
+    private CompletableFuture<Void> unimportWorldQuietly(BuildWorld buildWorld, SaveBehavior saveBehavior) {
         buildWorld.getUnloader().forceUnload(saveBehavior);
         this.worldStorage.removeBuildWorld(buildWorld);
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldUnimportEvent(buildWorld));
@@ -294,11 +303,12 @@ public class WorldServiceImpl implements WorldService {
         // Registry removal and metadata persistence are awaited before folder deletion so a crash mid-delete leaves an
         // orphaned folder (re-importable) rather than an orphaned registry entry pointing at a deleted folder. The
         // directory delete is disk I/O, so it runs on the shared background pool.
-        return unimportWorld(buildWorld, SaveBehavior.DISCARD)
+        return unimportWorldQuietly(buildWorld, SaveBehavior.DISCARD)
                 .thenRunAsync(
                         () -> {
                             try {
                                 FileUtils.deleteDirectory(deleteFolder);
+                                plugin.getLogger().info("*** Deleted world \"" + worldName + "\" ***");
                             } catch (IOException e) {
                                 throw new CompletionException(new WorldDeletionException(
                                         "An unexpected error occurred during directory deletion for world: %s"
