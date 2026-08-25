@@ -113,8 +113,12 @@ public class BackupProfileImpl implements BackupProfile {
                     .handle((backup, throwable) -> null)
                     .thenComposeAsync(
                             ignored -> {
-                                this.buildWorld.getWorld().ifPresent(WorldFlush::saveAndFlush);
-                                return storeWithRetention();
+                                Optional<World> world = this.buildWorld.getWorld();
+                                world.ifPresent(WorldFlush::saveAndPauseWrites);
+                                return storeWithRetention()
+                                        .whenCompleteAsync(
+                                                (backup, throwable) -> world.ifPresent(WorldFlush::resumeWrites),
+                                                mainThreadExecutor());
                             },
                             mainThreadExecutor());
             this.pendingCreation = next.handle((backup, throwable) -> backup);

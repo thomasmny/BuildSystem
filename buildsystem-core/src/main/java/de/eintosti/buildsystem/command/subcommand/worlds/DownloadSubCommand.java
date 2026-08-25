@@ -109,7 +109,7 @@ public class DownloadSubCommand extends AbstractSubCommand {
 
         Placeholders worldPlaceholder = Placeholders.of("%world%", buildWorld.getName());
         messages.sendMessage(player, "worlds_download_preparing", worldPlaceholder);
-        buildWorld.getWorld().ifPresent(WorldFlush::saveAndFlush);
+        buildWorld.getWorld().ifPresent(WorldFlush::saveAndPauseWrites);
 
         AtomicLong doneBytes = new AtomicLong();
         AtomicLong totalBytes = new AtomicLong();
@@ -126,6 +126,7 @@ public class DownloadSubCommand extends AbstractSubCommand {
                 })
                 .whenCompleteAsync(
                         (url, throwable) -> {
+                            buildWorld.getWorld().ifPresent(WorldFlush::resumeWrites);
                             preparing.remove(playerId);
                             animation.cancel();
                             clearActionBar(player);
