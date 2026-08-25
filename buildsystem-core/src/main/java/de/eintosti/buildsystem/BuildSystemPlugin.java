@@ -93,9 +93,12 @@ public class BuildSystemPlugin extends JavaPlugin {
 
         new BuildSystemMetrics(this, services.config(), services.player()).register();
 
-        this.configSaveTask = Bukkit.getScheduler()
-                .runTaskTimerAsynchronously(
-                        this, this::saveBuildConfig, CONFIG_SAVE_INTERVAL_TICKS, CONFIG_SAVE_INTERVAL_TICKS);
+        // Synchronous on purpose: each storage serializes live domain state (builders, warps, world data) into a map
+        // on the calling thread and only writes that map to disk asynchronously. Running the timer off-main read those
+        // collections while players were mutating them, which threw ConcurrentModificationException and lost the whole
+        // save cycle. Building the maps is cheap; the disk I/O is still async.
+        this.configSaveTask = services.scheduler()
+                .runTimer(this::saveBuildConfig, CONFIG_SAVE_INTERVAL_TICKS, CONFIG_SAVE_INTERVAL_TICKS);
 
         Bukkit.getConsoleSender()
                 .sendMessage("%sBuildSystem » Plugin %senabled%s!"
