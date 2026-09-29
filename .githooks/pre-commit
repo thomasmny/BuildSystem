@@ -9,9 +9,8 @@ set -e
 repo_root=$(git rev-parse --show-toplevel)
 cd "$repo_root"
 
-# Snapshot the set of staged files (NUL-delimited to survive odd paths).
-staged=$(git diff --cached --name-only -z)
-[ -z "$staged" ] && exit 0
+# Nothing staged, nothing to format.
+git diff --cached --quiet && exit 0
 
 echo "Running spotlessApply..."
 # --rerun-tasks because Gradle will otherwise report spotlessApply UP-TO-DATE from an
@@ -19,11 +18,17 @@ echo "Running spotlessApply..."
 # hook silently. The hook is the only thing enforcing format now, so it cannot be a no-op.
 ./gradlew spotlessApply --quiet --rerun-tasks
 
-# Re-stage any previously-staged file that Spotless reformatted.
-printf '%s' "$staged" | while IFS= read -r -d '' f; do
-  if [ -f "$f" ] && ! git diff --quiet -- "$f"; then
-    git add -- "$f"
-  fi
-done
+# Re-stage any previously-staged file that Spotless reformatted. Spotless only touches the
+# working tree, so the index still names exactly the files that were staged. The list goes
+# through xargs -0 rather than a shell variable: command substitution drops NUL bytes, and
+# `read -d` does not exist in POSIX sh (e.g. dash as /bin/sh), where the loop failed on its
+# first read and no file was ever re-staged.
+git diff --cached --name-only --diff-filter=ACMR -z | xargs -0 sh -c '
+  for f do
+    if [ -f "$f" ] && ! git diff --quiet -- "$f"; then
+      git add -- "$f"
+    fi
+  done
+' sh
 
 exit 0
