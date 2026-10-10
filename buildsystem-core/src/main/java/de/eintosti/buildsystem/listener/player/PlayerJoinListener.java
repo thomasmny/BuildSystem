@@ -101,14 +101,20 @@ public class PlayerJoinListener implements Listener {
 
         BuildPlayerImpl buildPlayer =
                 BuildPlayerImpl.of(playerManager.getPlayerStorage().createBuildPlayer(player));
+        // A stored archive snapshot means the last session never left the archive, most likely because the server
+        // crashed. The server saved the emptied archive inventory, so the real one is handed back from the snapshot.
+        boolean restored = ArchiveMode.exit(player, buildPlayer.getCachedValues());
         manageSettings(player, buildPlayer.getSettings());
         teleportToCorrectLocation(player, buildPlayer);
 
-        ArchiveMode.enterIfInArchiveWorld(
+        boolean entered = ArchiveMode.enterIfInArchiveWorld(
                 player,
                 buildPlayer.getCachedValues(),
                 worldStorage,
                 configService.current().settings().archive());
+        if (restored || entered) {
+            playerManager.getPlayerStorage().save(buildPlayer);
+        }
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         if (buildWorld != null
                 && !buildWorld.getData().get(WorldDataKey.PHYSICS)

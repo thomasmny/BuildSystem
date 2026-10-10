@@ -25,8 +25,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mockConstruction;
 
 import de.eintosti.buildsystem.api.BuildSystem;
+import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
 import de.eintosti.buildsystem.test.TestData;
@@ -37,10 +39,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 import org.jspecify.annotations.NullMarked;
@@ -55,7 +60,7 @@ import org.mockbukkit.mockbukkit.world.WorldMock;
 import org.mockito.MockedConstruction;
 
 /**
- * Drives the real plugin through a reload with a player standing in an archive world.
+ * Drives the real plugin through a reload, and through a crash, with a player standing in an archive world.
  */
 @NullMarked
 class ArchiveModeReloadTest {
@@ -105,6 +110,10 @@ class ArchiveModeReloadTest {
 
         bystander = SoundlessPlayer.join(server, "Bystander");
         archived = SoundlessPlayer.join(server, "Archived");
+        // MockBukkit writes the navigator's item flags as Java objects, which YAML refuses to read back. A server
+        // writes
+        // them as text.
+        archived.getInventory().clear();
         archived.getInventory().setItem(0, new ItemStack(Material.DIAMOND, 5));
         archived.getInventory().setHelmet(new ItemStack(Material.DIAMOND_HELMET));
         moveTo(archived, archive);
@@ -126,6 +135,8 @@ class ArchiveModeReloadTest {
         server.getPluginManager().enablePlugin(plugin);
         awaitStoredWorlds();
         assertInArchiveMode();
+        flushWrites();
+        assertTrue(snapshotStored());
 
         moveTo(archived, lobby);
         assertOutOfArchiveMode();
@@ -143,6 +154,106 @@ class ArchiveModeReloadTest {
         setVanish(true);
         assertFalse(bystander.canSee(archived));
         assertNotNull(archived.getPotionEffect(PotionEffectType.INVISIBILITY));
+    }
+
+    @Test
+    void crash_thenRejoinElsewhere_handsTheRealInventoryBackOnce() {
+        assertEquals(GameMode.ADVENTURE, archived.getGameMode());
+        flushWrites();
+        assertTrue(snapshotStored(), "stored as soon as the player entered archive mode");
+
+        crash();
+        // Teleporting fires a world change, which a player logging in does not.
+        archived.setLocation(lobby.getSpawnLocation());
+        rejoin();
+
+        assertOutOfArchiveMode();
+        assertEquals(GameMode.SURVIVAL, archived.getGameMode());
+        flushWrites();
+        assertFalse(snapshotStored());
+
+        archived.getInventory().clear();
+        archived.getInventory().setItem(0, new ItemStack(Material.EMERALD));
+        crash();
+        rejoin();
+
+        assertEquals(0, diamonds(), "a snapshot is never applied twice");
+        assertEquals(
+                Material.EMERALD,
+                Objects.requireNonNull(archived.getInventory().getItem(0)).getType());
+    }
+
+    @Test
+    void crash_thenRejoinInTheArchive_handsTheRealInventoryBack_andEntersArchiveModeAgain() {
+        flushWrites();
+        crash();
+        rejoin();
+
+        assertInArchiveMode();
+        assertEquals(GameMode.ADVENTURE, archived.getGameMode());
+
+        moveTo(archived, lobby);
+        assertOutOfArchiveMode();
+        assertEquals(GameMode.SURVIVAL, archived.getGameMode());
+    }
+
+    @Test
+    void crashTwice_inTheArchive_neverStoresTheArchiveInventory() {
+        flushWrites();
+        crash();
+        rejoin();
+        assertInArchiveMode();
+
+        flushWrites();
+        crash();
+        // Teleporting fires a world change, which a player logging in does not.
+        archived.setLocation(lobby.getSpawnLocation());
+        rejoin();
+
+        assertOutOfArchiveMode();
+    }
+
+    @Test
+    void joiningInTheArchive_storesTheSnapshot() {
+        // The navigator item again, see setUp.
+        bystander.getInventory().clear();
+        bystander.setLocation(archive.getSpawnLocation());
+        server.getPluginManager().callEvent(new PlayerJoinEvent(bystander, ""));
+
+        flushWrites();
+        assertTrue(snapshotStored(bystander));
+    }
+
+    @Test
+    void leavingTheArchive_clearsTheStoredSnapshot() {
+        flushWrites();
+        assertTrue(snapshotStored());
+
+        moveTo(archived, lobby);
+
+        flushWrites();
+        assertFalse(snapshotStored());
+    }
+
+    @Test
+    void quitting_clearsTheStoredSnapshot() {
+        flushWrites();
+        assertTrue(snapshotStored());
+
+        archived.disconnect();
+
+        flushWrites();
+        assertFalse(snapshotStored());
+    }
+
+    @Test
+    void disabling_clearsTheStoredSnapshot() {
+        flushWrites();
+        assertTrue(snapshotStored());
+
+        server.getPluginManager().disablePlugin(plugin);
+
+        assertFalse(snapshotStored());
     }
 
     private void assertInArchiveMode() {
@@ -172,6 +283,49 @@ class ArchiveModeReloadTest {
             server.getScheduler().performOneTick();
             Thread.onSpinWait();
         }
+    }
+
+    /**
+     * Drops what the plugin holds in memory and loads the players from disk again, the way a server start after a crash
+     * would. The player keeps the emptied archive inventory, which is what the server saved for them.
+     */
+    private void crash() {
+        PlayerStorageImpl storage = playerStorage();
+        BuildPlayer before = storage.getBuildPlayer(archived.getUniqueId());
+        storage.loadPlayers();
+        long deadline = System.currentTimeMillis() + 10_000;
+        while (storage.getBuildPlayer(archived.getUniqueId()) == before) {
+            assertTrue(System.currentTimeMillis() < deadline, "the players never loaded");
+            Thread.onSpinWait();
+        }
+    }
+
+    private void rejoin() {
+        server.getPluginManager().callEvent(new PlayerJoinEvent(archived, ""));
+    }
+
+    /**
+     * Waits for every queued write to {@code players.yml}: writes run in order, so an empty save lands after them.
+     */
+    private void flushWrites() {
+        playerStorage().save(List.of()).join();
+    }
+
+    private boolean snapshotStored() {
+        return snapshotStored(archived);
+    }
+
+    private boolean snapshotStored(PlayerMock player) {
+        YamlConfiguration players =
+                YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "players.yml"));
+        return players.isConfigurationSection("players." + player.getUniqueId() + ".archive-snapshot");
+    }
+
+    private PlayerStorageImpl playerStorage() {
+        return (PlayerStorageImpl)
+                Objects.requireNonNull(server.getServicesManager().load(BuildSystem.class))
+                        .getPlayerService()
+                        .getPlayerStorage();
     }
 
     private WorldStorageImpl worldStorage() {
@@ -211,7 +365,7 @@ class ArchiveModeReloadTest {
 
     private void moveTo(PlayerMock player, World world) {
         World from = player.getWorld();
-        player.teleport(world.getSpawnLocation());
+        player.setLocation(world.getSpawnLocation());
         server.getPluginManager().callEvent(new PlayerChangedWorldEvent(player, from));
     }
 }
