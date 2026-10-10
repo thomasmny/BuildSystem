@@ -23,9 +23,9 @@ import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.SkullTextures;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import java.util.List;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -64,7 +64,7 @@ public class DeletionConfirmMenu extends ButtonMenu {
                         .name(messages.getString(nameKey, player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
-                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+                    FeedbackSound.CLICK.play(player);
                     action.run();
                 })
                 .build();

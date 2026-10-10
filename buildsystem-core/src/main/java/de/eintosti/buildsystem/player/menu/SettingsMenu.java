@@ -29,13 +29,13 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -71,7 +71,7 @@ public class SettingsMenu extends ButtonMenu {
                         .render(this::renderDesign)
                         .onClick((player, event) -> {
                             menus.openDesign(player);
-                            player.playSound(player, Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
+                            FeedbackSound.CLICK.play(player);
                         })
                         .build());
 
@@ -224,10 +224,13 @@ public class SettingsMenu extends ButtonMenu {
                             itemKey,
                             loreKey);
                 })
-                .onClick((player, event) -> handleToggle(player, () -> {
-                    flip.accept(player, settingsManager.getSettings(player));
-                    return true;
-                }))
+                .onClick((player, event) -> handleToggle(
+                        player,
+                        () -> {
+                            flip.accept(player, settingsManager.getSettings(player));
+                            return true;
+                        },
+                        enabled))
                 .build();
     }
 
@@ -253,23 +256,24 @@ public class SettingsMenu extends ButtonMenu {
                     handleToggle(
                             player,
                             () -> toggles.toggleScoreboard(
-                                    player, settingsManager.getSettings(player), scoreboardEnabled));
+                                    player, settingsManager.getSettings(player), scoreboardEnabled),
+                            Settings::isScoreboard);
                 })
                 .build();
     }
 
     /**
      * The shared toggle click sequence. The permission is enforced by the menu before the click reaches here (see
-     * {@link #onPermissionDenied}); a rejected toggle (scoreboard disabled in config) plays the break sound without
-     * re-opening.
+     * {@link #onPermissionDenied}); a rejected toggle (scoreboard disabled in config) plays the refuse sound without
+     * re-opening. An accepted one plays the on or off sound for the state it ends in.
      */
-    private void handleToggle(Player player, BooleanSupplier onToggle) {
+    private void handleToggle(Player player, BooleanSupplier onToggle, Predicate<Settings> enabled) {
         if (!onToggle.getAsBoolean()) {
-            player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+            FeedbackSound.REFUSE.play(player);
             return;
         }
 
-        player.playSound(player, Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
+        FeedbackSound.toggle(enabled.test(settingsManager.getSettings(player))).play(player);
         menus.openSettings(player);
     }
 
@@ -280,7 +284,7 @@ public class SettingsMenu extends ButtonMenu {
     @Override
     protected void onPermissionDenied(Player player, InventoryClickEvent event) {
         messages.sendPermissionError(player);
-        player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+        FeedbackSound.REFUSE.play(player);
     }
 
     @Override

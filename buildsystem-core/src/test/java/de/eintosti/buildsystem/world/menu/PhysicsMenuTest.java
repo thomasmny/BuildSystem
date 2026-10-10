@@ -34,6 +34,7 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
 import de.eintosti.buildsystem.test.TestData;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataSchema;
@@ -111,6 +112,7 @@ class PhysicsMenuTest {
         player.addAttachment(MockBukkit.createMockPlugin(), Permissions.EDIT_PHYSICS, true);
         click(slot);
         assertEquals(!before, data.get(key));
+        assertEquals(FeedbackSound.toggle(!before).sound(), player.sounds().getLast());
     }
 
     @Test

@@ -21,11 +21,11 @@ import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuContext;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.List;
 import java.util.function.Consumer;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -118,7 +118,7 @@ public class DyePickerMenu extends ButtonMenu {
                         .glow(swatch.token().equalsIgnoreCase(currentToken))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
-                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+                    FeedbackSound.CLICK.play(player);
                     onPick.accept(swatch.token());
                 })
                 .build();

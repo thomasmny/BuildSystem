@@ -26,12 +26,12 @@ import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Prompts;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import java.util.Objects;
 import java.util.function.Supplier;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -86,7 +86,7 @@ public class WorldCreationPrompts {
 
         if (worldService.getWorldStorage().isNameTaken(name)) {
             messages.sendMessage(player, "worlds_world_exists");
-            player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+            FeedbackSound.REFUSE.play(player);
             return false;
         }
 
@@ -96,7 +96,7 @@ public class WorldCreationPrompts {
                     player,
                     "worlds_world_name_clash",
                     Placeholders.of().add("%world%", name).add("%other%", clash).build());
-            player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+            FeedbackSound.REFUSE.play(player);
             return false;
         }
 
@@ -121,14 +121,14 @@ public class WorldCreationPrompts {
         boolean allowed = !player.isPermissionSet(generatorNode) || player.hasPermission(generatorNode);
         if (!allowed) {
             messages.sendPermissionError(player);
-            player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+            FeedbackSound.REFUSE.play(player);
             return false;
         }
 
         CustomGenerator generator = CustomGeneratorImpl.of(input, selection.name());
         if (generator == null) {
             messages.sendMessage(player, "worlds_import_unknown_generator");
-            player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+            FeedbackSound.REFUSE.play(player);
             return false;
         }
 

@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.menu.SkullTextures;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -32,7 +33,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -139,7 +139,7 @@ public class MaterialPickerMenu extends ButtonMenu {
                         .name(ColorAPI.process("&b" + getPrettyName(material)))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
-                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+                    FeedbackSound.CLICK.play(player);
                     onPick.accept(material);
                 })
                 .build();
@@ -153,11 +153,11 @@ public class MaterialPickerMenu extends ButtonMenu {
                         .into(inventory, slot))
                 .onClick((player, event) -> {
                     if (!enabled) {
-                        player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+                        FeedbackSound.REFUSE.play(player);
                         return;
                     }
                     topRow += up ? -1 : 1;
-                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+                    FeedbackSound.PAGE.play(player);
                     populate(player);
                 })
                 .build();

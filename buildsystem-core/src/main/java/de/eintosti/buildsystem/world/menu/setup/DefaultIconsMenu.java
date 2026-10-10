@@ -24,9 +24,9 @@ import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.SkullTextures;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import java.util.List;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -78,7 +78,7 @@ public class DefaultIconsMenu extends ButtonMenu {
                         messages.getStringList("setup_reset_confirm_lore", player),
                         () -> {
                             icons.resetToDefaults();
-                            player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+                            FeedbackSound.CONFIRM.play(player);
                             menus.openDefaultIcons(player);
                         },
                         () -> menus.openDefaultIcons(player)))

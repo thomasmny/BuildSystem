@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldNameInputOptions;
@@ -37,7 +38,6 @@ import java.util.Arrays;
 import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -135,7 +135,7 @@ public class CreateMenu extends PaginatedMenu {
                         .onClick((player, event) -> {
                             Visibility visibility = createPrivateWorld ? Visibility.ADDED_PLAYERS : Visibility.EVERYONE;
                             menus.openCreate(page, visibility, folder, player);
-                            player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+                            FeedbackSound.PAGE.play(player);
                         })
                         .build());
     }
@@ -168,7 +168,7 @@ public class CreateMenu extends PaginatedMenu {
                             null,
                             new WorldNameInputOptions(createPrivateWorld, event.isShiftClick()),
                             folder);
-                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+                    FeedbackSound.CLICK.play(player);
                 })
                 .build();
     }
@@ -192,7 +192,7 @@ public class CreateMenu extends PaginatedMenu {
      */
     @Override
     protected void onPermissionDenied(Player player, InventoryClickEvent event) {
-        player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+        FeedbackSound.REFUSE.play(player);
     }
 
     private void registerGenerator(Player player) {
@@ -214,7 +214,7 @@ public class CreateMenu extends PaginatedMenu {
                                     null,
                                     new WorldNameInputOptions(createPrivateWorld, false),
                                     folder);
-                            p.playSound(p, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+                            FeedbackSound.CLICK.play(p);
                         })
                         .build());
     }

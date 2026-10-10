@@ -41,6 +41,7 @@ import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.display.DisplayOrdering;
@@ -51,7 +52,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -267,7 +267,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                         .name(messages.getString(nameKey, p))
                         .into(inventory, slot))
                 .onClick((p, event) -> {
-                    p.playSound(p, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+                    FeedbackSound.CLICK.play(p);
                     onCreate.accept(p);
                 })
                 .build();
@@ -336,7 +336,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     protected void onUnhandledClick(Player player, InventoryClickEvent event) {
         int slot = event.getRawSlot();
         if (slot >= FIRST_BOTTOM_BAR_SLOT && slot <= LAST_BOTTOM_BAR_SLOT) {
-            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
+            FeedbackSound.OPEN.play(player);
             returnToPreviousInventory();
         }
     }

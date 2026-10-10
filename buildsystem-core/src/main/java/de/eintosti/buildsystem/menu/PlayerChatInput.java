@@ -18,11 +18,11 @@
 package de.eintosti.buildsystem.menu;
 
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -69,7 +69,7 @@ public final class PlayerChatInput {
         this.titleTask = scheduler.runTimer(() -> player.sendTitle(title, subtitle, 0, 30, 0), 0L, 20L);
 
         player.closeInventory();
-        player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+        FeedbackSound.PROMPT.play(player);
 
         // Replace any prompt the player already had, cancelling its title task so nothing is orphaned.
         UUID playerUuid = request.player().getUniqueId();
@@ -109,7 +109,7 @@ public final class PlayerChatInput {
         input.scheduler.run(() -> {
             player.resetTitle();
             if (cancelled) {
-                player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+                FeedbackSound.CLOSE.play(player);
                 input.messages.sendMessage(player, "input_cancelled");
                 input.request.onCancel().run();
             } else {

@@ -17,11 +17,11 @@
  */
 package de.eintosti.buildsystem.menu;
 
+import de.eintosti.buildsystem.util.FeedbackSound;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -136,7 +136,7 @@ public abstract class ButtonMenu extends Menu {
     protected void onPermissionDenied(Player player, InventoryClickEvent event) {
         player.closeInventory();
         messages.sendPermissionError(player);
-        player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+        FeedbackSound.REFUSE.play(player);
     }
 
     /**

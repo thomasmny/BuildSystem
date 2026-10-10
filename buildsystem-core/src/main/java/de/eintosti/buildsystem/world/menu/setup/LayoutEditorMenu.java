@@ -27,11 +27,11 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.List;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -324,6 +324,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
         heldEntry.setSlot(slot);
         heldEntry.setShown(true);
         registry().persist(heldEntry);
+        FeedbackSound.PUT_DOWN.play(player);
         clearHeld(player);
         refresh(player);
     }
@@ -339,7 +340,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
         }
 
         if (slot == BACK_SLOT) {
-            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
+            FeedbackSound.OPEN.play(player);
             player.closeInventory();
             menus.openSetup(player);
             return;
@@ -376,7 +377,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
             if (refusesLastEntry() && registry().getAll().size() == 1) {
                 messages.sendMessage(player, "setup_delete_last");
             } else if (registry().delete(held.getEntryId())) {
-                player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+                FeedbackSound.DELETE.play(player);
             }
         }
         clearHeld(player);
@@ -410,7 +411,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
                     } else {
                         registry().resetLayout();
                     }
-                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+                    FeedbackSound.CONFIRM.play(player);
                     reopen(player);
                 },
                 () -> reopen(player));
@@ -452,7 +453,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
         }
 
         setCursorNextTick(player, cursor);
-        player.playSound(player, Sound.ITEM_ARMOR_EQUIP_LEATHER, 1f, 1f);
+        FeedbackSound.PICK_UP.play(player);
         refresh(player);
     }
 

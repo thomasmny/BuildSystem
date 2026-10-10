@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -31,7 +32,6 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -108,8 +108,8 @@ public class GameRulesMenu extends PaginatedMenu {
                             .into(inventory, slot);
                 })
                 .onClick((player, event) -> {
-                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                     modifyGameRule(world, gameRuleName, event);
+                    clickSound(world, gameRuleName).play(player);
                     populate(player);
                 })
                 .build();
@@ -136,6 +136,17 @@ public class GameRulesMenu extends PaginatedMenu {
                     .toList();
         }
         return lore;
+    }
+
+    /**
+     * {@return the on or off sound for a boolean rule in its new state, or the click for any other rule}
+     */
+    private FeedbackSound clickSound(World world, String gameRuleName) {
+        XGameRule<?> gameRule = XGameRule.of(gameRuleName).orElse(null);
+        if (!isOfType(gameRule, Boolean.class)) {
+            return FeedbackSound.CLICK;
+        }
+        return FeedbackSound.toggle(isEnabled(world, gameRule));
     }
 
     public boolean isValidSlot(int slot) {

@@ -31,11 +31,11 @@ import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.Objects;
 import java.util.UUID;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -119,7 +119,7 @@ public class NavigatorListener implements Listener {
         switch (settings.getNavigatorType()) {
             case OLD -> {
                 menus.openNavigator(player);
-                player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
+                FeedbackSound.OPEN.play(player);
             }
             case NEW -> {
                 if (navigatorService.isNavigatorOpen(player)) {
@@ -187,7 +187,7 @@ public class NavigatorListener implements Listener {
                 return;
             }
 
-            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
+            FeedbackSound.OPEN.play(player);
             menus.openCategoryWorlds(category, player);
         }
     }

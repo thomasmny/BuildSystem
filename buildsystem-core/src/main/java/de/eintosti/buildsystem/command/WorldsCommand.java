@@ -50,6 +50,7 @@ import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -59,7 +60,6 @@ import de.eintosti.buildsystem.world.download.WorldDownloadService;
 import java.io.File;
 import java.util.List;
 import java.util.logging.Logger;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -130,7 +130,7 @@ public class WorldsCommand extends CommandBase {
                 return;
             }
             services.menus().openNavigator(player);
-            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
+            FeedbackSound.OPEN.play(player);
             return;
         }
         dispatcher.dispatch(player, args);

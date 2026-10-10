@@ -31,6 +31,7 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Prompts;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
@@ -41,7 +42,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
@@ -204,7 +204,7 @@ public class FolderSubCommand extends AbstractSubCommand {
         this.prompts.prompt(player).title("enter_world_permission").request(input -> {
             folder.setPermission(input.trim());
 
-            player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+            FeedbackSound.CONFIRM.play(player);
             messages.sendMessage(player, "worlds_folder_permission_set", Placeholders.of("%folder%", folder.getName()));
         });
     }
@@ -218,7 +218,7 @@ public class FolderSubCommand extends AbstractSubCommand {
         this.prompts.prompt(player).title("enter_world_project").request(input -> {
             folder.setProject(input.trim());
 
-            player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+            FeedbackSound.CONFIRM.play(player);
             messages.sendMessage(player, "worlds_folder_project_set", Placeholders.of("%folder%", folder.getName()));
         });
     }
@@ -255,7 +255,7 @@ public class FolderSubCommand extends AbstractSubCommand {
 
         this.folderStorage.removeFolder(folder);
         messages.sendMessage(player, "worlds_folder_deleted", Placeholders.of("%folder%", folder.getName()));
-        player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+        FeedbackSound.DELETE.play(player);
     }
 
     @Override

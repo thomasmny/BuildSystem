@@ -17,13 +17,13 @@
  */
 package de.eintosti.buildsystem.world.spawn;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.storage.codec.LogoutLocationCodec;
 import de.eintosti.buildsystem.storage.yaml.YamlSpawnStorage;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -86,7 +86,7 @@ public class SpawnService {
             if (!completed) {
                 return;
             }
-            XSound.ENTITY_ZOMBIE_INFECT.play(player);
+            FeedbackSound.TELEPORT.play(player);
             player.resetTitle();
         });
         return true;

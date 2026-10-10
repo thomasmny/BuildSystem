@@ -24,12 +24,12 @@ import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.List;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -111,7 +111,7 @@ public class CategoryStatusesMenu extends PaginatedMenu {
                     toggleMembership(status);
                     registry.persist(category);
 
-                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+                    FeedbackSound.toggle(isCategoryMember(status)).play(player);
                     populate(player);
                 })
                 .build();

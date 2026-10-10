@@ -28,10 +28,10 @@ import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import java.util.ArrayList;
 import java.util.List;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -125,7 +125,7 @@ public class BuilderMenu extends PaginatedMenu {
                 })
                 .usableBy(this::canManageBuilders)
                 .onClick((player, event) -> {
-                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+                    FeedbackSound.CLICK.play(player);
                     menus.promptAddBuilder(buildWorld, player);
                 })
                 .build();
@@ -178,9 +178,8 @@ public class BuilderMenu extends PaginatedMenu {
 
     private void removeBuilder(Player player, Builder builder) {
         buildWorld.getBuilders().removeBuilder(builder);
-        player.playSound(player, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
         messages.sendMessage(player, "worlds_removebuilder_removed", Placeholders.of("%builder%", builder.getName()));
-        player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+        FeedbackSound.REMOVE.play(player);
         populate(player);
     }
 }
