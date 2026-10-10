@@ -52,7 +52,7 @@ class BuildModeTest {
     }
 
     @Test
-    void exitBuildMode_givesBackWhatEnteringSaved() {
+    void endBuildSession_givesBackWhatStartSaved() {
         ServerMock server = MockBukkit.mock();
         PlayerMock player = server.addPlayer();
         player.setGameMode(GameMode.SURVIVAL);
@@ -64,14 +64,15 @@ class BuildModeTest {
         PlayerServiceImpl service = new PlayerServiceImpl(
                 plugin, mock(ConfigService.class), () -> mock(WorldServiceImpl.class), mock(TaskScheduler.class));
 
-        service.enterBuildMode(player);
+        assertTrue(service.startBuildSession(player));
+        assertFalse(service.startBuildSession(player), "a second start keeps the first snapshot");
         player.setGameMode(GameMode.CREATIVE);
         player.getInventory().clear();
 
-        assertTrue(service.exitBuildMode(player));
+        assertTrue(service.endBuildSession(player));
         assertFalse(service.isInBuildMode(player));
         assertEquals(GameMode.SURVIVAL, player.getGameMode());
         assertTrue(player.getInventory().contains(Material.DIRT));
-        assertFalse(service.exitBuildMode(player), "a second exit is a no-op");
+        assertFalse(service.endBuildSession(player), "a second end is a no-op");
     }
 }

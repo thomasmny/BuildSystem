@@ -92,7 +92,9 @@ public class BuildCommand extends CommandBase {
         }
 
         if (isEnteringBuildMode) {
-            playerService.enterBuildMode(target);
+            if (!playerService.startBuildSession(target)) {
+                return;
+            }
             target.setGameMode(GameMode.CREATIVE);
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
@@ -106,7 +108,7 @@ public class BuildCommand extends CommandBase {
                         target, "build_activated_other_target", Placeholders.of("%sender%", sender.getName()));
             }
         } else {
-            if (!playerService.exitBuildMode(target)) {
+            if (!playerService.endBuildSession(target)) {
                 return;
             }
 

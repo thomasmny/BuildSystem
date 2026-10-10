@@ -92,21 +92,27 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     /**
-     * Puts the player in build mode and saves the gamemode and inventory that {@link #exitBuildMode} gives back.
+     * Puts the player in build mode and snapshots their gamemode and inventory, which {@link #endBuildSession} gives
+     * back. Unlike {@link #enterBuildMode(UUID)}, which only flags the player, this is the whole transition.
+     *
+     * @return {@code false}, leaving the existing snapshot alone, if the player was already in build mode
      */
-    public void enterBuildMode(Player player) {
-        enterBuildMode(player.getUniqueId());
+    public boolean startBuildSession(Player player) {
+        if (!enterBuildMode(player.getUniqueId())) {
+            return false;
+        }
         BuildPlayerImpl.of(playerStorage.getBuildPlayer(player))
                 .getCachedValues()
                 .saveBuildState(player);
+        return true;
     }
 
     /**
-     * Takes the player out of build mode and gives back the gamemode and inventory saved when they entered it.
+     * Takes the player out of build mode and gives back the gamemode and inventory {@link #startBuildSession} saved.
      *
      * @return {@code false} if the player was not in build mode
      */
-    public boolean exitBuildMode(Player player) {
+    public boolean endBuildSession(Player player) {
         if (!leaveBuildMode(player.getUniqueId())) {
             return false;
         }

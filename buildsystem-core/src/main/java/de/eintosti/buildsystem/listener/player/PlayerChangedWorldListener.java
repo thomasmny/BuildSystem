@@ -98,7 +98,7 @@ public class PlayerChangedWorldListener implements Listener {
     }
 
     private void removeBuildMode(Player player) {
-        if (!playerManager.exitBuildMode(player)) {
+        if (!playerManager.endBuildSession(player)) {
             return;
         }
 
