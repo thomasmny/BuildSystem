@@ -35,8 +35,11 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockbukkit.mockbukkit.MockBukkit;
 
 /**
  * Guards the two sources of truth for every config default against each other: the value written in the bundled
@@ -51,6 +54,17 @@ import org.junit.jupiter.api.Test;
 class ConfigDefaultsDriftTest {
 
     private static final Logger LOGGER = Logger.getLogger("ConfigDefaultsDriftTest");
+
+    // Parsing asks the server's registries whether the navigator item has an item form.
+    @BeforeAll
+    static void startServer() {
+        MockBukkit.mock();
+    }
+
+    @AfterAll
+    static void stopServer() {
+        MockBukkit.unmock();
+    }
 
     /**
      * Paths whose shipped value is deliberately not the parser's fallback. Each is a list that ships populated but

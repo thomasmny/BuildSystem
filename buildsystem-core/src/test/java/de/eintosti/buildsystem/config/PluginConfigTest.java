@@ -27,11 +27,25 @@ import org.bukkit.Difficulty;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockbukkit.mockbukkit.MockBukkit;
 
 class PluginConfigTest {
 
     private static final Logger LOGGER = Logger.getLogger("PluginConfigTest");
+
+    // Whether a material has an item form is answered by the server's registries.
+    @BeforeAll
+    static void startServer() {
+        MockBukkit.mock();
+    }
+
+    @AfterAll
+    static void stopServer() {
+        MockBukkit.unmock();
+    }
 
     private PluginConfig parse(String yaml) {
         YamlConfiguration config = new YamlConfiguration();
@@ -179,6 +193,15 @@ class PluginConfigTest {
                         settings:
                           navigator:
                             item: CLOKC
+                        """).settings().navigator().item());
+    }
+
+    @Test
+    void navigatorItem_withoutAnItemForm_fallsBackToClock() {
+        assertEquals(XMaterial.CLOCK, parse("""
+                        settings:
+                          navigator:
+                            item: water
                         """).settings().navigator().item());
     }
 

@@ -289,8 +289,9 @@ public class ConfigService {
 
     private static XMaterial parseNavigatorItem(FileConfiguration config, Logger logger) {
         String raw = Objects.requireNonNullElse(config.getString("settings.navigator.item"), "CLOCK");
-        return Optional.ofNullable(MaterialUtils.match(raw))
-                .map(XMaterial::matchXMaterial)
+        return XMaterial.matchXMaterial(raw)
+                .filter(XMaterial::isSupported)
+                .filter(material -> material.get().isItem())
                 .orElseGet(() -> {
                     logger.warning("Invalid navigator item \"" + raw + "\". Defaulting to CLOCK.");
                     return XMaterial.CLOCK;
