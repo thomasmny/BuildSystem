@@ -21,6 +21,9 @@ import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldNames;
 import java.io.*;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -234,6 +237,35 @@ public final class FileUtils {
      */
     private static void copyFile(File source, File target) throws IOException {
         Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    /**
+     * Moves a directory, including the files {@link #copy} skips. Fails when {@code target} already exists, so it
+     * never merges into another world's folder. Within one file system this is a rename; across file systems it falls
+     * back to copying and deleting.
+     *
+     * @param source The directory to move
+     * @param target Where it should end up; its parent directories are created
+     * @throws IOException If {@code target} exists or the move fails
+     */
+    public static void moveDirectory(File source, File target) throws IOException {
+        Path from = source.toPath();
+        Path to = target.toPath();
+        if (Files.exists(to)) {
+            throw new FileAlreadyExistsException(to.toString());
+        }
+
+        Path parent = to.toAbsolutePath().getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
+        try {
+            Files.move(from, to);
+        } catch (DirectoryNotEmptyException | AtomicMoveNotSupportedException e) {
+            // A non-empty directory can only be renamed within its file system; anywhere else it has to be copied.
+            copy(source, target);
+            deleteDirectory(source);
+        }
     }
 
     /**
