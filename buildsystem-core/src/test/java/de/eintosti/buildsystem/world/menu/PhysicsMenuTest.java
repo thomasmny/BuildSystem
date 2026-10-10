@@ -34,7 +34,6 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
 import de.eintosti.buildsystem.test.TestData;
-import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataSchema;
@@ -44,6 +43,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.bukkit.Sound;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -112,7 +112,9 @@ class PhysicsMenuTest {
         player.addAttachment(MockBukkit.createMockPlugin(), Permissions.EDIT_PHYSICS, true);
         click(slot);
         assertEquals(!before, data.get(key));
-        assertEquals(FeedbackSound.toggle(!before).sound(), player.sounds().getLast());
+        assertEquals(
+                before ? Sound.BLOCK_COPPER_BULB_TURN_OFF : Sound.BLOCK_COPPER_BULB_TURN_ON,
+                player.sounds().getLast());
     }
 
     @Test

@@ -38,10 +38,10 @@ import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
-import de.eintosti.buildsystem.util.FeedbackSound;
 import java.util.List;
 import java.util.UUID;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -97,7 +97,7 @@ class BuilderMenuTest {
         menu.handleClick(click(admin, menu, FIRST_BUILDER_SLOT, ClickType.SHIFT_LEFT));
 
         verify(builders).removeBuilder(builder);
-        assertEquals(List.of(FeedbackSound.REMOVE.sound()), ((SoundlessPlayer) admin).sounds());
+        assertEquals(List.of(Sound.ENTITY_ITEM_FRAME_REMOVE_ITEM), ((SoundlessPlayer) admin).sounds());
     }
 
     @Test

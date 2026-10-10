@@ -39,12 +39,12 @@ import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
-import de.eintosti.buildsystem.util.FeedbackSound;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import org.bukkit.Sound;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -153,7 +153,7 @@ class SettingsMenuTest {
 
         assertEquals(before, settings.isScoreboard());
         verify(menus, never()).openSettings(player);
-        assertEquals(List.of(FeedbackSound.REFUSE.sound()), player.sounds());
+        assertEquals(List.of(Sound.BLOCK_CRAFTER_FAIL), player.sounds());
     }
 
     @Test
@@ -166,11 +166,9 @@ class SettingsMenuTest {
         click(menu(), 12);
         click(menu(), 12);
 
-        assertEquals(
-                List.of(
-                        FeedbackSound.toggle(!before).sound(),
-                        FeedbackSound.toggle(before).sound()),
-                player.sounds());
+        Sound on = Sound.BLOCK_COPPER_BULB_TURN_ON;
+        Sound off = Sound.BLOCK_COPPER_BULB_TURN_OFF;
+        assertEquals(before ? List.of(off, on) : List.of(on, off), player.sounds());
     }
 
     @Test
