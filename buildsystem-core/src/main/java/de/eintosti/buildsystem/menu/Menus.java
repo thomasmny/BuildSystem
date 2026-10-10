@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.menu;
 
+import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
@@ -29,17 +30,18 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand;
 import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
+import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.player.customblock.CustomBlockMenu;
 import de.eintosti.buildsystem.player.menu.DesignMenu;
 import de.eintosti.buildsystem.player.menu.SettingsMenu;
 import de.eintosti.buildsystem.player.menu.SpeedMenu;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.TaskScheduler;
-import de.eintosti.buildsystem.world.menu.BackupsConfirmationMenu;
 import de.eintosti.buildsystem.world.menu.BackupsMenu;
 import de.eintosti.buildsystem.world.menu.BuilderMenu;
 import de.eintosti.buildsystem.world.menu.CategoryWorldsMenu;
 import de.eintosti.buildsystem.world.menu.CreateMenu;
-import de.eintosti.buildsystem.world.menu.DeleteMenu;
 import de.eintosti.buildsystem.world.menu.DisplayablesContext;
 import de.eintosti.buildsystem.world.menu.DisplayablesMenu;
 import de.eintosti.buildsystem.world.menu.EditMenu;
@@ -125,7 +127,25 @@ public final class Menus {
     }
 
     public void openBackupsConfirmation(Backup backup, Player player) {
-        new BackupsConfirmationMenu(services.messages(), backup, player).open(player);
+        Messages messages = services.messages();
+        new ConfirmMenu(
+                        messages,
+                        messages.getString("restore_backup_title", player),
+                        ItemBuilder.of(XMaterial.LIME_DYE)
+                                .name(messages.getString("restore_backup_confirm_name", player))
+                                .lore(messages.getStringList(
+                                        "restore_backup_confirm_lore",
+                                        player,
+                                        Placeholders.of("%timestamp%", messages.formatDateTime(backup.creationTime()))))
+                                .build(),
+                        Permissions.BACKUP,
+                        p -> backup.owner().restoreBackup(backup, p),
+                        ItemBuilder.of(XMaterial.RED_DYE)
+                                .name(messages.getString("restore_backup_cancel_name", player))
+                                .build(),
+                        p -> {},
+                        null)
+                .open(player);
     }
 
     /**
@@ -233,7 +253,25 @@ public final class Menus {
     }
 
     public void openDelete(BuildWorld buildWorld, Player player) {
-        new DeleteMenu(services.messages(), services.world(), buildWorld, player).open(player);
+        Messages messages = services.messages();
+        Placeholders world = Placeholders.of("%world%", buildWorld.getName());
+        new ConfirmMenu(
+                        messages,
+                        messages.getString("delete_title", player),
+                        ItemBuilder.of(XMaterial.LIME_DYE)
+                                .name(messages.getString("delete_world_confirm", player))
+                                .build(),
+                        null,
+                        p -> services.world().deleteWorld(p, buildWorld),
+                        ItemBuilder.of(XMaterial.RED_DYE)
+                                .name(messages.getString("delete_world_cancel", player))
+                                .build(),
+                        p -> messages.sendMessage(p, "worlds_delete_canceled", world),
+                        ItemBuilder.of(XMaterial.FILLED_MAP)
+                                .name(messages.getString("delete_world_name", player, world))
+                                .lore(messages.getStringList("delete_world_name_lore", player))
+                                .build())
+                .open(player);
     }
 
     public void openGameRules(BuildWorld buildWorld, Player player) {
