@@ -158,6 +158,30 @@ class BukkitWorldFactoryTest {
     }
 
     @Test
+    void newWorld_getsTheBorderSizeItWasBuiltWith() {
+        WorldMock world = server.addSimpleWorld("bordered");
+        lenient()
+                .when(configService.current().world().defaults().worldBorderSize())
+                .thenReturn(1000);
+        lenient().when(configService.current().world().defaults().gameRules()).thenReturn(List.of());
+
+        new BukkitWorldFactory(
+                        configService,
+                        Logger.getLogger("test"),
+                        "bordered",
+                        BuildWorldType.NORMAL,
+                        null,
+                        null,
+                        null,
+                        500,
+                        null,
+                        true)
+                .applyWorldSettings(world);
+
+        assertEquals(500, world.getWorldBorder().getSize());
+    }
+
+    @Test
     void loadingAnExistingWorld_keepsItsGameRulesAndSpawn() {
         WorldMock world = server.addSimpleWorld("void-world");
         world.setSpawnLocation(10, 80, 10);
