@@ -442,6 +442,7 @@ world_item_lore_edit:
   - ""
   - "&8» &7&oLeft-click to teleport"
   - "&8» &7&oRight-click to edit"
+category_title: "&3» &8%category%"
 folder_title: "&3» &8%folder%"
 folder_item_title: "&3&l%folder%"
 folder_item_lore:

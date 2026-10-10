@@ -20,8 +20,8 @@ package de.eintosti.buildsystem.world.menu;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.Permissions;
-import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -53,7 +53,11 @@ public class CategoryWorldsMenu extends DisplayablesMenu {
                 player,
                 Options.builder()
                         .category(category)
-                        .title(ColorAPI.process(category.getDisplayName()))
+                        .title(context.messages()
+                                .getString(
+                                        "category_title",
+                                        player,
+                                        Placeholders.of("%category%", category.getDisplayName())))
                         .emptyMessage(context.messages().getString("world_navigator_no_worlds", player))
                         .build());
         this.worldStatusRegistry = worldStatusRegistry;
