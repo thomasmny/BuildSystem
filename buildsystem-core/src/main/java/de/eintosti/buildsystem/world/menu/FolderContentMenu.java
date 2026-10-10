@@ -30,7 +30,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 
@@ -59,8 +58,8 @@ public class FolderContentMenu extends DisplayablesMenu {
     }
 
     @Override
-    protected void addExtraItems(Inventory inventory, Player player) {
-        parentInventory.addExtraItems(inventory, player);
+    protected CreateButtons createButtons(Player player) {
+        return parentInventory.createButtons(player);
     }
 
     @Override

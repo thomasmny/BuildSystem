@@ -53,10 +53,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -73,11 +73,13 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     protected static final int SLOT_CREATE_WORLD = 48;
     protected static final int FIRST_CREATE_FOLDER_SLOT = 49;
     protected static final int LAST_CREATE_FOLDER_SLOT = 50;
-    protected static final int SLOT_BACK = 51;
     protected static final int SLOT_PREVIOUS_PAGE = 52;
     protected static final int SLOT_NEXT_PAGE = 53;
     protected static final int FIRST_BOTTOM_BAR_SLOT = 45;
     protected static final int LAST_BOTTOM_BAR_SLOT = 53;
+
+    static final String CREATE_WORLD_PROFILE = SkullTextures.ADD_ITEM;
+    static final String CREATE_FOLDER_PROFILE = "69b861aabb316c4ed73b4e5428305782e735565ba2a053912e1efd834fa5a6f";
 
     private static final String NO_WORLDS_SKULL_PROFILE =
             "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6";
@@ -202,9 +204,19 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
 
         clearButtons();
         menuItems.fillWithGlass(inv, player);
-        displayBar.renderSort(inv);
-        displayBar.renderFilter(inv);
-        addExtraItems(inv, player);
+        register(
+                SLOT_WORLD_SORT,
+                MenuButton.builder()
+                        .render((p, inventory, slot) -> displayBar.renderSort(inventory))
+                        .onClick((p, event) -> displayBar.handleSortClick(event, worldDisplay(p)))
+                        .build());
+        register(
+                SLOT_WORLD_FILTER,
+                MenuButton.builder()
+                        .render((p, inventory, slot) -> displayBar.renderFilter(inventory))
+                        .onClick((p, event) -> displayBar.handleFilterClick(event, worldDisplay(p)))
+                        .build());
+        registerCreateButtons(player);
         register(SLOT_PREVIOUS_PAGE, previousPageButton(SkullTextures.PREVIOUS_PAGE, MAX_WORLDS_PER_PAGE));
         register(SLOT_NEXT_PAGE, nextPageButton(SkullTextures.NEXT_PAGE, MAX_WORLDS_PER_PAGE));
 
@@ -231,7 +243,50 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                 .build();
     }
 
-    protected void addExtraItems(Inventory inventory, Player player) {}
+    /**
+     * Which create buttons the bottom bar offers the player.
+     */
+    protected record CreateButtons(boolean world, boolean folder) {
+        static final CreateButtons NONE = new CreateButtons(false, false);
+    }
+
+    /**
+     * {@return which create buttons the bottom bar offers the player} None by default.
+     */
+    protected CreateButtons createButtons(Player player) {
+        return CreateButtons.NONE;
+    }
+
+    private void registerCreateButtons(Player player) {
+        CreateButtons offered = createButtons(player);
+        if (offered.world()) {
+            register(
+                    SLOT_CREATE_WORLD,
+                    createButton(CREATE_WORLD_PROFILE, "world_navigator_create_world", p -> beginWorldCreation()));
+        }
+        if (offered.folder()) {
+            // With the create-world button hidden, centre the lone folder button instead of leaving it off to the side.
+            register(
+                    offered.world() ? LAST_CREATE_FOLDER_SLOT : FIRST_CREATE_FOLDER_SLOT,
+                    createButton(CREATE_FOLDER_PROFILE, "world_navigator_create_folder", this::beginFolderCreation));
+        }
+    }
+
+    private MenuButton createButton(String profile, String nameKey, Consumer<Player> onCreate) {
+        return MenuButton.builder()
+                .render((p, inventory, slot) -> ItemBuilder.skull(Profileable.detect(profile))
+                        .name(messages.getString(nameKey, p))
+                        .into(inventory, slot))
+                .onClick((p, event) -> {
+                    XSound.ENTITY_CHICKEN_EGG.play(p);
+                    onCreate.accept(p);
+                })
+                .build();
+    }
+
+    private WorldDisplay worldDisplay(Player player) {
+        return settingsManager.getSettings(player).getWorldDisplay();
+    }
 
     protected List<Displayable> collectDisplayables() {
         WorldDisplay worldDisplay = settingsManager.getSettings(player).getWorldDisplay();
@@ -284,52 +339,14 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         return WorldNames.bukkitWorld(buildWorld.getName()) != null || !buildWorld.isLoaded();
     }
 
+    /**
+     * Sort, filter, the create buttons and the page arrows are registered buttons; any other click in the bottom bar
+     * goes back.
+     */
     @Override
     protected void onUnhandledClick(Player player, InventoryClickEvent event) {
-        // Page arrows are registered buttons; everything else is handled here. Ignore clicks outside this inventory.
         int slot = event.getRawSlot();
-        if (slot < 0 || slot >= getInventory().getSize()) {
-            return;
-        }
-        ItemStack itemStack = event.getCurrentItem();
-        if (itemStack == null) {
-            return;
-        }
-
-        Settings settings = settingsManager.getSettings(player);
-        WorldDisplay worldDisplay = settings.getWorldDisplay();
-
-        switch (slot) {
-            case SLOT_WORLD_SORT -> displayBar.handleSortClick(event, worldDisplay);
-            case SLOT_WORLD_FILTER -> displayBar.handleFilterClick(event, worldDisplay);
-            case SLOT_CREATE_WORLD -> handleCreateButtonClick(itemStack, this::beginWorldCreation);
-            case FIRST_CREATE_FOLDER_SLOT, LAST_CREATE_FOLDER_SLOT ->
-                handleCreateButtonClick(itemStack, () -> beginFolderCreation(player));
-            case SLOT_BACK -> goBack(player, itemStack);
-            default -> {
-                if (slot >= FIRST_BOTTOM_BAR_SLOT && slot <= LAST_BOTTOM_BAR_SLOT) {
-                    goBack(player, itemStack);
-                }
-            }
-        }
-    }
-
-    /**
-     * Runs {@code onCreate} for a click on a create-world/create-folder slot, but only when that slot actually holds
-     * the create button. The same slot renders as filler glass instead when the player lacks permission or the
-     * category doesn't offer creation, and glass in the bottom bar behaves like every other slot there: it goes back.
-     */
-    private void handleCreateButtonClick(ItemStack itemStack, Runnable onCreate) {
-        if (itemStack.getType() == XMaterial.PLAYER_HEAD.get()) {
-            XSound.ENTITY_CHICKEN_EGG.play(player);
-            onCreate.run();
-            return;
-        }
-        goBack(player, itemStack);
-    }
-
-    private void goBack(Player player, ItemStack itemStack) {
-        if (itemStack.getType() != XMaterial.PLAYER_HEAD.get()) {
+        if (slot >= FIRST_BOTTOM_BAR_SLOT && slot <= LAST_BOTTOM_BAR_SLOT) {
             XSound.BLOCK_CHEST_OPEN.play(player);
             returnToPreviousInventory();
         }

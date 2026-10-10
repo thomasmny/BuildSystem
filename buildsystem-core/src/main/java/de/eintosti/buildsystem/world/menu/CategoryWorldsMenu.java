@@ -17,17 +17,13 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -44,11 +40,6 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public class CategoryWorldsMenu extends DisplayablesMenu {
-
-    static final String CREATE_WORLD_PROFILE = SkullTextures.ADD_ITEM;
-    static final String CREATE_FOLDER_PROFILE = "69b861aabb316c4ed73b4e5428305782e735565ba2a053912e1efd834fa5a6f";
-
-    private static final int SLOT_CREATE_CENTER = FIRST_CREATE_FOLDER_SLOT;
 
     private final WorldStatusRegistryImpl worldStatusRegistry;
 
@@ -69,20 +60,8 @@ public class CategoryWorldsMenu extends DisplayablesMenu {
     }
 
     @Override
-    protected void addExtraItems(Inventory inventory, Player player) {
-        boolean createWorld = canCreateWorldHere(player);
-        if (createWorld) {
-            ItemBuilder.skull(Profileable.detect(CREATE_WORLD_PROFILE))
-                    .name(messages.getString("world_navigator_create_world", player))
-                    .into(inventory, SLOT_CREATE_WORLD);
-        }
-        if (player.hasPermission(Permissions.CREATE_FOLDER)) {
-            // With the create-world button hidden, centre the lone folder button instead of leaving it off to the side.
-            int folderSlot = createWorld ? LAST_CREATE_FOLDER_SLOT : SLOT_CREATE_CENTER;
-            ItemBuilder.skull(Profileable.detect(CREATE_FOLDER_PROFILE))
-                    .name(messages.getString("world_navigator_create_folder", player))
-                    .into(inventory, folderSlot);
-        }
+    protected CreateButtons createButtons(Player player) {
+        return new CreateButtons(canCreateWorldHere(player), player.hasPermission(Permissions.CREATE_FOLDER));
     }
 
     /**
