@@ -35,8 +35,8 @@ import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Locale;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -58,7 +58,11 @@ public class FolderStorageImpl implements FolderStorage {
     protected final Logger logger;
     protected final WorldStorage worldStorage;
 
-    private final ConcurrentHashMap<String, Folder> foldersByName;
+    /**
+     * Keyed by UUID, since a folder can be renamed through the API without the storage hearing about it.
+     */
+    private final ConcurrentHashMap<UUID, Folder> folders;
+
     private final YamlEntityFile<Folder> file;
     private final Supplier<WorldContext> context;
 
@@ -81,7 +85,7 @@ public class FolderStorageImpl implements FolderStorage {
             Logger logger, WorldStorage worldStorage, Supplier<WorldContext> context, YamlEntityFile<Folder> file) {
         this.logger = logger;
         this.worldStorage = worldStorage;
-        this.foldersByName = new ConcurrentHashMap<>();
+        this.folders = new ConcurrentHashMap<>();
         this.context = context;
         this.file = file;
     }
@@ -96,7 +100,9 @@ public class FolderStorageImpl implements FolderStorage {
         return file.save(folders);
     }
 
-    /** Loads every folder, then links each to its parent, which is stored by UUID. */
+    /**
+     * Loads every folder, then links each to its parent, which is stored by UUID.
+     */
     @Override
     public CompletableFuture<Collection<Folder>> load() {
         return file.load((loaded, root) -> loaded.forEach((key, folder) -> {
@@ -122,9 +128,8 @@ public class FolderStorageImpl implements FolderStorage {
 
     public void loadFolders() {
         try {
-            this.foldersByName.putAll(load().get().stream()
-                    .collect(Collectors.toMap(
-                            folder -> folder.getName().toLowerCase(Locale.ROOT), Function.identity())));
+            this.folders.putAll(
+                    load().get().stream().collect(Collectors.toMap(Folder::getUniqueId, Function.identity())));
         } catch (InterruptedException | ExecutionException e) {
             logger.severe("Failed to load folders from storage: " + e.getMessage());
         }
@@ -133,12 +138,15 @@ public class FolderStorageImpl implements FolderStorage {
     @Override
     @Unmodifiable
     public Collection<Folder> getFolders() {
-        return Collections.unmodifiableCollection(foldersByName.values());
+        return Collections.unmodifiableCollection(folders.values());
     }
 
     @Nullable @Override
     public Folder getFolder(String name) {
-        return foldersByName.get(name.toLowerCase(Locale.ROOT));
+        return folders.values().stream()
+                .filter(folder -> folder.getName().equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
@@ -153,23 +161,23 @@ public class FolderStorageImpl implements FolderStorage {
 
     @Override
     public Folder createFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
-        Folder folder = newFolder(name, category, parent, creator);
-        foldersByName.put(name.toLowerCase(Locale.ROOT), folder);
+        Folder folder = new FolderImpl(context.get(), name, category, parent, creator);
+        folders.put(folder.getUniqueId(), folder);
         fireEvent(new FolderCreatedEvent(folder));
         return folder;
     }
 
-    /**
-     * Creates the folder instance to register. Overridable so unit tests can use a simpler folder.
-     */
-    protected Folder newFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
-        return new FolderImpl(context.get(), name, category, parent, creator);
+    @Override
+    public void removeFolder(String name) {
+        Folder folder = getFolder(name);
+        if (folder != null) {
+            removeFolder(folder);
+        }
     }
 
     @Override
-    public void removeFolder(String name) {
-        Folder removed = foldersByName.remove(name.toLowerCase(Locale.ROOT));
-        if (removed == null) {
+    public void removeFolder(Folder removed) {
+        if (folders.remove(removed.getUniqueId()) == null) {
             return;
         }
 
@@ -194,10 +202,5 @@ public class FolderStorageImpl implements FolderStorage {
      */
     protected void fireEvent(Event event) {
         Bukkit.getPluginManager().callEvent(event);
-    }
-
-    @Override
-    public void removeFolder(Folder folder) {
-        removeFolder(folder.getName());
     }
 }
