@@ -52,19 +52,39 @@ public final class UpdateChecker {
     private static final Duration CACHE_FOR = Duration.ofHours(1);
 
     private final JavaPlugin plugin;
-    private final int pluginID;
-    private final HttpClient httpClient;
+    private final SpigotRequest request;
     private final Executor executor;
 
     private @Nullable CompletableFuture<UpdateResult> lastCheck;
     private long lastCheckAt;
 
     public UpdateChecker(JavaPlugin plugin, int pluginID, Executor executor) {
-        Preconditions.checkArgument(pluginID > 0, "Plugin ID must be greater than 0");
+        this(plugin, spigotRequest(pluginID), executor);
+    }
+
+    UpdateChecker(JavaPlugin plugin, SpigotRequest request, Executor executor) {
         this.plugin = plugin;
-        this.pluginID = pluginID;
-        this.httpClient = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
+        this.request = request;
         this.executor = executor;
+    }
+
+    private static SpigotRequest spigotRequest(int pluginID) {
+        Preconditions.checkArgument(pluginID > 0, "Plugin ID must be greater than 0");
+        HttpClient httpClient = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
+        HttpRequest request = HttpRequest.newBuilder(URI.create(UPDATE_URL.formatted(pluginID)))
+                .timeout(TIMEOUT)
+                .header("User-Agent", USER_AGENT)
+                .GET()
+                .build();
+        return () -> httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    /**
+     * Sends the request to Spigot's resource API.
+     */
+    @FunctionalInterface
+    interface SpigotRequest {
+        HttpResponse<String> send() throws IOException, InterruptedException;
     }
 
     /**
@@ -120,16 +140,14 @@ public final class UpdateChecker {
         return lastCheck;
     }
 
+    /**
+     * Never completes exceptionally, so a cached check can always be read.
+     */
     private UpdateResult check() {
         int responseCode;
 
         try {
-            HttpRequest request = HttpRequest.newBuilder(URI.create(UPDATE_URL.formatted(pluginID)))
-                    .timeout(TIMEOUT)
-                    .header("User-Agent", USER_AGENT)
-                    .GET()
-                    .build();
-            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = request.send();
             responseCode = response.statusCode();
 
             JsonElement json;
@@ -161,6 +179,9 @@ public final class UpdateChecker {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return new UpdateResult(UpdateReason.COULD_NOT_CONNECT);
+        } catch (RuntimeException e) {
+            // A response without the expected fields, for example.
+            return new UpdateResult(UpdateReason.UNKNOWN_ERROR);
         }
 
         return new UpdateResult(responseCode == 401 ? UpdateReason.UNAUTHORIZED_QUERY : UpdateReason.UNKNOWN_ERROR);
