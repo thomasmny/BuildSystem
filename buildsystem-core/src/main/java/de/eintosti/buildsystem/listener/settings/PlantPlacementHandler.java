@@ -32,6 +32,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 final class PlantPlacementHandler implements SettingHandler {
@@ -63,12 +64,14 @@ final class PlantPlacementHandler implements SettingHandler {
             XMaterial.class);
 
     @Override
-    public boolean takes(PlayerInteractEvent event, Block block, Settings settings) {
+    public @Nullable Runnable claim(PlayerInteractEvent event, Block block, Settings settings) {
         ItemStack itemStack = event.getItem();
-        return event.getAction() == Action.RIGHT_CLICK_BLOCK
-                && settings.isPlacePlants()
-                && itemStack != null
-                && isPlant(XMaterial.matchXMaterial(itemStack.getType()));
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || !settings.isPlacePlants() || itemStack == null) {
+            return null;
+        }
+
+        XMaterial xMaterial = XMaterial.matchXMaterial(itemStack.getType());
+        return isPlant(xMaterial) ? () -> place(event, block, xMaterial) : null;
     }
 
     private static boolean isPlant(XMaterial xMaterial) {
@@ -80,9 +83,7 @@ final class PlantPlacementHandler implements SettingHandler {
                 || OTHER_PLANTS.contains(xMaterial);
     }
 
-    @Override
-    public void handle(PlayerInteractEvent event, Block block) {
-        XMaterial xMaterial = XMaterial.matchXMaterial(event.getItem().getType());
+    private static void place(PlayerInteractEvent event, Block block, XMaterial xMaterial) {
         event.setCancelled(true);
         Block adjacent = block.getRelative(event.getBlockFace());
 

@@ -32,10 +32,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
- * Runs the per-player build settings that act on a block click. The first {@link SettingHandler} that takes the click
- * handles it, once the shared protection check has passed.
+ * Runs the per-player build settings that act on a block click. The first {@link SettingHandler} that claims the click
+ * acts on it, once the shared protection check has passed.
  */
 @NullMarked
 public class SettingInteractionListener implements Listener {
@@ -49,6 +50,8 @@ public class SettingInteractionListener implements Listener {
             SettingsService settingsService, WorldStorage worldStorage, ConfigService configService) {
         this.settingsService = settingsService;
         this.worldStorage = worldStorage;
+        // The first handler that claims a click wins, so the order matters. It is the order the five listeners these
+        // replace were registered in.
         this.handlers = List.of(
                 new DisabledInteractionsHandler(configService),
                 new InstantSignPlacementHandler(),
@@ -67,14 +70,15 @@ public class SettingInteractionListener implements Listener {
         Player player = event.getPlayer();
         Settings settings = settingsService.getSettings(player);
         for (SettingHandler handler : handlers) {
-            if (!handler.takes(event, block, settings)) {
+            Runnable action = handler.claim(event, block, settings);
+            if (action == null) {
                 continue;
             }
 
             BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
             if (buildWorld == null
                     || policy.mayModify(player, buildWorld, WorldSetting.BLOCK_PLACEMENT) == Denial.NONE) {
-                handler.handle(event, block);
+                action.run();
             }
             return;
         }
@@ -86,13 +90,9 @@ public class SettingInteractionListener implements Listener {
     interface SettingHandler {
 
         /**
-         * {@return whether this setting reacts to the click} Checked before the protection check.
+         * {@return what this setting does with the click, or {@code null} when it does not react to it} Called before
+         * the protection check; the returned action runs only once the check has passed.
          */
-        boolean takes(PlayerInteractEvent event, Block block, Settings settings);
-
-        /**
-         * Reacts to a click this handler {@link #takes takes}, after the protection check passed.
-         */
-        void handle(PlayerInteractEvent event, Block block);
+        @Nullable Runnable claim(PlayerInteractEvent event, Block block, Settings settings);
     }
 }

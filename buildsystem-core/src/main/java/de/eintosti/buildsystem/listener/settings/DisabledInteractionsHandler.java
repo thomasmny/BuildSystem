@@ -36,6 +36,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 final class DisabledInteractionsHandler implements SettingHandler {
@@ -47,20 +48,21 @@ final class DisabledInteractionsHandler implements SettingHandler {
     }
 
     @Override
-    public boolean takes(PlayerInteractEvent event, Block block, Settings settings) {
+    public @Nullable Runnable claim(PlayerInteractEvent event, Block block, Settings settings) {
         ItemStack itemStack = event.getItem();
-        return event.getAction() == Action.RIGHT_CLICK_BLOCK
-                && settings.isDisableInteract()
-                && block.getType().isInteractable()
-                && itemStack != null
-                && XMaterial.matchXMaterial(itemStack.getType())
-                        != configService.current().settings().builder().worldEditWand();
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK
+                || !settings.isDisableInteract()
+                || !block.getType().isInteractable()
+                || itemStack == null
+                || XMaterial.matchXMaterial(itemStack.getType())
+                        == configService.current().settings().builder().worldEditWand()) {
+            return null;
+        }
+        return () -> place(event, block, itemStack);
     }
 
-    @Override
-    public void handle(PlayerInteractEvent event, Block block) {
+    private void place(PlayerInteractEvent event, Block block, ItemStack itemStack) {
         Player player = event.getPlayer();
-        ItemStack itemStack = event.getItem();
         Material material = itemStack.getType();
         XMaterial xMaterial = XMaterial.matchXMaterial(material);
 

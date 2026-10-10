@@ -26,28 +26,29 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 final class IronDoorHandler implements SettingHandler {
 
     @Override
-    public boolean takes(PlayerInteractEvent event, Block block, Settings settings) {
+    public @Nullable Runnable claim(PlayerInteractEvent event, Block block, Settings settings) {
         if (event.getHand() != EquipmentSlot.HAND
                 || event.getPlayer().isSneaking()
                 || event.getAction() != Action.RIGHT_CLICK_BLOCK
                 || !settings.isOpenTrapDoors()) {
-            return false;
+            return null;
         }
 
         XMaterial material = XMaterial.matchXMaterial(block.getType());
-        return material == XMaterial.IRON_DOOR || material == XMaterial.IRON_TRAPDOOR;
-    }
-
-    @Override
-    public void handle(PlayerInteractEvent event, Block block) {
-        event.setCancelled(true);
-        Openable openable = (Openable) block.getBlockData();
-        openable.setOpen(!openable.isOpen());
-        block.setBlockData(openable);
+        if ((material != XMaterial.IRON_DOOR && material != XMaterial.IRON_TRAPDOOR)
+                || !(block.getBlockData() instanceof Openable openable)) {
+            return null;
+        }
+        return () -> {
+            event.setCancelled(true);
+            openable.setOpen(!openable.isOpen());
+            block.setBlockData(openable);
+        };
     }
 }

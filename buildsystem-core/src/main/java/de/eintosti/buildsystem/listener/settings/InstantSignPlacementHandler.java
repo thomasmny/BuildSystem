@@ -32,27 +32,28 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 final class InstantSignPlacementHandler implements SettingHandler {
 
     @Override
-    public boolean takes(PlayerInteractEvent event, Block block, Settings settings) {
+    public @Nullable Runnable claim(PlayerInteractEvent event, Block block, Settings settings) {
         ItemStack itemStack = event.getItem();
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK || !settings.isInstantPlaceSigns() || itemStack == null) {
-            return false;
+            return null;
         }
 
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        return (XTag.SIGNS.isTagged(xMaterial) || XTag.HANGING_SIGNS.isTagged(xMaterial))
-                && block.getRelative(event.getBlockFace()).getType().isAir();
+        if ((!XTag.SIGNS.isTagged(xMaterial) && !XTag.HANGING_SIGNS.isTagged(xMaterial))
+                || !block.getRelative(event.getBlockFace()).getType().isAir()) {
+            return null;
+        }
+        return () -> place(event, block, itemStack.getType(), xMaterial);
     }
 
-    @Override
-    public void handle(PlayerInteractEvent event, Block clickedBlock) {
+    private void place(PlayerInteractEvent event, Block clickedBlock, Material material, XMaterial xMaterial) {
         Player player = event.getPlayer();
-        Material material = event.getItem().getType();
-        XMaterial xMaterial = XMaterial.matchXMaterial(event.getItem());
         BlockFace blockFace = event.getBlockFace();
         Block adjacent = clickedBlock.getRelative(blockFace);
 

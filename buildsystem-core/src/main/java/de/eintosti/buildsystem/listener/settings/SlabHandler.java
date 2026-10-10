@@ -26,24 +26,24 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.util.RayTraceResult;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 final class SlabHandler implements SettingHandler {
 
     @Override
-    public boolean takes(PlayerInteractEvent event, Block block, Settings settings) {
-        return event.getAction() == Action.LEFT_CLICK_BLOCK
-                && settings.isSlabBreaking()
-                && block.getBlockData() instanceof Slab slab
-                && slab.getType() == Slab.Type.DOUBLE;
-    }
-
-    @Override
-    public void handle(PlayerInteractEvent event, Block block) {
-        event.setCancelled(true);
-        Slab slab = (Slab) block.getBlockData();
-        slab.setType(hitsTopHalf(event.getPlayer(), block) ? Slab.Type.BOTTOM : Slab.Type.TOP);
-        block.setBlockData(slab);
+    public @Nullable Runnable claim(PlayerInteractEvent event, Block block, Settings settings) {
+        if (event.getAction() != Action.LEFT_CLICK_BLOCK
+                || !settings.isSlabBreaking()
+                || !(block.getBlockData() instanceof Slab slab)
+                || slab.getType() != Slab.Type.DOUBLE) {
+            return null;
+        }
+        return () -> {
+            event.setCancelled(true);
+            slab.setType(hitsTopHalf(event.getPlayer(), block) ? Slab.Type.BOTTOM : Slab.Type.TOP);
+            block.setBlockData(slab);
+        };
     }
 
     /**
