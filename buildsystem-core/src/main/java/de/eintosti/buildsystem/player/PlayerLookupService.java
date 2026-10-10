@@ -42,7 +42,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Resolves player names to UUIDs and back. Lookups are cached and never block the main thread: the async variants
+ * Resolves player names to UUIDs. Lookups are cached and never block the main thread: the async variants
  * schedule the network call on Bukkit's async pool, while the blocking variants are reserved for code that already runs
  * off the main thread (e.g. world deserialization).
  */
@@ -50,7 +50,6 @@ import org.jspecify.annotations.Nullable;
 public final class PlayerLookupService {
 
     private static final String UUID_URL = "https://api.mojang.com/users/profiles/minecraft/%s";
-    private static final String PROFILE_URL = "https://sessionserver.mojang.com/session/minecraft/profile/%s";
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
     /**
      * The names a Mojang account can have. Anything else cannot be looked up and would not even form a valid URL.
@@ -62,7 +61,6 @@ public final class PlayerLookupService {
     private final Executor asyncExecutor;
 
     private final Map<String, UUID> uuidCache = new ConcurrentHashMap<>();
-    private final Map<UUID, String> nameCache = new ConcurrentHashMap<>();
 
     /**
      * @param plugin The plugin, used for logging
@@ -83,7 +81,6 @@ public final class PlayerLookupService {
      */
     public void cacheUser(UUID uuid, String name) {
         uuidCache.put(name.toLowerCase(Locale.ROOT), uuid);
-        nameCache.put(uuid, name);
     }
 
     /**
@@ -99,20 +96,6 @@ public final class PlayerLookupService {
             return CompletableFuture.completedFuture(cached);
         }
         return CompletableFuture.supplyAsync(() -> lookupUniqueIdBlocking(name), asyncExecutor);
-    }
-
-    /**
-     * Asynchronously resolves the current name for the given uuid.
-     *
-     * @param uuid The player uuid
-     * @return A future completing with the name, or {@code null} if it cannot be resolved
-     */
-    public CompletableFuture<@Nullable String> lookupName(UUID uuid) {
-        String cached = nameCache.get(uuid);
-        if (cached != null) {
-            return CompletableFuture.completedFuture(cached);
-        }
-        return CompletableFuture.supplyAsync(() -> lookupNameBlocking(uuid), asyncExecutor);
     }
 
     /**
@@ -147,35 +130,6 @@ public final class PlayerLookupService {
         return uuid;
     }
 
-    /**
-     * Blocking name resolution. Never call on the main thread.
-     *
-     * @param uuid The player uuid
-     * @return The name, or {@code null} if it cannot be resolved
-     */
-    public @Nullable String lookupNameBlocking(UUID uuid) {
-        String cached = nameCache.get(uuid);
-        if (cached != null) {
-            return cached;
-        }
-
-        if (ServerModeChecker.getServerMode() == ServerMode.OFFLINE) {
-            String name = Bukkit.getOfflinePlayer(uuid).getName();
-            if (name != null) {
-                cacheUser(uuid, name);
-            }
-            return name;
-        }
-
-        JsonObject json = requestJson(PROFILE_URL.formatted(toUndashed(uuid)));
-        if (json == null || !json.has("name")) {
-            return null;
-        }
-        String name = json.get("name").getAsString();
-        cacheUser(uuid, name);
-        return name;
-    }
-
     private @Nullable JsonObject requestJson(String url) {
         try {
             HttpRequest request = HttpRequest.newBuilder(URI.create(url))
@@ -195,10 +149,6 @@ public final class PlayerLookupService {
             plugin.getLogger().log(Level.SEVERE, "Failed Mojang lookup: " + url, e);
             return null;
         }
-    }
-
-    static String toUndashed(UUID uuid) {
-        return uuid.toString().replace("-", "");
     }
 
     static UUID fromUndashed(String undashed) {

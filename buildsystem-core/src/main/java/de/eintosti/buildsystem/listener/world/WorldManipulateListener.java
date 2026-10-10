@@ -128,7 +128,6 @@ public class WorldManipulateListener implements Listener {
         WorldSetting setting = worldSettingFor(parentEvent);
         if (!buildWorld.getPermissions().canModify(player, setting)) {
             parentEvent.setCancelled(true);
-            denyPlayerInteraction(event);
             return;
         }
 
@@ -142,13 +141,6 @@ public class WorldManipulateListener implements Listener {
             case BlockPlaceEvent ignored -> WorldSetting.BLOCK_PLACEMENT;
             default -> WorldSetting.BLOCK_INTERACTIONS;
         };
-    }
-
-    private void denyPlayerInteraction(Event event) {
-        if (event instanceof PlayerInteractEvent interactEvent) {
-            interactEvent.setUseItemInHand(Event.Result.DENY);
-            interactEvent.setUseInteractedBlock(Event.Result.DENY);
-        }
     }
 
     private void updateStatus(WorldData worldData, Player player) {

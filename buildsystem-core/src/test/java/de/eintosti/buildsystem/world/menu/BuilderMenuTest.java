@@ -39,7 +39,6 @@ import de.eintosti.buildsystem.test.SoundlessPlayer;
 import java.util.List;
 import java.util.UUID;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -124,13 +123,7 @@ class BuilderMenuTest {
         Messages messages = mock(Messages.class);
         when(messages.getString(anyString(), any())).thenReturn("text");
         when(messages.getString(anyString(), any(), any())).thenReturn("text");
-        return new BuilderMenu(
-                messages,
-                mock(MenuItems.class),
-                mock(Menus.class),
-                new NamespacedKey("buildsystem", "builder_name"),
-                buildWorld,
-                player);
+        return new BuilderMenu(messages, mock(MenuItems.class), mock(Menus.class), buildWorld, player);
     }
 
     private static InventoryClickEvent click(PlayerMock player, BuilderMenu menu, int slot, ClickType type) {

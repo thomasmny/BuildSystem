@@ -61,7 +61,6 @@ import de.eintosti.buildsystem.world.menu.setup.StatusLayoutMenu;
 import java.util.List;
 import java.util.function.Consumer;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -79,13 +78,11 @@ public final class Menus {
     private final BuildSystemPlugin plugin;
     private final Services services;
     private final TaskScheduler scheduler;
-    private final NamespacedKey builderNameKey;
 
     public Menus(BuildSystemPlugin plugin, Services services) {
         this.plugin = plugin;
         this.services = services;
         this.scheduler = services.scheduler();
-        this.builderNameKey = new NamespacedKey(plugin, "builder_name");
     }
 
     public void openSpeed(Player player) {
@@ -175,8 +172,7 @@ public final class Menus {
     }
 
     public void openBuilder(BuildWorld buildWorld, Player player) {
-        new BuilderMenu(services.messages(), services.menuItems(), this, builderNameKey, buildWorld, player)
-                .open(player);
+        new BuilderMenu(services.messages(), services.menuItems(), this, buildWorld, player).open(player);
     }
 
     /**
