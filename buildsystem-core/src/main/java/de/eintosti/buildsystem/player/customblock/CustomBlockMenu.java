@@ -103,13 +103,6 @@ public class CustomBlockMenu extends ButtonMenu<MenuButton> {
         renderButtons(player);
     }
 
-    /**
-     * The slot &rarr; block mapping. Exposed for the golden test that pins the selection grid.
-     */
-    Map<Integer, BlockEntry> blockBySlot() {
-        return BLOCK_BY_SLOT;
-    }
-
     private void giveCustomBlock(Player player, CustomBlock customBlock, XMaterial material) {
         ItemStack itemStack;
         if (material == XMaterial.PLAYER_HEAD) {

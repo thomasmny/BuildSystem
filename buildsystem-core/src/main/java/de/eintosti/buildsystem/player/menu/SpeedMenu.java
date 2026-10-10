@@ -103,13 +103,6 @@ public class SpeedMenu extends ButtonMenu<MenuButton> {
         renderButtons(player);
     }
 
-    /**
-     * The slot &rarr; speed mapping. Exposed for the golden test that pins the selection grid.
-     */
-    Map<Integer, SpeedOption> speedBySlot() {
-        return SPEED_BY_SLOT;
-    }
-
     private void setSpeed(Player player, float speed, int num) {
         if (player.isFlying()) {
             player.setFlySpeed(speed - 0.1f);

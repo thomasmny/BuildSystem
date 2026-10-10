@@ -40,9 +40,7 @@ import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldClock;
 import de.eintosti.buildsystem.world.WorldNames;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.bukkit.ChatColor;
@@ -395,21 +393,6 @@ public class EditMenu extends ButtonMenu<MenuButton> {
 
         buildWorld.getData().set(WorldDataKey.VISIBILITY, isPrivate ? Visibility.EVERYONE : Visibility.ADDED_PLAYERS);
         reopen(player);
-    }
-
-    /**
-     * The slot &rarr; required-permission mapping, derived from the button registry. Render-only slots (no permission)
-     * are omitted. Exposed for the golden test that pins the per-slot contract.
-     */
-    Map<Integer, String> permissionBySlot() {
-        Map<Integer, String> permissions = new LinkedHashMap<>();
-        buttons().forEach((slot, button) -> {
-            String permission = button.permission();
-            if (permission != null) {
-                permissions.put(slot, permission);
-            }
-        });
-        return permissions;
     }
 
     private void cycleDifficulty() {

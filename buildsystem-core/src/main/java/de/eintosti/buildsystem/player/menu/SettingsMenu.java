@@ -33,8 +33,6 @@ import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.Permissions;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
@@ -305,20 +303,5 @@ public class SettingsMenu extends ButtonMenu<MenuButton> {
                 .lore(messages.getStringList("settings_change_design_lore", player))
                 .glow(true)
                 .into(inventory, slot);
-    }
-
-    /**
-     * The slot &rarr; full permission node mapping, derived from the button registry. The design slot (no permission)
-     * is omitted. Exposed for the golden test that pins the per-slot contract.
-     */
-    Map<Integer, String> permissionNodeBySlot() {
-        Map<Integer, String> nodes = new LinkedHashMap<>();
-        buttons().forEach((slot, button) -> {
-            String permission = button.permission();
-            if (permission != null) {
-                nodes.put(slot, permission);
-            }
-        });
-        return nodes;
     }
 }

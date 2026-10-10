@@ -18,12 +18,13 @@
 package de.eintosti.buildsystem.player.menu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.player.settings.Settings;
@@ -35,7 +36,8 @@ import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
-import java.util.Map;
+import java.util.Set;
+import java.util.stream.IntStream;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -44,11 +46,15 @@ import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 
 /**
- * Golden test pinning the {@link SettingsMenu} slot &rarr; permission-node mapping, plus what a click does. Built through the real production constructor under a {@link MockBukkit} server.
+ * Pins what each {@link SettingsMenu} slot needs and does: a player holding only that toggle's node flips it and the
+ * menu reopens, and a player without it is refused. Built through the real production constructor under a
+ * {@link MockBukkit} server.
  */
 @NullMarked
 class SettingsMenuTest {
@@ -57,6 +63,7 @@ class SettingsMenuTest {
     private Messages messages;
     private SettingsService settingsService;
     private Menus menus;
+    private ConfigService configService;
     private SoundlessPlayer player;
 
     @BeforeEach
@@ -66,6 +73,7 @@ class SettingsMenuTest {
         when(messages.getString(anyString(), any())).thenReturn("Title");
         settingsService = mock(SettingsService.class);
         menus = mock(Menus.class);
+        configService = mock(ConfigService.class, RETURNS_DEEP_STUBS);
         player = SoundlessPlayer.join(server, "Alex");
     }
 
@@ -78,7 +86,7 @@ class SettingsMenuTest {
         return new SettingsMenu(
                 messages,
                 settingsService,
-                mock(ConfigService.class),
+                configService,
                 mock(MenuItems.class),
                 mock(NavigatorService.class),
                 mock(NoClipService.class),
@@ -86,30 +94,44 @@ class SettingsMenuTest {
                 player);
     }
 
-    @Test
-    void permissionNodeBySlot_mapsAllThirteenToggles() {
-        Map<Integer, String> nodes = menu().permissionNodeBySlot();
+    @ParameterizedTest(name = "slot {0} needs {1}")
+    @CsvSource({
+        "12, buildsystem.setting.clear-inventory",
+        "13, buildsystem.setting.disable-interact",
+        "14, buildsystem.setting.hide-players",
+        "15, buildsystem.setting.instant-place-signs",
+        "20, buildsystem.setting.keep-navigator",
+        "21, buildsystem.setting.navigator-type",
+        "22, buildsystem.setting.night-vision",
+        "23, buildsystem.setting.no-clip",
+        "24, buildsystem.setting.open-trapdoors",
+        "29, buildsystem.setting.place-plants",
+        "30, buildsystem.setting.scoreboard",
+        "31, buildsystem.setting.slab-breaking",
+        "32, buildsystem.setting.spawn-teleport"
+    })
+    void toggle_needsItsPermission_andReopens(int slot, String permission) {
+        when(settingsService.getSettings(player)).thenReturn(mock(Settings.class));
+        when(configService.current().settings().scoreboard()).thenReturn(true);
 
-        assertEquals("buildsystem.setting.clear-inventory", nodes.get(12));
-        assertEquals("buildsystem.setting.disable-interact", nodes.get(13));
-        assertEquals("buildsystem.setting.hide-players", nodes.get(14));
-        assertEquals("buildsystem.setting.instant-place-signs", nodes.get(15));
-        assertEquals("buildsystem.setting.keep-navigator", nodes.get(20));
-        assertEquals("buildsystem.setting.navigator-type", nodes.get(21));
-        assertEquals("buildsystem.setting.night-vision", nodes.get(22));
-        assertEquals("buildsystem.setting.no-clip", nodes.get(23));
-        assertEquals("buildsystem.setting.open-trapdoors", nodes.get(24));
-        assertEquals("buildsystem.setting.place-plants", nodes.get(29));
-        assertEquals("buildsystem.setting.scoreboard", nodes.get(30));
-        assertEquals("buildsystem.setting.slab-breaking", nodes.get(31));
-        assertEquals("buildsystem.setting.spawn-teleport", nodes.get(32));
+        click(menu(), slot);
+        verify(messages).sendPermissionError(player);
+        verify(menus, never()).openSettings(player);
 
-        assertEquals(13, nodes.size());
+        player.addAttachment(MockBukkit.createMockPlugin(), permission, true);
+        click(menu(), slot);
+        verify(menus).openSettings(player);
     }
 
     @Test
-    void permissionNodeBySlot_omitsDesignSlot() {
-        assertFalse(menu().permissionNodeBySlot().containsKey(11));
+    void otherSlots_doNothingEvenForAnOperator() {
+        player.setOp(true);
+        SettingsMenu menu = menu();
+        Set<Integer> buttons = Set.of(11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32);
+
+        IntStream.range(0, 45).filter(slot -> !buttons.contains(slot)).forEach(slot -> click(menu, slot));
+
+        verifyNoInteractions(menus);
     }
 
     @Test

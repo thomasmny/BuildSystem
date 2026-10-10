@@ -31,7 +31,6 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.menu.EditMenuToggles.Toggle;
-import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -128,15 +127,5 @@ public class PhysicsMenu extends ButtonMenu<MenuButton> {
         }
 
         menus.openEdit(buildWorld, player);
-    }
-
-    /**
-     * {@return the slot &rarr; world-data key mapping this menu toggles} Exposed for the golden layout test.
-     */
-    Map<Integer, WorldDataKey<Boolean>> keyBySlot() {
-        Map<Integer, WorldDataKey<Boolean>> keys = new HashMap<>();
-        keys.put(SLOT_MASTER, MASTER_TOGGLE.key());
-        CATEGORY_TOGGLES.forEach((slot, toggle) -> keys.put(slot, toggle.key()));
-        return keys;
     }
 }
