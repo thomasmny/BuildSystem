@@ -134,7 +134,7 @@ world:
 # world.download.storage. A section only matters once something selects it.
 storage:
   # Where worlds, folders and player settings are kept: yaml, sqlite, mysql,
-  # mariadb or postgresql. Read on startup only, so a change needs a
+  # mariadb, postgresql or mongodb. Read on startup only, so a change needs a
   # restart. World folders always stay on disk, and categories, statuses, setup
   # and spawn always stay in their YAML files.
   # The first start with a database fills each empty table or collection from
@@ -149,6 +149,8 @@ storage:
     port: 0
     # The database to use. For sqlite, the name of the file in the plugin folder.
     database: buildsystem
+    # Leave empty for a MongoDB server without authentication. MongoDB users
+    # are authenticated against the admin database.
     username: ''
     # Can also be supplied as the BUILDSYSTEM_DATABASE_PASSWORD environment
     # variable, which takes precedence and keeps the secret out of this file.

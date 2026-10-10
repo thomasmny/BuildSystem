@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.storage;
 
 import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.storage.mongo.MongoConnection;
 import de.eintosti.buildsystem.storage.sql.SqlDatabase;
 import de.eintosti.buildsystem.storage.sql.SqlDialect;
 import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
@@ -98,6 +99,15 @@ public final class StorageBackend implements AutoCloseable {
                                 credentials(settings),
                                 prefix,
                                 logger);
+                    case MONGODB ->
+                        MongoConnection.connect(
+                                settings.host(),
+                                port,
+                                settings.database(),
+                                settings.username(),
+                                settings.resolvedPassword(),
+                                prefix,
+                                logger);
                 };
         if (database != null) {
             logger.info("Storing worlds, folders and players in " + type.displayName + ", database "
@@ -137,7 +147,17 @@ public final class StorageBackend implements AutoCloseable {
         if (entries.isEmpty()) {
             return;
         }
-        store.upsert(entries);
+        try {
+            store.upsert(entries);
+        } catch (RuntimeException e) {
+            // MongoDB keeps what it wrote before the failure, and a non-empty collection is never imported again.
+            try {
+                entries.keySet().forEach(store::delete);
+            } catch (RuntimeException cleanup) {
+                e.addSuppressed(cleanup);
+            }
+            throw e;
+        }
         logger.info("Imported " + entries.size() + " " + yaml.name() + " from " + yaml.fileName() + " into "
                 + type.displayName + ". " + yaml.fileName() + " is no longer updated.");
     }
@@ -154,7 +174,8 @@ public final class StorageBackend implements AutoCloseable {
         SQLITE("SQLite", 0),
         MYSQL("MySQL", 3306),
         MARIADB("MariaDB", 3306),
-        POSTGRESQL("PostgreSQL", 5432);
+        POSTGRESQL("PostgreSQL", 5432),
+        MONGODB("MongoDB", 27017);
 
         private final String displayName;
         private final int defaultPort;

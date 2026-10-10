@@ -48,7 +48,7 @@ public class MigrationV6ToV7 implements Migration {
                 BASE,
                 List.of(
                         "Where worlds, folders and player settings are kept: yaml, sqlite, mysql,",
-                        "mariadb or postgresql. Read on startup only, so a change needs a",
+                        "mariadb, postgresql or mongodb. Read on startup only, so a change needs a",
                         "restart. World folders always stay on disk, and categories, statuses, setup",
                         "and spawn always stay in their YAML files.",
                         "The first start with a database fills each empty table or collection from",
@@ -61,6 +61,11 @@ public class MigrationV6ToV7 implements Migration {
         config.setComments(
                 BASE + ".database",
                 List.of("The database to use. For sqlite, the name of the file in the plugin folder."));
+        config.setComments(
+                BASE + ".username",
+                List.of(
+                        "Leave empty for a MongoDB server without authentication. MongoDB users",
+                        "are authenticated against the admin database."));
         config.setComments(
                 BASE + ".password",
                 List.of(

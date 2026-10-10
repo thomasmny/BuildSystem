@@ -70,8 +70,9 @@ dependencies {
     implementation(libs.paperlib)
     implementation(libs.sftp)
     implementation(libs.xseries)
-    // Not shaded: the server downloads this from plugin.yml's libraries. Paper and Spigot already ship the SQLite and
+    // Not shaded: the server downloads these from plugin.yml's libraries. Paper and Spigot already ship the SQLite and
     // MySQL drivers.
+    library(libs.mongodb.driver)
     library(libs.postgresql)
 
     testImplementation(platform(libs.junit.bom))
@@ -79,8 +80,10 @@ dependencies {
     testImplementation(libs.mockito)
     testImplementation(libs.mockbukkit)
     testImplementation(libs.testcontainers)
+    testImplementation(libs.testcontainers.mongodb)
     testImplementation(libs.testcontainers.mysql)
     testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.mongodb.driver)
     testRuntimeOnly(libs.mysql.connector)
     testRuntimeOnly(libs.postgresql)
     testRuntimeOnly(libs.sqlite.jdbc)

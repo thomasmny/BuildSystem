@@ -22,7 +22,7 @@ import java.util.SequencedMap;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Where the entries of one {@link EntityCollection} are kept: a YAML file or a table. An entry is a
+ * Where the entries of one {@link EntityCollection} are kept: a YAML file, a table or a Mongo collection. An entry is a
  * key and the map its codec serialized, whose values are strings, numbers, booleans, lists and nested maps.
  *
  * <p>Every method blocks, and the collection calls them off the main thread, one write at a time.
@@ -44,7 +44,7 @@ public interface EntityStore {
     }
 
     /**
-     * Inserts or replaces the given entries, all of them or none.
+     * Inserts or replaces the given entries in one write, which applies all of them or none, except on MongoDB.
      */
     void upsert(Map<String, Map<String, Object>> entries);
 
