@@ -18,7 +18,9 @@
 package de.eintosti.buildsystem.config.migration;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -26,6 +28,8 @@ import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.logging.Logger;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jspecify.annotations.NullMarked;
@@ -41,15 +45,36 @@ class ConfigMigrationManagerTest {
     @Test
     void freshInstall_runsNoMigrationAndWritesNoBackup() {
         YamlConfiguration config = new YamlConfiguration();
+        BuildSystemPlugin plugin = plugin(config);
+
+        new ConfigMigrationManager(plugin).migrate();
+
+        verify(plugin, never()).getConfig();
+        verify(plugin, never()).saveConfig();
+        assertFalse(config.contains("version"));
+        assertArrayEquals(new String[0], dataFolder.list());
+    }
+
+    @Test
+    void configWithoutVersion_migratesToTheLatestVersion() throws IOException {
+        File configFile = new File(dataFolder, "config.yml");
+        Files.writeString(configFile.toPath(), """
+                settings:
+                  update-checker: true
+                """);
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(configFile);
+
+        new ConfigMigrationManager(plugin(config)).migrate();
+
+        assertEquals(ConfigMigrationManager.LATEST_VERSION, config.getInt("version"));
+        assertTrue(new File(dataFolder, "config.yml.v1.bak").exists());
+    }
+
+    private BuildSystemPlugin plugin(YamlConfiguration config) {
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
         when(plugin.getConfig()).thenReturn(config);
         when(plugin.getLogger()).thenReturn(Logger.getLogger("test"));
-
-        new ConfigMigrationManager(plugin).migrate();
-
-        verify(plugin, never()).saveConfig();
-        assertFalse(config.contains("version"));
-        assertArrayEquals(new String[0], dataFolder.list());
+        return plugin;
     }
 }
