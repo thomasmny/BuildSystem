@@ -132,15 +132,33 @@ public final class Menus {
     }
 
     /**
-     * Opens the world editor, or tells the player the world is not loaded. Every way back into the editor goes through
-     * here, so a world that unloaded while a menu or chat prompt was open never reaches the menu.
+     * Opens the world editor with the chest sound, or tells the player the world is not loaded.
      */
     public void openEdit(BuildWorld buildWorld, Player player) {
+        if (showEdit(buildWorld, player)) {
+            XSound.BLOCK_CHEST_OPEN.play(player);
+        }
+    }
+
+    /**
+     * Opens the world editor again after an action inside it, without the opening sound.
+     */
+    public void reopenEdit(BuildWorld buildWorld, Player player) {
+        showEdit(buildWorld, player);
+    }
+
+    /**
+     * Every way into the editor goes through here, so a world that unloaded while a menu or chat prompt was open never
+     * reaches the menu.
+     *
+     * @return {@code true} if the editor opened, {@code false} if the world is not loaded
+     */
+    private boolean showEdit(BuildWorld buildWorld, Player player) {
         if (buildWorld.getWorld().isEmpty()) {
             player.closeInventory();
             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
             player.sendTitle(" ", services.messages().getString("world_not_loaded", player), 5, 70, 20);
-            return;
+            return false;
         }
 
         new EditMenu(
@@ -153,6 +171,7 @@ public final class Menus {
                         buildWorld,
                         player)
                 .open(player);
+        return true;
     }
 
     public void openBuilder(BuildWorld buildWorld, Player player) {

@@ -77,7 +77,7 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
                 if (closeInventory) {
                     player.closeInventory();
                 } else {
-                    menus.openEdit(buildWorld, player);
+                    menus.reopenEdit(buildWorld, player);
                 }
                 return;
             }
@@ -98,7 +98,7 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
             if (closeInventory) {
                 player.closeInventory();
             } else {
-                menus.openEdit(buildWorld, player);
+                menus.reopenEdit(buildWorld, player);
             }
         });
     }

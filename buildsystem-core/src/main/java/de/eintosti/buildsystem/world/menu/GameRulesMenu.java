@@ -128,7 +128,6 @@ public class GameRulesMenu extends PaginatedMenu {
         if (event.getRawSlot() < 0 || event.getRawSlot() >= getInventory().getSize()) {
             return;
         }
-        XSound.BLOCK_CHEST_OPEN.play(player);
         menus.openEdit(buildWorld, player);
     }
 

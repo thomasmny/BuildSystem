@@ -200,7 +200,6 @@ public class BuilderMenu extends PaginatedMenu {
 
     private void returnToEditor(Player player) {
         if (buildWorld.getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())) {
-            XSound.BLOCK_CHEST_OPEN.play(player);
             menus.openEdit(buildWorld, player);
         }
     }

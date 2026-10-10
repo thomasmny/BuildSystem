@@ -512,7 +512,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
     private void reopen(Player player) {
         XSound.ENTITY_CHICKEN_EGG.play(player);
-        menus.openEdit(buildWorld, player);
+        menus.reopenEdit(buildWorld, player);
     }
 
     private void changeTime(Player player) {

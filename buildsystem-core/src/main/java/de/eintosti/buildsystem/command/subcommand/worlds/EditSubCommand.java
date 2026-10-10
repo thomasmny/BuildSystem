@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
@@ -45,7 +44,6 @@ public class EditSubCommand extends AbstractSubCommand {
             return;
         }
 
-        XSound.BLOCK_CHEST_OPEN.play(player);
         menus.openEdit(buildWorld, player);
     }
 

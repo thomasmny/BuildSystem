@@ -79,7 +79,7 @@ public class SetProjectSubCommand extends AbstractSubCommand {
             if (closeInventory) {
                 player.closeInventory();
             } else {
-                menus.openEdit(buildWorld, player);
+                menus.reopenEdit(buildWorld, player);
             }
         });
     }
