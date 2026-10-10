@@ -50,15 +50,15 @@ public class WorldTeleporterImpl implements WorldTeleporter {
 
     @Override
     public void teleport(Player player) {
-        boolean hadToLoad = false;
-        if (!buildWorld.isLoaded() && context.operations().isBusy(buildWorld)) {
-            context.messages()
-                    .sendMessage(player, "worlds_world_busy", Placeholders.of("%world%", buildWorld.getName()));
-            return;
-        }
-        if (context.configService().current().world().unload().enabled() && !buildWorld.isLoaded()) {
+        // Also when unloading is turned off: a reload that turned it off leaves already unloaded worlds unloaded.
+        boolean hadToLoad = !buildWorld.isLoaded();
+        if (hadToLoad) {
+            if (context.operations().isBusy(buildWorld)) {
+                context.messages()
+                        .sendMessage(player, "worlds_world_busy", Placeholders.of("%world%", buildWorld.getName()));
+                return;
+            }
             buildWorld.getLoader().loadForPlayer(player);
-            hadToLoad = true;
         }
 
         World bukkitWorld = WorldNames.bukkitWorld(buildWorld.getName());
