@@ -159,7 +159,7 @@ public final class WorldOperations {
 
     private Location evacuationTarget(World world) {
         Location spawn = spawnService.getSpawn();
-        if (spawn != null && !spawnService.isIn(world.getName())) {
+        if (spawn != null && !world.equals(spawn.getWorld())) {
             return spawn;
         }
 

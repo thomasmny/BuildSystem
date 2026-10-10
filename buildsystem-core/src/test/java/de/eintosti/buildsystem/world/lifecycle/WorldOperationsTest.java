@@ -98,8 +98,8 @@ class WorldOperationsTest {
 
     @Test
     void evacuate_ignoresASpawnInsideTheWorldBeingEmptied() {
-        WorldMock doomed = server.addSimpleWorld("doomed");
-        when(spawnService.isIn("doomed")).thenReturn(true);
+        // A namespaced world, whose Bukkit name (maps_doomed) differs from its BuildSystem name.
+        WorldMock doomed = server.addSimpleWorld("maps_doomed");
         when(spawnService.getSpawn()).thenReturn(new Location(doomed, 0, 70, 0));
         PlayerMock player = playerIn(doomed);
 
