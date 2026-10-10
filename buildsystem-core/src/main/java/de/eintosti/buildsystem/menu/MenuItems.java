@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.menu;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.exceptions.ProfileException;
 import com.cryptomorin.xseries.profiles.objects.ProfileInputType;
@@ -60,6 +61,21 @@ public final class MenuItems {
         this.scheduler = scheduler;
         this.messages = messages;
         this.settingsService = settingsService;
+    }
+
+    /**
+     * {@return the setup menus' back button: a barrier that plays the chest sound and runs {@code onBack}}
+     */
+    public MenuButton backButton(Consumer<Player> onBack) {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.BARRIER)
+                        .name(messages.getString("setup_back", player))
+                        .into(inventory, slot))
+                .onClick((player, event) -> {
+                    XSound.BLOCK_CHEST_OPEN.play(player);
+                    onBack.accept(player);
+                })
+                .build();
     }
 
     /**
