@@ -57,6 +57,7 @@ Optional integrations: LuckPerms, PlaceholderAPI, WorldEdit, AxiomPaper.
 * Create worlds from predefined types, from custom generators provided by other plugins, or from
   your own templates, optionally with a custom seed
 * Import worlds individually or all at once, then rename, clone or delete them
+* On Paper, keep worlds in their own namespaces, such as `maps:lobby`, next to the usual ones
 * Automatic and manual backups, kept locally or on S3 or SFTP, and restored from an in-game menu
 * Assign multiple builders to a world, and optionally keep WorldEdit limited to them
 * Automatically unload inactive worlds to save server resources
