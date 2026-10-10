@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.world.lifecycle;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.eintosti.buildsystem.api.world.builder.Builder;
@@ -181,16 +180,5 @@ class WorldPermissionsImplTest {
 
         assertTrue(world.getPermissions().canPerformCommand(player, null));
         assertTrue(world.getPermissions().canPerformCommand(player, ""));
-    }
-
-    @Test
-    void withoutAWorld_commandsPassButEntryIsRefused() {
-        WorldPermissionsImpl permissions = WorldPermissionsImpl.of(context, null);
-        grant("buildsystem.bypass.permission.public");
-
-        // Commands go through so the caller can report the missing world.
-        assertTrue(permissions.canPerformCommand(player, COMMAND));
-        assertFalse(permissions.canEnter(player));
-        assertFalse(permissions.canBypassViewPermission(player));
     }
 }

@@ -17,14 +17,13 @@
  */
 package de.eintosti.buildsystem.world.folder;
 
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.world.WorldContext;
-import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -298,17 +297,9 @@ public class FolderImpl implements Folder {
 
     @Override
     public boolean canView(Player player) {
-        // We can pass null as a world since we are only checking for bypass permissions
-        WorldPermissions permissions = WorldPermissionsImpl.of(context, null);
-        if (permissions.hasAdminPermission(player) || permissions.canBypassViewPermission(player)) {
-            return true;
-        }
-
-        if (this.permission.equals("-")) {
-            return true;
-        }
-
-        return player.hasPermission(this.permission);
+        return permission.equals("-")
+                || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)
+                || player.hasPermission(permission);
     }
 
     @Override
