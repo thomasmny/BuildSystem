@@ -21,7 +21,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 import de.eintosti.buildsystem.i18n.Messages;
+import java.util.List;
+import java.util.stream.IntStream;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +57,11 @@ class PaginatedMenuTest {
         private final int total;
 
         TestMenu(Messages messages, int total) {
-            super(messages, 9, "Test");
+            this(messages, total, 9);
+        }
+
+        TestMenu(Messages messages, int total, int size) {
+            super(messages, size, "Test");
             this.total = total;
         }
 
@@ -136,5 +144,50 @@ class PaginatedMenuTest {
         TestMenu m = menu(5);
         Player player = mock(Player.class);
         assertFalse(m.nextPage(player, ITEMS_PER_PAGE));
+    }
+
+    @Test
+    void registerPageItems_shortLastPage_emptiesTheUnusedSlots() {
+        ContentMenu m = new ContentMenu(mock(Messages.class), 20, 15);
+        Player player = mock(Player.class);
+
+        m.populate(player);
+        assertNotNull(m.getInventory().getItem(14));
+
+        m.nextPage(player, 15);
+        m.populate(player);
+        for (int slot = 0; slot < 5; slot++) {
+            assertNotNull(m.getInventory().getItem(slot), "slot " + slot);
+        }
+        for (int slot = 5; slot < 15; slot++) {
+            assertNull(m.getInventory().getItem(slot), "slot " + slot);
+        }
+    }
+
+    /**
+     * Renders {@code total} stones across the first {@code perPage} slots, the way the real paged menus do.
+     */
+    private static class ContentMenu extends TestMenu {
+
+        private final int perPage;
+
+        ContentMenu(Messages messages, int total, int perPage) {
+            super(messages, total, 18);
+            this.perPage = perPage;
+        }
+
+        @Override
+        protected void populate(Player player) {
+            clearButtons();
+            List<Integer> items = IntStream.range(0, totalItems()).boxed().toList();
+            registerPageItems(
+                    0,
+                    perPage,
+                    items,
+                    i -> MenuButton.builder()
+                            .render((viewer, inventory, slot) -> inventory.setItem(slot, new ItemStack(Material.STONE)))
+                            .build());
+            renderButtons(player);
+        }
     }
 }

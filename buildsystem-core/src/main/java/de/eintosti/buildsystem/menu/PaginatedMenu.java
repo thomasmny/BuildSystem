@@ -156,6 +156,9 @@ public abstract class PaginatedMenu extends ButtonMenu<MenuButton> {
      * {@code contentSlots[i]}. The page window is derived from {@link #page()} and {@code contentSlots.length}; the
      * {@code itemsPerPage} the page arrows use should equal that length.
      *
+     * <p>Every content slot is emptied first, so a short last page does not keep showing the previous page's items. A
+     * menu that wants a filler in the unused slots draws it after this call; the registered buttons render over it.
+     *
      * @param contentSlots The slots that hold page content, in order
      * @param items The full, unpaged item list
      * @param buttonFactory Builds the button for a given item
@@ -163,6 +166,10 @@ public abstract class PaginatedMenu extends ButtonMenu<MenuButton> {
      */
     protected final <T> void registerPageItems(
             int[] contentSlots, List<T> items, Function<T, MenuButton> buttonFactory) {
+        for (int slot : contentSlots) {
+            getInventory().setItem(slot, null);
+        }
+
         int startIndex = page() * contentSlots.length;
         for (int i = 0; i < contentSlots.length && startIndex + i < items.size(); i++) {
             register(contentSlots[i], buttonFactory.apply(items.get(startIndex + i)));

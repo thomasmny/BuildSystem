@@ -84,11 +84,6 @@ public class BuilderMenu extends PaginatedMenu {
 
         menuItems.fillRange(player, inv, 0, 9);
         menuItems.fillRange(player, inv, 18, 27);
-        // The builder row is a list, not a decorated grid: seats with no builder stay empty rather than showing
-        // filler panes. It still has to be reset on every pass, or heads from the previous page linger.
-        for (int slot = FIRST_BUILDER_SLOT; slot < FIRST_BUILDER_SLOT + MAX_BUILDERS_PER_PAGE; slot++) {
-            inv.setItem(slot, null);
-        }
 
         register(SLOT_CREATOR_INFO, creatorInfoButton());
         register(SLOT_ADD_BUILDER, addBuilderButton());

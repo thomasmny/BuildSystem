@@ -247,8 +247,6 @@ public class CreateMenu extends PaginatedMenu {
         }
         this.numTemplates = templateFiles != null ? templateFiles.length : 0;
 
-        menuItems.fillRange(player, getInventory(), FIRST_TEMPLATE_SLOT, SLOT_TEMPLATE_NEXT_PAGE);
-
         if (numTemplates == 0) {
             ItemStack barrier = ItemBuilder.of(XMaterial.BARRIER)
                     .name(messages.getString("create_no_templates", player))
@@ -261,6 +259,8 @@ public class CreateMenu extends PaginatedMenu {
 
         registerPageItems(
                 FIRST_TEMPLATE_SLOT, MAX_TEMPLATES, Arrays.asList(templateFiles), f -> templateButton(f.getName()));
+        // Unused template slots show glass; the template buttons render over it.
+        menuItems.fillRange(player, getInventory(), FIRST_TEMPLATE_SLOT, SLOT_TEMPLATE_NEXT_PAGE);
     }
 
     private MenuButton templateButton(String rawTemplateName) {
