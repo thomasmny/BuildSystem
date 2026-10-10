@@ -89,6 +89,10 @@ dependencies {
     // spigot-only. Do NOT add paper-api to a non-test configuration.
     testImplementation(libs.paperapi)
     testImplementation(libs.placeholderapi)
+    testImplementation(libs.worldedit) {
+        exclude(group = "com.google.guava")
+        exclude(group = "com.google.code.gson")
+    }
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 

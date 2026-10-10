@@ -165,7 +165,7 @@ public final class ListenerRegistrar {
         boolean isWorldEdit =
                 pluginManager.getPlugin("WorldEdit") != null || pluginManager.getPlugin("FastAsyncWorldEdit") != null;
         if (isWorldEdit && configService.current().settings().builder().blockWorldEditNonBuilder()) {
-            new EditSessionListener(services.world().getWorldStorage());
+            new EditSessionListener(services.world().getWorldStorage(), services.scheduler());
         }
     }
 }
