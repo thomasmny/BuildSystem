@@ -55,7 +55,7 @@ public class MigrationV6ToV7 implements Migration {
                         "stay in their YAML files.",
                         "To switch, run /buildsystem storage migrate <type>, which copies the current",
                         "data over and switches without a restart, or change this and restart.",
-                        "On startup, each empty table or collection is filled from worlds.yml,",
+                        "On startup, each new table or collection is filled from worlds.yml,",
                         "folders.yml and players.yml. Those files are kept but no longer updated, so",
                         "changing this back to yaml and restarting loads them as they were at the",
                         "switch, while migrating to yaml writes the current data into them.",
