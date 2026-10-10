@@ -26,9 +26,9 @@ import org.jspecify.annotations.NullMarked;
 public interface Database extends AutoCloseable {
 
     /**
-     * {@return the store for the named collection, created if it does not exist yet}
+     * {@return the store for {@code kind}, created if it does not exist yet}
      */
-    EntityStore collection(String name);
+    EntityStore collection(EntityKind kind);
 
     @Override
     void close();

@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.storage.sql;
 
 import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.storage.StorageType;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -52,7 +53,7 @@ class PostgresEntityStoreContractTest extends SqlEntityStoreContractTest {
 
     @Override
     protected PluginConfig.Storage.Database settings() {
-        return settings("postgresql", DATABASE, 5432);
+        return settings(StorageType.POSTGRESQL, DATABASE, 5432);
     }
 
     @Override

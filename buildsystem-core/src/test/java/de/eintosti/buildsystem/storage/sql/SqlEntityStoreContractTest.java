@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.storage.EntityStore;
 import de.eintosti.buildsystem.storage.EntityStoreContractTest;
 import de.eintosti.buildsystem.storage.StorageException;
+import de.eintosti.buildsystem.storage.StorageType;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -59,7 +60,7 @@ public abstract class SqlEntityStoreContractTest extends EntityStoreContractTest
         return SqlDatabase.connect(dialect, url, credentials, tablePrefix, LOGGER);
     }
 
-    protected PluginConfig.Storage.Database settings(String type, JdbcDatabaseContainer<?> container, int port) {
+    protected PluginConfig.Storage.Database settings(StorageType type, JdbcDatabaseContainer<?> container, int port) {
         return settings(
                 type,
                 container.getHost(),

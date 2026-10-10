@@ -17,13 +17,19 @@
  */
 package de.eintosti.buildsystem.storage.mongo;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.storage.EntityStoreContractTest;
+import de.eintosti.buildsystem.storage.StorageType;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -62,7 +68,7 @@ class MongoEntityStoreContractTest extends EntityStoreContractTest {
     @Override
     protected PluginConfig.Storage.Database settings() {
         return settings(
-                "mongodb",
+                StorageType.MONGODB,
                 DATABASE.getHost(),
                 DATABASE.getMappedPort(27017),
                 "buildsystem",
@@ -74,5 +80,15 @@ class MongoEntityStoreContractTest extends EntityStoreContractTest {
     @Override
     protected List<String> loadOrder(List<String> saved) {
         return saved.stream().sorted().toList();
+    }
+
+    @Test
+    void fieldNameMongoWouldReadAsOperatorOrPath_isRejected() {
+        for (String field : List.of("$set", "a.b")) {
+            Map<String, Map<String, Object>> entry = Map.of("p", Map.of("settings", Map.of(field, true)));
+
+            assertThrows(IllegalArgumentException.class, () -> store("players").upsert(entry), field);
+        }
+        assertEquals(Map.of(), store("players").loadAll());
     }
 }

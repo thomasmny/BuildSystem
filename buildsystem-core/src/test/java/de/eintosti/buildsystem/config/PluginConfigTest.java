@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.cryptomorin.xseries.XGameRule;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
+import de.eintosti.buildsystem.storage.StorageType;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.List;
 import java.util.Set;
@@ -647,5 +648,66 @@ class PluginConfigTest {
                 """);
 
         assertEquals(18, cfg.world().backup().maxBackupsPerWorld());
+    }
+
+    // -----------------------------------------------------------------------
+    // 9. Storage backend: defaults, and nothing that could change a table or address
+    // -----------------------------------------------------------------------
+
+    @Test
+    void storageDatabase_missingKeys_defaultToSqliteAndEachTypesPort() {
+        PluginConfig.Storage.Database database = parse("").storage().database();
+
+        assertEquals(StorageType.SQLITE, database.type());
+        assertEquals("buildsystem_", database.tablePrefix());
+        assertEquals(3306, database.server(StorageType.MARIADB).port());
+        assertEquals(5432, database.server(StorageType.POSTGRESQL).port());
+        assertEquals(27017, database.server(StorageType.MONGODB).port());
+    }
+
+    @Test
+    void storageDatabase_readsTheBlockOfEachType() {
+        PluginConfig.Storage.Database database = parse("""
+                storage:
+                  type: PostgreSQL
+                  table-prefix: lobby_
+                  postgresql:
+                    host: db.internal
+                    port: 6543
+                    database: build-system_2
+                    username: builder
+                    password: hunter2
+                """).storage().database();
+
+        assertEquals(StorageType.POSTGRESQL, database.type());
+        assertEquals("lobby_", database.tablePrefix());
+        PluginConfig.Storage.Database.Server server = database.server(StorageType.POSTGRESQL);
+        assertEquals("db.internal", server.host());
+        assertEquals(6543, server.port());
+        assertEquals("build-system_2", server.database());
+        assertEquals("builder", server.username());
+        assertFalse(server.toString().contains("hunter2"));
+    }
+
+    @Test
+    void storageDatabase_valuesThatCouldReachAnotherTableOrAddress_failToParse() {
+        List<String> hostile = List.of(
+                "type: postgres",
+                "table-prefix: \"x; DROP TABLE worlds; --\"",
+                "table-prefix: Lobby_",
+                "table-prefix: " + "a".repeat(33),
+                "mysql:\n    database: \"buildsystem?allowLoadLocalInfile=true\"",
+                "mysql:\n    database: \"../other\"",
+                "mysql:\n    database: \"\"",
+                "mysql:\n    host: \"evil.example/other\"",
+                "mysql:\n    host: \"db?user=root\"",
+                "mysql:\n    host: \"db;x=1\"",
+                "mysql:\n    host: \"db#\"",
+                "mysql:\n    host: \"db x\"",
+                "mysql:\n    port: 0",
+                "mongodb:\n    port: 65536");
+        for (String line : hostile) {
+            assertThrows(IllegalArgumentException.class, () -> parse("storage:\n  " + line), line);
+        }
     }
 }

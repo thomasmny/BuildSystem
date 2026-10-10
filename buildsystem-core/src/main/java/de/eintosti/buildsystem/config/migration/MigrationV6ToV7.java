@@ -17,69 +17,82 @@
  */
 package de.eintosti.buildsystem.config.migration;
 
+import java.io.File;
 import java.util.List;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Migrates config from v6 to v7: adds {@code storage.database}, which picks where worlds, folders and players are kept.
- * The values are the shipped ones, so a migrated server keeps using YAML. The section is written here rather than left
- * to the copied defaults because those carry no comments, and the comments say what is unsafe to change.
+ * Migrates config from v6 to v7: adds {@code storage.type}, which picks where worlds, folders and players are kept,
+ * with the prefix and the connection block of every database. A server that already has worlds or players in YAML
+ * keeps using YAML; the shipped default is SQLite. The keys are written here rather than left to the copied defaults
+ * because those carry no comments, and the comments say what is unsafe to change.
  */
 @NullMarked
 public class MigrationV6ToV7 implements Migration {
 
-    private static final String BASE = "storage.database";
+    private final File dataFolder;
+
+    public MigrationV6ToV7(File dataFolder) {
+        this.dataFolder = dataFolder;
+    }
 
     @Override
     public void migrate(FileConfiguration config) {
-        if (config.contains(BASE, true)) {
+        if (config.contains("storage.type", true)) {
             return;
         }
-        set(config, "type", "yaml");
-        set(config, "host", "localhost");
-        set(config, "port", 0);
-        set(config, "database", "buildsystem");
-        set(config, "username", "");
-        set(config, "password", "");
-        set(config, "table-prefix", "buildsystem_");
-
+        boolean hasYamlData =
+                new File(dataFolder, "worlds.yml").exists() || new File(dataFolder, "players.yml").exists();
+        config.set("storage.type", hasYamlData ? "yaml" : "sqlite");
         config.setComments(
-                BASE,
+                "storage.type",
                 List.of(
                         "Where worlds, folders and player settings are kept: yaml, sqlite, mysql,",
-                        "mariadb, postgresql or mongodb. Read on startup only, so a change needs a",
-                        "restart. World folders always stay on disk, and categories, statuses, setup",
-                        "and spawn always stay in their YAML files.",
-                        "The first start with a database fills each empty table or collection from",
-                        "worlds.yml, folders.yml and players.yml. Those files are kept but no longer",
-                        "updated, so switching back to yaml loads them as they were at the switch.",
+                        "mariadb, postgresql or mongodb. sqlite keeps them in storage.db in the",
+                        "plugin folder, the others on the server set in their block below. World",
+                        "folders always stay on disk, and categories, statuses, setup and spawn always",
+                        "stay in their YAML files.",
+                        "To switch, run /buildsystem storage migrate <type>, which copies the current",
+                        "data over and switches without a restart, or change this and restart.",
+                        "On startup, each empty table or collection is filled from worlds.yml,",
+                        "folders.yml and players.yml. Those files are kept but no longer updated, so",
+                        "changing this back to yaml and restarting loads them as they were at the",
+                        "switch, while migrating to yaml writes the current data into them.",
                         "If the database cannot be reached, BuildSystem disables itself rather than",
                         "fall back to yaml."));
+        config.set("storage.table-prefix", "buildsystem_");
         config.setComments(
-                BASE + ".host", List.of("Not used by yaml or sqlite. Port 0 is the default port of the type."));
-        config.setComments(
-                BASE + ".database",
-                List.of("The database to use. For sqlite, the name of the file in the plugin folder."));
-        config.setComments(
-                BASE + ".username",
+                "storage.table-prefix",
                 List.of(
-                        "Leave empty for a MongoDB server without authentication. MongoDB users",
-                        "are authenticated against the admin database."));
+                        "Put in front of every table and collection name: lowercase letters, digits",
+                        "and underscores, at most 32. Every server needs its own prefix or its own",
+                        "database. Each server loads the data once on startup and keeps it in memory,",
+                        "so two servers sharing a prefix overwrite each other's worlds, folders and",
+                        "players."));
+        server(config, "mysql", 3306);
         config.setComments(
-                BASE + ".password",
+                "storage.mysql",
                 List.of(
-                        "Can also be supplied as the BUILDSYSTEM_DATABASE_PASSWORD environment",
-                        "variable, which takes precedence and keeps the secret out of this file."));
+                        "Each password can also be supplied as an environment variable named after",
+                        "its block, e.g. BUILDSYSTEM_MYSQL_PASSWORD, which takes precedence and keeps",
+                        "the secret out of this file."));
+        server(config, "mariadb", 3306);
+        server(config, "postgresql", 5432);
+        server(config, "mongodb", 27017);
         config.setComments(
-                BASE + ".table-prefix",
+                "storage.mongodb",
                 List.of(
-                        "Every server needs its own prefix or its own database. Each server loads",
-                        "the data once on startup and keeps it in memory, so two servers sharing",
-                        "a prefix overwrite each other's worlds, folders and players."));
+                        "Leave username empty for a server without authentication. Users are",
+                        "authenticated against the admin database."));
     }
 
-    private static void set(FileConfiguration config, String key, Object value) {
-        config.set(BASE + "." + key, value);
+    private static void server(FileConfiguration config, String type, int port) {
+        String block = "storage." + type + ".";
+        config.set(block + "host", "localhost");
+        config.set(block + "port", port);
+        config.set(block + "database", "buildsystem");
+        config.set(block + "username", "");
+        config.set(block + "password", "");
     }
 }

@@ -22,6 +22,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParseException;
 import com.google.gson.ToNumberPolicy;
 import com.google.gson.reflect.TypeToken;
+import de.eintosti.buildsystem.storage.EntityKind;
 import de.eintosti.buildsystem.storage.EntityStore;
 import java.lang.reflect.Type;
 import java.sql.PreparedStatement;
@@ -47,14 +48,24 @@ final class SqlEntityStore implements EntityStore {
     private static final Type MAP = new TypeToken<Map<String, Object>>() {}.getType();
 
     private final SqlDatabase database;
-    private final SqlDialect dialect;
     private final String table;
+    private final String selectAll;
+    private final String selectAny;
+    private final String upsert;
+    private final String delete;
     private final Logger logger;
 
+    /**
+     * @param table Made only of the checked table prefix and an {@link EntityKind} id, the one part of the SQL that
+     *     cannot be a parameter
+     */
     SqlEntityStore(SqlDatabase database, SqlDialect dialect, String table, Logger logger) {
         this.database = database;
-        this.dialect = dialect;
         this.table = table;
+        this.selectAll = "SELECT id, data FROM " + table + " ORDER BY id";
+        this.selectAny = "SELECT 1 FROM " + table + " LIMIT 1";
+        this.upsert = dialect.upsert(table);
+        this.delete = "DELETE FROM " + table + " WHERE id = ?";
         this.logger = logger;
     }
 
@@ -62,8 +73,7 @@ final class SqlEntityStore implements EntityStore {
     public SequencedMap<String, Map<String, Object>> loadAll() {
         return database.run(connection -> {
             SequencedMap<String, Map<String, Object>> entries = new LinkedHashMap<>();
-            try (PreparedStatement statement =
-                            connection.prepareStatement("SELECT id, data FROM " + table + " ORDER BY id");
+            try (PreparedStatement statement = connection.prepareStatement(selectAll);
                     ResultSet rows = statement.executeQuery()) {
                 while (rows.next()) {
                     String id = rows.getString(1);
@@ -85,7 +95,7 @@ final class SqlEntityStore implements EntityStore {
     @Override
     public boolean isEmpty() {
         return database.run(connection -> {
-            try (PreparedStatement statement = connection.prepareStatement("SELECT 1 FROM " + table + " LIMIT 1");
+            try (PreparedStatement statement = connection.prepareStatement(selectAny);
                     ResultSet rows = statement.executeQuery()) {
                 return !rows.next();
             }
@@ -98,7 +108,7 @@ final class SqlEntityStore implements EntityStore {
             return;
         }
         database.transaction(connection -> {
-            try (PreparedStatement statement = connection.prepareStatement(dialect.upsert(table))) {
+            try (PreparedStatement statement = connection.prepareStatement(upsert)) {
                 for (Map.Entry<String, Map<String, Object>> entry : entries.entrySet()) {
                     statement.setString(1, entry.getKey());
                     statement.setString(2, GSON.toJson(entry.getValue()));
@@ -113,7 +123,7 @@ final class SqlEntityStore implements EntityStore {
     @Override
     public void delete(String key) {
         database.run(connection -> {
-            try (PreparedStatement statement = connection.prepareStatement("DELETE FROM " + table + " WHERE id = ?")) {
+            try (PreparedStatement statement = connection.prepareStatement(delete)) {
                 statement.setString(1, key);
                 statement.executeUpdate();
             }

@@ -18,10 +18,12 @@
 package de.eintosti.buildsystem.config;
 
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
+import de.eintosti.buildsystem.storage.StorageType;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -127,38 +129,84 @@ public record PluginConfig(Settings settings, Storage storage, World world, Fold
         }
 
         /**
-         * The backend worlds, folders and players are kept in. Only read when the plugin enables, so a change needs a
-         * restart.
+         * Where worlds, folders and players are kept. The values are checked here, so a config that could reach a
+         * table, file or server it should not fails to load instead.
          *
-         * @param type The backend's name as configured, checked when the plugin enables
-         * @param database The database name, or for SQLite the file name in the plugin folder
-         * @param port The port, or 0 for the backend's default
-         * @param tablePrefix Put in front of every table or collection name
+         * @param type The backend in use
+         * @param tablePrefix Put in front of every table and collection name
+         * @param servers The connection block of every type that has one
          */
-        public record Database(
-                String type,
-                String host,
-                int port,
-                String database,
-                String username,
-                @Nullable String password,
-                String tablePrefix) {
+        public record Database(StorageType type, String tablePrefix, Map<StorageType, Server> servers) {
 
-            /**
-             * {@return the password, preferring {@code BUILDSYSTEM_DATABASE_PASSWORD}} Lets operators keep the secret
-             * out of config.yml.
-             */
-            public @Nullable String resolvedPassword() {
-                return envOrConfig("BUILDSYSTEM_DATABASE_PASSWORD", password);
+            private static final Pattern TABLE_PREFIX = Pattern.compile("[a-z0-9_]{0,32}");
+
+            public Database {
+                if (!TABLE_PREFIX.matcher(tablePrefix).matches()) {
+                    throw new IllegalArgumentException("storage.table-prefix may only hold lowercase letters, digits"
+                            + " and underscores, at most 32 of them");
+                }
+                servers = Map.copyOf(servers);
             }
 
             /**
-             * Overridden so the password never appears in a log or pasted support output.
+             * {@return the connection block of {@code type}}
+             *
+             * @throws IllegalArgumentException If the type has no server to connect to
              */
-            @Override
-            public String toString() {
-                return "Database[type=%s, host=%s, port=%d, database=%s, username=%s, password=%s, tablePrefix=%s]"
-                        .formatted(type, host, port, database, username, password == null ? null : "***", tablePrefix);
+            public Server server(StorageType type) {
+                Server server = servers.get(type);
+                if (server == null) {
+                    throw new IllegalArgumentException(type.displayName() + " has no server to connect to");
+                }
+                return server;
+            }
+
+            /**
+             * One {@code storage.<type>} block. Each value ends up in a connection address, so none may carry
+             * anything that would change what that address points to.
+             */
+            public record Server(
+                    StorageType type,
+                    String host,
+                    int port,
+                    String database,
+                    String username,
+                    @Nullable String password) {
+
+                private static final Pattern HOST = Pattern.compile("[^/?&;#\\s]+");
+                private static final Pattern DATABASE = Pattern.compile("[A-Za-z0-9_-]{1,64}");
+
+                public Server {
+                    String block = "storage." + type.key() + ".";
+                    if (!HOST.matcher(host).matches()) {
+                        throw new IllegalArgumentException(
+                                block + "host must be a host name or address, without / ? & ; # or spaces");
+                    }
+                    if (port < 1 || port > 65535) {
+                        throw new IllegalArgumentException(block + "port must be between 1 and 65535");
+                    }
+                    if (!DATABASE.matcher(database).matches()) {
+                        throw new IllegalArgumentException(
+                                block + "database may only hold letters, digits, - and _, at most 64 of them");
+                    }
+                }
+
+                /**
+                 * {@return the password, preferring {@code BUILDSYSTEM_<TYPE>_PASSWORD}} Lets operators keep the
+                 * secret out of config.yml.
+                 */
+                public @Nullable String resolvedPassword() {
+                    return envOrConfig("BUILDSYSTEM_" + type.name() + "_PASSWORD", password);
+                }
+
+                /**
+                 * Overridden so the password never appears in a log or pasted support output.
+                 */
+                @Override
+                public String toString() {
+                    return "Server[type=%s, host=%s, port=%d, database=%s, username=%s, password=%s]"
+                            .formatted(type, host, port, database, username, password == null ? null : "***");
+                }
             }
         }
 

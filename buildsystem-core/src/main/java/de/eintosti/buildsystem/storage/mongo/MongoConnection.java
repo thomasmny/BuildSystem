@@ -25,6 +25,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import de.eintosti.buildsystem.storage.Database;
+import de.eintosti.buildsystem.storage.EntityKind;
 import de.eintosti.buildsystem.storage.EntityStore;
 import de.eintosti.buildsystem.storage.StorageException;
 import java.util.List;
@@ -87,8 +88,8 @@ public final class MongoConnection implements Database {
     }
 
     @Override
-    public EntityStore collection(String name) {
-        return new MongoEntityStore(database.getCollection(collectionPrefix + name), logger);
+    public EntityStore collection(EntityKind kind) {
+        return new MongoEntityStore(database.getCollection(collectionPrefix + kind.id()), logger);
     }
 
     @Override

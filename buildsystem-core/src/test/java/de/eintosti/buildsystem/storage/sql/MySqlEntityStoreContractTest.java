@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.storage.sql;
 
 import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.storage.StorageType;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -55,7 +56,7 @@ class MySqlEntityStoreContractTest extends SqlEntityStoreContractTest {
 
     @Override
     protected PluginConfig.Storage.Database settings() {
-        return settings("mysql", DATABASE, 3306);
+        return settings(StorageType.MYSQL, DATABASE, 3306);
     }
 
     @Override

@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.storage.sql;
 
 import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.storage.StorageType;
 import java.io.File;
 import java.util.Properties;
 
@@ -25,14 +26,14 @@ class SqliteEntityStoreContractTest extends SqlEntityStoreContractTest {
 
     @Override
     protected PluginConfig.Storage.Database settings() {
-        return settings("sqlite", "localhost", 0, "buildsystem", "", "", tablePrefix);
+        return settings(StorageType.SQLITE, "localhost", 0, "buildsystem", "", "", tablePrefix);
     }
 
     @Override
     protected SqlDatabase rawDatabase() {
         return SqlDatabase.connect(
                 SqlDialect.SQLITE,
-                "jdbc:sqlite:" + new File(dataFolder, "buildsystem.db").getAbsolutePath(),
+                "jdbc:sqlite:" + new File(dataFolder, "storage.db").getAbsolutePath(),
                 new Properties(),
                 tablePrefix,
                 LOGGER);

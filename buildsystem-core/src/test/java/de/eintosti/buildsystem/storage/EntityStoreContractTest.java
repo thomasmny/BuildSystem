@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -96,7 +97,7 @@ public abstract class EntityStoreContractTest {
     private StorageBackend backend;
 
     /**
-     * {@return the {@code storage.database} settings that select the backend under test}
+     * {@return the {@code storage} settings that select the backend under test}
      */
     protected abstract PluginConfig.Storage.Database settings();
 
@@ -110,7 +111,7 @@ public abstract class EntityStoreContractTest {
         MockBukkit.mock();
         // The stored chunk generator only resolves when its plugin is installed.
         MockBukkit.createMockPlugin("Terra");
-        backend = StorageBackend.connect(settings(), dataFolder, LOGGER);
+        backend = StorageBackend.connect(settings().type(), settings(), dataFolder, LOGGER);
     }
 
     @AfterEach
@@ -123,12 +124,15 @@ public abstract class EntityStoreContractTest {
      * {@return the backend's store for the named collection} Every store of one name sees what the others wrote.
      */
     protected EntityStore store(String name) {
-        return backend.store(yamlStore(dataFolder, name));
+        return backend.store(EntityKind.valueOf(name.toUpperCase(Locale.ROOT)));
     }
 
     protected static PluginConfig.Storage.Database settings(
-            String type, String host, int port, String database, String username, String password, String prefix) {
-        return new PluginConfig.Storage.Database(type, host, port, database, username, password, prefix);
+            StorageType type, String host, int port, String database, String username, String password, String prefix) {
+        Map<StorageType, PluginConfig.Storage.Database.Server> servers = type.hasServer()
+                ? Map.of(type, new PluginConfig.Storage.Database.Server(type, host, port, database, username, password))
+                : Map.of();
+        return new PluginConfig.Storage.Database(type, prefix, servers);
     }
 
     @Test
@@ -265,10 +269,9 @@ public abstract class EntityStoreContractTest {
             }
         }
 
-        EntityStore worlds = backend.store(YamlEntityStore.worlds(dataFolder, LOGGER));
-        Collection<Folder> folders = folders(backend.store(YamlEntityStore.folders(dataFolder, LOGGER)))
-                .load()
-                .join();
+        EntityStore worlds = backend.store(EntityKind.WORLDS);
+        Collection<Folder> folders =
+                folders(backend.store(EntityKind.FOLDERS)).load().join();
 
         Map<String, Map<String, Object>> imported = worlds.loadAll();
         assertEquals(7, imported.size());
@@ -284,18 +287,42 @@ public abstract class EntityStoreContractTest {
 
         worlds.delete("0e7a1aca-d915-4fb9-84b1-30f8b95cc373");
 
-        assertEquals(
-                6,
-                backend.store(YamlEntityStore.worlds(dataFolder, LOGGER))
-                        .loadAll()
-                        .size());
+        assertEquals(6, backend.store(EntityKind.WORLDS).loadAll().size());
+    }
+
+    @Test
+    void hostileKeysAndValues_roundTripExactly() {
+        // No dots: a key is always a UUID, and a dot would nest the entry in YAML.
+        List<String> hostile = List.of(
+                "x'); DROP TABLE " + tablePrefix + "players; --",
+                "\" OR \"1\"=\"1",
+                "$where",
+                "{\"$ne\": null}",
+                "back\\slash\\'",
+                "%_*?",
+                "Case",
+                "case",
+                "ünïcødé 名前 🧱");
+        Map<String, Map<String, Object>> entries = new LinkedHashMap<>();
+        for (int i = 0; i < hostile.size(); i++) {
+            String value = hostile.get(i);
+            entries.put(value, Map.of("name", value, "nested", Map.of("text", value, "list", List.of(value, "plain"))));
+        }
+
+        store("players").upsert(entries);
+        store("worlds").upsert(Map.of("kept", Map.of("name", "kept")));
+        store("players").delete(hostile.getFirst());
+        entries.remove(hostile.getFirst());
+
+        assertEquals(entries, store("players").loadAll());
+        assertEquals(Map.of("kept", Map.of("name", "kept")), store("worlds").loadAll());
     }
 
     @Test
     void missingYamlFile_isOnlyCreatedForYaml() {
         store("players").loadAll();
 
-        assertEquals(settings().type().equals("yaml"), new File(dataFolder, "players.yml").exists());
+        assertEquals(settings().type() == StorageType.YAML, new File(dataFolder, "players.yml").exists());
     }
 
     private BuildWorld minimalWorld() {

@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.storage.sql;
 
 import de.eintosti.buildsystem.storage.Database;
+import de.eintosti.buildsystem.storage.EntityKind;
 import de.eintosti.buildsystem.storage.EntityStore;
 import de.eintosti.buildsystem.storage.StorageException;
 import java.sql.Connection;
@@ -84,12 +85,9 @@ public final class SqlDatabase implements Database {
         return database;
     }
 
-    /**
-     * {@return the table for the named collection, created if it does not exist yet}
-     */
     @Override
-    public EntityStore collection(String name) {
-        String table = tablePrefix + name;
+    public EntityStore collection(EntityKind kind) {
+        String table = tablePrefix + kind.id();
         run(connection -> {
             try (Statement statement = connection.createStatement()) {
                 statement.execute(dialect.createTable(table));

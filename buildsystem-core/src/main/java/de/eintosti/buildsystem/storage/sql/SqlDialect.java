@@ -30,7 +30,7 @@ public enum SqlDialect {
     MYSQL(
             "com.mysql.cj.jdbc.Driver",
             "MEDIUMTEXT",
-            " DEFAULT CHARSET=utf8mb4",
+            " DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin",
             "ON DUPLICATE KEY UPDATE data = VALUES(data)"),
     POSTGRESQL("org.postgresql.Driver", "TEXT", "", "ON CONFLICT(id) DO UPDATE SET data = excluded.data");
 

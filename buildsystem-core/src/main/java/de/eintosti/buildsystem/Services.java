@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem;
 
 import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
@@ -30,10 +31,10 @@ import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.storage.EntityKind;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.StorageBackend;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.WorldPrompts;
@@ -45,8 +46,6 @@ import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import de.eintosti.buildsystem.world.download.WorldDownloadService;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
-import java.io.File;
-import java.util.logging.Logger;
 import org.bukkit.NamespacedKey;
 import org.jspecify.annotations.NullMarked;
 
@@ -101,15 +100,14 @@ public final class Services {
 
         this.playerLookupService =
                 new PlayerLookupService(plugin, taskScheduler.background(), taskScheduler.mainThread());
-        File dataFolder = plugin.getDataFolder();
-        Logger logger = plugin.getLogger();
+        PluginConfig.Storage.Database database =
+                configService.current().storage().database();
         this.storageBackend =
-                StorageBackend.connect(configService.current().storage().database(), dataFolder, logger);
+                StorageBackend.connect(database.type(), database, plugin.getDataFolder(), plugin.getLogger());
         // The storages read the world context and category registry from here only once the stored worlds load.
-        this.worldStorage =
-                new WorldStorageImpl(plugin, this, storageBackend.store(YamlEntityStore.worlds(dataFolder, logger)));
-        this.folderStorage = new FolderStorageImpl(
-                plugin, worldStorage, this, storageBackend.store(YamlEntityStore.folders(dataFolder, logger)));
+        this.worldStorage = new WorldStorageImpl(plugin, this, storageBackend.store(EntityKind.WORLDS));
+        this.folderStorage =
+                new FolderStorageImpl(plugin, worldStorage, this, storageBackend.store(EntityKind.FOLDERS));
 
         this.navigatorCategoryRegistry = new NavigatorCategoryRegistryImpl(plugin, folderStorage);
         this.worldStatusRegistry =
@@ -118,11 +116,7 @@ public final class Services {
 
         this.customBlockManager = new CustomBlockManager(plugin, taskScheduler, worldStorage);
         (this.playerService = new PlayerServiceImpl(
-                        plugin,
-                        configService,
-                        worldStorage,
-                        taskScheduler,
-                        storageBackend.store(YamlEntityStore.players(dataFolder, logger))))
+                        plugin, configService, worldStorage, taskScheduler, storageBackend.store(EntityKind.PLAYERS)))
                 .init();
         this.navigatorEditorService = new NavigatorEditorService();
         this.noClipService = new NoClipService(taskScheduler);

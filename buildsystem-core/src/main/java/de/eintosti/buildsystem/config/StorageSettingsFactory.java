@@ -18,6 +18,8 @@
 package de.eintosti.buildsystem.config;
 
 import de.eintosti.buildsystem.config.PluginConfig.Storage;
+import de.eintosti.buildsystem.storage.StorageType;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -48,7 +50,6 @@ final class StorageSettingsFactory {
     static Storage fromConfig(FileConfiguration config) {
         String s3 = BASE + "s3.";
         String sftp = BASE + "sftp.";
-        String database = BASE + "database.";
         return new Storage(
                 new Storage.S3(
                         config.getString(s3 + "url"),
@@ -62,14 +63,29 @@ final class StorageSettingsFactory {
                         config.getInt(sftp + "port", 22),
                         config.getString(sftp + "username"),
                         config.getString(sftp + "password")),
-                new Storage.Database(
-                        config.getString(database + "type", "yaml"),
-                        config.getString(database + "host", "localhost"),
-                        config.getInt(database + "port", 0),
-                        config.getString(database + "database", "buildsystem"),
-                        config.getString(database + "username", ""),
-                        config.getString(database + "password", ""),
-                        config.getString(database + "table-prefix", "buildsystem_")));
+                database(config));
+    }
+
+    private static Storage.Database database(FileConfiguration config) {
+        Map<StorageType, Storage.Database.Server> servers = new EnumMap<>(StorageType.class);
+        for (StorageType type : StorageType.values()) {
+            if (type.hasServer()) {
+                String block = BASE + type.key() + ".";
+                servers.put(
+                        type,
+                        new Storage.Database.Server(
+                                type,
+                                config.getString(block + "host", "localhost"),
+                                config.getInt(block + "port", type.defaultPort()),
+                                config.getString(block + "database", "buildsystem"),
+                                config.getString(block + "username", ""),
+                                config.getString(block + "password", "")));
+            }
+        }
+        return new Storage.Database(
+                StorageType.parse(config.getString(BASE + "type", StorageType.SQLITE.key())),
+                config.getString(BASE + "table-prefix", "buildsystem_"),
+                servers);
     }
 
     /**

@@ -81,6 +81,7 @@ final class MongoEntityStore implements EntityStore {
         }
         List<ReplaceOneModel<Document>> replacements = new ArrayList<>();
         entries.forEach((key, values) -> {
+            checkFieldNames(values);
             Document document = new Document(ID, key);
             document.putAll(values);
             replacements.add(new ReplaceOneModel<>(Filters.eq(ID, key), document, new ReplaceOptions().upsert(true)));
@@ -91,5 +92,20 @@ final class MongoEntityStore implements EntityStore {
     @Override
     public void delete(String key) {
         collection.deleteOne(Filters.eq(ID, key));
+    }
+
+    /**
+     * Rejects a field name MongoDB would read as an operator or a path. The codecs only use fixed names, so this only
+     * fails if a codec starts naming fields after user input.
+     */
+    private static void checkFieldNames(Map<?, ?> values) {
+        values.forEach((name, value) -> {
+            if (!(name instanceof String field) || field.startsWith("$") || field.contains(".")) {
+                throw new IllegalArgumentException("Cannot store the field name \"" + name + "\" in MongoDB");
+            }
+            if (value instanceof Map<?, ?> nested) {
+                checkFieldNames(nested);
+            }
+        });
     }
 }

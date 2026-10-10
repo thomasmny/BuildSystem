@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.storage.sql;
 
 import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.storage.StorageType;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -56,7 +57,7 @@ class MariaDbEntityStoreContractTest extends SqlEntityStoreContractTest {
 
     @Override
     protected PluginConfig.Storage.Database settings() {
-        return settings("mariadb", DATABASE, 3306);
+        return settings(StorageType.MARIADB, DATABASE, 3306);
     }
 
     @Override

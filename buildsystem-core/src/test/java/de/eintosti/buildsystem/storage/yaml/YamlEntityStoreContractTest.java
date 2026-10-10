@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.storage.yaml;
 
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.storage.EntityStoreContractTest;
+import de.eintosti.buildsystem.storage.StorageType;
 import java.util.List;
 import org.jspecify.annotations.NullMarked;
 
@@ -27,7 +28,7 @@ class YamlEntityStoreContractTest extends EntityStoreContractTest {
 
     @Override
     protected PluginConfig.Storage.Database settings() {
-        return settings("yaml", "localhost", 0, "buildsystem", "", "", tablePrefix);
+        return settings(StorageType.YAML, "localhost", 0, "buildsystem", "", "", tablePrefix);
     }
 
     @Override

@@ -55,7 +55,7 @@ public class ConfigMigrationManager {
         registerMigration(3, new MigrationV3ToV4());
         registerMigration(4, new MigrationV4ToV5());
         registerMigration(5, new MigrationV5ToV6());
-        registerMigration(6, new MigrationV6ToV7());
+        registerMigration(6, new MigrationV6ToV7(plugin.getDataFolder()));
     }
 
     /**

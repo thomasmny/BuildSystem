@@ -19,49 +19,75 @@ package de.eintosti.buildsystem.config.migration;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class MigrationV6ToV7Test {
 
-    private static final String BASE = "storage.database";
+    private static final List<String> KEYS =
+            List.of("type", "table-prefix", "mysql", "mariadb", "postgresql", "mongodb");
+
+    @TempDir
+    File dataFolder;
 
     @Test
-    void migrate_addsTheDatabaseSectionAsShipped() throws Exception {
+    void migrate_withoutYamlData_addsTheStorageKeysAsShipped() throws Exception {
         YamlConfiguration config = new YamlConfiguration();
         config.set("storage.sftp.host", "sftp.example.com");
 
-        new MigrationV6ToV7().migrate(config);
+        new MigrationV6ToV7(dataFolder).migrate(config);
 
         YamlConfiguration shipped;
         try (InputStream in = getClass().getResourceAsStream("/config.yml")) {
             shipped = YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
         }
-        ConfigurationSection migrated = YamlConfiguration.loadConfiguration(new StringReader(config.saveToString()))
-                .getConfigurationSection(BASE);
-        assertEquals(shipped.getConfigurationSection(BASE).getValues(false), migrated.getValues(false));
-        for (String key :
-                List.of("", ".type", ".host", ".port", ".database", ".username", ".password", ".table-prefix")) {
-            assertEquals(shipped.getComments(BASE + key), config.getComments(BASE + key), BASE + key);
+        YamlConfiguration migrated = YamlConfiguration.loadConfiguration(new StringReader(config.saveToString()));
+        for (String key : KEYS) {
+            String path = "storage." + key;
+            assertEquals(values(shipped, path), values(migrated, path), path);
+            assertEquals(shipped.getComments(path), migrated.getComments(path), path);
         }
+        assertEquals("sqlite", migrated.getString("storage.type"));
         assertEquals("sftp.example.com", config.getString("storage.sftp.host"));
     }
 
     @Test
-    void migrate_keepsADatabaseSectionThatIsAlreadyThere() {
-        YamlConfiguration config = new YamlConfiguration();
-        config.set(BASE + ".type", "sqlite");
+    void migrate_withWorldsOrPlayersInYaml_keepsYaml() throws Exception {
+        for (String file : List.of("worlds.yml", "players.yml")) {
+            File folder = new File(dataFolder, file);
+            folder.mkdirs();
+            Files.writeString(new File(folder, file).toPath(), "");
+            YamlConfiguration config = new YamlConfiguration();
 
-        new MigrationV6ToV7().migrate(config);
+            new MigrationV6ToV7(folder).migrate(config);
+
+            assertEquals("yaml", config.getString("storage.type"), file);
+        }
+    }
+
+    @Test
+    void migrate_keepsAStorageTypeThatIsAlreadyThere() {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("storage.type", "postgresql");
+
+        new MigrationV6ToV7(dataFolder).migrate(config);
 
         assertEquals(
-                Map.of("type", "sqlite"), config.getConfigurationSection(BASE).getValues(false));
+                Map.of("type", "postgresql"),
+                config.getConfigurationSection("storage").getValues(false));
+    }
+
+    private static Object values(YamlConfiguration config, String path) {
+        return config.get(path) instanceof ConfigurationSection section ? section.getValues(true) : config.get(path);
     }
 }
