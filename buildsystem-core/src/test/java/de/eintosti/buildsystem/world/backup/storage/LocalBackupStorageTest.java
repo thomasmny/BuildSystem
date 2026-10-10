@@ -26,6 +26,9 @@ import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributeView;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -86,21 +89,47 @@ class LocalBackupStorageTest {
         assertTrue(backups.stream().allMatch(b -> b.key().endsWith(".zip")));
     }
 
+    private static void setTimes(Path file, long millis) throws Exception {
+        FileTime time = FileTime.fromMillis(millis);
+        Files.getFileAttributeView(file, BasicFileAttributeView.class).setTimes(time, null, time);
+    }
+
+    private static long creationTime(Path file) throws Exception {
+        return Files.readAttributes(file, BasicFileAttributes.class)
+                .creationTime()
+                .toMillis();
+    }
+
     @Test
-    void listReturnsNewestFirst() throws Exception {
+    void listOrdersByTheTimestampInTheFileName() throws Exception {
         Path dir = worldBackupDir();
-        // Use modification time via Files.setLastModifiedTime to control ordering
-        Path older = createZip(dir, "older.zip");
-        Path newer = createZip(dir, "newer.zip");
-        // Set mtime explicitly: newer > older
-        Files.setLastModifiedTime(older, java.nio.file.attribute.FileTime.fromMillis(1000L));
-        Files.setLastModifiedTime(newer, java.nio.file.attribute.FileTime.fromMillis(9000L));
+        // A copy or rsync of the backup folder: the newer backup's file now carries the older times. Created in this
+        // order as well, because Linux keeps the real creation time whatever setTimes asks for.
+        Path newer = createZip(dir, "2000.zip");
+        Thread.sleep(20);
+        Path older = createZip(dir, "1000.zip");
+        setTimes(newer, 1_000L);
+        setTimes(older, 9_000L);
+        assertTrue(creationTime(older) > creationTime(newer), "the file times must disagree with the names");
 
         List<Backup> backups = storage.listBackups(world).get();
-        assertEquals(2, backups.size());
-        assertTrue(
-                backups.get(0).creationTime() >= backups.get(1).creationTime(),
-                "First element should have a creation time >= second");
+
+        assertEquals(
+                List.of(2000L, 1000L),
+                backups.stream().map(Backup::creationTime).toList());
+        assertEquals(newer.toAbsolutePath().toString(), backups.getFirst().key());
+    }
+
+    @Test
+    void backupNamedOtherwise_isDatedByItsCreationTime() throws Exception {
+        Path copy = createZip(worldBackupDir(), "manual copy.zip");
+        setTimes(copy, 5_000L);
+
+        List<Backup> backups = storage.listBackups(world).get();
+
+        assertEquals(
+                List.of(creationTime(copy)),
+                backups.stream().map(Backup::creationTime).toList());
     }
 
     @Test
