@@ -78,7 +78,8 @@ class SftpBackupStorageTest {
     private BuildWorld world;
     private MockedStatic<Bukkit> bukkit;
     private @Nullable SshServer server;
-    private @Nullable SftpBackupStorage storage;
+    // The storage a test opened last, closed after it.
+    private @Nullable SftpBackupStorage opened;
     // Read on the server's threads.
     private volatile @Nullable SftpEventListener serverListener;
 
@@ -101,8 +102,8 @@ class SftpBackupStorageTest {
 
     @AfterEach
     void tearDown() throws IOException {
-        if (storage != null) {
-            storage.close();
+        if (opened != null) {
+            opened.close();
         }
         if (server != null) {
             server.stop(true);
@@ -139,7 +140,7 @@ class SftpBackupStorageTest {
 
     private SftpBackupStorage connect(String basePath) {
         BackupProfile profile = mock(BackupProfile.class);
-        storage = new SftpBackupStorage(
+        opened = new SftpBackupStorage(
                 Logger.getLogger("test"),
                 Runnable::run,
                 dataFolder.toFile(),
@@ -150,7 +151,7 @@ class SftpBackupStorageTest {
                 USER,
                 PASSWORD,
                 basePath);
-        return storage;
+        return opened;
     }
 
     private List<Path> remoteFiles() throws IOException {
@@ -221,11 +222,12 @@ class SftpBackupStorageTest {
     @Test
     void hostKey_isRecordedOnFirstUse_andAChangedKeyIsRefused() throws IOException {
         int port = startServer(0, "host.key").getPort();
-        connect("backups").listBackups(world).join();
+        SftpBackupStorage first = connect("backups");
+        first.listBackups(world).join();
         Path knownHosts = dataFolder.resolve(".sftp_known_hosts");
         assertTrue(Files.readString(knownHosts).contains("127.0.0.1"));
 
-        storage.close();
+        first.close();
         server.stop(true);
         startServer(port, "other-host.key");
         SftpBackupStorage storage = connect("backups");
@@ -243,10 +245,11 @@ class SftpBackupStorageTest {
         server.stop(true);
         startServer(port, "host.key");
 
-        // A call made on the dropped connection may fail, but it closes that connection so the next one reconnects.
+        // The first call may still use the dropped connection and fail with a CompletionException wrapping the
+        // IOException. That failure closes the connection, so the next call must reconnect.
         try {
             storage.listBackups(world).join();
-        } catch (CompletionException ignored) {
+        } catch (CompletionException expectedOnTheDroppedConnection) {
         }
         assertEquals(1, storage.listBackups(world).join().size());
     }
