@@ -28,11 +28,14 @@ import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.util.WorldFlush;
 import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
@@ -92,37 +95,54 @@ public class SaveTemplateSubCommand extends WorldSubCommand {
             return;
         }
 
-        buildWorld.getWorld().ifPresent(World::save);
-        messages.sendMessage(
-                player,
-                "worlds_savetemplate_started",
-                Placeholders.of()
-                        .add("%world%", buildWorld.getName())
-                        .add("%template%", templateName)
-                        .build());
-        CompletableFuture.runAsync(
-                        () -> {
-                            try {
-                                FileUtils.copy(worldDir, templateDir);
-                            } catch (IOException e) {
-                                throw new CompletionException(e);
+        // Held like a backup: without it a delete or rename could pull the folder away mid-copy, and the autosave
+        // could rewrite region files the copy is reading.
+        WorldOperations operations = worldService.operations();
+        operations
+                .runExclusively(buildWorld, () -> {
+                    Optional<World> world = buildWorld.getWorld();
+                    world.ifPresent(WorldFlush::saveAndPauseWrites);
+                    messages.sendMessage(
+                            player,
+                            "worlds_savetemplate_started",
+                            Placeholders.of()
+                                    .add("%world%", buildWorld.getName())
+                                    .add("%template%", templateName)
+                                    .build());
+                    return CompletableFuture.runAsync(
+                                    () -> {
+                                        try {
+                                            FileUtils.copy(worldDir, templateDir);
+                                        } catch (IOException e) {
+                                            throw new CompletionException(e);
+                                        }
+                                    },
+                                    scheduler.background())
+                            .whenCompleteAsync(
+                                    (ignored, throwable) -> world.ifPresent(WorldFlush::resumeWrites),
+                                    scheduler.mainThread());
+                })
+                .whenCompleteAsync(
+                        (ignored, throwable) -> {
+                            if (throwable == null) {
+                                FeedbackSound.SUCCESS.play(player);
+                                messages.sendMessage(
+                                        player,
+                                        "worlds_savetemplate_finished",
+                                        Placeholders.of("%template%", templateName));
+                            } else if (!operations.reportRefusal(player, buildWorld.getName(), throwable)) {
+                                logger.log(
+                                        Level.SEVERE,
+                                        "Failed to save template '" + templateName + "' from world "
+                                                + buildWorld.getName(),
+                                        throwable);
+                                messages.sendMessage(
+                                        player,
+                                        "worlds_savetemplate_error",
+                                        Placeholders.of("%template%", templateName));
                             }
                         },
-                        scheduler.background())
-                .whenComplete((ignored, throwable) -> scheduler.run(() -> {
-                    if (throwable != null) {
-                        logger.log(
-                                Level.SEVERE,
-                                "Failed to save template '" + templateName + "' from world " + buildWorld.getName(),
-                                throwable);
-                        messages.sendMessage(
-                                player, "worlds_savetemplate_error", Placeholders.of("%template%", templateName));
-                    } else {
-                        FeedbackSound.SUCCESS.play(player);
-                        messages.sendMessage(
-                                player, "worlds_savetemplate_finished", Placeholders.of("%template%", templateName));
-                    }
-                }));
+                        scheduler.mainThread());
     }
 
     @Override
