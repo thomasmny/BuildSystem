@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.player.settings;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
@@ -39,6 +38,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
@@ -46,7 +46,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SettingsService {
 
-    private final BuildSystemPlugin plugin;
+    private final Plugin plugin;
     private final TaskScheduler scheduler;
     private final ConfigService configService;
     private final Messages messages;
@@ -57,7 +57,7 @@ public class SettingsService {
     private final Map<UUID, BukkitTask> scoreboardTasks;
 
     public SettingsService(
-            BuildSystemPlugin plugin,
+            Plugin plugin,
             TaskScheduler scheduler,
             ConfigService configService,
             Messages messages,
@@ -76,6 +76,42 @@ public class SettingsService {
 
     public Settings getSettings(Player player) {
         return playerService.getPlayerStorage().getBuildPlayer(player).getSettings();
+    }
+
+    /**
+     * Shows or hides the player to every other online player, and every other online player to them. A viewer who
+     * turned on hide players sees nobody, and nobody sees a player who is vanished in a world where building is not
+     * allowed.
+     *
+     * @param player The player who joined, changed world or toggled hide players
+     */
+    public void updateVisibility(Player player) {
+        boolean hidesOthers = getSettings(player).isHidePlayers();
+        boolean vanished = isArchiveVanished(player);
+        for (Player other : Bukkit.getOnlinePlayers()) {
+            if (other.equals(player)) {
+                continue;
+            }
+            setVisible(other, player, !vanished && !getSettings(other).isHidePlayers());
+            setVisible(player, other, !hidesOthers && !isArchiveVanished(other));
+        }
+    }
+
+    private boolean isArchiveVanished(Player player) {
+        if (!configService.current().settings().archive().vanish()) {
+            return false;
+        }
+        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(player.getWorld());
+        return buildWorld != null
+                && !buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed();
+    }
+
+    private void setVisible(Player viewer, Player target, boolean visible) {
+        if (visible) {
+            viewer.showPlayer(plugin, target);
+        } else {
+            viewer.hidePlayer(plugin, target);
+        }
     }
 
     /**

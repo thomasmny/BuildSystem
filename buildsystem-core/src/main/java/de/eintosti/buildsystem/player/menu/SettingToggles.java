@@ -22,7 +22,6 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -97,12 +96,7 @@ final class SettingToggles {
         return true;
     }
 
-    @SuppressWarnings("deprecation")
-    void toggleHidePlayers(Player player, Settings settings) {
-        if (settings.isHidePlayers()) {
-            Bukkit.getOnlinePlayers().forEach(player::hidePlayer);
-        } else {
-            Bukkit.getOnlinePlayers().forEach(player::showPlayer);
-        }
+    void toggleHidePlayers(Player player) {
+        settingsManager.updateVisibility(player);
     }
 }

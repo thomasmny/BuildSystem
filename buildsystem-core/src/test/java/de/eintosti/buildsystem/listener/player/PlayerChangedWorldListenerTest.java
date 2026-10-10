@@ -17,9 +17,9 @@
  */
 package de.eintosti.buildsystem.listener.player;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.storage.WorldStorage;
@@ -53,20 +53,14 @@ class PlayerChangedWorldListenerTest {
     }
 
     @Test
-    @SuppressWarnings("deprecation")
-    void changingIntoABuildableWorld_keepsThePlayerHiddenFromHidePlayersViewers() {
+    void changingIntoABuildableWorld_updatesWhoSeesThePlayer() {
         ServerMock server = MockBukkit.mock();
         WorldMock from = server.addSimpleWorld("from");
         WorldMock to = server.addSimpleWorld("to");
-        PlayerMock viewer = server.addPlayer("Viewer");
         PlayerMock target = server.addPlayer("Target");
-        viewer.hidePlayer(target);
         target.teleport(to.getSpawnLocation());
 
-        SettingsImpl viewerSettings = new SettingsImpl();
-        viewerSettings.setHidePlayers(true);
         SettingsService settingsService = mock(SettingsService.class);
-        when(settingsService.getSettings(viewer)).thenReturn(viewerSettings);
         when(settingsService.getSettings(target)).thenReturn(new SettingsImpl());
 
         PlayerStorageImpl playerStorage = mock(PlayerStorageImpl.class);
@@ -92,6 +86,6 @@ class PlayerChangedWorldListenerTest {
                 mock(Messages.class));
         listener.onPlayerChangedWorld(new PlayerChangedWorldEvent(target, from));
 
-        assertFalse(viewer.canSee(target));
+        verify(settingsService).updateVisibility(target);
     }
 }

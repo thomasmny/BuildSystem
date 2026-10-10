@@ -83,6 +83,7 @@ public class PlayerChangedWorldListener implements Listener {
         removeOldNavigator(player);
         removeBuildMode(player);
         checkWorldStatus(player);
+        settingsManager.updateVisibility(player);
 
         if (settingsManager.getSettings(player).isScoreboard()) {
             settingsManager.forceUpdateSidebar(player);
@@ -105,7 +106,7 @@ public class PlayerChangedWorldListener implements Listener {
 
     private void checkWorldStatus(Player player) {
         CachedValues cachedValues = cachedValues(player);
-        ArchiveMode.exit(player, cachedValues, settingsManager);
+        ArchiveMode.exit(player, cachedValues);
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         if (buildWorld == null) {

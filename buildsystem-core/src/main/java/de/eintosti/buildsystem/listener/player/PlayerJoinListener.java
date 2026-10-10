@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.listener.player;
 
-import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
@@ -39,7 +38,6 @@ import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import io.papermc.lib.PaperLib;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -98,14 +96,12 @@ public class PlayerJoinListener implements Listener {
     }
 
     @EventHandler
-    @SuppressWarnings("deprecation")
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         playerLookupService.cacheUser(player.getUniqueId(), player.getName());
 
         BuildPlayerImpl buildPlayer =
                 BuildPlayerImpl.of(playerManager.getPlayerStorage().createBuildPlayer(player));
-        manageHidePlayer(player, buildPlayer);
         manageSettings(player, buildPlayer.getSettings());
         teleportToCorrectLocation(player, buildPlayer);
 
@@ -124,6 +120,7 @@ public class PlayerJoinListener implements Listener {
                         player, "physics_deactivated_in_world", Placeholders.of("%world%", buildWorld.getName()));
             }
         }
+        settingsManager.updateVisibility(player);
         navigatorService.giveNavigator(player);
 
         if (player.hasPermission(Permissions.UPDATES)) {
@@ -169,22 +166,6 @@ public class PlayerJoinListener implements Listener {
                     }
                 },
                 delay);
-    }
-
-    @SuppressWarnings("deprecation")
-    private void manageHidePlayer(Player player, BuildPlayer buildPlayer) {
-        // Hide all players to player
-        if (buildPlayer.getSettings().isHidePlayers()) {
-            Bukkit.getOnlinePlayers().forEach(player::hidePlayer);
-        }
-
-        // Hide player from all players who have hidePlayers enabled
-        for (Player pl : Bukkit.getOnlinePlayers()) {
-            if (!settingsManager.getSettings(pl).isHidePlayers()) {
-                continue;
-            }
-            pl.hidePlayer(player);
-        }
     }
 
     /**

@@ -110,7 +110,7 @@ public class SettingsMenu extends ButtonMenu {
                         Settings::isHidePlayers,
                         (player, s) -> {
                             s.setHidePlayers(!s.isHidePlayers());
-                            toggles.toggleHidePlayers(player, s);
+                            toggles.toggleHidePlayers(player);
                         }));
         register(
                 15,
