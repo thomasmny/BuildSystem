@@ -25,6 +25,7 @@ import static org.mockito.Mockito.mock;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import java.util.logging.Logger;
 import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
@@ -115,5 +116,38 @@ class BukkitWorldFactoryTest {
 
         assertEquals(Material.AIR, world.getBlockAt(0, 64, 0).getType());
         assertEquals(65, world.getSpawnLocation().getBlockY());
+    }
+
+    @Test
+    void importedWithBuiltInGenerator_generatesThatType() {
+        assertEquals(
+                BuildWorldType.VOID,
+                BukkitWorldFactory.generationType(
+                        BuildWorldType.IMPORTED, new CustomGeneratorImpl("BuildSystem", "void", null)));
+    }
+
+    @Test
+    void importedWithPluginGenerator_staysImported() {
+        // Used to be valueOf("TERRA"), which threw after the world had already been registered.
+        assertEquals(
+                BuildWorldType.IMPORTED,
+                BukkitWorldFactory.generationType(
+                        BuildWorldType.IMPORTED, new CustomGeneratorImpl("Terra", "Terra", null)));
+    }
+
+    @Test
+    void importedWithUnknownBuiltInType_staysImported() {
+        assertEquals(
+                BuildWorldType.IMPORTED,
+                BukkitWorldFactory.generationType(
+                        BuildWorldType.IMPORTED, new CustomGeneratorImpl("BuildSystem", "nonsense", null)));
+    }
+
+    @Test
+    void notImported_keepsItsType() {
+        assertEquals(
+                BuildWorldType.FLAT,
+                BukkitWorldFactory.generationType(
+                        BuildWorldType.FLAT, new CustomGeneratorImpl("BuildSystem", "void", null)));
     }
 }
