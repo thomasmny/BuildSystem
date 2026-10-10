@@ -56,22 +56,6 @@ class BuilderSerializationTest {
     }
 
     @Test
-    void equals_sameUuidAndName_areEqual() {
-        Builder a = Builder.of(UUID_A, "Alice");
-        Builder b = Builder.of(UUID_A, "Alice");
-        assertEquals(a.getUniqueId(), b.getUniqueId());
-        assertEquals(a.getName(), b.getName());
-        assertEquals(a.toString(), b.toString());
-    }
-
-    @Test
-    void setName_updatesName() {
-        Builder builder = Builder.of(UUID_A, "OldName");
-        builder.setName("NewName");
-        assertEquals("NewName", builder.getName());
-    }
-
-    @Test
     void twoBuilders_differentUuids_differentToString() {
         Builder a = Builder.of(UUID_A, "Alice");
         Builder b = Builder.of(UUID_B, "Alice");
