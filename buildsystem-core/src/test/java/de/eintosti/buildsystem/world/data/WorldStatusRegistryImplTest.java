@@ -23,16 +23,20 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.io.File;
 import java.util.List;
+import org.bukkit.Material;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -119,6 +123,24 @@ class WorldStatusRegistryImplTest {
     }
 
     @Test
+    void deletedStatus_movesItsWorldsToTheDefault() {
+        BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
+        when(plugin.getDataFolder()).thenReturn(dataFolder);
+        WorldServiceImpl worldService = mock(WorldServiceImpl.class, RETURNS_DEEP_STUBS);
+        WorldStatusRegistryImpl statuses = new WorldStatusRegistryImpl(
+                plugin, categories, mock(Messages.class, RETURNS_DEEP_STUBS), () -> worldService);
+        WorldStatusImpl custom = statuses.create("Review");
+        BuildWorld world = mock(BuildWorld.class, RETURNS_DEEP_STUBS);
+        when(world.getData().get(WorldDataKey.STATUS)).thenReturn(custom);
+        when(worldService.getWorldStorage().getBuildWorlds()).thenReturn(List.of(world));
+
+        assertTrue(statuses.delete(custom.getId()));
+
+        verify(world.getData()).set(WorldDataKey.STATUS, statuses.getDefault());
+        verify(worldService.getWorldStorage()).save(world);
+    }
+
+    @Test
     void deleteStatus_refusesLastRemaining() {
         // Delete down to a single status; the final one must never be removable.
         for (BuildWorldStatus status : List.copyOf(registry.getAll())) {
@@ -160,6 +182,32 @@ class WorldStatusRegistryImplTest {
 
         WorldStatusRegistryImpl reloaded = reloadRegistry();
         assertTrue(reloaded.get("persisted").isPresent());
+    }
+
+    @Test
+    void editedStatus_keepsEveryFieldAfterReload() {
+        WorldStatusImpl status = registry.create("Review");
+        status.setDisplayName("In Review");
+        status.setColor("&d");
+        status.setIcon(Material.PURPLE_DYE);
+        status.setOrder(42);
+        status.setBuildingAllowed(false);
+        status.setProgressesTo("finished");
+        status.setSlot(20);
+        status.setShown(false);
+        registry.persist(status);
+
+        BuildWorldStatus reloaded = reloadRegistry().get(status.getId()).orElseThrow();
+        assertEquals("In Review", reloaded.getDisplayName());
+        assertEquals("&d", reloaded.getColor());
+        assertEquals(Material.PURPLE_DYE, reloaded.getIcon());
+        assertEquals(42, reloaded.getOrder());
+        assertFalse(reloaded.isBuildingAllowed());
+        assertEquals("finished", reloaded.getProgressesTo().orElseThrow());
+        assertEquals(20, reloaded.getSlot());
+        assertFalse(reloaded.isShown());
+        assertFalse(reloaded.isBuiltIn());
+        assertTrue(reloadRegistry().get("not_started").orElseThrow().isBuiltIn());
     }
 
     @Test

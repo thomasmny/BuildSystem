@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.data;
 
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.util.Permissions;
+import de.eintosti.buildsystem.world.display.RegistryEntryImpl;
 import java.util.Optional;
 import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
@@ -30,73 +31,28 @@ import org.jspecify.annotations.Nullable;
  * no owning category of its own.
  */
 @NullMarked
-public final class WorldStatusImpl implements BuildWorldStatus {
+public final class WorldStatusImpl extends RegistryEntryImpl implements BuildWorldStatus {
 
-    private final String id;
-    private final boolean builtIn;
-
-    private String displayName;
-    private String color;
-    private Material icon;
     private int order;
     private boolean buildingAllowed;
     private @Nullable String progressesTo;
-    private int statusSlot;
-    private boolean shownInStatusMenu;
 
     private WorldStatusImpl(Builder builder) {
-        this.id = builder.id;
-        this.displayName = builder.displayName;
-        this.color = builder.color;
-        this.icon = builder.icon;
+        super(
+                builder.id,
+                builder.builtIn,
+                builder.displayName,
+                builder.color,
+                builder.icon,
+                builder.statusSlot,
+                builder.shownInStatusMenu);
         this.order = builder.order;
         this.buildingAllowed = builder.buildingAllowed;
         this.progressesTo = builder.progressesTo;
-        this.builtIn = builder.builtIn;
-        this.statusSlot = builder.statusSlot;
-        this.shownInStatusMenu = builder.shownInStatusMenu;
     }
 
-    /**
-     * Creates a builder for a status with the given id.
-     *
-     * @param id The immutable status id
-     * @return A new builder seeded with sensible defaults
-     */
     public static Builder builder(String id) {
         return new Builder(id);
-    }
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    @Override
-    public String getColor() {
-        return color;
-    }
-
-    public void setColor(String color) {
-        this.color = color;
-    }
-
-    @Override
-    public Material getIcon() {
-        return icon;
-    }
-
-    public void setIcon(Material icon) {
-        this.icon = icon;
     }
 
     @Override
@@ -115,7 +71,7 @@ public final class WorldStatusImpl implements BuildWorldStatus {
         // setups from before custom statuses keep working. Custom statuses use their full id, so two distinct ids
         // cannot
         // collapse onto the same permission node.
-        String node = builtIn ? id.replace("_", "") : id;
+        String node = isBuiltIn() ? getId().replace("_", "") : getId();
         return Permissions.setStatus(node);
     }
 
@@ -138,41 +94,13 @@ public final class WorldStatusImpl implements BuildWorldStatus {
     }
 
     @Override
-    public int getSlot() {
-        return statusSlot;
-    }
-
-    public void setSlot(int statusSlot) {
-        this.statusSlot = statusSlot;
-    }
-
-    @Override
-    public boolean isShown() {
-        return shownInStatusMenu;
-    }
-
-    public void setShown(boolean shownInStatusMenu) {
-        this.shownInStatusMenu = shownInStatusMenu;
-    }
-
-    @Override
-    public boolean isBuiltIn() {
-        return builtIn;
-    }
-
-    @Override
     public boolean equals(@Nullable Object o) {
-        return o instanceof BuildWorldStatus other && id.equals(other.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return id.hashCode();
+        return o instanceof BuildWorldStatus other && getId().equals(other.getId());
     }
 
     @Override
     public String toString() {
-        return "WorldStatus{" + id + "}";
+        return "WorldStatus{" + getId() + "}";
     }
 
     /**

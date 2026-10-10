@@ -33,73 +33,29 @@ import org.jspecify.annotations.Nullable;
  * and the {@link Visibility visibilities} it groups; the {@link #getId() id} is immutable once created.
  */
 @NullMarked
-public final class NavigatorCategoryImpl implements NavigatorCategory {
+public final class NavigatorCategoryImpl extends RegistryEntryImpl implements NavigatorCategory {
 
-    private final String id;
-    private final boolean builtIn;
     private final List<String> statusIds = new ArrayList<>();
     private final EnumSet<Visibility> visibilities = EnumSet.noneOf(Visibility.class);
 
-    private String displayName;
-    private String color;
-    private Material icon;
     private @Nullable String iconSkullTexture;
-    private boolean shownInNavigator;
-    private int navigatorSlot;
 
     private NavigatorCategoryImpl(Builder builder) {
-        this.id = builder.id;
-        this.displayName = builder.displayName;
-        this.color = builder.color;
-        this.icon = builder.icon;
+        super(
+                builder.id,
+                builder.builtIn,
+                builder.displayName,
+                builder.color,
+                builder.icon,
+                builder.navigatorSlot,
+                builder.shownInNavigator);
         this.iconSkullTexture = builder.iconSkullTexture;
         this.visibilities.addAll(builder.visibilities);
-        this.shownInNavigator = builder.shownInNavigator;
-        this.navigatorSlot = builder.navigatorSlot;
-        this.builtIn = builder.builtIn;
         this.statusIds.addAll(builder.statusIds);
     }
 
-    /**
-     * Creates a builder for a category with the given id.
-     *
-     * @param id The immutable category id
-     * @return A new builder seeded with sensible defaults
-     */
     public static Builder builder(String id) {
         return new Builder(id);
-    }
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    @Override
-    public String getColor() {
-        return color;
-    }
-
-    public void setColor(String color) {
-        this.color = color;
-    }
-
-    @Override
-    public Material getIcon() {
-        return icon;
-    }
-
-    public void setIcon(Material icon) {
-        this.icon = icon;
     }
 
     @Override
@@ -138,41 +94,13 @@ public final class NavigatorCategoryImpl implements NavigatorCategory {
     }
 
     @Override
-    public boolean isShown() {
-        return shownInNavigator;
-    }
-
-    public void setShown(boolean shownInNavigator) {
-        this.shownInNavigator = shownInNavigator;
-    }
-
-    @Override
-    public int getSlot() {
-        return navigatorSlot;
-    }
-
-    public void setSlot(int navigatorSlot) {
-        this.navigatorSlot = navigatorSlot;
-    }
-
-    @Override
-    public boolean isBuiltIn() {
-        return builtIn;
-    }
-
-    @Override
     public boolean equals(@Nullable Object o) {
-        return o instanceof NavigatorCategory other && id.equals(other.getId());
-    }
-
-    @Override
-    public int hashCode() {
-        return id.hashCode();
+        return o instanceof NavigatorCategory other && getId().equals(other.getId());
     }
 
     @Override
     public String toString() {
-        return "NavigatorCategory{" + id + "}";
+        return "NavigatorCategory{" + getId() + "}";
     }
 
     /**
