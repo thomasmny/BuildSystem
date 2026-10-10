@@ -3,26 +3,26 @@
   creator: 0c0c0c0c-0000-4000-8000-000000000001,Alex
   builders: 0c0c0c0c-0000-4000-8000-000000000001,Alex;0c0c0c0c-0000-4000-8000-000000000002,Sam
   data:
-    pinned: false
+    pinned: true
     block-interactions: false
     visibility: ADDED_PLAYERS
     time-since-backup: 42
     project: Arena
     permission: maps.arena
-    icon-skull-texture: ''
+    icon-skull-texture: eyJ0ZXh0dXJlcyI6e319
     physics-exceptions:
-      falling-blocks: false
-      block-forming: false
-      leaf-decay: false
-      spreading: false
-      fluid-flow: false
+      falling-blocks: true
+      block-forming: true
+      leaf-decay: true
+      spreading: true
+      fluid-flow: true
       block-updates: true
-      growth: false
-      connections: false
-      block-fading: false
+      growth: true
+      connections: true
+      block-fading: true
     difficulty: HARD
     spawn: arena:1.5:64.0:-3.5:90.0:0.0
-    material: GRASS_BLOCK
+    material: STONE
     block-placement: false
     physics: false
     block-breaking: false

@@ -121,6 +121,8 @@ class WorldCodecTest {
         assertTrue(data.get(PhysicsCategory.BLOCK_UPDATES.key()));
         assertEquals(42, data.get(WorldDataKey.TIME_SINCE_BACKUP));
         assertEquals(1_700_000_000_300L, data.get(WorldDataKey.LAST_UNLOADED));
+        // Every value in the full sample differs from its fallback, so a reader that ignored its key would fail here.
+        assertEquals(((WorldDataImpl) CodecSamples.fullWorld(context).getData()).storedValues(), data.storedValues());
     }
 
     @Test

@@ -21,11 +21,10 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
-import de.eintosti.buildsystem.storage.codec.FieldCodec.Field;
 import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
-import de.eintosti.buildsystem.world.folder.FolderImpl.FolderBuilder;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -46,45 +45,10 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class FolderCodec implements Codec<Folder> {
 
-    private static final String NAME = "name";
     private static final String PARENT = "parent";
 
     private final WorldContext context;
     private final NavigatorCategoryRegistry categoryRegistry;
-    private final FieldCodec<Folder, FolderBuilder> fields = new FieldCodec<>(
-            new Field<>(NAME, Folder::getName, FolderCodec::readName, FolderBuilder::name),
-            FieldCodec.writeOnly("uuid", folder -> folder.getUniqueId().toString()),
-            new Field<>(
-                    "creator",
-                    folder -> folder.getCreator().toString(),
-                    FolderCodec::readCreator,
-                    FolderBuilder::creator),
-            new Field<>(
-                    "creation",
-                    Folder::getCreation,
-                    (section, key) -> section.getLong(key, System.currentTimeMillis()),
-                    FolderBuilder::creation),
-            new Field<>(
-                    "category", folder -> folder.getCategory().getId(), this::readCategory, FolderBuilder::category),
-            FieldCodec.writeOnly(
-                    PARENT,
-                    folder -> folder.hasParent()
-                            ? folder.getParent().getUniqueId().toString()
-                            : null),
-            new Field<>(
-                    "material", folder -> folder.getIcon().name(), FolderCodec::readMaterial, FolderBuilder::material),
-            FieldCodec.optionalString(
-                    "icon-skull-texture", Folder::getIconSkullTexture, FolderBuilder::iconSkullTexture),
-            FieldCodec.string("permission", "-", Folder::getPermission, FolderBuilder::permission),
-            FieldCodec.string("project", "-", Folder::getProject, FolderBuilder::project),
-            new Field<>(
-                    "worlds",
-                    folder ->
-                            folder.getWorldUUIDs().stream().map(UUID::toString).toList(),
-                    (section, key) -> section.getStringList(key).stream()
-                            .map(UUID::fromString)
-                            .toList(),
-                    FolderBuilder::worlds));
 
     public FolderCodec(WorldContext context, NavigatorCategoryRegistry categoryRegistry) {
         this.context = context;
@@ -98,14 +62,44 @@ public final class FolderCodec implements Codec<Folder> {
 
     @Override
     public Map<String, Object> serialize(Folder folder) {
-        return fields.serialize(folder);
+        Map<String, Object> serialized = new LinkedHashMap<>();
+        serialized.put("name", folder.getName());
+        serialized.put("uuid", folder.getUniqueId().toString());
+        serialized.put("creator", folder.getCreator().toString());
+        serialized.put("creation", folder.getCreation());
+        serialized.put("category", folder.getCategory().getId());
+        if (folder.hasParent()) {
+            serialized.put(PARENT, folder.getParent().getUniqueId().toString());
+        }
+        serialized.put("material", folder.getIcon().name());
+        Codec.putIfPresent(serialized, "icon-skull-texture", folder.getIconSkullTexture());
+        serialized.put("permission", folder.getPermission());
+        serialized.put("project", folder.getProject());
+        serialized.put(
+                "worlds", folder.getWorldUUIDs().stream().map(UUID::toString).toList());
+        return serialized;
     }
 
     @Override
     public FolderImpl deserialize(String key, ConfigurationSection section) {
-        FolderBuilder builder = FolderImpl.builder(context, UUID.fromString(key));
-        fields.read(section, builder);
-        return builder.build();
+        // The name falls back to the key, which held it before v4 keyed folders by UUID.
+        String name = section.getString("name", key);
+        return FolderImpl.builder(context, UUID.fromString(key))
+                .name(name)
+                .creator(Objects.requireNonNull(
+                        Builder.deserialize(section.getString("creator")),
+                        "Creator cannot be null for folder: " + name))
+                .creation(section.getLong("creation", System.currentTimeMillis()))
+                .category(parseCategory(section.getString("category")))
+                .material(
+                        Objects.requireNonNullElse(MaterialUtils.match(section.getString("material")), Material.CHEST))
+                .iconSkullTexture(section.getString("icon-skull-texture"))
+                .permission(section.getString("permission", "-"))
+                .project(section.getString("project", "-"))
+                .worlds(section.getStringList("worlds").stream()
+                        .map(UUID::fromString)
+                        .toList())
+                .build();
     }
 
     /**
@@ -119,29 +113,11 @@ public final class FolderCodec implements Codec<Folder> {
     }
 
     /**
-     * Falls back to the section key, which held the name before v4 keyed folders by UUID.
-     */
-    private static String readName(ConfigurationSection section, String key) {
-        return section.getString(key, section.getName());
-    }
-
-    private static Builder readCreator(ConfigurationSection section, String key) {
-        return Objects.requireNonNull(
-                Builder.deserialize(section.getString(key)),
-                "Creator cannot be null for folder: " + readName(section, NAME));
-    }
-
-    private static Material readMaterial(ConfigurationSection section, String key) {
-        return Objects.requireNonNullElse(MaterialUtils.match(section.getString(key)), Material.CHEST);
-    }
-
-    /**
      * Resolves the stored category id. Pre-4.0 stored this as an upper-case enum name ({@code PUBLIC}, {@code ARCHIVE}
      * or {@code PRIVATE}), which lower-casing turns into the built-in category id. Falls back to the default category
      * when the key is missing or unknown.
      */
-    private NavigatorCategory readCategory(ConfigurationSection section, String key) {
-        String categoryId = section.getString(key);
+    private NavigatorCategory parseCategory(@Nullable String categoryId) {
         return categoryId == null
                 ? categoryRegistry.getDefault()
                 : categoryRegistry.get(categoryId.toLowerCase(Locale.ROOT)).orElseGet(categoryRegistry::getDefault);

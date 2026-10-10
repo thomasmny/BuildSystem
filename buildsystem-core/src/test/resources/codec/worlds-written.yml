@@ -12,8 +12,8 @@
     permission: maps.arena
     project: Arena
     difficulty: HARD
-    material: GRASS_BLOCK
-    icon-skull-texture: ''
+    material: STONE
+    icon-skull-texture: eyJ0ZXh0dXJlcyI6e319
     block-breaking: false
     block-interactions: false
     block-placement: false
@@ -23,15 +23,15 @@
     physics: false
     physics-exceptions:
       block-updates: true
-      connections: false
-      falling-blocks: false
-      fluid-flow: false
-      leaf-decay: false
-      growth: false
-      spreading: false
-      block-forming: false
-      block-fading: false
-    pinned: false
+      connections: true
+      falling-blocks: true
+      fluid-flow: true
+      leaf-decay: true
+      growth: true
+      spreading: true
+      block-forming: true
+      block-fading: true
+    pinned: true
     visibility: ADDED_PLAYERS
     time-since-backup: 42
     last-edited: 1700000000100

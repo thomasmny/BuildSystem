@@ -102,7 +102,7 @@ class PlayerCodecTest {
         assertFalse(settings.isSpawnTeleport());
         assertTrue(settings.isOpenTrapDoors());
         LogoutLocation logout = Objects.requireNonNull(player.getLogoutLocation());
-        assertEquals("maps:lobby:1.5:64.0:-3.25:90.0:-10.0", logout.toString());
+        assertEquals("lobby:1.5:64.0:-3.25:90.0:-10.0", logout.toString());
     }
 
     @Test

@@ -35,8 +35,6 @@ import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataSchema;
-import de.eintosti.buildsystem.world.display.WorldDisplayImpl;
-import de.eintosti.buildsystem.world.display.WorldFilterImpl;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.io.IOException;
 import java.io.InputStream;
@@ -108,26 +106,26 @@ final class CodecSamples {
     }
 
     static BuildPlayerImpl fullPlayer() {
-        SettingsImpl settings = SettingsImpl.builder()
-                .navigatorType(NavigatorType.NEW)
-                .designColor(DesignColor.RED)
-                .worldDisplay(new WorldDisplayImpl(
-                        WorldSort.PROJECT_Z_TO_A, new WorldFilterImpl(WorldFilter.Mode.STARTS_WITH, "lob")))
-                .clearInventory(true)
-                .disableInteract(true)
-                .hidePlayers(true)
-                .instantPlaceSigns(true)
-                .keepNavigator(true)
-                .nightVision(true)
-                .noClip(true)
-                .placePlants(true)
-                .scoreboard(false)
-                .slabBreaking(true)
-                .spawnTeleport(false)
-                .openTrapDoors(true)
-                .build();
+        SettingsImpl settings = new SettingsImpl();
+        settings.setNavigatorType(NavigatorType.NEW);
+        settings.setDesignColor(DesignColor.RED);
+        settings.getWorldDisplay().setWorldSort(WorldSort.PROJECT_Z_TO_A);
+        settings.getWorldDisplay().getWorldFilter().setMode(WorldFilter.Mode.STARTS_WITH);
+        settings.getWorldDisplay().getWorldFilter().setText("lob");
+        settings.setClearInventory(true);
+        settings.setDisableInteract(true);
+        settings.setHidePlayers(true);
+        settings.setInstantPlaceSigns(true);
+        settings.setKeepNavigator(true);
+        settings.setNightVision(true);
+        settings.setNoClip(true);
+        settings.setPlacePlants(true);
+        settings.setScoreboard(false);
+        settings.setSlabBreaking(true);
+        settings.setSpawnTeleport(false);
+        settings.setOpenTrapDoors(true);
         BuildPlayerImpl player = new BuildPlayerImpl(PLAYER_ID, settings);
-        player.setLogoutLocation(new LogoutLocation("maps:lobby", 1.5, 64.0, -3.25, 90.0f, -10.0f));
+        player.setLogoutLocation(new LogoutLocation("lobby", 1.5, 64.0, -3.25, 90.0f, -10.0f));
         return player;
     }
 
@@ -144,7 +142,9 @@ final class CodecSamples {
         data.set(WorldDataKey.PERMISSION, "maps.arena");
         data.set(WorldDataKey.PROJECT, "Arena");
         data.set(WorldDataKey.DIFFICULTY, Difficulty.HARD);
-        data.set(WorldDataKey.MATERIAL, Material.GRASS_BLOCK);
+        data.set(WorldDataKey.MATERIAL, Material.STONE);
+        data.set(WorldDataKey.ICON_SKULL_TEXTURE, "eyJ0ZXh0dXJlcyI6e319");
+        data.set(WorldDataKey.PINNED, true);
         data.set(WorldDataKey.VISIBILITY, Visibility.ADDED_PLAYERS);
         data.set(WorldDataKey.BLOCK_BREAKING, false);
         data.set(WorldDataKey.BLOCK_PLACEMENT, false);
@@ -153,7 +153,9 @@ final class CodecSamples {
         data.set(WorldDataKey.EXPLOSIONS, false);
         data.set(WorldDataKey.MOB_AI, false);
         data.set(WorldDataKey.PHYSICS, false);
-        data.set(PhysicsCategory.values()[0].key(), true);
+        for (PhysicsCategory category : PhysicsCategory.values()) {
+            data.set(category.key(), true);
+        }
         data.set(WorldDataKey.TIME_SINCE_BACKUP, 42);
         data.set(WorldDataKey.LAST_EDITED, 1_700_000_000_100L);
         data.set(WorldDataKey.LAST_LOADED, 1_700_000_000_200L);

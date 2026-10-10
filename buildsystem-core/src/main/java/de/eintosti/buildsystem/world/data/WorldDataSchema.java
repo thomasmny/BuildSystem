@@ -31,8 +31,11 @@ import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * The persisted world settings: every {@link WorldDataKey} a world stores, with the value it has when nothing sets it.
- * Adding a setting means adding its key here; the codec reads and writes every key in this table.
+ * The persisted world settings: every {@link WorldDataKey} a world stores, with its fallback value. Adding a setting
+ * means adding its key here; the codec reads and writes every key in this table.
+ *
+ * <p>A stored world that lacks a key loads with the fallback, except for two keys the codec handles itself: the
+ * material falls back to {@link Material#BEDROCK}, and the physics exceptions fall back to the config's defaults.
  */
 @NullMarked
 public final class WorldDataSchema {
@@ -83,22 +86,14 @@ public final class WorldDataSchema {
     }
 
     /**
-     * {@return the value a key has when nothing sets it}
-     *
-     * @param key Any key but {@link WorldDataKey#STATUS}
-     */
-    public static <T> T fallback(WorldDataKey<T> key) {
-        return key.type().cast(FALLBACKS.get(key));
-    }
-
-    /**
      * {@return data for the named world with every key at its fallback}
      *
      * @param status The world's status, which has no fixed fallback
      */
     public static WorldDataImpl create(String worldName, BuildWorldStatus status) {
-        Map<WorldDataKey<?>, Object> values = new LinkedHashMap<>(FALLBACKS);
+        Map<WorldDataKey<?>, Object> values = new LinkedHashMap<>();
         values.put(WorldDataKey.STATUS, status);
+        values.putAll(FALLBACKS);
         return new WorldDataImpl(worldName, values);
     }
 

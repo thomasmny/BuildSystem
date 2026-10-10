@@ -19,7 +19,7 @@
     scoreboard: false
     no-clip: true
     keep-navigator: true
-  logout-location: maps:lobby:1.5:64.0:-3.25:90.0:-10.0
+  logout-location: lobby:1.5:64.0:-3.25:90.0:-10.0
 0b0b0b0b-0000-4000-8000-000000000002:
   settings:
     slab-breaking: false
