@@ -47,7 +47,7 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Orchestrates renaming a {@link BuildWorld}: validates the new name, evicts players, copies the directory
+ * Orchestrates renaming a {@link BuildWorld}: validates the new name, evicts players, moves the directory
  * asynchronously, then reconstructs the world under the new name.
  */
 @NullMarked
@@ -99,7 +99,9 @@ public class WorldRenamer {
             return;
         }
 
-        if (worldStorage.worldAndFolderExist(sanitizedNewName)) {
+        // Either one is enough to refuse: a registered name would be taken over, an existing folder merged into.
+        if (worldStorage.worldExists(sanitizedNewName)
+                || FileUtils.worldFolder(sanitizedNewName).exists()) {
             messages.sendMessage(player, "worlds_world_exists");
             XSound.ENTITY_ITEM_BREAK.play(player);
             return;
@@ -158,8 +160,7 @@ public class WorldRenamer {
         CompletableFuture.runAsync(
                         () -> {
                             try {
-                                FileUtils.copy(oldWorldFile, newWorldFile);
-                                FileUtils.deleteDirectory(oldWorldFile);
+                                FileUtils.moveDirectory(oldWorldFile, newWorldFile);
                             } catch (IOException e) {
                                 throw new CompletionException("Failed to rename world directory", e);
                             }

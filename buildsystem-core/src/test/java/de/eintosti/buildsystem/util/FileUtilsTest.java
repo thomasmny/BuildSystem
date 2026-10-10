@@ -113,6 +113,35 @@ class FileUtilsTest {
     }
 
     @Test
+    void moveDirectory_movesEverythingIncludingServerFiles() throws IOException {
+        File source = createWorldLikeDirectory("old");
+        File target = tempDir.resolve("dimensions")
+                .resolve("minecraft")
+                .resolve("new")
+                .toFile();
+
+        FileUtils.moveDirectory(source, target);
+
+        assertFalse(source.exists());
+        assertEquals(
+                "region-data",
+                Files.readString(target.toPath().resolve("region").resolve("r.0.0.mca")));
+        assertTrue(new File(target, "uid.dat").exists(), "a move keeps the world's uid");
+    }
+
+    @Test
+    void moveDirectory_neverMergesIntoAnExistingDirectory() throws IOException {
+        File source = createWorldLikeDirectory("old");
+        File target = createWorldLikeDirectory("taken");
+        Files.writeString(target.toPath().resolve("level.dat"), "other world");
+
+        assertThrows(IOException.class, () -> FileUtils.moveDirectory(source, target));
+
+        assertEquals("other world", Files.readString(target.toPath().resolve("level.dat")));
+        assertTrue(new File(source, "level.dat").exists(), "the source must be left alone");
+    }
+
+    @Test
     void deleteDirectory_removesNestedTree() throws IOException {
         File source = createWorldLikeDirectory("doomed");
 
