@@ -270,19 +270,12 @@ public class CreateMenu extends PaginatedMenu {
                                 "create_template", player, Placeholders.of("%template%", rawTemplateName)))
                         .into(inventory, slot))
                 .usableBy(player -> isTemplateAllowed(player, rawTemplateName))
-                .onClick((player, event) -> {
-                    ItemStack itemStack = event.getCurrentItem();
-                    if (itemStack == null || itemStack.getItemMeta() == null) {
-                        return;
-                    }
-
-                    worldService.startWorldNameInput(
-                            player,
-                            BuildWorldType.TEMPLATE,
-                            itemStack.getItemMeta().getDisplayName(),
-                            new WorldNameInputOptions(createPrivateWorld, false),
-                            folder);
-                })
+                .onClick((player, event) -> worldService.startWorldNameInput(
+                        player,
+                        BuildWorldType.TEMPLATE,
+                        rawTemplateName,
+                        new WorldNameInputOptions(createPrivateWorld, false),
+                        folder))
                 .build();
     }
 
