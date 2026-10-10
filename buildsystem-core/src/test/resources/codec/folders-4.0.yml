@@ -1,0 +1,24 @@
+0f0f0f0f-0000-4000-8000-000000000001:
+  parent: 0f0f0f0f-0000-4000-8000-000000000002
+  creator: 0c0c0c0c-0000-4000-8000-000000000001,Alex
+  worlds:
+  - 0d0d0d0d-0000-4000-8000-000000000001
+  - 0d0d0d0d-0000-4000-8000-000000000002
+  material: OAK_SIGN
+  name: Lobbies
+  project: Hub
+  permission: maps.lobby
+  category: archive
+  uuid: 0f0f0f0f-0000-4000-8000-000000000001
+  creation: 1700000000000
+  icon-skull-texture: skull-texture
+0f0f0f0f-0000-4000-8000-000000000003:
+  creator: 0c0c0c0c-0000-4000-8000-000000000002,Sam
+  worlds: []
+  material: CHEST
+  name: Empty
+  project: '-'
+  permission: '-'
+  category: public
+  uuid: 0f0f0f0f-0000-4000-8000-000000000003
+  creation: 1700000000001

@@ -1,0 +1,43 @@
+0b0b0b0b-0000-4000-8000-000000000001:
+  settings:
+    slab-breaking: true
+    clear-inventory: true
+    glass: RED
+    place-plants: true
+    disable-interact: true
+    spawn-teleport: false
+    type: NEW
+    world-display:
+      filter:
+        mode: STARTS_WITH
+        text: lob
+      sort: PROJECT_Z_TO_A
+    nightvision: true
+    trapdoor: true
+    hide-players: true
+    instant-place-signs: true
+    scoreboard: false
+    no-clip: true
+    keep-navigator: true
+  logout-location: maps:lobby:1.5:64.0:-3.25:90.0:-10.0
+0b0b0b0b-0000-4000-8000-000000000002:
+  settings:
+    slab-breaking: false
+    clear-inventory: false
+    glass: BLACK
+    place-plants: false
+    disable-interact: false
+    spawn-teleport: true
+    type: OLD
+    world-display:
+      filter:
+        mode: NONE
+        text: ''
+      sort: NAME_A_TO_Z
+    nightvision: false
+    trapdoor: false
+    hide-players: false
+    instant-place-signs: false
+    scoreboard: true
+    no-clip: false
+    keep-navigator: false
