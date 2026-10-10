@@ -19,12 +19,10 @@ package de.eintosti.buildsystem.world.menu.setup;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import java.util.List;
@@ -51,15 +49,10 @@ public class DefaultIconsMenu extends ButtonMenu {
             new WorldTypeLayout(BuildWorldType.VOID, 14, "setup_void_world"),
             new WorldTypeLayout(BuildWorldType.IMPORTED, 16, "setup_imported_world"));
 
-    private final MenuItems menuItems;
-    private final Menus menus;
     private final CustomizableIcons icons;
 
-    public DefaultIconsMenu(
-            Messages messages, MenuItems menuItems, Menus menus, CustomizableIcons icons, Player player) {
-        super(messages, INVENTORY_SIZE, messages.getString("setup_default_icons_title", player));
-        this.menuItems = menuItems;
-        this.menus = menus;
+    public DefaultIconsMenu(MenuContext context, CustomizableIcons icons, Player player) {
+        super(context, INVENTORY_SIZE, context.messages().getString("setup_default_icons_title", player));
         this.icons = icons;
 
         setupButtons();

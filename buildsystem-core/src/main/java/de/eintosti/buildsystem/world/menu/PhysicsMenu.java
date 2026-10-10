@@ -22,11 +22,9 @@ import static java.util.Map.entry;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.menu.EditMenuToggles.Toggle;
 import java.util.Map;
@@ -67,14 +65,10 @@ public class PhysicsMenu extends ButtonMenu {
             entry(31, categoryToggle(PhysicsCategory.BLOCK_FORMING, Material.SNOW_BLOCK)),
             entry(32, categoryToggle(PhysicsCategory.BLOCK_FADING, Material.ICE)));
 
-    private final MenuItems menuItems;
-    private final Menus menus;
     private final BuildWorld buildWorld;
 
-    public PhysicsMenu(Messages messages, MenuItems menuItems, Menus menus, BuildWorld buildWorld, Player player) {
-        super(messages, MENU_SIZE, messages.getString("worldeditor_physics_title", player));
-        this.menuItems = menuItems;
-        this.menus = menus;
+    public PhysicsMenu(MenuContext context, BuildWorld buildWorld, Player player) {
+        super(context, MENU_SIZE, context.messages().getString("worldeditor_physics_title", player));
         this.buildWorld = buildWorld;
 
         register(SLOT_MASTER, toggleButton(MASTER_TOGGLE));

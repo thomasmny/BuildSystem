@@ -33,6 +33,7 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
@@ -123,7 +124,7 @@ class BuilderMenuTest {
         Messages messages = mock(Messages.class);
         when(messages.getString(anyString(), any())).thenReturn("text");
         when(messages.getString(anyString(), any(), any())).thenReturn("text");
-        return new BuilderMenu(messages, mock(MenuItems.class), mock(Menus.class), buildWorld, player);
+        return new BuilderMenu(new MenuContext(messages, mock(MenuItems.class), mock(Menus.class)), buildWorld, player);
     }
 
     private static InventoryClickEvent click(PlayerMock player, BuilderMenu menu, int slot, ClickType type) {

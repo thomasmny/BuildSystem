@@ -19,12 +19,10 @@ package de.eintosti.buildsystem.world.menu;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.color.ColorAPI;
@@ -46,18 +44,8 @@ public class NavigatorMenu extends ButtonMenu {
 
     private static final int INVENTORY_SIZE = 27;
 
-    private final MenuItems menuItems;
-    private final Menus menus;
-
-    public NavigatorMenu(
-            Messages messages,
-            MenuItems menuItems,
-            Menus menus,
-            NavigatorCategoryRegistryImpl navigatorCategoryRegistry,
-            Player player) {
-        super(messages, INVENTORY_SIZE, messages.getString("old_navigator_title", player));
-        this.menuItems = menuItems;
-        this.menus = menus;
+    public NavigatorMenu(MenuContext context, NavigatorCategoryRegistryImpl navigatorCategoryRegistry, Player player) {
+        super(context, INVENTORY_SIZE, context.messages().getString("old_navigator_title", player));
 
         int settingsSlot = navigatorCategoryRegistry.getSettingsSlot();
         for (NavigatorCategory category : navigatorCategoryRegistry.getAll()) {

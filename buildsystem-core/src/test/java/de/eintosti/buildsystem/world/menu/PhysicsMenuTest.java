@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
@@ -136,7 +137,8 @@ class PhysicsMenuTest {
     }
 
     private void click(int slot) {
-        PhysicsMenu menu = new PhysicsMenu(messages, mock(MenuItems.class), mock(Menus.class), buildWorld, player);
+        PhysicsMenu menu = new PhysicsMenu(
+                new MenuContext(messages, mock(MenuItems.class), mock(Menus.class)), buildWorld, player);
         menu.handleClick(new InventoryClickEvent(
                 player.openInventory(menu.getInventory()),
                 SlotType.CONTAINER,

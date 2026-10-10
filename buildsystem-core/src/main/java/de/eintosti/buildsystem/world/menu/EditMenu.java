@@ -24,13 +24,11 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig.World.Defaults.Time;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.Permissions;
@@ -85,28 +83,22 @@ public class EditMenu extends ButtonMenu {
             EntityType.PLAYER);
 
     private final PlayerServiceImpl playerManager;
-    private final MenuItems menuItems;
     private final ConfigService configService;
     private final Prompts prompts;
-    private final Menus menus;
     private final BuildWorld buildWorld;
     private final EditMenuRenderer renderer;
 
     public EditMenu(
-            Messages messages,
+            MenuContext context,
             PlayerServiceImpl playerService,
-            MenuItems menuItems,
             ConfigService configService,
             Prompts prompts,
-            Menus menus,
             BuildWorld buildWorld,
             Player player) {
-        super(messages, 54, messages.getString("worldeditor_title", player));
+        super(context, 54, context.messages().getString("worldeditor_title", player));
         this.playerManager = playerService;
-        this.menuItems = menuItems;
         this.configService = configService;
         this.prompts = prompts;
-        this.menus = menus;
         this.buildWorld = buildWorld;
         this.renderer = new EditMenuRenderer(messages, menuItems, configService, buildWorld);
         buildButtons();

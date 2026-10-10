@@ -36,6 +36,7 @@ import de.eintosti.buildsystem.api.world.display.WorldFilter;
 import de.eintosti.buildsystem.api.world.display.WorldSort;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.Prompts;
@@ -119,14 +120,12 @@ class DisplayablesMenuTest {
         when(category.getStatusIds()).thenReturn(List.of(TestData.NOT_STARTED.getId()));
 
         context = new DisplayablesContext(
-                messages,
+                new MenuContext(messages, mock(MenuItems.class), menus),
                 playerService,
                 settingsService,
                 worldService,
-                mock(MenuItems.class),
                 mock(Prompts.class),
-                mock(NavigatorService.class),
-                menus);
+                mock(NavigatorService.class));
     }
 
     @AfterEach

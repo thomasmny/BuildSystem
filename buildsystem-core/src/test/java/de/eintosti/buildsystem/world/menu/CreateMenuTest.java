@@ -32,6 +32,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
@@ -89,9 +90,7 @@ class CreateMenuTest {
         SoundlessPlayer player = SoundlessPlayer.join(server, "Alex");
 
         CreateMenu menu = new CreateMenu(
-                messages,
-                mock(MenuItems.class),
-                mock(Menus.class),
+                new MenuContext(messages, mock(MenuItems.class), mock(Menus.class)),
                 worldService,
                 mock(CustomizableIcons.class),
                 dataFolder,

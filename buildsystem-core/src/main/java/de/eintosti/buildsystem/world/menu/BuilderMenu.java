@@ -22,12 +22,10 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.ArrayList;
@@ -50,14 +48,10 @@ public class BuilderMenu extends PaginatedMenu {
     private static final int SLOT_ADD_BUILDER = 22;
     private static final int SLOT_NEXT_PAGE = 26;
 
-    private final MenuItems menuItems;
-    private final Menus menus;
     private final BuildWorld buildWorld;
 
-    public BuilderMenu(Messages messages, MenuItems menuItems, Menus menus, BuildWorld buildWorld, Player player) {
-        super(messages, 27, messages.getString("worldeditor_builders_title", player));
-        this.menuItems = menuItems;
-        this.menus = menus;
+    public BuilderMenu(MenuContext context, BuildWorld buildWorld, Player player) {
+        super(context, 27, context.messages().getString("worldeditor_builders_title", player));
         this.buildWorld = buildWorld;
     }
 

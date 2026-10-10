@@ -21,13 +21,11 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import java.util.logging.Level;
@@ -44,30 +42,24 @@ public class BackupsMenu extends ButtonMenu {
     private static final int MAX_BACKUPS = 18;
 
     private final BackupServiceImpl backupService;
-    private final MenuItems menuItems;
     private final ConfigService configService;
     private final Logger logger;
     private final TaskScheduler scheduler;
-    private final Menus menus;
     private final BuildWorld buildWorld;
 
     public BackupsMenu(
-            Messages messages,
+            MenuContext context,
             BackupServiceImpl backupService,
-            MenuItems menuItems,
             ConfigService configService,
             Logger logger,
             TaskScheduler scheduler,
-            Menus menus,
             BuildWorld buildWorld,
             Player player) {
-        super(messages, 36, messages.getString("backups_title", player));
+        super(context, 36, context.messages().getString("backups_title", player));
         this.backupService = backupService;
-        this.menuItems = menuItems;
         this.configService = configService;
         this.logger = logger;
         this.scheduler = scheduler;
-        this.menus = menus;
         this.buildWorld = buildWorld;
     }
 

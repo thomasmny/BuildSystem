@@ -98,7 +98,7 @@ class ConfirmMenuTest {
 
     private ConfirmMenu menu(String permission, @Nullable ItemStack info) {
         return new ConfirmMenu(
-                mock(Messages.class),
+                new MenuContext(mock(Messages.class), mock(MenuItems.class), mock(Menus.class)),
                 "Title",
                 new ConfirmMenu.Choice(new ItemStack(Material.LIME_DYE), p -> calls.add("confirm")),
                 permission,

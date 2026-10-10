@@ -33,8 +33,6 @@ import de.eintosti.buildsystem.command.subcommand.worlds.WorldsArgument;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.menu.SkullTextures;
@@ -82,9 +80,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     protected final SettingsService settingsManager;
     protected final FolderStorageImpl folderStorage;
     protected final WorldStorageImpl worldStorage;
-    protected final Menus menus;
 
-    private final MenuItems menuItems;
     private final Prompts prompts;
     private final NavigatorService navigatorService;
 
@@ -97,16 +93,14 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     private final DisplayBar displayBar = new DisplayBar();
 
     protected DisplayablesMenu(DisplayablesContext context, Player player, Options options) {
-        super(context.messages(), 54, options.title());
+        super(context.menuContext(), 54, options.title());
         this.playerService = context.playerService();
         this.settingsManager = context.settingsService();
         WorldServiceImpl worldService = context.worldService();
         this.folderStorage = worldService.getFolderStorage();
         this.worldStorage = worldService.getWorldStorage();
-        this.menuItems = context.menuItems();
         this.prompts = context.prompts();
         this.navigatorService = context.navigatorService();
-        this.menus = context.menus();
         this.player = player;
         this.category = options.category();
         this.noWorldsMessage = options.emptyMessage();

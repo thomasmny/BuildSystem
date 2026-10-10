@@ -17,13 +17,11 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.Prompts;
 import java.util.List;
 import java.util.function.BooleanSupplier;
@@ -47,14 +45,10 @@ abstract class RegistryEditorMenu extends ButtonMenu {
     private static final int ITEMS_PER_ROW = 9;
 
     protected final Prompts prompts;
-    protected final Menus menus;
-    protected final MenuItems menuItems;
 
-    protected RegistryEditorMenu(Messages messages, Prompts prompts, Menus menus, MenuItems menuItems, String title) {
-        super(messages, INVENTORY_SIZE, title);
+    protected RegistryEditorMenu(MenuContext context, Prompts prompts, String title) {
+        super(context, INVENTORY_SIZE, title);
         this.prompts = prompts;
-        this.menus = menus;
-        this.menuItems = menuItems;
     }
 
     /**

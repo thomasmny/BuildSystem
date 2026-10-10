@@ -48,19 +48,20 @@ class PaginatedMenuTest {
     }
 
     private static TestMenu menu(int totalItems) {
-        return new TestMenu(mock(Messages.class), totalItems);
+        return new TestMenu(
+                new MenuContext(mock(Messages.class), mock(MenuItems.class), mock(Menus.class)), totalItems);
     }
 
     private static class TestMenu extends PaginatedMenu {
 
         private final int total;
 
-        TestMenu(Messages messages, int total) {
-            this(messages, total, 9);
+        TestMenu(MenuContext context, int total) {
+            this(context, total, 9);
         }
 
-        TestMenu(Messages messages, int total, int size) {
-            super(messages, size, "Test");
+        TestMenu(MenuContext context, int total, int size) {
+            super(context, size, "Test");
             this.total = total;
         }
 
@@ -141,7 +142,8 @@ class PaginatedMenuTest {
 
     @Test
     void registerPageItems_shortLastPage_emptiesTheUnusedSlots() {
-        ContentMenu m = new ContentMenu(mock(Messages.class), 20, 15);
+        ContentMenu m = new ContentMenu(
+                new MenuContext(mock(Messages.class), mock(MenuItems.class), mock(Menus.class)), 20, 15);
         Player player = mock(Player.class);
 
         m.populate(player);
@@ -164,8 +166,8 @@ class PaginatedMenuTest {
 
         private final int perPage;
 
-        ContentMenu(Messages messages, int total, int perPage) {
-            super(messages, total, 18);
+        ContentMenu(MenuContext context, int total, int perPage) {
+            super(context, total, 18);
             this.perPage = perPage;
         }
 

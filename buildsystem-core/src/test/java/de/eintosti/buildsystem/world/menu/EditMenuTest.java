@@ -38,6 +38,7 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ItemBuilder;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.Prompts;
@@ -194,12 +195,10 @@ class EditMenuTest {
 
     private void click(int slot) {
         EditMenu menu = new EditMenu(
-                messages,
+                new MenuContext(messages, mock(MenuItems.class), menus),
                 playerService,
-                mock(MenuItems.class),
                 mock(ConfigService.class, RETURNS_DEEP_STUBS),
                 mock(Prompts.class),
-                menus,
                 buildWorld,
                 player);
         menu.getInventory()

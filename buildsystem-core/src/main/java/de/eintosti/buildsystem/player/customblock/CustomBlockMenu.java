@@ -18,11 +18,10 @@
 package de.eintosti.buildsystem.player.customblock;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.MenuContext;
 import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -74,11 +73,8 @@ public class CustomBlockMenu extends ButtonMenu {
             Map.entry(40, new BlockEntry(CustomBlock.DRAGON_EGG)),
             Map.entry(41, new BlockEntry(CustomBlock.DEBUG_STICK, Material.DEBUG_STICK)));
 
-    private final MenuItems menuItems;
-
-    public CustomBlockMenu(Messages messages, MenuItems menuItems, Player player) {
-        super(messages, 45, messages.getString("blocks_title", player));
-        this.menuItems = menuItems;
+    public CustomBlockMenu(MenuContext context, Player player) {
+        super(context, 45, context.messages().getString("blocks_title", player));
 
         BLOCK_BY_SLOT.forEach((slot, entry) -> register(slot, blockButton(entry)));
     }

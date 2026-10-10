@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.menu;
 
-import de.eintosti.buildsystem.i18n.Messages;
 import java.util.function.Consumer;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -56,13 +55,13 @@ public class ConfirmMenu extends ButtonMenu {
      * @param info The item shown in the middle, or {@code null} for a black pane
      */
     public ConfirmMenu(
-            Messages messages,
+            MenuContext context,
             String title,
             Choice confirm,
             @Nullable String confirmPermission,
             Choice cancel,
             @Nullable ItemStack info) {
-        super(messages, 27, title);
+        super(context, 27, title);
         this.info = info;
 
         register(

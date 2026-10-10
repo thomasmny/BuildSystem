@@ -17,12 +17,10 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.MenuContext;
 import java.util.function.Consumer;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -40,13 +38,8 @@ public class SetupMenu extends ButtonMenu {
     private static final int SLOT_STATUSES = 13;
     private static final int SLOT_NAVIGATOR = 15;
 
-    private final MenuItems menuItems;
-    private final Menus menus;
-
-    public SetupMenu(Messages messages, MenuItems menuItems, Menus menus, Player player) {
-        super(messages, 27, messages.getString("setup_title", player));
-        this.menuItems = menuItems;
-        this.menus = menus;
+    public SetupMenu(MenuContext context, Player player) {
+        super(context, 27, context.messages().getString("setup_title", player));
 
         register(
                 SLOT_DEFAULT_ICONS,

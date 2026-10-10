@@ -21,12 +21,11 @@ import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.config.ConfigService;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
@@ -49,25 +48,19 @@ public class SettingsMenu extends ButtonMenu {
 
     private final SettingsService settingsManager;
     private final ConfigService configService;
-    private final MenuItems menuItems;
     private final SettingToggles toggles;
-    private final Menus menus;
 
     public SettingsMenu(
-            Messages messages,
+            MenuContext context,
             SettingsService settingsManager,
             ConfigService configService,
-            MenuItems menuItems,
             NavigatorService navigatorService,
             NoClipService noClipService,
-            Menus menus,
             Player player) {
-        super(messages, 45, messages.getString("settings_title", player));
+        super(context, 45, context.messages().getString("settings_title", player));
         this.settingsManager = settingsManager;
         this.configService = configService;
-        this.menuItems = menuItems;
         this.toggles = new SettingToggles(settingsManager, navigatorService, noClipService);
-        this.menus = menus;
         buildButtons();
     }
 
