@@ -40,6 +40,7 @@ import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.EnumSet;
 import java.util.List;
@@ -173,16 +174,19 @@ public final class TestData {
                 .thenReturn("06:00:00");
         // The deep-stubbed defaults().physicsException(...) returns false, which matches the production default
         // (all physics exceptions blocked).
+        Messages messages = mock(Messages.class, RETURNS_DEEP_STUBS);
+        SpawnService spawnService = mock(SpawnService.class);
         return new WorldContext(
-                mock(Messages.class, RETURNS_DEEP_STUBS),
+                messages,
                 mock(MenuItems.class),
                 configService,
                 mock(PlayerServiceImpl.class),
-                mock(SpawnService.class),
+                spawnService,
                 statusRegistry(),
                 mock(CustomizableIcons.class),
                 new TaskScheduler(mock(Plugin.class)),
-                Logger.getLogger("BuildSystemTest"));
+                Logger.getLogger("BuildSystemTest"),
+                new WorldOperations(messages, spawnService));
     }
 
     /**

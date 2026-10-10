@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
+import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
@@ -44,4 +45,5 @@ public record WorldContext(
         WorldStatusRegistry statusRegistry,
         CustomizableIcons customizableIcons,
         TaskScheduler scheduler,
-        Logger logger) {}
+        Logger logger,
+        WorldOperations operations) {}

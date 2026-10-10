@@ -21,6 +21,7 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.BuildWorldRenameEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
@@ -36,7 +37,6 @@ import io.papermc.lib.PaperLib;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
@@ -45,7 +45,6 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Orchestrates renaming a {@link BuildWorld}: validates the new name, evicts players, copies the directory
@@ -129,15 +128,30 @@ public class WorldRenamer {
             return;
         }
 
-        prepareAndMove(player, buildWorld, oldName, sanitizedNewName, oldWorld);
+        WorldOperations operations = worldService.operations();
+        if (!operations.tryBegin(buildWorld)) {
+            messages.sendMessage(player, "worlds_world_busy", Placeholders.of("%world%", oldName));
+            return;
+        }
+
+        List<Player> removedPlayers = operations.evacuate(oldName, "worlds_rename_players_world");
+        Location oldSpawnLocation = oldWorld.getSpawnLocation();
+        if (!WorldOperations.tryUnload(buildWorld, SaveBehavior.SAVE)) {
+            operations.end(buildWorld);
+            messages.sendMessage(player, "worlds_world_unload_failed", Placeholders.of("%world%", oldName));
+            return;
+        }
+
+        move(player, buildWorld, oldName, sanitizedNewName, oldSpawnLocation, removedPlayers);
     }
 
-    private void prepareAndMove(
-            Player player, BuildWorld buildWorld, String oldName, String sanitizedNewName, World oldWorld) {
-        List<@Nullable Player> removedPlayers =
-                worldService.removePlayersFromWorld(oldName, "worlds_rename_players_world");
-        Location oldSpawnLocation = oldWorld.getSpawnLocation();
-        Bukkit.unloadWorld(oldWorld, true);
+    private void move(
+            Player player,
+            BuildWorld buildWorld,
+            String oldName,
+            String sanitizedNewName,
+            Location oldSpawnLocation,
+            List<Player> removedPlayers) {
 
         File oldWorldFile = FileUtils.worldFolder(oldName);
         File newWorldFile = FileUtils.worldFolder(sanitizedNewName);
@@ -153,13 +167,7 @@ public class WorldRenamer {
                         scheduler.background())
                 .thenRunAsync(
                         () -> reconstruct(
-                                player,
-                                buildWorld,
-                                oldName,
-                                sanitizedNewName,
-                                oldWorld,
-                                oldSpawnLocation,
-                                removedPlayers),
+                                player, buildWorld, oldName, sanitizedNewName, oldSpawnLocation, removedPlayers),
                         scheduler.mainThread())
                 .exceptionallyAsync(
                         throwable -> {
@@ -170,7 +178,8 @@ public class WorldRenamer {
                             messages.sendMessage(player, "worlds_rename_error");
                             return null;
                         },
-                        scheduler.mainThread());
+                        scheduler.mainThread())
+                .whenComplete((ignored, throwable) -> worldService.operations().end(buildWorld));
     }
 
     private void reconstruct(
@@ -178,9 +187,8 @@ public class WorldRenamer {
             BuildWorld buildWorld,
             String oldName,
             String sanitizedNewName,
-            World oldWorld,
             Location oldSpawnLocation,
-            List<@Nullable Player> removedPlayers) {
+            List<Player> removedPlayers) {
         worldStorage.rename(buildWorld, oldName, sanitizedNewName);
         buildWorld.setName(sanitizedNewName);
         Bukkit.getServer()
@@ -201,9 +209,8 @@ public class WorldRenamer {
         Location spawnLocation = oldSpawnLocation.clone();
         spawnLocation.setWorld(newWorld);
 
-        removedPlayers.stream()
-                .filter(Objects::nonNull)
-                .forEach(pl -> PaperLib.teleportAsync(pl, spawnLocation.clone().add(0.5, 0, 0.5)));
+        removedPlayers.forEach(
+                pl -> PaperLib.teleportAsync(pl, spawnLocation.clone().add(0.5, 0, 0.5)));
 
         spawnService.renameWorld(oldName, sanitizedNewName);
 

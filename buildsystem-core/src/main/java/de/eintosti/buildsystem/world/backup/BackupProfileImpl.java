@@ -21,6 +21,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.backup.BackupCreatedEvent;
 import de.eintosti.buildsystem.api.event.backup.BackupDeletedEvent;
 import de.eintosti.buildsystem.api.event.backup.BackupRestoredEvent;
+import de.eintosti.buildsystem.api.exception.WorldException;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
@@ -36,11 +37,11 @@ import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.WorldFlush;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import java.io.File;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -112,11 +113,20 @@ public class BackupProfileImpl implements BackupProfile {
                     .handle((backup, throwable) -> null)
                     .thenComposeAsync(
                             ignored -> {
+                                WorldOperations operations = worldService.operations();
+                                if (!operations.tryBegin(this.buildWorld)) {
+                                    return CompletableFuture.<Backup>failedFuture(
+                                            new WorldException("World '%s' is busy with another operation"
+                                                    .formatted(this.buildWorld.getName())));
+                                }
                                 Optional<World> world = this.buildWorld.getWorld();
                                 world.ifPresent(WorldFlush::saveAndPauseWrites);
                                 return storeWithRetention()
                                         .whenCompleteAsync(
-                                                (backup, throwable) -> world.ifPresent(WorldFlush::resumeWrites),
+                                                (backup, throwable) -> {
+                                                    world.ifPresent(WorldFlush::resumeWrites);
+                                                    operations.end(this.buildWorld);
+                                                },
                                                 mainThreadExecutor());
                             },
                             mainThreadExecutor());
@@ -187,8 +197,11 @@ public class BackupProfileImpl implements BackupProfile {
             return CompletableFuture.completedFuture(null);
         }
 
-        List<@Nullable Player> removedPlayers =
-                worldService.removePlayersFromWorld(worldName, "worlds_backup_restoration_in_progress");
+        WorldOperations operations = worldService.operations();
+        if (!operations.tryBegin(this.buildWorld)) {
+            messages.sendMessage(player, "worlds_world_busy", Placeholders.of("%world%", worldName));
+            return CompletableFuture.completedFuture(null);
+        }
 
         // Download off the main thread, then apply the restore back on the main thread. Blocking the
         // download here would freeze the entire server for the duration of a remote (S3/SFTP) fetch.
@@ -198,39 +211,47 @@ public class BackupProfileImpl implements BackupProfile {
                 .thenCompose(backupFile -> CompletableFuture.runAsync(
                         () -> {
                             try {
-                                applyRestore(backup, player, world, worldName, removedPlayers, backupFile);
+                                applyRestore(backup, player, worldName, backupFile);
                             } catch (IOException e) {
                                 throw new CompletionException(e);
                             }
                         },
                         mainThreadExecutor()))
-                .whenComplete((ignored, throwable) -> {
-                    if (throwable != null) {
-                        plugin.getLogger()
-                                .log(Level.SEVERE, "Failed to restore backup for world " + worldName, throwable);
-                    }
-                });
+                .whenCompleteAsync(
+                        (ignored, throwable) -> {
+                            operations.end(this.buildWorld);
+                            if (throwable != null) {
+                                plugin.getLogger()
+                                        .log(
+                                                Level.SEVERE,
+                                                "Failed to restore backup for world " + worldName,
+                                                throwable);
+                                messages.sendMessage(player, "worlds_backup_restoration_failed");
+                            }
+                        },
+                        mainThreadExecutor());
     }
 
     /**
      * Applies a downloaded backup to the world. Must run on the main thread: it unloads, wipes and reloads the world
      * and fires Bukkit events.
      */
-    private void applyRestore(
-            Backup backup,
-            Player player,
-            World world,
-            String worldName,
-            List<@Nullable Player> removedPlayers,
-            File backupFile)
-            throws IOException {
+    private void applyRestore(Backup backup, Player player, String worldName, File backupFile) throws IOException {
         File targetDirectory = FileUtils.worldFolder(worldName);
 
         // Must happen before the world is deleted: a corrupt archive would otherwise only be detected once there
         // was nothing left to restore.
         validateBackup(backupFile, targetDirectory);
 
-        this.buildWorld.getUnloader().forceUnload(SaveBehavior.DISCARD);
+        // The players are only moved once the archive is here and valid, so a failed download leaves them in place.
+        List<Player> removedPlayers =
+                worldService.operations().evacuate(worldName, "worlds_backup_restoration_in_progress");
+        WorldTeleporter worldTeleporter = this.buildWorld.getTeleporter();
+        if (!WorldOperations.tryUnload(this.buildWorld, SaveBehavior.DISCARD)) {
+            removedPlayers.forEach(worldTeleporter::teleport);
+            messages.sendMessage(player, "worlds_world_unload_failed", Placeholders.of("%world%", worldName));
+            return;
+        }
         try {
             FileUtils.deleteDirectory(targetDirectory);
         } catch (IOException e) {
@@ -245,8 +266,7 @@ public class BackupProfileImpl implements BackupProfile {
         extractBackup(backupFile, targetDirectory);
 
         this.buildWorld.getLoader().load();
-        WorldTeleporter worldTeleporter = this.buildWorld.getTeleporter();
-        removedPlayers.stream().filter(Objects::nonNull).forEach(worldTeleporter::teleport);
+        removedPlayers.forEach(worldTeleporter::teleport);
 
         Bukkit.getPluginManager().callEvent(new BackupRestoredEvent(this.buildWorld, backup));
 

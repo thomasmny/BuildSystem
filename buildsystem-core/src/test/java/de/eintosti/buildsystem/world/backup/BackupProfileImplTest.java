@@ -17,6 +17,8 @@
  */
 package de.eintosti.buildsystem.world.backup;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.lenient;
@@ -35,9 +37,13 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
+import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
@@ -65,6 +71,7 @@ class BackupProfileImplTest {
     private BackupStorage backupStorage;
     private BuildWorld buildWorld;
     private MockedStatic<Bukkit> bukkit;
+    private final WorldOperations operations = new WorldOperations(mock(Messages.class), mock(SpawnService.class));
 
     @BeforeEach
     void setUp() {
@@ -72,6 +79,7 @@ class BackupProfileImplTest {
         configService = mock(ConfigService.class, RETURNS_DEEP_STUBS);
         backupStorage = mock(BackupStorage.class);
         buildWorld = mock(BuildWorld.class);
+        lenient().when(buildWorld.getUniqueId()).thenReturn(UUID.randomUUID());
         when(buildWorld.getWorld()).thenReturn(Optional.empty());
 
         BukkitScheduler scheduler = mock(BukkitScheduler.class);
@@ -107,12 +115,14 @@ class BackupProfileImplTest {
 
     private BackupProfileImpl profile(int maxBackupsPerWorld) {
         when(configService.current().world().backup().maxBackupsPerWorld()).thenReturn(maxBackupsPerWorld);
+        WorldServiceImpl worldService = mock(WorldServiceImpl.class);
+        when(worldService.operations()).thenReturn(operations);
         return new BackupProfileImpl(
                 plugin,
                 inlineScheduler(),
                 configService,
                 mock(Messages.class),
-                mock(WorldServiceImpl.class),
+                worldService,
                 () -> backupStorage,
                 buildWorld);
     }
@@ -171,5 +181,25 @@ class BackupProfileImplTest {
         verify(backupStorage, times(1)).deleteBackup(secondOldest);
         verify(backupStorage, never()).deleteBackup(secondNewest);
         verify(backupStorage, never()).deleteBackup(newest);
+    }
+
+    @Test
+    void whileTheWorldIsBusy_backupIsRefusedAndNothingIsStored() {
+        stubListingAndStore(List.of());
+        BackupProfileImpl profile = profile(3);
+        operations.tryBegin(buildWorld);
+
+        assertThrows(ExecutionException.class, () -> profile.createBackup().get(5, TimeUnit.SECONDS));
+
+        verify(backupStorage, never()).storeBackup(any());
+    }
+
+    @Test
+    void finishedBackup_freesTheWorldAgain() throws Exception {
+        stubListingAndStore(List.of());
+
+        profile(3).createBackup().get(5, TimeUnit.SECONDS);
+
+        assertFalse(operations.isBusy(buildWorld));
     }
 }

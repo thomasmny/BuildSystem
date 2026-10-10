@@ -138,7 +138,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
         }
         World bukkitWorld = optionalWorld.get();
 
-        if (!bukkitWorld.getPlayers().isEmpty()) {
+        if (!bukkitWorld.getPlayers().isEmpty() || context.operations().isBusy(buildWorld)) {
             resetUnloadTask();
             return;
         }
@@ -158,31 +158,43 @@ public class WorldUnloaderImpl implements WorldUnloader {
 
     @Override
     public void forceUnload(SaveBehavior saveBehavior) {
-        boolean save = saveBehavior.savesToDisk();
-        BuildWorldUnloadEvent unloadEvent = new BuildWorldUnloadEvent(buildWorld);
-        Bukkit.getServer().getPluginManager().callEvent(unloadEvent);
-        if (unloadEvent.isCancelled()) {
-            return;
-        }
+        tryUnload(saveBehavior);
+    }
 
-        this.buildWorld.getData().set(WorldDataKey.LAST_UNLOADED, System.currentTimeMillis());
-        this.buildWorld.setLoaded(false);
-        this.unloadTask = null;
-
+    /**
+     * Unloads the world now. When a listener cancels the {@link BuildWorldUnloadEvent} or Bukkit refuses the unload (a
+     * player is still inside, or it is the main world), nothing is changed: the world stays loaded and flagged so.
+     *
+     * @param saveBehavior Whether to save the world while unloading
+     * @return {@code true} when the world is no longer loaded
+     */
+    public boolean tryUnload(SaveBehavior saveBehavior) {
         Optional<World> optionalWorld = this.buildWorld.getWorld();
         if (optionalWorld.isEmpty()) {
-            return;
+            cancelScheduledTask();
+            this.buildWorld.setLoaded(false);
+            return true;
         }
         World bukkitWorld = optionalWorld.get();
 
-        if (!Bukkit.unloadWorld(bukkitWorld, save)) {
+        BuildWorldUnloadEvent unloadEvent = new BuildWorldUnloadEvent(buildWorld);
+        Bukkit.getServer().getPluginManager().callEvent(unloadEvent);
+        if (unloadEvent.isCancelled()) {
+            return false;
+        }
+
+        if (!Bukkit.unloadWorld(bukkitWorld, saveBehavior.savesToDisk())) {
             context.logger()
                     .warning("Failed to unload world \"" + this.buildWorld.getName()
                             + "\". It may still be loaded in memory.");
-            return;
+            return false;
         }
 
+        cancelScheduledTask();
+        this.buildWorld.getData().set(WorldDataKey.LAST_UNLOADED, System.currentTimeMillis());
+        this.buildWorld.setLoaded(false);
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostUnloadEvent(this.buildWorld));
         context.logger().info("*** Unloaded world \"" + this.buildWorld.getName() + "\" ***");
+        return true;
     }
 }
