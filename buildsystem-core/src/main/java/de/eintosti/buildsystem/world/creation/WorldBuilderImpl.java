@@ -143,7 +143,7 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
 
     @Override
     public @Nullable BuildWorld build() {
-        if (worldStorage.worldAndFolderExist(worldName)) {
+        if (worldStorage.isNameTaken(worldName)) {
             notifyAudience("worlds_world_exists");
             return null;
         }

@@ -239,6 +239,14 @@ public abstract class WorldStorageImpl implements WorldStorage {
                 .toList();
     }
 
+    /**
+     * {@return whether a new or renamed world may not take this name} Either is enough: a registered name would be taken
+     * over, and an existing folder merged into.
+     */
+    public boolean isNameTaken(String worldName) {
+        return worldExists(worldName) || FileUtils.worldFolder(worldName).exists();
+    }
+
     @Override
     public boolean worldAndFolderExist(String worldName) {
         boolean worldExists = worldExists(worldName);
