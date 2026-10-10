@@ -77,14 +77,26 @@ public class LocalBackupStorage extends AbstractBackupStorage {
         List<Backup> backups = new ArrayList<>();
         try (Stream<Path> walk = Files.walk(dir)) {
             walk.filter(LocalBackupStorage::isZip).forEach(path -> {
-                long creationTime = creationTimeOf(path);
                 backups.add(new BackupImpl(
                         profileProvider.apply(buildWorld),
-                        creationTime,
+                        timestampOf(path),
                         path.toAbsolutePath().toString()));
             });
         }
         return backups;
+    }
+
+    /**
+     * {@return when a backup was taken} That is the timestamp its file was named with, which survives a copy or rsync
+     * that resets the file's own times. A file named any other way falls back to its creation time.
+     */
+    private long timestampOf(Path path) {
+        String name = path.getFileName().toString();
+        try {
+            return Long.parseLong(name.substring(0, name.length() - ".zip".length()));
+        } catch (NumberFormatException e) {
+            return creationTimeOf(path);
+        }
     }
 
     private long creationTimeOf(Path path) {
