@@ -147,12 +147,12 @@ public class WorldToggleCommand extends CommandBase {
         }
 
         WorldData worldData = buildWorld.getData();
-        boolean activate = worldData.get(toggle.key) == toggle.inverted;
-        boolean value = activate != toggle.inverted;
+        boolean value = !worldData.get(toggle.key);
         worldData.set(toggle.key, value);
+        boolean activated = value != toggle.inverted;
         messages.sendMessage(
                 player,
-                toggle.label + (activate ? "_activated" : "_deactivated"),
+                toggle.label + (activated ? "_activated" : "_deactivated"),
                 Placeholders.of("%world%", buildWorld.getName()));
         toggle.afterToggle(world, value);
     }
