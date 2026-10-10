@@ -36,6 +36,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class PlayerCommandPreprocessListener implements Listener {
@@ -100,7 +101,7 @@ public class PlayerCommandPreprocessListener implements Listener {
                 return;
             }
 
-            String key =
+            @Nullable String key =
                     switch (policy.mayModify(player, buildWorld)) {
                         case STATUS_LOCKED -> "command_archive_world";
                         case NOT_A_BUILDER -> "command_not_builder";

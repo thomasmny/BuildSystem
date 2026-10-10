@@ -138,9 +138,8 @@ public final class ListenerRegistrar {
                 messages));
         register(new PlayerRespawnListener(settingsService, spawnService));
         register(new PlayerTeleportListener(messages, playerService.getPlayerStorage(), worldStorage));
-        // Listeners on the same event run in registration order, so this must stay after NavigatorListener: a click
-        // with
-        // the navigator item is cancelled there first, and the build settings then leave it alone.
+        // Listeners on the same event run in registration order, so this must stay after NavigatorListener. A click
+        // with the navigator item is cancelled there first, and the build settings then leave it alone.
         register(new SettingInteractionListener(settingsService, worldStorage, configService));
         register(new SignChangeListener());
         register(new WeatherChangeListener(configService));
