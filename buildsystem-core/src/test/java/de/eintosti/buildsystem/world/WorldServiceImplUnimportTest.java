@@ -34,7 +34,7 @@ import de.eintosti.buildsystem.api.event.world.BuildWorldUnloadEvent;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.test.TestData;
-import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
+import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import java.io.File;
 import java.util.List;
 import java.util.UUID;
@@ -78,7 +78,7 @@ class WorldServiceImplUnimportTest {
                 UUID.randomUUID(),
                 name,
                 BuildWorldType.NORMAL,
-                new WorldDataBuilder(name).withStatus(TestData.NOT_STARTED).build(),
+                WorldDataSchema.create(name, TestData.NOT_STARTED),
                 null,
                 List.of(),
                 1L,
