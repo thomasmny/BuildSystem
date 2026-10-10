@@ -34,6 +34,7 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
@@ -253,6 +254,57 @@ class WorldSubCommandsTest {
 
         verify(messages).sendMessage(player, "worlds_removebuilder_player_not_found");
         assertEquals(InventoryType.CRAFTING, player.getOpenInventory().getType());
+    }
+
+    static Stream<Arguments> importAllFlags() {
+        return Stream.of(
+                Arguments.of(new String[] {"importAll"}, Generator.VOID, null),
+                Arguments.of(new String[] {"importAll", "-g", "flat"}, Generator.FLAT, null),
+                Arguments.of(new String[] {"importAll", "-c", "Notch"}, Generator.VOID, NOTCH),
+                Arguments.of(new String[] {"importAll", "-g", "normal", "-c", "Notch"}, Generator.NORMAL, NOTCH),
+                Arguments.of(new String[] {"importAll", "-c", "Notch", "-g", "flat"}, Generator.FLAT, NOTCH));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("importAllFlags")
+    void importAll_appliesItsFlags(String[] args, Generator generator, @Nullable UUID creator) {
+        player.setOp(true);
+        when(worldStorage.unimportedWorldNames()).thenReturn(List.of("one"));
+
+        new ImportAllSubCommand(messages, worldService, lookup).execute(player, "", args);
+
+        verify(worldService)
+                .importWorlds(
+                        eq(player),
+                        eq(new String[] {"one"}),
+                        eq(generator),
+                        argThat(builder -> creator == null
+                                ? builder == null
+                                : builder != null && builder.getUniqueId().equals(creator)));
+        verify(messages, never()).sendMessage(player, "worlds_importall_usage");
+    }
+
+    static Stream<Arguments> importAllBadShapes() {
+        return Stream.of(
+                Arguments.of((Object) new String[] {"importAll", "flat"}),
+                Arguments.of((Object) new String[] {"importAll", "-g"}),
+                Arguments.of((Object) new String[] {"importAll", "-g", "-c", "Notch"}),
+                Arguments.of((Object) new String[] {"importAll", "-x", "flat"}),
+                Arguments.of((Object) new String[] {"importAll", "-g", "flat", "extra"}),
+                Arguments.of((Object) new String[] {"importAll", "-g", "flat", "-g", "void"}),
+                Arguments.of((Object) new String[] {"importAll", "-g", "flat", "-c", "Notch", "extra"}));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("importAllBadShapes")
+    void importAll_withABadShape_printsUsageAndImportsNothing(String[] args) {
+        player.setOp(true);
+        when(worldStorage.unimportedWorldNames()).thenReturn(List.of("one"));
+
+        new ImportAllSubCommand(messages, worldService, lookup).execute(player, "", args);
+
+        verify(messages).sendMessage(player, "worlds_importall_usage");
+        verify(worldService, never()).importWorlds(any(), any(), any(), any());
     }
 
     @Test

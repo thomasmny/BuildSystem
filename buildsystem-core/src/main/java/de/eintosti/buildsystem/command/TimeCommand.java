@@ -101,7 +101,10 @@ public class TimeCommand extends CommandBase {
         }
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(world);
-        if (buildWorld != null && !buildWorld.getPermissions().canPerformCommand(player, variant.permission)) {
+        boolean allowed = buildWorld != null
+                ? buildWorld.getPermissions().canPerformCommand(player, variant.permission)
+                : player.hasPermission(variant.permission);
+        if (!allowed) {
             messages.sendPermissionError(player);
             return;
         }
