@@ -31,7 +31,6 @@ import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -72,19 +71,15 @@ class YamlFolderStorageRoundTripTest {
 
     private FolderImpl folder(String name, NavigatorCategory category, List<UUID> worlds) {
         Builder creator = Builder.of(UUID.randomUUID(), "FolderCreator");
-        return new FolderImpl(
-                context,
-                UUID.randomUUID(),
-                name,
-                1_700_000_000_000L,
-                category,
-                null,
-                creator,
-                Material.CHEST,
-                "perm.test",
-                "ProjectX",
-                worlds,
-                new ArrayList<>());
+        return FolderImpl.builder(context, UUID.randomUUID())
+                .name(name)
+                .creation(1_700_000_000_000L)
+                .category(category)
+                .creator(creator)
+                .permission("perm.test")
+                .project("ProjectX")
+                .worlds(worlds)
+                .build();
     }
 
     private Folder findByName(Collection<Folder> folders, String name) {

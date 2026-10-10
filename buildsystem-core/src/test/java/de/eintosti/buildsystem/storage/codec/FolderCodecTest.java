@@ -23,8 +23,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -40,6 +41,17 @@ class FolderCodecTest {
 
     private final WorldContext context = TestData.worldContext();
     private final FolderCodec codec = new FolderCodec(context, TestData.categoryRegistry());
+
+    @Test
+    void writtenFolders_keepTheirKeysInDeclarationOrder() {
+        FolderImpl full = CodecSamples.fullFolder(context);
+        FolderImpl minimal = CodecSamples.minimalFolder(context);
+        Map<String, Map<String, Object>> entries = new LinkedHashMap<>();
+        entries.put(codec.key(full), codec.serialize(full));
+        entries.put(codec.key(minimal), codec.serialize(minimal));
+
+        assertEquals(CodecSamples.resource("folders-written.yml"), CodecSamples.toYaml(entries));
+    }
 
     @Test
     void fileWrittenBy40_writesBackTheSameValues() {
@@ -113,18 +125,11 @@ class FolderCodecTest {
     }
 
     private FolderImpl parent(UUID uuid, FolderImpl child) {
-        return new FolderImpl(
-                context,
-                uuid,
-                "Parent",
-                0L,
-                child.getCategory(),
-                null,
-                CodecSamples.SAM,
-                Material.CHEST,
-                "-",
-                "-",
-                List.of(),
-                new ArrayList<>());
+        return FolderImpl.builder(context, uuid)
+                .name("Parent")
+                .creation(0L)
+                .category(child.getCategory())
+                .creator(CodecSamples.SAM)
+                .build();
     }
 }

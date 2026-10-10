@@ -42,7 +42,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,50 +77,34 @@ final class CodecSamples {
     private CodecSamples() {}
 
     static FolderImpl fullFolder(WorldContext context) {
-        FolderImpl parent = new FolderImpl(
-                context,
-                PARENT_ID,
-                "Maps",
-                1_600_000_000_000L,
-                TestData.ARCHIVE,
-                null,
-                ALEX,
-                Material.CHEST,
-                "-",
-                "-",
-                List.of(),
-                new ArrayList<>());
-        FolderImpl folder = new FolderImpl(
-                context,
-                FOLDER_ID,
-                "Lobbies",
-                1_700_000_000_000L,
-                TestData.ARCHIVE,
-                parent,
-                ALEX,
-                Material.OAK_SIGN,
-                "maps.lobby",
-                "Hub",
-                List.of(WORLD_IN_FOLDER, OTHER_WORLD_IN_FOLDER),
-                new ArrayList<>());
+        FolderImpl parent = FolderImpl.builder(context, PARENT_ID)
+                .name("Maps")
+                .creation(1_600_000_000_000L)
+                .category(TestData.ARCHIVE)
+                .creator(ALEX)
+                .build();
+        FolderImpl folder = FolderImpl.builder(context, FOLDER_ID)
+                .name("Lobbies")
+                .creation(1_700_000_000_000L)
+                .category(TestData.ARCHIVE)
+                .parent(parent)
+                .creator(ALEX)
+                .material(Material.OAK_SIGN)
+                .permission("maps.lobby")
+                .project("Hub")
+                .worlds(List.of(WORLD_IN_FOLDER, OTHER_WORLD_IN_FOLDER))
+                .build();
         folder.setIconSkullTexture("skull-texture");
         return folder;
     }
 
     static FolderImpl minimalFolder(WorldContext context) {
-        return new FolderImpl(
-                context,
-                MINIMAL_FOLDER_ID,
-                "Empty",
-                1_700_000_000_001L,
-                TestData.PUBLIC,
-                null,
-                SAM,
-                Material.CHEST,
-                "-",
-                "-",
-                List.of(),
-                new ArrayList<>());
+        return FolderImpl.builder(context, MINIMAL_FOLDER_ID)
+                .name("Empty")
+                .creation(1_700_000_000_001L)
+                .category(TestData.PUBLIC)
+                .creator(SAM)
+                .build();
     }
 
     static BuildPlayerImpl fullPlayer() {

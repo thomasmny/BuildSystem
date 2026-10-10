@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Material;
@@ -60,49 +61,34 @@ public class FolderImpl implements Folder {
 
     public FolderImpl(
             WorldContext context, String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
-        this(
-                context,
-                UUID.randomUUID(),
-                name,
-                System.currentTimeMillis(),
-                category,
-                parent,
-                creator,
-                Material.CHEST,
-                "-",
-                "-",
-                new ArrayList<>(),
-                new ArrayList<>());
+        this(builder(context, UUID.randomUUID())
+                .name(name)
+                .category(category)
+                .parent(parent)
+                .creator(creator));
     }
 
-    public FolderImpl(
-            WorldContext context,
-            UUID uuid,
-            String name,
-            long creation,
-            NavigatorCategory category,
-            @Nullable Folder parent,
-            Builder creator,
-            Material material,
-            String permission,
-            String project,
-            List<UUID> worlds,
-            List<Folder> subfolders) {
-        this.context = context;
-        this.uuid = uuid;
-        this.name = name;
-        this.creation = creation;
-        this.category = category;
-        this.parent = parent;
-        this.creator = creator;
-        this.worlds = new LinkedHashSet<>(worlds);
-        this.material = material;
-        this.permission = permission;
-        this.project = project;
-        this.subfolders = new ArrayList<>(subfolders);
+    private FolderImpl(FolderBuilder builder) {
+        this.context = builder.context;
+        this.uuid = builder.uuid;
+        this.name = Objects.requireNonNull(builder.name, "name");
+        this.creation = builder.creation;
+        this.category = Objects.requireNonNull(builder.category, "category");
+        this.parent = builder.parent;
+        this.creator = Objects.requireNonNull(builder.creator, "creator");
+        this.worlds = new LinkedHashSet<>(builder.worlds);
+        this.material = builder.material;
+        this.iconSkullTexture = builder.iconSkullTexture;
+        this.permission = builder.permission;
+        this.project = builder.project;
+        this.subfolders = new ArrayList<>();
         if (parent != null) {
             ((FolderImpl) parent).addSubFolder(this);
         }
+    }
+
+    public static FolderBuilder builder(WorldContext context, UUID uuid) {
+        return new FolderBuilder(context, uuid);
     }
 
     @Override
@@ -342,5 +328,84 @@ public class FolderImpl implements Folder {
     @Override
     public int hashCode() {
         return uuid.hashCode();
+    }
+
+    /**
+     * Builds a folder from its stored fields. Name, category and creator are required; the rest start at the values a
+     * new folder gets.
+     */
+    public static final class FolderBuilder {
+
+        private final WorldContext context;
+        private final UUID uuid;
+        private @Nullable String name;
+        private long creation = System.currentTimeMillis();
+        private @Nullable NavigatorCategory category;
+        private @Nullable Folder parent;
+        private @Nullable Builder creator;
+        private Material material = Material.CHEST;
+        private @Nullable String iconSkullTexture;
+        private String permission = "-";
+        private String project = "-";
+        private List<UUID> worlds = List.of();
+
+        private FolderBuilder(WorldContext context, UUID uuid) {
+            this.context = context;
+            this.uuid = uuid;
+        }
+
+        public FolderBuilder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public FolderBuilder creation(long creation) {
+            this.creation = creation;
+            return this;
+        }
+
+        public FolderBuilder category(NavigatorCategory category) {
+            this.category = category;
+            return this;
+        }
+
+        public FolderBuilder parent(@Nullable Folder parent) {
+            this.parent = parent;
+            return this;
+        }
+
+        public FolderBuilder creator(Builder creator) {
+            this.creator = creator;
+            return this;
+        }
+
+        public FolderBuilder material(Material material) {
+            this.material = material;
+            return this;
+        }
+
+        public FolderBuilder iconSkullTexture(@Nullable String iconSkullTexture) {
+            this.iconSkullTexture = iconSkullTexture;
+            return this;
+        }
+
+        public FolderBuilder permission(String permission) {
+            this.permission = permission;
+            return this;
+        }
+
+        public FolderBuilder project(String project) {
+            this.project = project;
+            return this;
+        }
+
+        public FolderBuilder worlds(List<UUID> worlds) {
+            this.worlds = worlds;
+            return this;
+        }
+
+        public FolderImpl build() {
+            return new FolderImpl(this);
+        }
     }
 }

@@ -171,21 +171,15 @@ class FolderImplTest {
     }
 
     @Test
-    void constructor_defensivelyCopiesWorlds() {
+    void builder_defensivelyCopiesWorlds() {
         List<UUID> worlds = new ArrayList<>(List.of(UUID.randomUUID()));
-        FolderImpl folder = new FolderImpl(
-                context,
-                UUID.randomUUID(),
-                "Detached",
-                0L,
-                TestData.PUBLIC,
-                null,
-                Builder.of(UUID.randomUUID(), "Creator"),
-                Material.CHEST,
-                "-",
-                "-",
-                worlds,
-                new ArrayList<>());
+        FolderImpl folder = FolderImpl.builder(context, UUID.randomUUID())
+                .name("Detached")
+                .creation(0L)
+                .category(TestData.PUBLIC)
+                .creator(Builder.of(UUID.randomUUID(), "Creator"))
+                .worlds(worlds)
+                .build();
 
         worlds.clear();
 
