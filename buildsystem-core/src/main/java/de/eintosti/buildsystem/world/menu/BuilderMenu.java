@@ -34,12 +34,9 @@ import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.ArrayList;
 import java.util.List;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -56,19 +53,11 @@ public class BuilderMenu extends PaginatedMenu {
     private final MenuItems menuItems;
     private final Menus menus;
     private final BuildWorld buildWorld;
-    private final NamespacedKey builderNameKey;
 
-    public BuilderMenu(
-            Messages messages,
-            MenuItems menuItems,
-            Menus menus,
-            NamespacedKey builderNameKey,
-            BuildWorld buildWorld,
-            Player player) {
+    public BuilderMenu(Messages messages, MenuItems menuItems, Menus menus, BuildWorld buildWorld, Player player) {
         super(messages, 27, messages.getString("worldeditor_builders_title", player));
         this.menuItems = menuItems;
         this.menus = menus;
-        this.builderNameKey = builderNameKey;
         this.buildWorld = buildWorld;
     }
 
@@ -115,8 +104,7 @@ public class BuilderMenu extends PaginatedMenu {
                             List.of(messages.getString(
                                     "worldeditor_builders_creator_lore",
                                     player,
-                                    Placeholders.of("%creator%", creator.getName()))),
-                            null);
+                                    Placeholders.of("%creator%", creator.getName()))));
                 })
                 .build();
     }
@@ -160,17 +148,7 @@ public class BuilderMenu extends PaginatedMenu {
                                 "worldeditor_builders_builder_item",
                                 player,
                                 Placeholders.of("%builder%", builder.getName())),
-                        messages.getStringList("worldeditor_builders_builder_lore", player),
-                        // The swap replaces the whole stack, so the name the click handler reads back has to be
-                        // written onto the resolved head too, not just the placeholder.
-                        itemStack -> {
-                            ItemMeta itemMeta = itemStack.getItemMeta();
-                            if (itemMeta != null) {
-                                itemMeta.getPersistentDataContainer()
-                                        .set(this.builderNameKey, PersistentDataType.STRING, builder.getName());
-                                itemStack.setItemMeta(itemMeta);
-                            }
-                        }))
+                        messages.getStringList("worldeditor_builders_builder_lore", player)))
                 .usableBy(this::canManageBuilders)
                 .onClick((player, event) -> {
                     // Only a shift-click removes a builder; a plain click returns to the editor.

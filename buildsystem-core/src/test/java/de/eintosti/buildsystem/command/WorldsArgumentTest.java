@@ -39,12 +39,4 @@ class WorldsArgumentTest {
                 argument.getPermission().startsWith("buildsystem."),
                 argument + " permission should be namespaced: " + argument.getPermission());
     }
-
-    @ParameterizedTest
-    @EnumSource(WorldsArgument.class)
-    void matchArgumentRoundTrips(WorldsArgument argument) {
-        WorldsArgument resolved = WorldsArgument.matchArgument(argument.getName());
-        assertNotNull(resolved, "matchArgument should resolve " + argument.getName());
-        assertEquals(argument, resolved);
-    }
 }

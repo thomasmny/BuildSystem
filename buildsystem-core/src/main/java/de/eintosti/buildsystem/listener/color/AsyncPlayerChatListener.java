@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.listener.color;
 
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.color.ColorAPI;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -36,7 +35,7 @@ public class AsyncPlayerChatListener implements Listener {
             return;
         }
 
-        String coloredMessage = ChatColor.translateAlternateColorCodes('&', ColorAPI.process(event.getMessage()));
+        String coloredMessage = ColorAPI.process(event.getMessage());
         event.setMessage(coloredMessage);
     }
 }

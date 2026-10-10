@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.listener.color;
 
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.color.ColorAPI;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -42,7 +41,7 @@ public class SignChangeListener implements Listener {
                 continue;
             }
 
-            String coloredLine = ChatColor.translateAlternateColorCodes('&', ColorAPI.process(line));
+            String coloredLine = ColorAPI.process(line);
             event.setLine(i, coloredLine);
         }
     }

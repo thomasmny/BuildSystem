@@ -75,31 +75,6 @@ public class ConfigService {
     }
 
     /**
-     * Gets the current version of the plugin's configuration.
-     *
-     * @return The version number of the configuration
-     */
-    public int getVersion() {
-        return plugin.getConfig().getInt("version", 1);
-    }
-
-    /**
-     * Gets the raw {@link FileConfiguration} for use by migration code.
-     *
-     * @return The raw file configuration
-     */
-    public FileConfiguration getConfig() {
-        return plugin.getConfig();
-    }
-
-    /**
-     * Saves the plugin config to disk.
-     */
-    public void saveConfig() {
-        plugin.saveConfig();
-    }
-
-    /**
      * Parses the given {@link FileConfiguration} into a {@link PluginConfig} record tree. Pure: it reads only from
      * {@code config}. The WorldEdit wand is resolved separately (see {@link WorldEditWandDetector}) and passed in, so
      * parsing never touches the filesystem.

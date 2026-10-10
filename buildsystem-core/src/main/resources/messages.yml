@@ -180,7 +180,6 @@ worlds_backup_restoration_successful: "%prefix% &7The world has been successfull
 worlds_builders_usage: "%prefix% &7Usage: &b/worlds builders <world>"
 worlds_builders_unknown_world: "%prefix% &cUnknown world."
 
-worlds_world_name: "World name"
 worlds_world_exists: "%prefix% &cThis world already exists."
 worlds_world_creation_invalid_characters: "%prefix% &7&oRemoved invalid characters from world name."
 worlds_world_creation_name_bank: "%prefix% &cThe world name cannot be blank."
@@ -351,13 +350,11 @@ worlds_setitem_set: "%prefix% &b%world%&7's item was successfully changed."
 
 worlds_setcreator_usage: "%prefix% &7Usage: &b/worlds setCreator <world>"
 worlds_setcreator_unknown_world: "%prefix% &cUnknown world."
-worlds_setcreator_error: "%prefix% &cPlease try again."
 worlds_setcreator_player_not_found: "%prefix% &cThat player was not found."
 worlds_setcreator_set: "%prefix% &b%world%&7's creator was successfully changed."
 
 worlds_setproject_usage: "%prefix% &7Usage: &b/worlds setProject <world>"
 worlds_setproject_unknown_world: "%prefix% &cUnknown world."
-worlds_setproject_error: "%prefix% &cPlease try again."
 worlds_setproject_set: "%prefix% &b%world%&7's project was successfully changed."
 worlds_setproject_overridden: "%prefix% &7Saved, but this world's folder currently overrides it with &b%project%&7."
 
@@ -367,7 +364,6 @@ worlds_setstatus_set: "%prefix% &b%world%&7's status was was changed to: %status
 
 worlds_setpermission_usage: "%prefix% &7Usage: &b/worlds setPermission <world>"
 worlds_setpermission_unknown_world: "%prefix% &cUnknown world."
-worlds_setpermission_error: "%prefix% &cPlease try again."
 worlds_setpermission_set: "%prefix% &b%world%&7's permission was successfully changed."
 worlds_setpermission_not_allowed: "%prefix% &cThat permission is not allowed."
 worlds_setpermission_overridden: "%prefix% &7Saved, but this world's folder currently overrides it with &b%permission%&7."
@@ -382,7 +378,6 @@ worlds_removespawn_world_spawn_removed: "%prefix% &b%world%&7's spawnpoint was r
 
 worlds_tp_usage: "%prefix% &7Usage: &b/worlds tp <world>"
 worlds_tp_unknown_world: "%prefix% &cUnknown world."
-worlds_tp_world_not_imported: "%prefix% &cWorld must be imported: /worlds import <world>"
 worlds_tp_entry_forbidden: "%prefix% &cYou are not allowed to enter this world!"
 
 worlds_unimport_usage: "%prefix% &7Usage: &b/worlds unimport <world>"

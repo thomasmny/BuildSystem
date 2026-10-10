@@ -99,7 +99,7 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
         fillRightControlColumn(player);
 
         List<XMaterial> matches = getFilteredMaterials();
-        int maxTopRow = Math.max(0, ceilDiv(matches.size(), COLUMNS) - VISIBLE_ROWS);
+        int maxTopRow = Math.max(0, Math.ceilDiv(matches.size(), COLUMNS) - VISIBLE_ROWS);
         topRow = Math.min(topRow, maxTopRow);
 
         int firstIndex = topRow * COLUMNS;
@@ -218,10 +218,6 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
                     onBack.run();
                 })
                 .build();
-    }
-
-    private static int ceilDiv(int value, int divisor) {
-        return (value + divisor - 1) / divisor;
     }
 
     /**

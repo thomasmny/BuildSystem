@@ -127,7 +127,7 @@ public final class MenuItems {
             ItemBuilder.of(XMaterial.PLAYER_HEAD).name(name).lore(lore).into(inventory, slot);
             return;
         }
-        applyHeadProfileAsync(inventory, slot, profile, fallback, name, lore, null);
+        applyHeadProfileAsync(inventory, slot, profile, fallback, name, lore);
     }
 
     /**
@@ -228,8 +228,6 @@ public final class MenuItems {
      * @param fallback The profile to fall back to if {@code profile} cannot be resolved, or {@code null} for none
      * @param name The already-styled display name to apply
      * @param lore The lore to apply
-     * @param finisher Applied to both the placeholder and the resolved stack, for decoration the swap must not drop
-     *     (e.g. persistent data a click handler reads back); may be {@code null}
      */
     public void applyHeadProfileAsync(
             Inventory inventory,
@@ -237,19 +235,12 @@ public final class MenuItems {
             Profileable profile,
             @Nullable Profileable fallback,
             String name,
-            List<String> lore,
-            @Nullable Consumer<ItemStack> finisher) {
+            List<String> lore) {
         ItemStack placeholder =
                 ItemBuilder.of(XMaterial.PLAYER_HEAD).name(name).lore(lore).build();
-        if (finisher != null) {
-            finisher.accept(placeholder);
-        }
         inventory.setItem(slot, placeholder);
 
         resolveHeadAsync(profile, fallback, name, lore, itemStack -> {
-            if (finisher != null) {
-                finisher.accept(itemStack);
-            }
             if (placeholder.isSimilar(inventory.getItem(slot))) {
                 inventory.setItem(slot, itemStack);
             }
