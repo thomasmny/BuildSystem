@@ -17,6 +17,8 @@
  */
 package de.eintosti.buildsystem.storage;
 
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.event.folder.FolderCreatedEvent;
 import de.eintosti.buildsystem.api.event.folder.FolderDeletedEvent;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
@@ -24,34 +26,98 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.storage.codec.FolderCodec;
+import de.eintosti.buildsystem.storage.migration.StorageMigration;
+import de.eintosti.buildsystem.storage.yaml.YamlEntityFile;
+import de.eintosti.buildsystem.storage.yaml.YamlStore;
+import de.eintosti.buildsystem.world.WorldContext;
+import de.eintosti.buildsystem.world.folder.FolderImpl;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.Unmodifiable;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public abstract class FolderStorageImpl implements FolderStorage {
+public class FolderStorageImpl implements FolderStorage {
 
     protected final Logger logger;
     protected final WorldStorage worldStorage;
 
     private final ConcurrentHashMap<String, Folder> foldersByName;
+    private final YamlEntityFile<Folder> file;
+    private final Supplier<WorldContext> context;
 
-    protected FolderStorageImpl(Logger logger, WorldStorage worldStorage) {
+    public FolderStorageImpl(BuildSystemPlugin plugin, WorldStorage worldStorage, Services services) {
+        this(
+                plugin.getLogger(),
+                worldStorage,
+                services::worldContext,
+                new YamlEntityFile<>(
+                        new YamlStore(plugin.getDataFolder(), "folders.yml", plugin.getLogger()),
+                        "folders",
+                        "folder",
+                        () -> new FolderCodec(services.worldContext(), services.navigatorCategoryRegistry()),
+                        services.scheduler().background(),
+                        plugin.getLogger(),
+                        StorageMigration::migrateFolders));
+    }
+
+    FolderStorageImpl(
+            Logger logger, WorldStorage worldStorage, Supplier<WorldContext> context, YamlEntityFile<Folder> file) {
         this.logger = logger;
         this.worldStorage = worldStorage;
         this.foldersByName = new ConcurrentHashMap<>();
+        this.context = context;
+        this.file = file;
+    }
+
+    @Override
+    public CompletableFuture<Void> save(Folder folder) {
+        return file.save(folder);
+    }
+
+    @Override
+    public CompletableFuture<Void> save(Collection<Folder> folders) {
+        return file.save(folders);
+    }
+
+    /** Loads every folder, then links each to its parent, which is stored by UUID. */
+    @Override
+    public CompletableFuture<Collection<Folder>> load() {
+        return file.load((loaded, root) -> loaded.forEach((key, folder) -> {
+                    ConfigurationSection section = root.getConfigurationSection(key);
+                    String parentKey = section == null ? null : FolderCodec.parentReference(section);
+                    Folder parent = parentKey == null ? null : loaded.get(parentKey);
+                    if (parent != null) {
+                        folder.setParent(parent);
+                    }
+                }))
+                .thenApply(loaded -> new ArrayList<>(loaded.values()));
+    }
+
+    @Override
+    public CompletableFuture<Void> delete(Folder folder) {
+        return file.delete(folder);
+    }
+
+    @Override
+    public CompletableFuture<Void> delete(String folderKey) {
+        return file.delete(folderKey);
     }
 
     public void loadFolders() {
@@ -94,10 +160,11 @@ public abstract class FolderStorageImpl implements FolderStorage {
     }
 
     /**
-     * Creates the folder instance to register; implementations decide the concrete type and its dependencies.
+     * Creates the folder instance to register. Overridable so unit tests can use a simpler folder.
      */
-    protected abstract Folder newFolder(
-            String name, NavigatorCategory category, @Nullable Folder parent, Builder creator);
+    protected Folder newFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
+        return new FolderImpl(context.get(), name, category, parent, creator);
+    }
 
     @Override
     public void removeFolder(String name) {

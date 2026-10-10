@@ -20,8 +20,8 @@ package de.eintosti.buildsystem.storage;
 import static org.junit.jupiter.api.Assertions.*;
 
 import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.test.TestData;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.*;
@@ -37,32 +37,7 @@ class PlayerStorageImplTest {
 
     @BeforeEach
     void setUp() {
-        storage = new PlayerStorageImpl(Logger.getLogger("test")) {
-            @Override
-            public CompletableFuture<Collection<BuildPlayer>> load() {
-                return CompletableFuture.completedFuture(List.of());
-            }
-
-            @Override
-            public CompletableFuture<Void> save(BuildPlayer buildPlayer) {
-                return CompletableFuture.completedFuture(null);
-            }
-
-            @Override
-            public CompletableFuture<Void> save(Collection<BuildPlayer> buildPlayers) {
-                return CompletableFuture.completedFuture(null);
-            }
-
-            @Override
-            public CompletableFuture<Void> delete(BuildPlayer buildPlayer) {
-                return CompletableFuture.completedFuture(null);
-            }
-
-            @Override
-            public CompletableFuture<Void> delete(String playerKey) {
-                return CompletableFuture.completedFuture(null);
-            }
-        };
+        storage = new PlayerStorageImpl(Logger.getLogger("test"), TestData.noopEntityFile());
     }
 
     @Test

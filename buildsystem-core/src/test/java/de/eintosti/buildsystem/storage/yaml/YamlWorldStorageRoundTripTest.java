@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
@@ -47,7 +48,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
- * Round-trip and parse-error tests for {@link YamlWorldStorage}. Establishes the contract for the on-disk
+ * Round-trip and parse-error tests for {@link WorldStorageImpl}. Establishes the contract for the on-disk
  * {@code worlds.yml} format: a world serialized and saved must deserialize back with all fields intact; malformed enum
  * data falls back to a safe default; and an entry that cannot be parsed at all is skipped so the remaining worlds still
  * load (one bad row never aborts the whole load).
@@ -69,8 +70,8 @@ class YamlWorldStorageRoundTripTest {
         context = services.worldContext();
     }
 
-    private YamlWorldStorage newStorage() {
-        return new YamlWorldStorage(plugin, services);
+    private WorldStorageImpl newStorage() {
+        return new WorldStorageImpl(plugin, services);
     }
 
     private BuildWorldImpl sampleWorld(UUID uuid, String name) {
@@ -250,7 +251,7 @@ class YamlWorldStorageRoundTripTest {
         when(strict.worldContext()).thenThrow(new IllegalStateException("service not initialized yet"));
         when(strict.playerLookup()).thenThrow(new IllegalStateException("service not initialized yet"));
 
-        assertDoesNotThrow(() -> new YamlWorldStorage(plugin, strict));
+        assertDoesNotThrow(() -> new WorldStorageImpl(plugin, strict));
     }
 
     @Test

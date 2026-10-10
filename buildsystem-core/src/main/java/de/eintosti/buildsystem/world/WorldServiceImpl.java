@@ -42,8 +42,6 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.storage.yaml.YamlFolderStorage;
-import de.eintosti.buildsystem.storage.yaml.YamlWorldStorage;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.StringCleaner;
@@ -87,8 +85,8 @@ public class WorldServiceImpl implements WorldService {
         this.plugin = plugin;
         this.services = services;
         this.messages = services.messages();
-        this.worldStorage = new YamlWorldStorage(plugin, services);
-        this.folderStorage = new YamlFolderStorage(plugin, this.worldStorage, services);
+        this.worldStorage = new WorldStorageImpl(plugin, services);
+        this.folderStorage = new FolderStorageImpl(plugin, this.worldStorage, services);
         this.loadBootstrap = new WorldLoadBootstrap(
                 plugin,
                 services.scheduler(),
