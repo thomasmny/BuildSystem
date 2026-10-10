@@ -107,10 +107,20 @@ public final class Services {
                 configService.current().storage().database();
         this.storageBackend =
                 StorageBackend.connect(database.type(), database, plugin.getDataFolder(), plugin.getLogger());
-        // The storages read the world context and category registry from here only once the stored worlds load.
-        this.worldStorage = new WorldStorageImpl(plugin, this, storageBackend.store(EntityKind.WORLDS));
-        this.folderStorage =
-                new FolderStorageImpl(plugin, worldStorage, this, storageBackend.store(EntityKind.FOLDERS));
+        this.worldStorage = new WorldStorageImpl(
+                plugin.getLogger(),
+                taskScheduler.background(),
+                () -> configService.current().world().defaultNamespace(),
+                this::worldContext,
+                playerLookupService,
+                storageBackend.store(EntityKind.WORLDS));
+        this.folderStorage = new FolderStorageImpl(
+                plugin.getLogger(),
+                taskScheduler.background(),
+                worldStorage,
+                this::worldContext,
+                this::navigatorCategoryRegistry,
+                storageBackend.store(EntityKind.FOLDERS));
 
         this.navigatorCategoryRegistry = new NavigatorCategoryRegistryImpl(plugin, folderStorage);
         YamlSetupStorage setupStorage = new YamlSetupStorage(plugin);

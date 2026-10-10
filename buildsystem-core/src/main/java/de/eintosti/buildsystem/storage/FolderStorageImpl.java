@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.storage;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.event.folder.FolderCreatedEvent;
 import de.eintosti.buildsystem.api.event.folder.FolderDeletedEvent;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
@@ -26,6 +24,7 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
 import de.eintosti.buildsystem.storage.codec.FolderCodec;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
@@ -37,6 +36,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -63,18 +63,23 @@ public class FolderStorageImpl implements FolderStorage {
     private final EntityCollection<Folder> file;
     private final Supplier<WorldContext> context;
 
+    /**
+     * @param context Read only once the stored folders load, since building it needs this storage
+     * @param categories Read only once the stored folders load, since the registry is built from this storage
+     */
     public FolderStorageImpl(
-            BuildSystemPlugin plugin, WorldStorage worldStorage, Services services, EntityStore store) {
+            Logger logger,
+            Executor background,
+            WorldStorage worldStorage,
+            Supplier<WorldContext> context,
+            Supplier<NavigatorCategoryRegistry> categories,
+            EntityStore store) {
         this(
-                plugin.getLogger(),
+                logger,
                 worldStorage,
-                services::worldContext,
+                context,
                 new EntityCollection<>(
-                        store,
-                        "folder",
-                        () -> new FolderCodec(services.worldContext(), services.navigatorCategoryRegistry()),
-                        services.scheduler().background(),
-                        plugin.getLogger()));
+                        store, "folder", () -> new FolderCodec(context.get(), categories.get()), background, logger));
     }
 
     FolderStorageImpl(

@@ -24,6 +24,7 @@ import static org.mockito.Mockito.mock;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
@@ -245,17 +246,35 @@ public final class TestData {
      * {@return a world service with real storages, wired to the collaborators of {@code services}}
      */
     public static WorldServiceImpl worldService(BuildSystemPlugin plugin, Services services) {
-        WorldStorageImpl worldStorage = new WorldStorageImpl(
-                plugin, services, YamlEntityStore.worlds(plugin.getDataFolder(), plugin.getLogger()));
-        return new WorldServiceImpl(
-                plugin,
-                services,
+        WorldStorageImpl worldStorage = worldStorage(plugin, services);
+        return new WorldServiceImpl(plugin, services, worldStorage, folderStorage(plugin, services, worldStorage));
+    }
+
+    /**
+     * {@return a world storage on the plugin's {@code worlds.yml}, wired to the collaborators of {@code services}}
+     */
+    public static WorldStorageImpl worldStorage(BuildSystemPlugin plugin, Services services) {
+        return new WorldStorageImpl(
+                plugin.getLogger(),
+                services.scheduler().background(),
+                () -> services.config().current().world().defaultNamespace(),
+                services::worldContext,
+                services.playerLookup(),
+                YamlEntityStore.worlds(plugin.getDataFolder(), plugin.getLogger()));
+    }
+
+    /**
+     * {@return a folder storage on the plugin's {@code folders.yml}, wired to the collaborators of {@code services}}
+     */
+    public static FolderStorageImpl folderStorage(
+            BuildSystemPlugin plugin, Services services, WorldStorage worldStorage) {
+        return new FolderStorageImpl(
+                plugin.getLogger(),
+                services.scheduler().background(),
                 worldStorage,
-                new FolderStorageImpl(
-                        plugin,
-                        worldStorage,
-                        services,
-                        YamlEntityStore.folders(plugin.getDataFolder(), plugin.getLogger())));
+                services::worldContext,
+                services::navigatorCategoryRegistry,
+                YamlEntityStore.folders(plugin.getDataFolder(), plugin.getLogger()));
     }
 
     private static Optional<BuildWorldStatus> byId(String id) {

@@ -26,9 +26,6 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.storage.FolderStorageImpl;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
 import de.eintosti.buildsystem.test.TestData;
 import java.io.File;
 import java.io.InputStream;
@@ -79,10 +76,8 @@ class StorageMigrationTest {
         copyFixture("worlds.yml");
         UUID lobby = UUID.fromString("0e7a1aca-d915-4fb9-84b1-30f8b95cc373");
 
-        Collection<BuildWorld> loaded = new WorldStorageImpl(
-                        plugin, services, YamlEntityStore.worlds(plugin.getDataFolder(), plugin.getLogger()))
-                .load()
-                .join();
+        Collection<BuildWorld> loaded =
+                TestData.worldStorage(plugin, services).load().join();
 
         BuildWorld world = loaded.stream()
                 .filter(w -> w.getUniqueId().equals(lobby))
@@ -109,10 +104,8 @@ class StorageMigrationTest {
         yaml.set("worlds.Broken.data.status", "finished");
         writeV3Worlds(yaml);
 
-        Collection<BuildWorld> loaded = new WorldStorageImpl(
-                        plugin, services, YamlEntityStore.worlds(plugin.getDataFolder(), plugin.getLogger()))
-                .load()
-                .join();
+        Collection<BuildWorld> loaded =
+                TestData.worldStorage(plugin, services).load().join();
 
         assertEquals(1, loaded.size());
         BuildWorld world = loaded.iterator().next();
@@ -135,15 +128,11 @@ class StorageMigrationTest {
         yaml.set("worlds.Stable.data.status", "finished");
         writeV3Worlds(yaml);
 
-        new WorldStorageImpl(plugin, services, YamlEntityStore.worlds(plugin.getDataFolder(), plugin.getLogger()))
-                .load()
-                .join();
+        TestData.worldStorage(plugin, services).load().join();
         // The backup captures the original v3 file; a second migration must not clobber it.
         String backupAfterFirst = readBackup();
-        Collection<BuildWorld> second = new WorldStorageImpl(
-                        plugin, services, YamlEntityStore.worlds(plugin.getDataFolder(), plugin.getLogger()))
-                .load()
-                .join();
+        Collection<BuildWorld> second =
+                TestData.worldStorage(plugin, services).load().join();
 
         assertEquals(1, second.size());
         assertEquals("Stable", second.iterator().next().getName());
@@ -175,10 +164,8 @@ class StorageMigrationTest {
         yaml.set("worlds.NewName.data.status", "finished");
         writeV3Worlds(yaml);
 
-        Collection<BuildWorld> loaded = new WorldStorageImpl(
-                        plugin, services, YamlEntityStore.worlds(plugin.getDataFolder(), plugin.getLogger()))
-                .load()
-                .join();
+        Collection<BuildWorld> loaded =
+                TestData.worldStorage(plugin, services).load().join();
 
         assertEquals(1, loaded.size());
         assertEquals("NewName", loaded.iterator().next().getName());
@@ -193,11 +180,7 @@ class StorageMigrationTest {
     void worlds_emptyV3File_isStampedWithoutBackup() throws Exception {
         new File(dataFolder, "worlds.yml").createNewFile();
 
-        assertTrue(new WorldStorageImpl(
-                        plugin, services, YamlEntityStore.worlds(plugin.getDataFolder(), plugin.getLogger()))
-                .load()
-                .join()
-                .isEmpty());
+        assertTrue(TestData.worldStorage(plugin, services).load().join().isEmpty());
 
         assertEquals(StorageMigration.CURRENT_VERSION, readFile("worlds.yml").getInt("version"));
         assertFalse(new File(dataFolder, "worlds.yml.v3.bak").exists());
@@ -209,13 +192,8 @@ class StorageMigrationTest {
     void folders_v3ParentByName_isRewrittenToUuidAndLinksResolve() throws Exception {
         copyFixture("folders.yml");
 
-        Collection<Folder> loaded = new FolderStorageImpl(
-                        plugin,
-                        worldStorage,
-                        services,
-                        YamlEntityStore.folders(plugin.getDataFolder(), plugin.getLogger()))
-                .load()
-                .join();
+        Collection<Folder> loaded =
+                TestData.folderStorage(plugin, services, worldStorage).load().join();
 
         assertEquals(4, loaded.size());
         Folder archive = loaded.stream()

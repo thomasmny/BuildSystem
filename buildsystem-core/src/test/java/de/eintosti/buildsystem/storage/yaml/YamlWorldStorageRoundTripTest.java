@@ -36,9 +36,9 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.test.TestData;
-import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -78,8 +79,7 @@ class YamlWorldStorageRoundTripTest {
     }
 
     private WorldStorageImpl newStorage() {
-        return new WorldStorageImpl(
-                plugin, services, YamlEntityStore.worlds(plugin.getDataFolder(), plugin.getLogger()));
+        return TestData.worldStorage(plugin, services);
     }
 
     private BuildWorldImpl sampleWorld(UUID uuid, String name) {
@@ -243,17 +243,20 @@ class YamlWorldStorageRoundTripTest {
     }
 
     @Test
-    void construction_doesNotResolveLateServices() {
-        // Worlds are loaded during plugin enable, before the late services the codec needs (MenuItems/SpawnService via
-        // the WorldContext, and PlayerLookupService) exist. Construction must not resolve those (the codec is built
-        // lazily on first load); only the always-available scheduler may be pulled.
-        Services strict = mock(Services.class);
-        when(strict.scheduler()).thenReturn(new TaskScheduler(plugin));
-        when(strict.worldContext()).thenThrow(new IllegalStateException("service not initialized yet"));
-        when(strict.playerLookup()).thenThrow(new IllegalStateException("service not initialized yet"));
+    void construction_doesNotResolveTheWorldContext() {
+        // Worlds are loaded during plugin enable, before MenuItems and SpawnService exist, so the codec and its world
+        // context are only built on first load.
+        Supplier<WorldContext> context = () -> {
+            throw new IllegalStateException("service not initialized yet");
+        };
 
         assertDoesNotThrow(() -> new WorldStorageImpl(
-                plugin, strict, YamlEntityStore.worlds(plugin.getDataFolder(), plugin.getLogger())));
+                plugin.getLogger(),
+                Runnable::run,
+                () -> "minecraft",
+                context,
+                mock(PlayerLookupService.class),
+                YamlEntityStore.worlds(plugin.getDataFolder(), plugin.getLogger())));
     }
 
     @Test

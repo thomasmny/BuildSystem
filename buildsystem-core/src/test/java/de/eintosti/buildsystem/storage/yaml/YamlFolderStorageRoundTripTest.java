@@ -66,8 +66,7 @@ class YamlFolderStorageRoundTripTest {
     }
 
     private FolderStorageImpl newStorage() {
-        return new FolderStorageImpl(
-                plugin, worldStorage, services, YamlEntityStore.folders(plugin.getDataFolder(), plugin.getLogger()));
+        return TestData.folderStorage(plugin, services, worldStorage);
     }
 
     private FolderImpl folder(String name, NavigatorCategory category, List<UUID> worlds) {
@@ -131,9 +130,11 @@ class YamlFolderStorageRoundTripTest {
 
         FolderStorageImpl storage =
                 new FolderStorageImpl(
-                        plugin,
+                        plugin.getLogger(),
+                        services.scheduler().background(),
                         worldStorage,
-                        services,
+                        services::worldContext,
+                        services::navigatorCategoryRegistry,
                         YamlEntityStore.folders(plugin.getDataFolder(), plugin.getLogger())) {
                     @Override
                     protected void fireEvent(Event event) {}
