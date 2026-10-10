@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -32,6 +33,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
@@ -130,6 +132,24 @@ class WorldRenamerTest {
         verify(messages).sendMessage(player, "worlds_world_exists");
         assertNothingStarted();
         assertTrue(Files.isDirectory(worldContainer.resolve("taken")));
+    }
+
+    @Test
+    void unloadThatDoesNotHappen_leavesTheWorldWhereItIs() throws IOException {
+        when(prompts.sanitizeWorldName(any(), anyString())).thenReturn("fresh");
+        World oldWorld = mock(World.class);
+        when(oldWorld.getPlayers()).thenReturn(List.of());
+        // The unload is refused (an event cancelled it), so the world stays loaded.
+        bukkit.when(() -> Bukkit.getWorld("old")).thenReturn(oldWorld);
+        Files.createDirectories(worldContainer.resolve("old"));
+
+        renamer.rename(player, buildWorld, "fresh");
+
+        verify(messages).sendMessage(eq(player), eq("worlds_world_unload_failed"), any(Placeholders.class));
+        assertFalse(operations.isBusy(buildWorld), "the world must not stay locked");
+        assertTrue(Files.isDirectory(worldContainer.resolve("old")));
+        assertFalse(Files.exists(worldContainer.resolve("fresh")));
+        verify(worldStorage, never()).rename(any(), anyString(), anyString());
     }
 
     private void assertNothingStarted() {
