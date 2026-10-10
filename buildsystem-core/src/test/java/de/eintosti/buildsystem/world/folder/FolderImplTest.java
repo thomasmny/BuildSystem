@@ -18,7 +18,10 @@
 package de.eintosti.buildsystem.world.folder;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
@@ -35,6 +38,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -200,5 +204,27 @@ class FolderImplTest {
     @Test
     void distinctFolders_sameName_areNotEqual() {
         assertNotEquals(folder("Same"), folder("Same"));
+    }
+
+    @Test
+    void canView_needsTheFolderPermissionOrAdmin() {
+        FolderImpl folder = folder("Locked");
+        folder.setPermission("team.view");
+        Player player = mock(Player.class);
+
+        assertFalse(folder.canView(player));
+
+        when(player.hasPermission("buildsystem.bypass.permission.public")).thenReturn(true);
+        assertFalse(folder.canView(player));
+
+        when(player.hasPermission("team.view")).thenReturn(true);
+        assertTrue(folder.canView(player));
+
+        Player admin = mock(Player.class);
+        when(admin.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)).thenReturn(true);
+        assertTrue(folder.canView(admin));
+
+        folder.setPermission("-");
+        assertTrue(folder.canView(mock(Player.class)));
     }
 }
