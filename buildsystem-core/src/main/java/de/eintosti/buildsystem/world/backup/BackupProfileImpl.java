@@ -39,6 +39,7 @@ import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -185,9 +186,11 @@ public class BackupProfileImpl implements BackupProfile {
             return CompletableFuture.completedFuture(null);
         }
 
-        // Download off the main thread, then apply the restore back on the main thread. Blocking the
-        // download here would freeze the entire server for the duration of a remote (S3/SFTP) fetch.
-        // The world is loaded again once the operation has let go of it, by the same load anyone else would use.
+        // Only taking the world offline and loading it again happen on the main thread. The download, the
+        // extraction and the folder swap run in the background, so a large world does not freeze the server.
+        File worldFolder = FileUtils.worldFolder(worldName);
+        File staged = restoreFolder(worldFolder, "staged");
+        File replaced = restoreFolder(worldFolder, "replaced");
         WorldOperations operations = worldService.operations();
         return operations
                 .runExclusively(
@@ -195,18 +198,35 @@ public class BackupProfileImpl implements BackupProfile {
                         () -> this.storage
                                 .get()
                                 .downloadBackup(backup)
+                                .thenAcceptAsync(
+                                        backupFile -> unchecked(() -> stage(backupFile, worldFolder, staged)),
+                                        scheduler.background())
+                                // The players are only moved once the backup is here and extracted, so a failed
+                                // download leaves them in place.
                                 .thenApplyAsync(
-                                        backupFile -> {
-                                            try {
-                                                return replaceWorldFolder(worldName, backupFile);
-                                            } catch (IOException e) {
-                                                throw new CompletionException(e);
-                                            }
+                                        ignored -> operations.takeOffline(
+                                                this.buildWorld,
+                                                "worlds_backup_restoration_in_progress",
+                                                SaveBehavior.DISCARD),
+                                        mainThreadExecutor())
+                                .thenApplyAsync(
+                                        removedPlayers -> {
+                                            unchecked(() -> swap(worldFolder, staged, replaced));
+                                            return removedPlayers;
                                         },
-                                        mainThreadExecutor()))
-                .thenAccept(removedPlayers -> reloadRestoredWorld(backup, player, removedPlayers))
+                                        scheduler.background()))
+                .thenAcceptAsync(
+                        removedPlayers -> reloadRestoredWorld(backup, player, removedPlayers), mainThreadExecutor())
                 .whenCompleteAsync(
                         (ignored, throwable) -> {
+                            scheduler.background().execute(() -> {
+                                deleteQuietly(staged);
+                                if (throwable == null) {
+                                    deleteQuietly(replaced);
+                                }
+                                // Only succeeds once the last restore in this directory is cleaned up.
+                                staged.getParentFile().delete();
+                            });
                             if (throwable != null && !operations.reportRefusal(player, worldName, throwable)) {
                                 plugin.getLogger()
                                         .log(
@@ -220,35 +240,68 @@ public class BackupProfileImpl implements BackupProfile {
     }
 
     /**
-     * Takes the world offline and replaces its folder with the backup. Must run on the main thread, since it unloads
-     * the world.
-     *
-     * @return The players moved out of the world, to bring back once it is loaded again
+     * {@return a folder for one step of a restore, next to the world folder so moving it in is a rename} The folders
+     * sit inside {@code .buildsystem-restore}, which holds no world data itself, so they are never listed as worlds
+     * to import.
      */
-    private List<Player> replaceWorldFolder(String worldName, File backupFile) throws IOException {
-        File targetDirectory = FileUtils.worldFolder(worldName);
+    private static File restoreFolder(File worldFolder, String step) {
+        return new File(worldFolder.getParentFile(), ".buildsystem-restore/" + worldFolder.getName() + "." + step);
+    }
 
-        // Must happen before the world is deleted: a corrupt archive would otherwise only be detected once there
-        // was nothing left to restore.
-        WorldArchive.validate(backupFile, targetDirectory);
+    /**
+     * Extracts the backup into {@code staged} while the world is still loaded. A broken
+     * archive fails here, before anything happens to the world.
+     */
+    private static void stage(File backupFile, File worldFolder, File staged) throws IOException {
+        WorldArchive.validate(backupFile, worldFolder);
+        if (staged.exists()) {
+            // Left behind by a restore that was interrupted.
+            FileUtils.deleteDirectory(staged);
+        }
+        Files.createDirectories(staged.toPath());
+        WorldArchive.extract(backupFile, staged);
+    }
 
-        // The players are only moved once the archive is here and valid, so a failed download leaves them in place.
-        List<Player> removedPlayers = worldService
-                .operations()
-                .takeOffline(this.buildWorld, "worlds_backup_restoration_in_progress", SaveBehavior.DISCARD);
+    /**
+     * Puts the extracted backup in place of the world folder. Both moves are renames on one file system. If the
+     * second one fails, the world folder is put back, so the world is never left half replaced.
+     */
+    private static void swap(File worldFolder, File staged, File replaced) throws IOException {
+        if (replaced.exists()) {
+            // A restore whose rollback failed left the only copy of the world there.
+            throw new IOException("Aborting restore: " + replaced + " is left from an earlier restore, check it first");
+        }
+        FileUtils.moveDirectory(worldFolder, replaced);
         try {
-            FileUtils.deleteDirectory(targetDirectory);
+            FileUtils.moveDirectory(staged, worldFolder);
         } catch (IOException e) {
-            // Extracting over a half-deleted world would produce a corrupt mix of both.
-            throw new IOException(
-                    "Aborting restore: failed to delete world directory %s".formatted(targetDirectory), e);
+            FileUtils.moveDirectory(replaced, worldFolder);
+            throw e;
         }
+    }
 
-        if (!targetDirectory.isDirectory() && !targetDirectory.mkdirs()) {
-            throw new IOException("Failed to create world directory for restore: " + targetDirectory.getAbsolutePath());
+    private void deleteQuietly(File directory) {
+        if (!directory.exists()) {
+            return;
         }
-        WorldArchive.extract(backupFile, targetDirectory);
-        return removedPlayers;
+        try {
+            FileUtils.deleteDirectory(directory);
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.WARNING, "Could not delete " + directory, e);
+        }
+    }
+
+    @FunctionalInterface
+    private interface IoAction {
+        void run() throws IOException;
+    }
+
+    private static void unchecked(IoAction action) {
+        try {
+            action.run();
+        } catch (IOException e) {
+            throw new CompletionException(e);
+        }
     }
 
     /**

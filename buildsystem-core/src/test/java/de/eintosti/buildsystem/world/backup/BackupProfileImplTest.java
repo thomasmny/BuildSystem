@@ -131,6 +131,7 @@ class BackupProfileImplTest {
     private static TaskScheduler inlineScheduler() {
         TaskScheduler scheduler = mock(TaskScheduler.class);
         lenient().when(scheduler.mainThread()).thenReturn(Runnable::run);
+        lenient().when(scheduler.background()).thenReturn(Runnable::run);
         lenient()
                 .doAnswer(invocation -> {
                     invocation.getArgument(0, Runnable.class).run();
@@ -247,6 +248,7 @@ class BackupProfileImplTest {
         verify(player).teleport(stoodAt);
         verify(messages).sendMessage(eq(player), eq("worlds_world_unload_failed"), any(Placeholders.class));
         assertEquals("current", Files.readString(worldFolder.resolve("level.dat")));
+        assertFalse(Files.exists(tempDir.resolve(".buildsystem-restore")), "the staging folder is cleaned up");
         assertFalse(operations.isBusy(buildWorld));
     }
 
@@ -293,9 +295,14 @@ class BackupProfileImplTest {
         return archive;
     }
 
-    @Test
-    void restoringALocalBackupFromAnEarlierVersion_putsTheWorldBackInPlace() throws Exception {
-        Path worldFolder = Files.createDirectories(tempDir.resolve("arena"));
+    /**
+     * Makes {@link #buildWorld} a loaded world {@code arena} in {@code worldFolder} that really unloads, whose backup
+     * is the given archive from {@code backups/}.
+     *
+     * @return The backup to restore
+     */
+    private Backup unloadableArenaWithBackup(Path worldFolder, String archiveName) throws IOException {
+        Files.createDirectories(worldFolder);
         Files.writeString(worldFolder.resolve("level.dat"), "current");
         loadedWorld(worldFolder);
         World world = buildWorld.getWorld().orElseThrow();
@@ -309,22 +316,49 @@ class BackupProfileImplTest {
                 .when(unloader)
                 .forceUnload(any());
         when(buildWorld.getUnloader()).thenReturn(unloader);
-        WorldLoader loader = mock(WorldLoader.class);
-        when(buildWorld.getLoader()).thenReturn(loader);
+        lenient().when(buildWorld.getLoader()).thenReturn(mock(WorldLoader.class));
         lenient().when(plugin.getLogger()).thenReturn(Logger.getLogger("BackupProfileImplTest"));
-        when(messages.formatDateTime(anyLong())).thenReturn("now");
-        Path archive = tempDir.resolve("zip4j-local.zip");
-        try (InputStream in = Objects.requireNonNull(getClass().getResourceAsStream("/backups/zip4j-local.zip"))) {
+        lenient().when(messages.formatDateTime(anyLong())).thenReturn("now");
+
+        Path archive = tempDir.resolve(archiveName);
+        try (InputStream in = Objects.requireNonNull(getClass().getResourceAsStream("/backups/" + archiveName))) {
             Files.copy(in, archive);
         }
         Backup backup = backup(1L);
         when(backupStorage.downloadBackup(backup)).thenReturn(CompletableFuture.completedFuture(archive.toFile()));
+        return backup;
+    }
+
+    @Test
+    void restoringALocalBackupFromAnEarlierVersion_putsTheWorldBackInPlace() throws Exception {
+        Path worldFolder = tempDir.resolve("arena");
+        Backup backup = unloadableArenaWithBackup(worldFolder, "zip4j-local.zip");
 
         profile(3).restoreBackup(backup, mock(Player.class)).get(5, TimeUnit.SECONDS);
 
         assertEquals("level-data", Files.readString(worldFolder.resolve("level.dat")));
         assertFalse(Files.exists(worldFolder.resolve("legacy")));
-        verify(loader).load();
+        assertFalse(Files.exists(tempDir.resolve(".buildsystem-restore")), "the old folder and staging are cleaned up");
+        verify(buildWorld.getLoader()).load();
         assertFalse(operations.isBusy(buildWorld));
+    }
+
+    @Test
+    void restoreAfterAFailedRollback_keepsTheOldWorldCopy() throws Exception {
+        Path worldFolder = tempDir.resolve("arena");
+        Backup backup = unloadableArenaWithBackup(worldFolder, "zip4j-remote.zip");
+        Path leftOver =
+                Files.createDirectories(tempDir.resolve(".buildsystem-restore").resolve("arena.replaced"));
+        Files.writeString(leftOver.resolve("level.dat"), "only copy");
+        Player player = mock(Player.class);
+
+        profile(3)
+                .restoreBackup(backup, player)
+                .handle((ignored, throwable) -> null)
+                .get(5, TimeUnit.SECONDS);
+
+        assertEquals("only copy", Files.readString(leftOver.resolve("level.dat")));
+        assertEquals("current", Files.readString(worldFolder.resolve("level.dat")));
+        verify(messages).sendMessage(player, "worlds_backup_restoration_failed");
     }
 }
