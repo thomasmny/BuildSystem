@@ -36,17 +36,8 @@ public class RemoveSpawnSubCommand extends AbstractSubCommand {
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(player.getWorld());
-        if (buildWorld != null
-                && !buildWorld
-                        .getPermissions()
-                        .canPerformCommand(player, getArgument().getPermission())) {
-            messages.sendPermissionError(player);
-            return;
-        }
-
+        BuildWorld buildWorld = requireCurrentWorld(player, "worlds_removespawn_world_not_imported");
         if (buildWorld == null) {
-            messages.sendMessage(player, "worlds_removespawn_world_not_imported");
             return;
         }
 

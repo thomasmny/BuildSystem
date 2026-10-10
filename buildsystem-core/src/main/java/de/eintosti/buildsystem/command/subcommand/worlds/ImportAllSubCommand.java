@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
@@ -104,18 +103,14 @@ public class ImportAllSubCommand extends AbstractSubCommand {
             return;
         }
 
-        String creatorName = creatorArg;
         Generator resolvedGenerator = generator;
-        playerLookupService
-                .lookupUniqueId(creatorName)
-                .thenAccept(creatorId -> scheduler.run(() -> {
-                    if (creatorId == null) {
-                        messages.sendMessage(player, "worlds_importall_player_not_found");
-                        return;
-                    }
-                    worldService.importWorlds(
-                            player, directories, resolvedGenerator, Builder.of(creatorId, creatorName));
-                }));
+        resolvePlayer(
+                playerLookupService,
+                scheduler,
+                player,
+                creatorArg,
+                "worlds_importall_player_not_found",
+                creator -> worldService.importWorlds(player, directories, resolvedGenerator, creator));
     }
 
     @Override

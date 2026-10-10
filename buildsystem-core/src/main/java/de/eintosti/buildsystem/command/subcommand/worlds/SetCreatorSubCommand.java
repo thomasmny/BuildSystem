@@ -70,16 +70,13 @@ public class SetCreatorSubCommand extends AbstractSubCommand {
                 return;
             }
 
-            playerLookupService
-                    .lookupUniqueId(creatorName)
-                    .thenAccept(creatorId -> scheduler.run(() -> {
-                        if (creatorId == null) {
-                            messages.sendMessage(player, "worlds_setcreator_player_not_found");
-                            player.closeInventory();
-                            return;
-                        }
-                        applyCreator(player, buildWorld, Builder.of(creatorId, creatorName));
-                    }));
+            resolvePlayer(
+                    playerLookupService,
+                    scheduler,
+                    player,
+                    creatorName,
+                    "worlds_setcreator_player_not_found",
+                    creator -> applyCreator(player, buildWorld, creator));
         });
     }
 
@@ -94,12 +91,7 @@ public class SetCreatorSubCommand extends AbstractSubCommand {
 
     @Override
     public List<String> complete(Player player, String[] args) {
-        if (args.length != 2) {
-            return List.of();
-        }
-
-        return WorldsCompletions.permittedWorldNames(
-                player, worldService, getArgument().getPermission(), args[1]);
+        return completeWorldName(player, args);
     }
 
     @Override
