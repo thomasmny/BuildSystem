@@ -38,6 +38,7 @@ import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.Permissions;
+import de.eintosti.buildsystem.world.WorldClock;
 import de.eintosti.buildsystem.world.WorldNames;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -525,14 +526,17 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
     private void changeTime(Player player) {
         Time defaultTime = configService.current().world().defaults().time();
-        buildWorld
-                .getWorld()
-                .ifPresent(world -> world.setTime(
-                        switch (renderer.timeOfDay(world)) {
-                            case SUNRISE -> defaultTime.noon();
-                            case NOON -> defaultTime.night();
-                            case NIGHT -> defaultTime.sunrise();
-                        }));
+        buildWorld.getWorld().ifPresent(world -> {
+            int time =
+                    switch (renderer.timeOfDay(world)) {
+                        case SUNRISE -> defaultTime.noon();
+                        case NOON -> defaultTime.night();
+                        case NIGHT -> defaultTime.sunrise();
+                    };
+            if (!WorldClock.trySetTime(world, time)) {
+                messages.sendMessage(player, "time_fixed", Placeholders.of("%world%", buildWorld.getName()));
+            }
+        });
     }
 
     private void removeEntities(Player player) {

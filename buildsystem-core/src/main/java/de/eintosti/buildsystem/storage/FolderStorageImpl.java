@@ -31,6 +31,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
@@ -114,6 +115,10 @@ public abstract class FolderStorageImpl implements FolderStorage {
                 .filter(Objects::nonNull)
                 .forEach(buildWorld -> buildWorld.setFolder(null));
 
+        delete(removed).exceptionally(throwable -> {
+            logger.log(Level.SEVERE, "Failed to delete folder \"" + removed.getName() + "\" from storage", throwable);
+            return null;
+        });
         fireEvent(new FolderDeletedEvent(removed));
     }
 

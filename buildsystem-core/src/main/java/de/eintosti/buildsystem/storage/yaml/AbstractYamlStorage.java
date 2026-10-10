@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.storage.yaml;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
  * Base for the simple (non-cache-backed) storages. Holds a {@link YamlStore} for the file plumbing and exposes it
@@ -41,11 +40,11 @@ public abstract class AbstractYamlStorage {
         store.locked(store::reload);
     }
 
-    public void saveFile() {
-        store.atomicSave(() -> {});
+    public boolean saveFile() {
+        return store.atomicSave(() -> {});
     }
 
-    public @Nullable FileConfiguration getFile() {
+    public FileConfiguration getFile() {
         return store.config();
     }
 }

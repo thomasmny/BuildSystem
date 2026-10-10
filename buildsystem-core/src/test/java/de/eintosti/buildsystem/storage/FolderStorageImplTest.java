@@ -17,7 +17,13 @@
  */
 package de.eintosti.buildsystem.storage;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.eintosti.buildsystem.api.event.folder.FolderCreatedEvent;
 import de.eintosti.buildsystem.api.event.folder.FolderDeletedEvent;
@@ -44,6 +50,7 @@ class FolderStorageImplTest {
 
     private FolderStorageImpl storage;
     private final List<Event> firedEvents = new ArrayList<>();
+    private final List<Folder> deletedFromStorage = new ArrayList<>();
     private Builder creator;
 
     @BeforeEach
@@ -70,6 +77,7 @@ class FolderStorageImplTest {
 
             @Override
             public CompletableFuture<Void> delete(Folder folder) {
+                deletedFromStorage.add(folder);
                 return CompletableFuture.completedFuture(null);
             }
 
@@ -159,6 +167,19 @@ class FolderStorageImplTest {
 
         assertFalse(storage.folderExists("Parent"));
         assertFalse(storage.folderExists("Child"));
+    }
+
+    @Test
+    void removeFolder_deletesFolderAndSubfoldersFromStorage() {
+        Folder parent = storage.createFolder("Parent", TestData.PUBLIC, creator);
+        Folder child = storage.createFolder("Child", TestData.PUBLIC, creator);
+        child.setParent(parent);
+        storage.createFolder("Unrelated", TestData.PUBLIC, creator);
+
+        storage.removeFolder(parent);
+
+        assertEquals(2, deletedFromStorage.size());
+        assertTrue(deletedFromStorage.containsAll(List.of(parent, child)));
     }
 
     // Minimal Folder implementation for tests

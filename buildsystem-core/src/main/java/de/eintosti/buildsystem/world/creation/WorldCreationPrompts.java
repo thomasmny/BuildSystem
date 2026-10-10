@@ -84,7 +84,7 @@ public class WorldCreationPrompts {
             return false;
         }
 
-        if (worldService.getWorldStorage().worldAndFolderExist(name)) {
+        if (worldService.getWorldStorage().isNameTaken(name)) {
             messages.sendMessage(player, "worlds_world_exists");
             XSound.ENTITY_ITEM_BREAK.play(player);
             return false;

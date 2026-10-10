@@ -20,7 +20,12 @@ package de.eintosti.buildsystem.util;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldNames;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.DirectoryNotEmptyException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -234,6 +239,30 @@ public final class FileUtils {
      */
     private static void copyFile(File source, File target) throws IOException {
         Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    }
+
+    /**
+     * Moves a directory. Fails when {@code target} already exists, so it never merges into another world's folder.
+     * Within one file system this is a rename that keeps every file. Across file systems it falls back to
+     * {@link #copy}, which leaves out {@code uid.dat} and {@code session.lock}, and then deletes the source.
+     *
+     * @param source The directory to move
+     * @param target Where it should end up; its parent directories are created
+     * @throws FileAlreadyExistsException If {@code target} exists
+     * @throws IOException If the move fails
+     */
+    public static void moveDirectory(File source, File target) throws IOException {
+        Path to = target.toPath();
+        Path parent = to.toAbsolutePath().getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
+        try {
+            Files.move(source.toPath(), to);
+        } catch (DirectoryNotEmptyException e) {
+            copy(source, target);
+            deleteDirectory(source);
+        }
     }
 
     /**

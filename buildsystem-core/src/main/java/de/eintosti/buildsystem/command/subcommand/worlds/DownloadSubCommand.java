@@ -195,6 +195,9 @@ public class DownloadSubCommand extends WorldSubCommand {
      * operator-tunable condition rather than a bug, so neither is logged as one.
      */
     private void sendFailure(Player player, BuildWorld buildWorld, Placeholders worldPlaceholder, Throwable throwable) {
+        if (worldService.operations().reportRefusal(player, buildWorld.getName(), throwable)) {
+            return;
+        }
         Throwable cause = throwable instanceof CompletionException && throwable.getCause() != null
                 ? throwable.getCause()
                 : throwable;

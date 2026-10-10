@@ -27,8 +27,13 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
@@ -61,8 +66,6 @@ abstract class AbstractWorldCreator {
 
     protected @Nullable Player audience;
 
-    protected @Nullable BuildWorld buildWorld;
-
     protected AbstractWorldCreator(
             WorldContext context, WorldStorageImpl worldStorage, String worldName, BuildWorldType worldType) {
         this.context = context;
@@ -91,38 +94,67 @@ abstract class AbstractWorldCreator {
         return event.isCancelled();
     }
 
-    protected BuildWorld createAndRegisterBuildWorld() {
+    /**
+     * Registers the build world, then generates its Bukkit world. The world is registered first so its settings (mob
+     * AI, physics) already apply to the chunks generated with it; if generation fails or throws, the registration is
+     * rolled back, so no registered world is left without a Bukkit world behind it. A new world's folder is deleted
+     * as well, so the name can be used again; an imported folder is left alone.
+     *
+     * @param checkVersion Whether to refuse a world folder saved by a newer Minecraft version
+     * @return The registered world, or {@code null} when the Bukkit world could not be generated
+     */
+    protected @Nullable BuildWorld generateAndRegister(boolean checkVersion) {
         BuildWorldImpl newBuildWorld = new BuildWorldImpl(
                 context, worldName, creator, worldType, creationDate, privateWorld, customGenerator, folder);
-
         if (folder != null) {
             folder.addWorld(newBuildWorld);
         }
-
         newBuildWorld.getData().set(WorldDataKey.LAST_LOADED, System.currentTimeMillis());
         worldStorage.addBuildWorld(newBuildWorld);
+
+        BukkitWorldFactory factory =
+                new BukkitWorldFactory(context.logger(), worldName, worldType, customGenerator, seed);
+        World world = null;
+        try {
+            world = factory.generate(
+                    checkVersion ? BukkitWorldFactory.VersionCheck.REQUIRED : BukkitWorldFactory.VersionCheck.SKIP);
+        } finally {
+            if (world == null) {
+                worldStorage.removeBuildWorld(newBuildWorld);
+                if (!isImport()) {
+                    deleteFolderOfFailedWorld();
+                }
+            }
+        }
+        if (world == null) {
+            if (!isImport()) {
+                notifyAudience("worlds_creation_failed", Placeholders.of("%world%", worldName));
+            }
+            return null;
+        }
+
+        new WorldDefaults(context.logger(), context.configService(), difficulty, time, worldBorderSize)
+                .apply(world, factory.generatedType(), !isImport());
+        newBuildWorld.getUnloader().manageUnload();
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostCreateEvent(newBuildWorld, isImport()));
         return newBuildWorld;
     }
 
-    protected @Nullable World generateBukkitWorld(boolean checkVersion) {
-        if (buildWorld == null) {
-            throw new IllegalStateException("BuildWorld must be set before generating the Bukkit world.");
-        }
-
-        return new BukkitWorldFactory(
-                        context.configService(),
-                        context.logger(),
-                        worldName,
-                        worldType,
-                        customGenerator,
-                        difficulty,
-                        time,
-                        worldBorderSize,
-                        seed,
-                        !isImport())
-                .generate(
-                        checkVersion ? BukkitWorldFactory.VersionCheck.REQUIRED : BukkitWorldFactory.VersionCheck.SKIP);
+    private void deleteFolderOfFailedWorld() {
+        File folder = FileUtils.worldFolder(worldName);
+        CompletableFuture.runAsync(
+                () -> {
+                    if (!folder.exists()) {
+                        return;
+                    }
+                    try {
+                        FileUtils.deleteDirectory(folder);
+                    } catch (IOException e) {
+                        context.logger()
+                                .log(Level.WARNING, "Could not delete the folder of failed world " + worldName, e);
+                    }
+                },
+                context.scheduler().background());
     }
 
     protected final void notifyAudience(String key) {

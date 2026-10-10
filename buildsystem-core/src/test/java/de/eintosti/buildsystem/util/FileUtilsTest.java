@@ -17,7 +17,10 @@
  */
 package de.eintosti.buildsystem.util;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -110,6 +113,35 @@ class FileUtilsTest {
         File target = tempDir.resolve("target").toFile();
 
         assertThrows(IOException.class, () -> FileUtils.copy(missing, target));
+    }
+
+    @Test
+    void moveDirectory_movesEverythingIncludingServerFiles() throws IOException {
+        File source = createWorldLikeDirectory("old");
+        File target = tempDir.resolve("dimensions")
+                .resolve("minecraft")
+                .resolve("new")
+                .toFile();
+
+        FileUtils.moveDirectory(source, target);
+
+        assertFalse(source.exists());
+        assertEquals(
+                "region-data",
+                Files.readString(target.toPath().resolve("region").resolve("r.0.0.mca")));
+        assertTrue(new File(target, "uid.dat").exists(), "a move keeps the world's uid");
+    }
+
+    @Test
+    void moveDirectory_neverMergesIntoAnExistingDirectory() throws IOException {
+        File source = createWorldLikeDirectory("old");
+        File target = createWorldLikeDirectory("taken");
+        Files.writeString(target.toPath().resolve("level.dat"), "other world");
+
+        assertThrows(IOException.class, () -> FileUtils.moveDirectory(source, target));
+
+        assertEquals("other world", Files.readString(target.toPath().resolve("level.dat")));
+        assertTrue(new File(source, "level.dat").exists(), "the source must be left alone");
     }
 
     @Test
@@ -209,7 +241,9 @@ class FileUtilsTest {
         assertThrows(IOException.class, () -> FileUtils.zipDirectoryToMemory(missing, null));
     }
 
-    /** A running server with {@code level-name=world} whose container is the temp dir. */
+    /**
+     * A running server with {@code level-name=world} whose container is the temp dir.
+     */
     private MockedStatic<Bukkit> mockServer() {
         MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class);
         bukkit.when(Bukkit::getWorldContainer).thenReturn(tempDir.toFile());

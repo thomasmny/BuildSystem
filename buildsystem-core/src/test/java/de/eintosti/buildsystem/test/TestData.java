@@ -35,11 +35,13 @@ import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
+import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.EnumSet;
 import java.util.List;
@@ -173,16 +175,19 @@ public final class TestData {
                 .thenReturn("06:00:00");
         // The deep-stubbed defaults().physicsException(...) returns false, which matches the production default
         // (all physics exceptions blocked).
+        Messages messages = mock(Messages.class, RETURNS_DEEP_STUBS);
+        SpawnService spawnService = mock(SpawnService.class);
         return new WorldContext(
-                mock(Messages.class, RETURNS_DEEP_STUBS),
+                messages,
                 mock(MenuItems.class),
                 configService,
                 mock(PlayerServiceImpl.class),
-                mock(SpawnService.class),
+                spawnService,
                 statusRegistry(),
                 mock(CustomizableIcons.class),
                 new TaskScheduler(mock(Plugin.class)),
-                Logger.getLogger("BuildSystemTest"));
+                Logger.getLogger("BuildSystemTest"),
+                new WorldOperations(messages, spawnService));
     }
 
     /**
@@ -199,8 +204,10 @@ public final class TestData {
         NavigatorCategoryRegistryImpl categoryRegistry = categoryRegistry();
         PlayerLookupService playerLookup = mock(PlayerLookupService.class);
         Prompts prompts = mock(Prompts.class);
+        BackupServiceImpl backup = mock(BackupServiceImpl.class);
         Services services = mock(Services.class);
         lenient().when(services.worldContext()).thenReturn(context);
+        lenient().when(services.operations()).thenReturn(context.operations());
         lenient().when(services.scheduler()).thenReturn(context.scheduler());
         lenient().when(services.config()).thenReturn(context.configService());
         lenient().when(services.messages()).thenReturn(context.messages());
@@ -210,6 +217,7 @@ public final class TestData {
         lenient().when(services.navigatorCategoryRegistry()).thenReturn(categoryRegistry);
         lenient().when(services.playerLookup()).thenReturn(playerLookup);
         lenient().when(services.prompts()).thenReturn(prompts);
+        lenient().when(services.backup()).thenReturn(backup);
         return services;
     }
 

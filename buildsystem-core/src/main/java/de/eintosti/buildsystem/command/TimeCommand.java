@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.Permissions;
+import de.eintosti.buildsystem.world.WorldClock;
 import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
@@ -111,8 +112,9 @@ public class TimeCommand extends CommandBase {
         }
 
         Time time = configService.current().world().defaults().time();
-        world.setTime(variant.tick.applyAsInt(time));
-        messages.sendMessage(player, variant.label + "_set", Placeholders.of("%world%", WorldNames.of(world)));
+        boolean set = WorldClock.trySetTime(world, variant.tick.applyAsInt(time));
+        messages.sendMessage(
+                player, set ? variant.label + "_set" : "time_fixed", Placeholders.of("%world%", WorldNames.of(world)));
     }
 
     @Override

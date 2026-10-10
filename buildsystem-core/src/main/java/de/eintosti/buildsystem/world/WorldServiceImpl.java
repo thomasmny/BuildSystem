@@ -52,19 +52,17 @@ import de.eintosti.buildsystem.world.creation.WorldImportCoordinator;
 import de.eintosti.buildsystem.world.creation.WorldImporterImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldLoadBootstrap;
+import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.lifecycle.WorldRenamer;
 import de.eintosti.buildsystem.world.lifecycle.WorldUnloaderImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.jetbrains.annotations.Contract;
@@ -91,7 +89,12 @@ public class WorldServiceImpl implements WorldService {
         this.worldStorage = new YamlWorldStorage(plugin, services);
         this.folderStorage = new YamlFolderStorage(plugin, this.worldStorage, services);
         this.loadBootstrap = new WorldLoadBootstrap(
-                plugin, services.scheduler(), this.folderStorage, this.worldStorage, services.config());
+                plugin,
+                services.scheduler(),
+                this.folderStorage,
+                this.worldStorage,
+                services.config(),
+                () -> services.spawn().loadSpawnWorld());
         this.creationPrompts = new WorldCreationPrompts(this, services::prompts, services.messages());
         this.importCoordinator =
                 new WorldImportCoordinator(plugin, this, this.worldStorage, services.config(), services.messages());
@@ -287,19 +290,38 @@ public class WorldServiceImpl implements WorldService {
 
     @Override
     public CompletableFuture<Void> unimportWorld(BuildWorld buildWorld, SaveBehavior saveBehavior) {
-        return unimportWorldQuietly(buildWorld, saveBehavior)
-                .thenRun(() -> plugin.getLogger().info("*** Unimported world \"" + buildWorld.getName() + "\" ***"));
+        WorldOperations operations = operations();
+        return operations.runExclusively(buildWorld, () -> {
+            operations.takeOffline(buildWorld, "worlds_unimport_players_world", saveBehavior);
+            return unregister(buildWorld)
+                    .thenRun(
+                            () -> plugin.getLogger().info("*** Unimported world \"" + buildWorld.getName() + "\" ***"));
+        });
     }
 
     /**
-     * Unimports without logging, so a deletion (which unimports as its first step) is reported as a single
-     * operation.
+     * Unimports a world on behalf of a player and tells them how it went.
      */
-    private CompletableFuture<Void> unimportWorldQuietly(BuildWorld buildWorld, SaveBehavior saveBehavior) {
-        buildWorld.getUnloader().forceUnload(saveBehavior);
+    public void unimportWorld(Player player, BuildWorld buildWorld) {
+        String worldName = buildWorld.getName();
+        unimportWorld(buildWorld, SaveBehavior.SAVE).whenComplete((ignored, failure) -> {
+            if (failure == null) {
+                messages.sendMessage(player, "worlds_unimport_finished", Placeholders.of("%world%", worldName));
+            } else if (!operations().reportRefusal(player, worldName, failure)) {
+                plugin.getLogger().log(Level.SEVERE, "Failed to unimport world \"" + worldName + "\"", failure);
+                messages.sendMessage(player, "worlds_unimport_error", Placeholders.of("%world%", worldName));
+            }
+        });
+    }
+
+    /**
+     * Removes an already unloaded world from the registry and from storage. Logs nothing, so a deletion (which
+     * unregisters as one of its steps) is reported as a single operation.
+     */
+    private CompletableFuture<Void> unregister(BuildWorld buildWorld) {
         this.worldStorage.removeBuildWorld(buildWorld);
+        services.backup().removeProfile(buildWorld);
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldUnimportEvent(buildWorld));
-        removePlayersFromWorld(buildWorld.getName(), "worlds_unimport_players_world");
         return this.worldStorage.delete(buildWorld);
     }
 
@@ -320,6 +342,9 @@ public class WorldServiceImpl implements WorldService {
         deleteWorld(buildWorld)
                 .thenRun(() -> messages.sendMessage(player, "worlds_delete_finished"))
                 .exceptionally(e -> {
+                    if (operations().reportRefusal(player, worldName, e)) {
+                        return null;
+                    }
                     Throwable cause = e.getCause() != null ? e.getCause() : e;
                     switch (cause) {
                         case WorldNotFoundException ignored ->
@@ -357,6 +382,11 @@ public class WorldServiceImpl implements WorldService {
                     new WorldDirectoryNotFoundException(worldName, deleteFolder.getAbsolutePath()));
         }
 
+        return operations().runExclusively(buildWorld, () -> unloadAndDelete(buildWorld, deleteFolder));
+    }
+
+    private CompletableFuture<Void> unloadAndDelete(BuildWorld buildWorld, File deleteFolder) {
+        String worldName = buildWorld.getName();
         BuildWorldDeleteEvent deleteEvent = new BuildWorldDeleteEvent(buildWorld);
         Bukkit.getServer().getPluginManager().callEvent(deleteEvent);
         if (deleteEvent.isCancelled()) {
@@ -364,8 +394,16 @@ public class WorldServiceImpl implements WorldService {
                     "Deletion of world '%s' was cancelled by an event listener".formatted(worldName)));
         }
 
+        // The unload comes before anything that cannot be undone: if it does not go through, the world is left as it
+        // was instead of having its folder deleted while the server still writes to it.
+        operations().takeOffline(buildWorld, "worlds_delete_players_world", SaveBehavior.DISCARD);
+
         buildWorld.setFolder(null);
-        removePlayersFromWorld(worldName, "worlds_delete_players_world");
+        SpawnService spawnService = services.spawn();
+        if (spawnService.isIn(worldName)) {
+            spawnService.remove();
+            spawnService.save();
+        }
 
         // The one place a raw BukkitScheduler is held rather than TaskScheduler: the stage below runs on a pool
         // thread, and TaskScheduler.run() would only reach Bukkit.getScheduler() once it got there. Resolving the
@@ -375,7 +413,7 @@ public class WorldServiceImpl implements WorldService {
         // Registry removal and metadata persistence are awaited before folder deletion so a crash mid-delete leaves an
         // orphaned folder (re-importable) rather than an orphaned registry entry pointing at a deleted folder. The
         // directory delete is disk I/O, so it runs on the shared background pool.
-        return unimportWorldQuietly(buildWorld, SaveBehavior.DISCARD)
+        return unregister(buildWorld)
                 .thenRunAsync(
                         () -> {
                             try {
@@ -408,7 +446,6 @@ public class WorldServiceImpl implements WorldService {
                         plugin,
                         this,
                         worldStorage,
-                        services.config(),
                         services.messages(),
                         services.prompts(),
                         services.spawn(),
@@ -416,52 +453,11 @@ public class WorldServiceImpl implements WorldService {
                 .rename(player, buildWorld, newName);
     }
 
-    public List<Player> removePlayersFromWorld(String worldName, String messageKey) {
-        World worldToRemove = WorldNames.bukkitWorld(worldName);
-        if (worldToRemove == null) {
-            return List.of();
-        }
-
-        List<World> serverWorlds = Bukkit.getWorlds();
-        if (serverWorlds.isEmpty()) {
-            return List.of();
-        }
-        World fallbackWorld = serverWorlds.getFirst();
-        Location fallbackSpawn = fallbackWorld
-                .getHighestBlockAt(fallbackWorld.getSpawnLocation())
-                .getLocation()
-                .add(0.5, 1, 0.5);
-
-        SpawnService spawnService = services.spawn();
-        List<Player> affectedPlayers = new ArrayList<>();
-
-        Bukkit.getOnlinePlayers().forEach(player -> {
-            if (!player.getWorld().equals(worldToRemove)) {
-                return;
-            }
-
-            boolean teleported = false;
-
-            if (spawnService.spawnExists()) {
-                spawnService.teleport(player);
-                teleported = true;
-            } else if (!fallbackWorld.equals(worldToRemove)) {
-                player.teleport(fallbackSpawn);
-                teleported = true;
-            }
-
-            if (!teleported) {
-                // No valid spawn and fallback world is the one being deleted -> kick
-                spawnService.remove();
-                player.kickPlayer(messages.getString(messageKey, player));
-                return;
-            }
-
-            messages.sendMessage(player, messageKey);
-            affectedPlayers.add(player);
-        });
-
-        return affectedPlayers;
+    /**
+     * {@return the busy guard, evacuation and unload steps shared by the operations that take a world away}
+     */
+    public WorldOperations operations() {
+        return services.operations();
     }
 
     public void remanageAllUnloadTasks() {

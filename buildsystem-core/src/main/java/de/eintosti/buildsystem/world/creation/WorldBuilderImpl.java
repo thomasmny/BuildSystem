@@ -143,7 +143,7 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
 
     @Override
     public @Nullable BuildWorld build() {
-        if (worldStorage.worldAndFolderExist(worldName)) {
+        if (worldStorage.isNameTaken(worldName)) {
             notifyAudience("worlds_world_exists");
             return null;
         }
@@ -152,17 +152,15 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
             return null;
         }
 
-        boolean success =
+        BuildWorld created =
                 (worldType == BuildWorldType.TEMPLATE) ? createWorldFromTemplate() : createWorldFromGenerator();
-        if (!success) {
-            return null;
+        if (created != null) {
+            notifyAudience("worlds_creation_finished");
         }
-
-        notifyAudience("worlds_creation_finished");
-        return buildWorld;
+        return created;
     }
 
-    private boolean createWorldFromGenerator() {
+    private @Nullable BuildWorld createWorldFromGenerator() {
         if (audience != null) {
             notifyAudience(
                     "worlds_world_creation_started",
@@ -171,12 +169,10 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
                             .add("%type%", context.messages().getString(Messages.getMessageKey(worldType), audience))
                             .build());
         }
-        buildWorld = createAndRegisterBuildWorld();
-        generateBukkitWorld(false);
-        return true;
+        return generateAndRegister(false);
     }
 
-    private boolean createWorldFromTemplate() {
+    private @Nullable BuildWorld createWorldFromTemplate() {
         if (template == null || template.isEmpty()) {
             throw new IllegalStateException("Attempted to create a template world without a template name");
         }
@@ -185,12 +181,12 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
         File templateFile = new File(dataFolder, TEMPLATES_DIRECTORY + File.separator + template);
         if (StringCleaner.isPathEscape(templatesDir, templateFile)) {
             notifyAudience("worlds_template_does_not_exist");
-            return false;
+            return null;
         }
 
         if (!templateFile.exists()) {
             notifyAudience("worlds_template_does_not_exist");
-            return false;
+            return null;
         }
 
         notifyAudience(
@@ -208,11 +204,9 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
             context.logger()
                     .log(Level.SEVERE, "Failed to copy template \"" + template + "\" for world " + worldName, e);
             notifyAudience("worlds_template_creation_error", Placeholders.of("%template%", template));
-            return false;
+            return null;
         }
 
-        buildWorld = createAndRegisterBuildWorld();
-        generateBukkitWorld(true);
-        return true;
+        return generateAndRegister(true);
     }
 }

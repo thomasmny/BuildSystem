@@ -75,7 +75,10 @@ public class WarpWorldLoadListener implements Listener {
         }
 
         // Blocking on purpose: EssentialsX resolves the location as soon as this returns.
-        buildWorld.getLoader().load();
+        buildWorld.getLoader().loadForPlayer(event.getUser().getBase());
+        if (!buildWorld.isLoaded()) {
+            event.setCancelled(true);
+        }
     }
 
     /**

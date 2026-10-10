@@ -157,6 +157,9 @@ night_usage: "%prefix% &7Usage: &b/night [world]"
 night_unknown_world: "%prefix% &cUnknown world."
 night_set: "%prefix% &7It is now night in &b%world%&7."
 
+# /day, /night and the world editor's time button in a world whose time cannot change, like the nether
+time_fixed: "%prefix% &cThe time in &b%world% &cis fixed and cannot be changed."
+
 # /top
 top_usage: "%prefix% &7Usage: &b/top"
 top_teleported: "%prefix% &7You were teleported to the &btop&7."
@@ -178,12 +181,15 @@ worlds_backup_created: "%prefix% &7Successfully &acreated &7a backup of &b%world
 worlds_backup_failed: "%prefix% &cUnable to create a backup of %world%."
 worlds_backup_restoration_in_progress: "%prefix% &7&oThe world you are in is being restored..."
 worlds_backup_restoration_successful: "%prefix% &7The world has been successfully reset to the state from &a%timestamp%&7."
+worlds_backup_restoration_failed: "%prefix% &cThe backup could not be restored. Check the console for details."
 
 worlds_builders_usage: "%prefix% &7Usage: &b/worlds builders <world>"
 worlds_builders_unknown_world: "%prefix% &cUnknown world."
 
 worlds_world_exists: "%prefix% &cThis world already exists."
 worlds_world_creation_invalid_characters: "%prefix% &7&oRemoved invalid characters from world name."
+worlds_world_busy: "%prefix% &b%world% &cis busy with another operation. Try again in a moment."
+worlds_world_unload_failed: "%prefix% &b%world% &ccould not be unloaded, so nothing was changed."
 worlds_world_creation_name_bank: "%prefix% &cThe world name cannot be blank."
 worlds_world_namespace_invalid: "%prefix% &c%namespace% &7is not a valid namespace. Use lowercase letters, digits, &f_&7, &f-&7 and &f.&7."
 worlds_world_namespace_unsupported: "%prefix% &cWorld namespaces require Paper."
@@ -193,6 +199,7 @@ worlds_world_creation_started: "%prefix% &7The creation of &b%world% &8(&7Type: 
 worlds_template_creation_started: "%prefix% &7The creation of &b%world% &8(&7Template: &f%template%&8) &7has started..."
 worlds_template_creation_error: "%prefix% &cThe template &f%template% &ccould not be copied. See the console for details."
 worlds_creation_finished: "%prefix% &7The world was &asuccessfully &7created."
+worlds_creation_failed: "%prefix% &b%world% &ccould not be created. Check the console for details."
 worlds_template_does_not_exist: "%prefix% &cThis template does not exist."
 
 worlds_unknown_command: "%prefix% &7Unknown command: &b/worlds help"
@@ -386,6 +393,7 @@ worlds_unimport_usage: "%prefix% &7Usage: &b/worlds unimport <world>"
 worlds_unimport_unknown_world: "%prefix% &cUnknown world."
 worlds_unimport_players_world: "%prefix% &7&oThe world you were in was unimported."
 worlds_unimport_finished: "%prefix% &b%world% &7has been &aunimported&7."
+worlds_unimport_error: "%prefix% &b%world% &ccould not be unimported. Check the console for details."
 
 
 # ---------

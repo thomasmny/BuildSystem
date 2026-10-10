@@ -47,9 +47,18 @@ public class WorldLoaderImpl implements WorldLoader {
         return new WorldLoaderImpl(context, buildWorld);
     }
 
+    /**
+     * Loads the world with a title for the player, or tells them the world is busy while an operation such as a rename
+     * or restore holds it. Callers check {@link BuildWorldImpl#isLoaded()} afterwards.
+     */
     @Override
     public void loadForPlayer(Player player) {
         if (this.buildWorld.isLoaded()) {
+            return;
+        }
+        if (this.context.operations().isBusy(this.buildWorld)) {
+            context.messages()
+                    .sendMessage(player, "worlds_world_busy", Placeholders.of("%world%", this.buildWorld.getName()));
             return;
         }
 
@@ -65,9 +74,13 @@ public class WorldLoaderImpl implements WorldLoader {
         load();
     }
 
+    /**
+     * Loads the world, unless it is loaded already or an operation such as a rename or restore is working on its
+     * folder. Loading then would create a fresh world at a path that is about to move or be replaced.
+     */
     @Override
     public void load() {
-        if (this.buildWorld.isLoaded()) {
+        if (this.buildWorld.isLoaded() || this.context.operations().isBusy(this.buildWorld)) {
             return;
         }
 
@@ -79,7 +92,7 @@ public class WorldLoaderImpl implements WorldLoader {
 
         String worldName = this.buildWorld.getName();
         this.context.logger().info("*** Loading world \"" + worldName + "\" ***");
-        World world = new BukkitWorldFactory(this.context.configService(), this.context.logger(), this.buildWorld)
+        World world = new BukkitWorldFactory(this.context.logger(), this.buildWorld)
                 .generate(BukkitWorldFactory.VersionCheck.REQUIRED);
         if (world == null) {
             return;

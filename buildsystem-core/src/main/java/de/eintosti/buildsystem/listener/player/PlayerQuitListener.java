@@ -92,17 +92,20 @@ public class PlayerQuitListener implements Listener {
             settingsManager.hideScoreboard(player);
         }
 
+        BuildPlayerImpl buildPlayer =
+                BuildPlayerImpl.of(playerManager.getPlayerStorage().getBuildPlayer(player));
+        // The snapshots only live in memory, so hand them back before the server saves the player. Build mode is
+        // unwound first, as on a world change: inside an archive world its snapshot is the emptied inventory.
+        CachedValues cachedValues = buildPlayer.getCachedValues();
+        cachedValues.resetBuildStateIfPresent(player);
+        playerManager.leaveBuildMode(player.getUniqueId());
+        ArchiveMode.exit(player, cachedValues, settingsManager);
+
         if (settings.isClearInventory()) {
             player.getInventory().clear();
         }
 
-        BuildPlayerImpl buildPlayer =
-                BuildPlayerImpl.of(playerManager.getPlayerStorage().getBuildPlayer(player));
         buildPlayer.setLogoutLocation(new LogoutLocation(WorldNames.of(player.getWorld()), player.getLocation()));
-
-        CachedValues cachedValues = buildPlayer.getCachedValues();
-        cachedValues.resetBuildStateIfPresent(player);
-        playerManager.leaveBuildMode(player.getUniqueId());
 
         manageHidePlayer(player);
     }

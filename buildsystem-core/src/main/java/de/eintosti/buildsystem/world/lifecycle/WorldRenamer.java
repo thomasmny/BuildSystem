@@ -21,7 +21,7 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.BuildWorldRenameEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Prompts;
@@ -36,20 +36,17 @@ import io.papermc.lib.PaperLib;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
- * Orchestrates renaming a {@link BuildWorld}: validates the new name, evicts players, copies the directory
+ * Orchestrates renaming a {@link BuildWorld}: validates the new name, evicts players, moves the directory
  * asynchronously, then reconstructs the world under the new name.
  */
 @NullMarked
@@ -58,7 +55,6 @@ public class WorldRenamer {
     private final BuildSystemPlugin plugin;
     private final WorldServiceImpl worldService;
     private final WorldStorageImpl worldStorage;
-    private final ConfigService configService;
     private final Messages messages;
     private final Prompts prompts;
     private final SpawnService spawnService;
@@ -68,7 +64,6 @@ public class WorldRenamer {
             BuildSystemPlugin plugin,
             WorldServiceImpl worldService,
             WorldStorageImpl worldStorage,
-            ConfigService configService,
             Messages messages,
             Prompts prompts,
             SpawnService spawnService,
@@ -76,7 +71,6 @@ public class WorldRenamer {
         this.plugin = plugin;
         this.worldService = worldService;
         this.worldStorage = worldStorage;
-        this.configService = configService;
         this.messages = messages;
         this.prompts = prompts;
         this.spawnService = spawnService;
@@ -101,7 +95,7 @@ public class WorldRenamer {
             return;
         }
 
-        if (worldStorage.worldAndFolderExist(sanitizedNewName)) {
+        if (worldStorage.isNameTaken(sanitizedNewName)) {
             messages.sendMessage(player, "worlds_world_exists");
             XSound.ENTITY_ITEM_BREAK.play(player);
             return;
@@ -120,61 +114,47 @@ public class WorldRenamer {
             return;
         }
 
-        if (WorldNames.bukkitWorld(oldName) == null && !buildWorld.isLoaded()) {
-            buildWorld.getLoader().load();
-        }
-
-        World oldWorld = WorldNames.bukkitWorld(oldName);
-        if (oldWorld == null) {
+        if (!FileUtils.worldFolder(oldName).isDirectory()) {
             messages.sendMessage(player, "worlds_rename_unknown_world");
             return;
         }
 
-        prepareAndMove(player, buildWorld, oldName, sanitizedNewName, oldWorld);
-    }
-
-    private void prepareAndMove(
-            Player player, BuildWorld buildWorld, String oldName, String sanitizedNewName, World oldWorld) {
-        List<@Nullable Player> removedPlayers =
-                worldService.removePlayersFromWorld(oldName, "worlds_rename_players_world");
-        for (Chunk chunk : oldWorld.getLoadedChunks()) {
-            chunk.unload(true);
-        }
-        Location oldSpawnLocation = oldWorld.getSpawnLocation();
-        Bukkit.unloadWorld(oldWorld, true);
-
-        File oldWorldFile = FileUtils.worldFolder(oldName);
-        File newWorldFile = FileUtils.worldFolder(sanitizedNewName);
-        CompletableFuture.runAsync(
-                        () -> {
-                            try {
-                                FileUtils.copy(oldWorldFile, newWorldFile);
-                                FileUtils.deleteDirectory(oldWorldFile);
-                            } catch (IOException e) {
-                                throw new CompletionException("Failed to rename world directory", e);
-                            }
-                        },
-                        scheduler.background())
-                .thenRunAsync(
-                        () -> reconstruct(
-                                player,
-                                buildWorld,
-                                oldName,
-                                sanitizedNewName,
-                                oldWorld,
-                                oldSpawnLocation,
-                                removedPlayers),
-                        scheduler.mainThread())
+        // An unloaded world is renamed as it lies on disk; a loaded one is saved and unloaded first.
+        WorldOperations operations = worldService.operations();
+        operations
+                .runExclusively(buildWorld, () -> {
+                    List<Player> removedPlayers =
+                            operations.takeOffline(buildWorld, "worlds_rename_players_world", SaveBehavior.SAVE);
+                    return moveFolder(oldName, sanitizedNewName)
+                            .thenRunAsync(
+                                    () -> reconstruct(player, buildWorld, oldName, sanitizedNewName, removedPlayers),
+                                    scheduler.mainThread());
+                })
                 .exceptionallyAsync(
                         throwable -> {
-                            // reconstruct() is skipped when the move fails, so the world keeps its old name on disk and
-                            // in storage; tell the player instead of leaving the rename silently half-done.
-                            plugin.getLogger()
-                                    .log(Level.SEVERE, "Failed to rename world \"" + oldName + "\"", throwable);
-                            messages.sendMessage(player, "worlds_rename_error");
+                            // When the rename stops early, the world keeps its old name on disk and in storage.
+                            if (!operations.reportRefusal(player, oldName, throwable)) {
+                                plugin.getLogger()
+                                        .log(Level.SEVERE, "Failed to rename world \"" + oldName + "\"", throwable);
+                                messages.sendMessage(player, "worlds_rename_error");
+                            }
                             return null;
                         },
                         scheduler.mainThread());
+    }
+
+    private CompletableFuture<Void> moveFolder(String oldName, String newName) {
+        File oldWorldFile = FileUtils.worldFolder(oldName);
+        File newWorldFile = FileUtils.worldFolder(newName);
+        return CompletableFuture.runAsync(
+                () -> {
+                    try {
+                        FileUtils.moveDirectory(oldWorldFile, newWorldFile);
+                    } catch (IOException e) {
+                        throw new CompletionException("Failed to rename world directory", e);
+                    }
+                },
+                scheduler.background());
     }
 
     private void reconstruct(
@@ -182,43 +162,28 @@ public class WorldRenamer {
             BuildWorld buildWorld,
             String oldName,
             String sanitizedNewName,
-            World oldWorld,
-            Location oldSpawnLocation,
-            List<@Nullable Player> removedPlayers) {
+            List<Player> removedPlayers) {
         worldStorage.rename(buildWorld, oldName, sanitizedNewName);
         buildWorld.setName(sanitizedNewName);
-        Bukkit.getServer()
-                .getPluginManager()
-                .callEvent(new BuildWorldRenameEvent(buildWorld, oldName, sanitizedNewName));
+        Bukkit.getPluginManager().callEvent(new BuildWorldRenameEvent(buildWorld, oldName, sanitizedNewName));
         worldStorage.save(buildWorld).whenComplete((result, throwable) -> {
             if (throwable != null) {
-                plugin.getLogger()
-                        .log(
-                                Level.SEVERE,
-                                "Failed to persist rename of world \"" + oldName + "\" to \"" + sanitizedNewName + "\"",
-                                throwable);
+                String message =
+                        "Failed to persist rename of world \"%s\" to \"%s\"".formatted(oldName, sanitizedNewName);
+                plugin.getLogger().log(Level.SEVERE, message, throwable);
             }
         });
-        World newWorld = new BukkitWorldFactory(configService, plugin.getLogger(), buildWorld)
-                .generate(BukkitWorldFactory.VersionCheck.SKIP);
-        Location spawnLocation = oldSpawnLocation.clone();
-        spawnLocation.setWorld(newWorld);
-
-        removedPlayers.stream()
-                .filter(Objects::nonNull)
-                .forEach(pl -> PaperLib.teleportAsync(pl, spawnLocation.clone().add(0.5, 0, 0.5)));
-
-        Location oldSpawn = spawnService.getSpawn();
-        if (oldSpawn != null && Objects.equals(spawnService.getSpawnWorld(), oldWorld)) {
-            Location newSpawn = new Location(
-                    newWorld,
-                    oldSpawn.getX(),
-                    oldSpawn.getY(),
-                    oldSpawn.getZ(),
-                    oldSpawn.getYaw(),
-                    oldSpawn.getPitch());
-            spawnService.set(newSpawn, sanitizedNewName);
+        World newWorld =
+                new BukkitWorldFactory(plugin.getLogger(), buildWorld).generate(BukkitWorldFactory.VersionCheck.SKIP);
+        buildWorld.getUnloader().manageUnload();
+        if (newWorld != null) {
+            // The spawn is stored in level.dat, which moved along with the folder.
+            Location spawnLocation = newWorld.getSpawnLocation().add(0.5, 0, 0.5);
+            removedPlayers.forEach(pl -> PaperLib.teleportAsync(pl, spawnLocation));
         }
+
+        spawnService.renameWorld(oldName, sanitizedNewName);
+        spawnService.save();
 
         messages.sendMessage(
                 player,

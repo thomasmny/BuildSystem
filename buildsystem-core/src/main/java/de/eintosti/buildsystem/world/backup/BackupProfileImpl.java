@@ -35,14 +35,12 @@ import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.WorldFlush;
-import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import de.eintosti.buildsystem.world.spawn.SpawnService;
+import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import java.io.File;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -52,7 +50,6 @@ import java.util.logging.Level;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -67,7 +64,6 @@ public class BackupProfileImpl implements BackupProfile {
     private final ConfigService configService;
     private final Messages messages;
     private final WorldServiceImpl worldService;
-    private final SpawnService spawnService;
     private final Supplier<BackupStorage> storage;
     private final BuildWorld buildWorld;
 
@@ -90,7 +86,6 @@ public class BackupProfileImpl implements BackupProfile {
             ConfigService configService,
             Messages messages,
             WorldServiceImpl worldService,
-            SpawnService spawnService,
             Supplier<BackupStorage> storage,
             BuildWorld buildWorld) {
         this.plugin = plugin;
@@ -98,7 +93,6 @@ public class BackupProfileImpl implements BackupProfile {
         this.configService = configService;
         this.messages = messages;
         this.worldService = worldService;
-        this.spawnService = spawnService;
         this.storage = storage;
         this.buildWorld = buildWorld;
     }
@@ -117,14 +111,14 @@ public class BackupProfileImpl implements BackupProfile {
             CompletableFuture<Backup> next = this.pendingCreation
                     .handle((backup, throwable) -> null)
                     .thenComposeAsync(
-                            ignored -> {
+                            ignored -> worldService.operations().runExclusively(this.buildWorld, () -> {
                                 Optional<World> world = this.buildWorld.getWorld();
                                 world.ifPresent(WorldFlush::saveAndPauseWrites);
                                 return storeWithRetention()
                                         .whenCompleteAsync(
                                                 (backup, throwable) -> world.ifPresent(WorldFlush::resumeWrites),
                                                 mainThreadExecutor());
-                            },
+                            }),
                             mainThreadExecutor());
             this.pendingCreation = next.handle((backup, throwable) -> backup);
             return next;
@@ -193,53 +187,57 @@ public class BackupProfileImpl implements BackupProfile {
             return CompletableFuture.completedFuture(null);
         }
 
-        List<@Nullable Player> removedPlayers =
-                worldService.removePlayersFromWorld(worldName, "worlds_backup_restoration_in_progress");
-
         // Download off the main thread, then apply the restore back on the main thread. Blocking the
         // download here would freeze the entire server for the duration of a remote (S3/SFTP) fetch.
-        return this.storage
-                .get()
-                .downloadBackup(backup)
-                .thenCompose(backupFile -> CompletableFuture.runAsync(
-                        () -> {
-                            try {
-                                applyRestore(backup, player, world, worldName, removedPlayers, backupFile);
-                            } catch (IOException e) {
-                                throw new CompletionException(e);
+        // The world is loaded again once the operation has let go of it, by the same load anyone else would use.
+        WorldOperations operations = worldService.operations();
+        return operations
+                .runExclusively(
+                        this.buildWorld,
+                        () -> this.storage
+                                .get()
+                                .downloadBackup(backup)
+                                .thenApplyAsync(
+                                        backupFile -> {
+                                            try {
+                                                return replaceWorldFolder(worldName, backupFile);
+                                            } catch (IOException e) {
+                                                throw new CompletionException(e);
+                                            }
+                                        },
+                                        mainThreadExecutor()))
+                .thenAccept(removedPlayers -> reloadRestoredWorld(backup, player, removedPlayers))
+                .whenCompleteAsync(
+                        (ignored, throwable) -> {
+                            if (throwable != null && !operations.reportRefusal(player, worldName, throwable)) {
+                                plugin.getLogger()
+                                        .log(
+                                                Level.SEVERE,
+                                                "Failed to restore backup for world " + worldName,
+                                                throwable);
+                                messages.sendMessage(player, "worlds_backup_restoration_failed");
                             }
                         },
-                        mainThreadExecutor()))
-                .whenComplete((ignored, throwable) -> {
-                    if (throwable != null) {
-                        plugin.getLogger()
-                                .log(Level.SEVERE, "Failed to restore backup for world " + worldName, throwable);
-                    }
-                });
+                        mainThreadExecutor());
     }
 
     /**
-     * Applies a downloaded backup to the world. Must run on the main thread: it unloads, wipes and reloads the world
-     * and fires Bukkit events.
+     * Takes the world offline and replaces its folder with the backup. Must run on the main thread, since it unloads
+     * the world.
+     *
+     * @return The players moved out of the world, to bring back once it is loaded again
      */
-    private void applyRestore(
-            Backup backup,
-            Player player,
-            World world,
-            String worldName,
-            List<@Nullable Player> removedPlayers,
-            File backupFile)
-            throws IOException {
-        Location spawn = spawnService.getSpawn();
-        boolean isSpawn = spawn != null && Objects.equals(spawn.getWorld(), world);
-
+    private List<Player> replaceWorldFolder(String worldName, File backupFile) throws IOException {
         File targetDirectory = FileUtils.worldFolder(worldName);
 
         // Must happen before the world is deleted: a corrupt archive would otherwise only be detected once there
         // was nothing left to restore.
         validateBackup(backupFile, targetDirectory);
 
-        this.buildWorld.getUnloader().forceUnload(SaveBehavior.DISCARD);
+        // The players are only moved once the archive is here and valid, so a failed download leaves them in place.
+        List<Player> removedPlayers = worldService
+                .operations()
+                .takeOffline(this.buildWorld, "worlds_backup_restoration_in_progress", SaveBehavior.DISCARD);
         try {
             FileUtils.deleteDirectory(targetDirectory);
         } catch (IOException e) {
@@ -252,15 +250,17 @@ public class BackupProfileImpl implements BackupProfile {
             throw new IOException("Failed to create world directory for restore: " + targetDirectory.getAbsolutePath());
         }
         extractBackup(backupFile, targetDirectory);
+        return removedPlayers;
+    }
 
+    /**
+     * Loads the restored world and brings its players back. Runs on the main thread, right after the restore has
+     * released the world.
+     */
+    private void reloadRestoredWorld(Backup backup, Player player, List<Player> removedPlayers) {
         this.buildWorld.getLoader().load();
         WorldTeleporter worldTeleporter = this.buildWorld.getTeleporter();
-        removedPlayers.stream().filter(Objects::nonNull).forEach(worldTeleporter::teleport);
-
-        if (isSpawn) {
-            spawn.setWorld(WorldNames.bukkitWorld(worldName));
-            spawnService.set(spawn, worldName);
-        }
+        removedPlayers.forEach(worldTeleporter::teleport);
 
         Bukkit.getPluginManager().callEvent(new BackupRestoredEvent(this.buildWorld, backup));
 

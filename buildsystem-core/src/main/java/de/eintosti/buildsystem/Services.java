@@ -38,6 +38,7 @@ import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import de.eintosti.buildsystem.world.download.WorldDownloadService;
+import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import org.bukkit.NamespacedKey;
 import org.jspecify.annotations.NullMarked;
@@ -75,6 +76,7 @@ public final class Services {
     private @Nullable NavigatorItems navigatorItems;
     private @Nullable Menus menus;
     private @Nullable Prompts prompts;
+    private @Nullable WorldOperations worldOperations;
     private @Nullable WorldContext worldContext;
 
     Services(BuildSystemPlugin plugin) {
@@ -124,11 +126,12 @@ public final class Services {
         this.navigatorEditorService = new NavigatorEditorService();
         this.noClipService = new NoClipService(taskScheduler);
         this.worldService = new WorldServiceImpl(plugin, this);
-        this.backupService = new BackupServiceImpl(plugin, taskScheduler, config(), messages(), world(), this::spawn);
-        this.worldDownloadService =
-                new WorldDownloadService(config(), taskScheduler, plugin.getLogger(), plugin.getDataFolder());
-        this.settingsService = new SettingsService(plugin, taskScheduler, config(), messages(), player(), world());
         this.spawnService = new SpawnService(plugin, world(), taskScheduler);
+        this.worldOperations = new WorldOperations(messages(), spawn());
+        this.backupService = new BackupServiceImpl(plugin, taskScheduler, config(), messages(), world());
+        this.worldDownloadService = new WorldDownloadService(
+                config(), taskScheduler, operations(), plugin.getLogger(), plugin.getDataFolder());
+        this.settingsService = new SettingsService(plugin, taskScheduler, config(), messages(), player(), world());
         this.menuItems = new MenuItems(plugin, taskScheduler, messages(), settings());
         this.navigatorItems = new NavigatorItems(plugin, config(), messages());
         this.navigatorService = new NavigatorService(
@@ -196,6 +199,10 @@ public final class Services {
         return checkNotNull(worldService, "WorldServiceImpl");
     }
 
+    public WorldOperations operations() {
+        return checkNotNull(worldOperations, "WorldOperations");
+    }
+
     public BackupServiceImpl backup() {
         return checkNotNull(backupService, "BackupServiceImpl");
     }
@@ -248,7 +255,8 @@ public final class Services {
                     worldStatusRegistry(),
                     customizableIcons(),
                     taskScheduler,
-                    plugin.getLogger());
+                    plugin.getLogger(),
+                    operations());
         }
         return worldContext;
     }

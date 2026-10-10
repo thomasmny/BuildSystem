@@ -47,18 +47,24 @@ public class WorldLoadBootstrap {
     private final WorldStorageImpl worldStorage;
     private final ConfigService configService;
     private final TaskScheduler scheduler;
+    private final Runnable afterLoad;
 
+    /**
+     * @param afterLoad Runs on the main thread once the stored worlds are registered and pre-loaded
+     */
     public WorldLoadBootstrap(
             BuildSystemPlugin plugin,
             TaskScheduler scheduler,
             FolderStorageImpl folderStorage,
             WorldStorageImpl worldStorage,
-            ConfigService configService) {
+            ConfigService configService,
+            Runnable afterLoad) {
         this.plugin = plugin;
         this.scheduler = scheduler;
         this.folderStorage = folderStorage;
         this.worldStorage = worldStorage;
         this.configService = configService;
+        this.afterLoad = afterLoad;
     }
 
     public void loadWorlds() {
@@ -76,13 +82,26 @@ public class WorldLoadBootstrap {
 
                     List<BuildWorld> notLoaded = new ArrayList<>();
                     worldStorage.getBuildWorlds().forEach(buildWorld -> {
-                        if (preLoadWorld(buildWorld, loadAllWorlds) == LoadResult.FAILED) {
+                        LoadResult result;
+                        try {
+                            result = preLoadWorld(buildWorld, loadAllWorlds);
+                        } catch (RuntimeException e) {
+                            // One broken world must not stop the others from loading.
+                            plugin.getLogger()
+                                    .log(Level.SEVERE, "Failed to load world \"" + buildWorld.getName() + "\"", e);
+                            result = LoadResult.FAILED;
+                        }
+                        if (result == LoadResult.FAILED) {
                             notLoaded.add(buildWorld);
                         }
                     });
                     notLoaded.forEach(worldStorage::removeBuildWorld);
+                    worldStorage
+                            .getBuildWorlds()
+                            .forEach(buildWorld -> buildWorld.getUnloader().manageUnload());
 
                     plugin.getLogger().info("Loaded " + worlds.size() + " worlds from storage");
+                    afterLoad.run();
                 }))
                 .exceptionally(throwable -> {
                     plugin.getLogger().log(Level.SEVERE, "Failed to load worlds from storage", throwable);
@@ -131,7 +150,7 @@ public class WorldLoadBootstrap {
             return LoadResult.NOT_LOADED;
         }
 
-        World world = new BukkitWorldFactory(configService, plugin.getLogger(), buildWorld)
+        World world = new BukkitWorldFactory(plugin.getLogger(), buildWorld)
                 .generate(BukkitWorldFactory.VersionCheck.REQUIRED);
         if (world == null) {
             return LoadResult.FAILED;

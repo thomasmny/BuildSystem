@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -62,6 +63,7 @@ public final class WorldDownloadService {
 
     private final ConfigService configService;
     private final TaskScheduler scheduler;
+    private final WorldOperations operations;
     private final Logger logger;
     private final File downloadFolder;
 
@@ -80,9 +82,15 @@ public final class WorldDownloadService {
      */
     private volatile int epoch;
 
-    public WorldDownloadService(ConfigService configService, TaskScheduler scheduler, Logger logger, File dataFolder) {
+    public WorldDownloadService(
+            ConfigService configService,
+            TaskScheduler scheduler,
+            WorldOperations operations,
+            Logger logger,
+            File dataFolder) {
         this.configService = configService;
         this.scheduler = scheduler;
+        this.operations = operations;
         this.logger = logger;
         this.downloadFolder = new File(dataFolder, "downloads");
     }
@@ -211,47 +219,74 @@ public final class WorldDownloadService {
         Path archive = new File(downloadFolder, worldName.hashCode() + "-" + System.nanoTime() + ".zip").toPath();
         int startedUnder = epoch;
 
-        return CompletableFuture.supplyAsync(
-                () -> {
-                    try {
-                        // Queued behind another export when downloads were stopped: there is nothing to pack for.
-                        if (startedUnder != epoch) {
-                            throw new IOException("World downloads were restarted before the export began");
-                        }
+        // Only the packing reads the world folder, so only the packing holds the world against a delete, rename or
+        // restore. A failed export, refused or not, still gives the reservation back.
+        return operations
+                .runExclusively(
+                        buildWorld,
+                        () -> CompletableFuture.runAsync(
+                                () -> pack(
+                                        worldName,
+                                        worldFolder,
+                                        defaultLevelFolder,
+                                        archive,
+                                        capacity,
+                                        startedUnder,
+                                        progress),
+                                executor))
+                .thenApplyAsync(ignored -> publish(target, archive, fileName, startedUnder, progress), executor)
+                .whenComplete((url, throwable) -> target.release(reserved));
+    }
 
-                        WorldExporter.export(
-                                worldName,
-                                worldFolder,
-                                defaultLevelFolder,
-                                archive,
-                                capacity,
-                                (packed, total) -> progress.update(DownloadProgress.Phase.PACKING, packed, total));
+    private void pack(
+            String worldName,
+            File worldFolder,
+            File defaultLevelFolder,
+            Path archive,
+            long capacity,
+            int startedUnder,
+            DownloadProgress progress) {
+        try {
+            // Queued behind another export when downloads were stopped: there is nothing to pack for.
+            if (startedUnder != epoch) {
+                throw new IOException("World downloads were restarted before the export began");
+            }
 
-                        // Downloads may have been stopped or reloaded while this ran. The delivery captured above is
-                        // closed by now and the staging folder has been wiped, so there is nothing left to publish to.
-                        if (startedUnder != epoch) {
-                            deleteQuietly(archive);
-                            throw new IOException("World downloads were restarted while the export was running");
-                        }
+            WorldExporter.export(
+                    worldName,
+                    worldFolder,
+                    defaultLevelFolder,
+                    archive,
+                    capacity,
+                    (packed, total) -> progress.update(DownloadProgress.Phase.PACKING, packed, total));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 
-                        if (target.reportsPublishProgress()) {
-                            progress.update(DownloadProgress.Phase.PUBLISHING, 0L, 0L);
-                        }
-                        // A lifetime, not a deadline: the delivery starts the clock when it hands the link out, so
-                        // neither packing nor uploading eats into the window the player was promised.
-                        return target.publish(
-                                archive,
-                                fileName,
-                                Duration.ofMinutes(config().expirationMinutes()),
-                                (published, total) ->
-                                        progress.update(DownloadProgress.Phase.PUBLISHING, published, total));
-                    } catch (IOException e) {
-                        throw new UncheckedIOException(e);
-                    } finally {
-                        target.release(reserved);
-                    }
-                },
-                executor);
+    private String publish(
+            DownloadDelivery target, Path archive, String fileName, int startedUnder, DownloadProgress progress) {
+        try {
+            // Downloads may have been stopped or reloaded while this ran. The delivery captured above is closed by now
+            // and the staging folder has been wiped, so there is nothing left to publish to.
+            if (startedUnder != epoch) {
+                deleteQuietly(archive);
+                throw new IOException("World downloads were restarted while the export was running");
+            }
+
+            if (target.reportsPublishProgress()) {
+                progress.update(DownloadProgress.Phase.PUBLISHING, 0L, 0L);
+            }
+            // A lifetime, not a deadline: the delivery starts the clock when it hands the link out, so neither packing
+            // nor uploading eats into the window the player was promised.
+            return target.publish(
+                    archive,
+                    fileName,
+                    Duration.ofMinutes(config().expirationMinutes()),
+                    (published, total) -> progress.update(DownloadProgress.Phase.PUBLISHING, published, total));
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /**

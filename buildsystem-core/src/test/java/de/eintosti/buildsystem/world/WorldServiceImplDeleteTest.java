@@ -17,11 +17,26 @@
  */
 package de.eintosti.buildsystem.world;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
+import de.eintosti.buildsystem.api.event.world.BuildWorldUnloadEvent;
 import de.eintosti.buildsystem.api.exception.WorldDirectoryNotFoundException;
 import de.eintosti.buildsystem.api.exception.WorldNotFoundException;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -31,17 +46,21 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
+import de.eintosti.buildsystem.world.lifecycle.WorldOperationRefusedException;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
 import org.bukkit.Server;
+import org.bukkit.World;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -149,6 +168,95 @@ class WorldServiceImplDeleteTest {
         assertFalse(Files.exists(worldDirectory), "world directory must be deleted");
         assertNull(worldService.getWorldStorage().getBuildWorld("doomed"), "registry entry must be removed");
         assertFalse(buildWorld.isLoaded());
+        verify(services.backup()).removeProfile(buildWorld);
+    }
+
+    @Test
+    void deleteWorld_unloadCancelled_keepsDirectoryAndRegistryEntry() throws Exception {
+        BuildWorldImpl buildWorld = registeredWorld("held");
+        Path worldDirectory = worldContainer.resolve("held");
+        Files.createDirectories(worldDirectory);
+        Files.writeString(worldDirectory.resolve("level.dat"), "level");
+
+        Server server = mock(Server.class);
+        PluginManager pluginManager = mock(PluginManager.class);
+        when(server.getPluginManager()).thenReturn(pluginManager);
+        doAnswer(invocation -> {
+                    if (invocation.getArgument(0) instanceof BuildWorldUnloadEvent event) {
+                        event.setCancelled(true);
+                    }
+                    return null;
+                })
+                .when(pluginManager)
+                .callEvent(any());
+        World world = mock(World.class);
+        when(world.getWorldFolder()).thenReturn(worldDirectory.toFile());
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            bukkit.when(Bukkit::getWorldContainer).thenReturn(worldContainer.toFile());
+            bukkit.when(Bukkit::getServer).thenReturn(server);
+            bukkit.when(() -> Bukkit.getWorld("held")).thenReturn(world);
+
+            ExecutionException thrown = assertThrows(
+                    ExecutionException.class,
+                    () -> worldService.deleteWorld(buildWorld).get(5, TimeUnit.SECONDS));
+
+            assertInstanceOf(WorldOperationRefusedException.class, thrown.getCause());
+            bukkit.verify(() -> Bukkit.unloadWorld(any(World.class), anyBoolean()), never());
+        }
+
+        assertTrue(Files.exists(worldDirectory.resolve("level.dat")), "world directory must be kept");
+        assertSame(buildWorld, worldService.getWorldStorage().getBuildWorld("held"));
+        assertFalse(worldService.operations().isBusy(buildWorld), "the world must be free again");
+    }
+
+    @Test
+    void deleteWorld_unloadRefusedByServer_keepsDirectoryAndRegistryEntry() throws Exception {
+        BuildWorldImpl buildWorld = registeredWorld("occupied");
+        Path worldDirectory = worldContainer.resolve("occupied");
+        Files.createDirectories(worldDirectory);
+        Files.writeString(worldDirectory.resolve("level.dat"), "level");
+
+        Server server = mock(Server.class, RETURNS_DEEP_STUBS);
+        World world = mock(World.class);
+        when(world.getWorldFolder()).thenReturn(worldDirectory.toFile());
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            bukkit.when(Bukkit::getWorldContainer).thenReturn(worldContainer.toFile());
+            bukkit.when(Bukkit::getServer).thenReturn(server);
+            bukkit.when(() -> Bukkit.getWorld("occupied")).thenReturn(world);
+            bukkit.when(() -> Bukkit.unloadWorld(world, false)).thenReturn(false);
+
+            ExecutionException thrown = assertThrows(
+                    ExecutionException.class,
+                    () -> worldService.deleteWorld(buildWorld).get(5, TimeUnit.SECONDS));
+
+            assertInstanceOf(WorldOperationRefusedException.class, thrown.getCause());
+        }
+
+        assertTrue(Files.exists(worldDirectory.resolve("level.dat")), "world directory must be kept");
+        assertSame(buildWorld, worldService.getWorldStorage().getBuildWorld("occupied"));
+    }
+
+    @Test
+    void deleteWorld_whileBusy_isRefused() throws Exception {
+        BuildWorldImpl buildWorld = registeredWorld("busy");
+        Path worldDirectory = worldContainer.resolve("busy");
+        Files.createDirectories(worldDirectory);
+        worldService.operations().runExclusively(buildWorld, CompletableFuture::new);
+
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            bukkit.when(Bukkit::getWorldContainer).thenReturn(worldContainer.toFile());
+
+            ExecutionException thrown = assertThrows(
+                    ExecutionException.class,
+                    () -> worldService.deleteWorld(buildWorld).get(5, TimeUnit.SECONDS));
+
+            WorldOperationRefusedException refused =
+                    assertInstanceOf(WorldOperationRefusedException.class, thrown.getCause());
+            assertEquals("worlds_world_busy", refused.messageKey());
+        }
+
+        assertTrue(Files.exists(worldDirectory));
+        assertTrue(worldService.operations().isBusy(buildWorld), "the other operation still holds the world");
     }
 
     @Test
