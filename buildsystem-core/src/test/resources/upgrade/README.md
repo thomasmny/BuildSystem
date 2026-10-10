@@ -9,3 +9,8 @@ are what that release really wrote, so do not edit them by hand. The throwaway g
   plugin to flush and copying the `.yml` files. A second 4.0.0 boot on the copy read every value back.
 - `3.0.2/`: generated the same way from tag `3.0.2` under MockBukkit 4.116.3 (v1.21) on Java 21. 3.0.2 has no
   `statuses.yml` or `categories.yml`.
+- `2.27.1/worlds.yml`: written by hand in the format of 2.27.1's `BuildWorld.serialize()`: worlds keyed by name with no
+  `uuid`, enum statuses, the `private` flag, `creator` as `<uuid>,<name>`, and a custom world storing only its
+  generator's plugin name. 2.27.1 targets old server versions through per-version adapters and was not booted.
+- `shipped/config-<version>.yml`: the `config.yml` bundled with that tag, unchanged
+  (`git show <tag>:buildsystem-core/src/main/resources/config.yml`).

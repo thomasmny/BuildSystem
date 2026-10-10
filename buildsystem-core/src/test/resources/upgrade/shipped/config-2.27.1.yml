@@ -1,0 +1,64 @@
+messages:
+  spawn-teleport-message: false
+  join-quit-messages: true
+  date-format: "dd/MM/yyyy"
+settings:
+  update-checker: true
+  scoreboard: true
+  archive-vanish: true
+  archive-should-change-gamemode: true
+  # Possible values are: "SURVIVAL", "CREATIVE", "ADVENTURE", "SPECTATOR"
+  archive-world-game-mode: "ADVENTURE"
+  teleport-after-creation: true
+  save-from-death:
+    enable: true
+    teleport-to-map-spawn: true
+  build-mode:
+    drop-items: true
+    move-items: true
+  builder:
+    block-worldedit-non-builder: true
+  navigator:
+    item: "CLOCK"
+    give-item-on-join: true
+world:
+  default:
+    permission:
+      public: "-"
+      private: "worlds.%world%"
+    time:
+      sunrise: 0
+      noon: 6000
+      night: 18000
+    worldborder:
+      size: 6000000
+    difficulty: "PEACEFUL"
+    gamerules:
+      doDaylightCycle: false
+      doMobSpawning: false
+      doFireTick: false
+    settings:
+      physics: true
+      explosions: true
+      mob-ai: true
+      block-breaking: true
+      block-placement: true
+      block-interactions: true
+      builders-enabled:
+        public: false
+        private: true
+  lock-weather: true
+  invalid-characters: ^\b$
+  import-all:
+    delay: 30
+  max-amount:
+    public: -1
+    private: -1
+  unload:
+    enabled: true
+    time-until-unload: "01:00:00"
+    blacklisted-worlds:
+      - world
+      - world_nether
+      - worth_the_end
+  void-block: true

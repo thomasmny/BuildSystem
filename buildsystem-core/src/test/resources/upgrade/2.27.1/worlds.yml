@@ -1,0 +1,47 @@
+worlds:
+  Spawn_2019:
+    creator: 11111111-1111-1111-1111-111111111111,Alice
+    type: NORMAL
+    data:
+      permission: '-'
+      project: Lobby
+      difficulty: PEACEFUL
+      material: GRASS_BLOCK
+      status: FINISHED
+      block-breaking: true
+      block-interactions: false
+      block-placement: true
+      builders-enabled: true
+      explosions: false
+      mob-ai: true
+      physics: false
+      private: false
+      spawn: 4.5;70.0;-2.5;90.0;0.0
+      last-edited: 1600000300000
+      last-loaded: 1600000100000
+      last-unloaded: 1600000200000
+    date: 1600000000000
+    builders: 22222222-2222-2222-2222-222222222222,Bob;33333333-3333-3333-3333-333333333333,Carol
+  Bobs_Plot:
+    creator: 22222222-2222-2222-2222-222222222222,Bob
+    type: CUSTOM
+    data:
+      permission: worlds.Bobs_Plot
+      project: '-'
+      difficulty: EASY
+      material: WRITABLE_BOOK
+      status: NOT_STARTED
+      block-breaking: true
+      block-interactions: true
+      block-placement: true
+      builders-enabled: true
+      explosions: true
+      mob-ai: true
+      physics: true
+      private: true
+      last-edited: -1
+      last-loaded: -1
+      last-unloaded: -1
+    date: 1600000500000
+    builders: ''
+    chunk-generator: Plugin
