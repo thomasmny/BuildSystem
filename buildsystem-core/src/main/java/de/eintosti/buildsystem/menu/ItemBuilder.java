@@ -20,18 +20,14 @@ package de.eintosti.buildsystem.menu;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.api.player.settings.DesignColor;
-import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -43,11 +39,10 @@ import org.jspecify.annotations.Nullable;
 /**
  * Fluent builder for the {@link ItemStack}s shown in menus.
  *
- * <p>Construction starts with a factory method that fixes the item's base type — {@link #of(XMaterial)} for a regular
- * material, {@link #skull(Profileable)} for a textured player head, or {@link #glassPane(Player, SettingsService)} for a
- * filler pane tinted to the player's chosen design colour. From there, chainable mutators ({@link #name(String)},
- * {@link #lore(List)}, {@link #glow(boolean)}, {@link #pdc}) decorate the item, and a terminal call
- * ({@link #build()} or {@link #into(Inventory, int)}) materialises it.
+ * <p>Construction starts with a factory method that fixes the item's base type: {@link #of(XMaterial)} for a regular
+ * material or {@link #skull(Profileable)} for a textured player head. From there, chainable mutators
+ * ({@link #name(String)}, {@link #lore(List)}, {@link #glow(boolean)}, {@link #pdc}) decorate the item, and a terminal
+ * call ({@link #build()} or {@link #into(Inventory, int)}) materialises it.
  *
  * <p><strong>Default flags.</strong> {@link #of(XMaterial)} hides all {@link ItemFlag}s, because menu items are
  * decorative and their vanilla attribute/enchant tooltips would be noise. {@link #skull(Profileable)} does <em>not</em>
@@ -157,23 +152,6 @@ public final class ItemBuilder {
                     : SkullTextures.WORLD_NAVIGATOR;
         }
         return texture;
-    }
-
-    /**
-     * Starts a builder for a filler glass pane tinted to the player's configured {@link DesignColor}, falling back to
-     * black when the colour has no matching stained-glass-pane material. The pane is given a single-space name so it
-     * renders without a visible label.
-     *
-     * @param player The player whose design colour selects the pane tint
-     * @param settingsService The service used to read the player's settings
-     * @return A new builder wrapping the tinted pane
-     */
-    public static ItemBuilder glassPane(Player player, SettingsService settingsService) {
-        Settings settings = settingsService.getSettings(player);
-        DesignColor color = settings.getDesignColor();
-        XMaterial material = XMaterial.matchXMaterial(color.name() + "_STAINED_GLASS_PANE")
-                .orElse(XMaterial.BLACK_STAINED_GLASS_PANE);
-        return of(material).name("§0");
     }
 
     /**

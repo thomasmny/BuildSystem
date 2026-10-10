@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.Map;
@@ -91,7 +92,12 @@ public class SpeedMenu extends ButtonMenu<MenuButton> {
     protected void populate(Player player) {
         for (int i = 0; i <= 26; i++) {
             getInventory()
-                    .setItem(i, ItemBuilder.glassPane(player, settingsService).build());
+                    .setItem(
+                            i,
+                            ItemBuilder.of(MenuItems.glassPane(
+                                            settingsService.getSettings(player).getDesignColor()))
+                                    .name("§0")
+                                    .build());
         }
 
         renderButtons(player);
