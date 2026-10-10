@@ -113,7 +113,7 @@ final class EditMenuRenderer {
     }
 
     void renderGameRules(Player player, Inventory inventory, int slot) {
-        ItemBuilder.of(Material.FILLED_MAP)
+        ItemBuilder.of(Material.COMMAND_BLOCK)
                 .name(messages.getString("worldeditor_gamerules_item", player))
                 .lore(messages.getStringList("worldeditor_gamerules_lore", player))
                 .into(inventory, slot);
@@ -158,7 +158,7 @@ final class EditMenuRenderer {
     }
 
     void renderProject(Player player, Inventory inventory, int slot) {
-        ItemBuilder.of(Material.ANVIL)
+        ItemBuilder.of(Material.WRITABLE_BOOK)
                 .name(messages.getString("worldeditor_project_item", player))
                 .lore(messages.getStringList(
                         "worldeditor_project_lore",
@@ -168,7 +168,7 @@ final class EditMenuRenderer {
     }
 
     void renderPermission(Player player, Inventory inventory, int slot) {
-        ItemBuilder.of(Material.PAPER)
+        ItemBuilder.of(Material.TRIAL_KEY)
                 .name(messages.getString("worldeditor_permission_item", player))
                 .lore(messages.getStringList(
                         "worldeditor_permission_lore",

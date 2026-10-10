@@ -23,9 +23,9 @@ import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
 import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Prompts;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -44,7 +44,7 @@ public class RenameSubCommand extends WorldSubCommand {
         prompts.prompt(player).title("enter_world_name").request(input -> {
             player.closeInventory();
             worldService.renameWorld(player, buildWorld, input.trim());
-            player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+            FeedbackSound.CONFIRM.play(player);
         });
     }
 

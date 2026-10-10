@@ -18,9 +18,9 @@
 package de.eintosti.buildsystem.menu;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import java.util.List;
 import java.util.function.Function;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -98,10 +98,10 @@ public abstract class PaginatedMenu extends ButtonMenu {
     protected boolean previousPage(Player player, int itemsPerPage) {
         if (totalPages(itemsPerPage) > 1 && page > 0) {
             page--;
-            player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+            FeedbackSound.PAGE.play(player);
             return true;
         }
-        player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+        FeedbackSound.REFUSE.play(player);
         return false;
     }
 
@@ -116,10 +116,10 @@ public abstract class PaginatedMenu extends ButtonMenu {
     protected boolean nextPage(Player player, int itemsPerPage) {
         if (totalPages(itemsPerPage) > 1 && page < totalPages(itemsPerPage) - 1) {
             page++;
-            player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+            FeedbackSound.PAGE.play(player);
             return true;
         }
-        player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+        FeedbackSound.REFUSE.play(player);
         return false;
     }
 

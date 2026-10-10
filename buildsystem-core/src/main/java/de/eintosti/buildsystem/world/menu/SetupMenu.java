@@ -21,9 +21,9 @@ import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuContext;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import java.util.function.Consumer;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -55,7 +55,7 @@ public class SetupMenu extends ButtonMenu {
                         .lore(messages.getStringList(nameKey + "_lore", player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
-                    player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
+                    FeedbackSound.OPEN.play(player);
                     open.accept(player);
                 })
                 .build();

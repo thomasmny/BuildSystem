@@ -153,7 +153,22 @@ class SettingsMenuTest {
 
         assertEquals(before, settings.isScoreboard());
         verify(menus, never()).openSettings(player);
-        assertEquals(List.of(Sound.ENTITY_ITEM_BREAK), player.sounds());
+        assertEquals(List.of(Sound.BLOCK_CRAFTER_FAIL), player.sounds());
+    }
+
+    @Test
+    void toggle_playsTheOnOrOffSoundForTheStateItEndsIn() {
+        player.setOp(true);
+        Settings settings = new SettingsImpl();
+        when(settingsService.getSettings(player)).thenReturn(settings);
+        boolean before = settings.isClearInventory();
+
+        click(menu(), 12);
+        click(menu(), 12);
+
+        Sound on = Sound.BLOCK_COPPER_BULB_TURN_ON;
+        Sound off = Sound.BLOCK_COPPER_BULB_TURN_OFF;
+        assertEquals(before ? List.of(off, on) : List.of(on, off), player.sounds());
     }
 
     @Test

@@ -24,12 +24,12 @@ import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.SkullTextures;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.display.CategoryPermissions;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.List;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
@@ -70,7 +70,7 @@ public class NavigatorMenu extends ButtonMenu {
                         inventory, slot, category, player, ColorAPI.process(category.getStyledName()), List.of()))
                 .onClick((player, event) -> {
                     menus.openCategoryWorlds(category, player);
-                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+                    FeedbackSound.CLICK.play(player);
                 })
                 .build();
     }
@@ -83,7 +83,7 @@ public class NavigatorMenu extends ButtonMenu {
                         .into(inventory, slot))
                 .onClick((player, event) -> {
                     menus.openSettings(player);
-                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+                    FeedbackSound.CLICK.play(player);
                 })
                 .build();
     }
@@ -94,7 +94,7 @@ public class NavigatorMenu extends ButtonMenu {
      */
     @Override
     protected void onPermissionDenied(Player player, InventoryClickEvent event) {
-        player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+        FeedbackSound.REFUSE.play(player);
     }
 
     @Override

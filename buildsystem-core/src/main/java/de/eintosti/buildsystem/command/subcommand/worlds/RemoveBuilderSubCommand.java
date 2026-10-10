@@ -28,11 +28,11 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -86,7 +86,7 @@ public class RemoveBuilderSubCommand extends WorldSubCommand {
         }
 
         builders.removeBuilder(builderId);
-        player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+        FeedbackSound.REMOVE.play(player);
         messages.sendMessage(player, "worlds_removebuilder_removed", Placeholders.of("%builder%", builder.getName()));
 
         player.closeInventory();

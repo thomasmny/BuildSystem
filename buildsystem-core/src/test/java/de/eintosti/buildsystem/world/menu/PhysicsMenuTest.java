@@ -43,6 +43,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
+import org.bukkit.Sound;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -111,6 +112,9 @@ class PhysicsMenuTest {
         player.addAttachment(MockBukkit.createMockPlugin(), Permissions.EDIT_PHYSICS, true);
         click(slot);
         assertEquals(!before, data.get(key));
+        assertEquals(
+                before ? Sound.BLOCK_COPPER_BULB_TURN_OFF : Sound.BLOCK_COPPER_BULB_TURN_ON,
+                player.sounds().getLast());
     }
 
     @Test

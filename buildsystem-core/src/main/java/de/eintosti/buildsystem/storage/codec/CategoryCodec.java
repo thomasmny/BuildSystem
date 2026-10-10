@@ -71,7 +71,7 @@ public final class CategoryCodec implements Codec<NavigatorCategoryImpl> {
             visibilities.add(Visibility.EVERYONE);
         }
 
-        Material icon = Objects.requireNonNullElse(MaterialUtils.match(section.getString("icon")), Material.OAK_SIGN);
+        Material icon = Objects.requireNonNullElse(MaterialUtils.match(section.getString("icon")), Material.CHEST);
         return NavigatorCategoryImpl.builder(id)
                 .displayName(section.getString("display-name", id))
                 .color(section.getString("color", "&7"))

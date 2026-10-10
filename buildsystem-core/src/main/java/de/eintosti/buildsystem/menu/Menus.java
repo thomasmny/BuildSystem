@@ -31,6 +31,7 @@ import de.eintosti.buildsystem.player.customblock.CustomBlockMenu;
 import de.eintosti.buildsystem.player.menu.DesignMenu;
 import de.eintosti.buildsystem.player.menu.SettingsMenu;
 import de.eintosti.buildsystem.player.menu.SpeedMenu;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.menu.BackupsMenu;
@@ -58,7 +59,6 @@ import de.eintosti.buildsystem.world.menu.setup.StatusLayoutMenu;
 import java.util.List;
 import java.util.function.Consumer;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -150,7 +150,7 @@ public final class Menus {
      */
     public void openEdit(BuildWorld buildWorld, Player player) {
         if (showEdit(buildWorld, player)) {
-            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
+            FeedbackSound.OPEN.play(player);
         }
     }
 
@@ -170,7 +170,7 @@ public final class Menus {
     private boolean showEdit(BuildWorld buildWorld, Player player) {
         if (buildWorld.getWorld().isEmpty()) {
             player.closeInventory();
-            player.playSound(player, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 1f);
+            FeedbackSound.REFUSE.play(player);
             player.sendTitle(" ", context.messages().getString("world_not_loaded", player), 5, 70, 20);
             return false;
         }

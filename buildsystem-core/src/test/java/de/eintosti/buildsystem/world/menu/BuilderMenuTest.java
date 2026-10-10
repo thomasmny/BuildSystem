@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
@@ -40,6 +41,7 @@ import de.eintosti.buildsystem.test.SoundlessPlayer;
 import java.util.List;
 import java.util.UUID;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -95,6 +97,7 @@ class BuilderMenuTest {
         menu.handleClick(click(admin, menu, FIRST_BUILDER_SLOT, ClickType.SHIFT_LEFT));
 
         verify(builders).removeBuilder(builder);
+        assertEquals(List.of(Sound.ENTITY_ITEM_FRAME_REMOVE_ITEM), ((SoundlessPlayer) admin).sounds());
     }
 
     @Test

@@ -20,9 +20,9 @@ package de.eintosti.buildsystem.listener.player;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
-import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -71,7 +71,7 @@ public class EntityDamageListener implements Listener {
             if (!completed) {
                 return;
             }
-            player.playSound(player, Sound.ENTITY_ZOMBIE_INFECT, 1f, 1f);
+            FeedbackSound.TELEPORT.play(player);
         });
     }
 }

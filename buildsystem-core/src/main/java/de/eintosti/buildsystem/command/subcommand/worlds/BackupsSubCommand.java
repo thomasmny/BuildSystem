@@ -24,12 +24,12 @@ import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
 import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -50,7 +50,7 @@ public class BackupsSubCommand extends WorldSubCommand {
     protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         switch (args.length) {
             case 1 -> {
-                player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
+                FeedbackSound.OPEN.play(player);
                 menus.openBackups(buildWorld, player);
             }
             case 2 -> {

@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
 import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.WorldFlush;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -48,7 +49,6 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.NullMarked;
@@ -235,7 +235,7 @@ public class DownloadSubCommand extends WorldSubCommand {
         String[] parts = text.split(BUTTON_PLACEHOLDER, 2);
         if (parts.length == 1) {
             player.spigot().sendMessage(linked(TextComponent.fromLegacyText(text), url));
-            player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+            FeedbackSound.SUCCESS.play(player);
             return;
         }
 
@@ -246,7 +246,7 @@ public class DownloadSubCommand extends WorldSubCommand {
         message.addExtra(new TextComponent(TextComponent.fromLegacyText(parts[1])));
 
         player.spigot().sendMessage(message);
-        player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+        FeedbackSound.SUCCESS.play(player);
     }
 
     private static TextComponent linked(BaseComponent[] text, String url) {

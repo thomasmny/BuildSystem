@@ -31,6 +31,7 @@ import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldClock;
 import de.eintosti.buildsystem.world.WorldNames;
@@ -40,7 +41,6 @@ import java.util.Set;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -121,7 +121,9 @@ public class EditMenu extends ButtonMenu {
                                 toggle.render(menuItems, buildWorld.getData(), player, inventory, slot))
                         .onClick((player, event) -> {
                             toggle.flip(buildWorld.getData());
-                            reopen(player);
+                            reopen(
+                                    player,
+                                    FeedbackSound.toggle(buildWorld.getData().get(toggle.key())));
                         })
                         .build()));
 
@@ -132,7 +134,7 @@ public class EditMenu extends ButtonMenu {
                         .render(renderer::renderTime)
                         .onClick((player, event) -> {
                             changeTime(player);
-                            reopen(player);
+                            reopen(player, FeedbackSound.CLICK);
                         })
                         .build());
 
@@ -181,7 +183,7 @@ public class EditMenu extends ButtonMenu {
                         .permission(Permissions.EDIT_GAMERULES)
                         .render(renderer::renderGameRules)
                         .onClick((player, event) -> {
-                            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
+                            FeedbackSound.OPEN.play(player);
                             menus.openGameRules(buildWorld, player);
                         })
                         .build());
@@ -193,7 +195,7 @@ public class EditMenu extends ButtonMenu {
                         .render(renderer::renderDifficulty)
                         .onClick((player, event) -> {
                             cycleDifficulty();
-                            reopen(player);
+                            reopen(player, FeedbackSound.CLICK);
                         })
                         .build());
 
@@ -203,7 +205,7 @@ public class EditMenu extends ButtonMenu {
                         .permission(Permissions.EDIT_STATUS)
                         .render(renderer::renderStatus)
                         .onClick((player, event) -> {
-                            player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+                            FeedbackSound.CLICK.play(player);
                             menus.openStatus(buildWorld, player);
                         })
                         .build());
@@ -214,7 +216,7 @@ public class EditMenu extends ButtonMenu {
                         .permission(Permissions.EDIT_PROJECT)
                         .render(renderer::renderProject)
                         .onClick((player, event) -> {
-                            player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+                            FeedbackSound.CLICK.play(player);
                             menus.promptWorldProject(buildWorld, player);
                         })
                         .build());
@@ -225,7 +227,7 @@ public class EditMenu extends ButtonMenu {
                         .permission(Permissions.EDIT_PERMISSION)
                         .render(renderer::renderPermission)
                         .onClick((player, event) -> {
-                            player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+                            FeedbackSound.CLICK.play(player);
                             menus.promptWorldPermission(buildWorld, player);
                         })
                         .build());
@@ -248,23 +250,23 @@ public class EditMenu extends ButtonMenu {
             return;
         }
 
-        player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
+        FeedbackSound.OPEN.play(player);
         menus.openMaterialPicker(
                 player,
                 material -> {
                     buildWorld.setIcon(material);
-                    reopen(player);
+                    reopen(player, FeedbackSound.CLICK);
                 },
-                () -> reopen(player));
+                () -> reopen(player, FeedbackSound.CLICK));
     }
 
     private void promptIconTexture(Player player) {
         prompts.prompt(player)
                 .title("worldeditor_world_skull_prompt")
-                .onCancel(() -> reopen(player))
+                .onCancel(() -> reopen(player, FeedbackSound.CLICK))
                 .request(input -> {
                     applyIconTexture(input);
-                    reopen(player);
+                    reopen(player, FeedbackSound.CLICK);
                 });
     }
 
@@ -339,14 +341,14 @@ public class EditMenu extends ButtonMenu {
      */
     private void onPhysicsClick(Player player, InventoryClickEvent event) {
         if (event.isRightClick()) {
-            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
+            FeedbackSound.OPEN.play(player);
             menus.openPhysics(buildWorld, player);
             return;
         }
 
         WorldData worldData = buildWorld.getData();
         worldData.set(WorldDataKey.PHYSICS, !worldData.get(WorldDataKey.PHYSICS));
-        reopen(player);
+        reopen(player, FeedbackSound.toggle(worldData.get(WorldDataKey.PHYSICS)));
     }
 
     /**
@@ -356,19 +358,19 @@ public class EditMenu extends ButtonMenu {
      */
     private void onBuildersClick(Player player, InventoryClickEvent event) {
         if (!canManageBuilders(player)) {
-            player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+            FeedbackSound.REFUSE.play(player);
             return;
         }
 
         if (event.isRightClick()) {
-            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
+            FeedbackSound.OPEN.play(player);
             menus.openBuilder(buildWorld, player);
             return;
         }
 
         WorldData worldData = buildWorld.getData();
         worldData.set(WorldDataKey.BUILDERS_ENABLED, !worldData.get(WorldDataKey.BUILDERS_ENABLED));
-        reopen(player);
+        reopen(player, FeedbackSound.toggle(worldData.get(WorldDataKey.BUILDERS_ENABLED)));
     }
 
     /**
@@ -378,12 +380,12 @@ public class EditMenu extends ButtonMenu {
     private void onVisibilityClick(Player player, InventoryClickEvent event) {
         boolean isPrivate = buildWorld.getData().get(WorldDataKey.VISIBILITY).isPrivate();
         if (!canChangeVisibility(player, isPrivate)) {
-            player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
+            FeedbackSound.REFUSE.play(player);
             return;
         }
 
         buildWorld.getData().set(WorldDataKey.VISIBILITY, isPrivate ? Visibility.EVERYONE : Visibility.ADDED_PLAYERS);
-        reopen(player);
+        reopen(player, FeedbackSound.CLICK);
     }
 
     private void cycleDifficulty() {
@@ -391,8 +393,8 @@ public class EditMenu extends ButtonMenu {
         buildWorld.getWorld().ifPresent(world -> world.setDifficulty(difficulty));
     }
 
-    private void reopen(Player player) {
-        player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
+    private void reopen(Player player, FeedbackSound sound) {
+        sound.play(player);
         menus.reopenEdit(buildWorld, player);
     }
 

@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,6 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.stream.IntStream;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -71,7 +71,7 @@ public final class MenuItems {
                         .name(messages.getString("setup_back", player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
-                    player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
+                    FeedbackSound.OPEN.play(player);
                     onBack.accept(player);
                 })
                 .build();

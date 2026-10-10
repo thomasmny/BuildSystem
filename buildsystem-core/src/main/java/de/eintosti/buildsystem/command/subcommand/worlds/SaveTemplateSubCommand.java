@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
@@ -36,7 +37,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -118,7 +118,7 @@ public class SaveTemplateSubCommand extends WorldSubCommand {
                         messages.sendMessage(
                                 player, "worlds_savetemplate_error", Placeholders.of("%template%", templateName));
                     } else {
-                        player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+                        FeedbackSound.SUCCESS.play(player);
                         messages.sendMessage(
                                 player, "worlds_savetemplate_finished", Placeholders.of("%template%", templateName));
                     }

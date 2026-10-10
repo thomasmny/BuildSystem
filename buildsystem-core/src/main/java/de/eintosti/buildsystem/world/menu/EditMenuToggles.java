@@ -77,7 +77,7 @@ final class EditMenuToggles {
             entry(
                     31,
                     new Toggle(
-                            Material.ARMOR_STAND,
+                            Material.ZOMBIE_HEAD,
                             Permissions.EDIT_MOBAI,
                             "worldeditor_mobai_item",
                             "worldeditor_mobai_lore",

@@ -25,12 +25,12 @@ import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
@@ -251,7 +251,7 @@ public class NavigatorLayoutMenu extends LayoutEditorMenu<NavigatorCategory> {
         private void pickUp(Player player) {
             held = true;
             setCursorNextTick(player, icon(player, null).build());
-            player.playSound(player, Sound.ITEM_ARMOR_EQUIP_LEATHER, 1f, 1f);
+            FeedbackSound.PICK_UP.play(player);
             refresh(player);
         }
 

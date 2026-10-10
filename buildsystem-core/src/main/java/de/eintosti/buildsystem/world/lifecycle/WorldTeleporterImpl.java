@@ -17,9 +17,9 @@
  */
 package de.eintosti.buildsystem.world.lifecycle;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.WorldNames;
 import io.papermc.lib.PaperLib;
@@ -106,7 +106,7 @@ public class WorldTeleporterImpl implements WorldTeleporter {
                             }
 
                             player.resetTitle();
-                            XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
+                            FeedbackSound.TELEPORT.play(player);
 
                             if (!finalLocation
                                     .clone()

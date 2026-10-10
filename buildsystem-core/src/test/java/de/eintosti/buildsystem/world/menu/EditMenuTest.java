@@ -48,6 +48,7 @@ import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataSchema;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -57,6 +58,7 @@ import java.util.stream.Stream;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Zombie;
@@ -161,6 +163,30 @@ class EditMenuTest {
         player.addAttachment(MockBukkit.createMockPlugin(), permission, true);
         click(slot);
         effect.accept(this);
+    }
+
+    static Stream<Arguments> toggles() {
+        return Stream.of(
+                Arguments.of(5, WorldDataKey.PINNED),
+                Arguments.of(20, WorldDataKey.BLOCK_BREAKING),
+                Arguments.of(22, WorldDataKey.PHYSICS),
+                Arguments.of(30, WorldDataKey.BUILDERS_ENABLED),
+                Arguments.of(31, WorldDataKey.MOB_AI));
+    }
+
+    @ParameterizedTest(name = "slot {0} flips {1}")
+    @MethodSource("toggles")
+    void leftClickToggle_playsTheOnOrOffSoundForTheStateItEndsIn(int slot, WorldDataKey<Boolean> key) {
+        player.setOp(true);
+        when(buildWorld.getBuilders().isCreator(player)).thenReturn(true);
+        boolean before = data.get(key);
+
+        click(slot);
+        click(slot);
+
+        Sound on = Sound.BLOCK_COPPER_BULB_TURN_ON;
+        Sound off = Sound.BLOCK_COPPER_BULB_TURN_OFF;
+        assertEquals(before ? List.of(off, on) : List.of(on, off), player.sounds());
     }
 
     @Test

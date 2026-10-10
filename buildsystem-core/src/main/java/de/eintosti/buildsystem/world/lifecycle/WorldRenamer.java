@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.lifecycle;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.BuildWorldRenameEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -26,6 +25,7 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldNames;
@@ -97,7 +97,7 @@ public class WorldRenamer {
 
         if (worldStorage.isNameTaken(sanitizedNewName)) {
             messages.sendMessage(player, "worlds_world_exists");
-            XSound.ENTITY_ITEM_BREAK.play(player);
+            FeedbackSound.REFUSE.play(player);
             return;
         }
 
@@ -110,7 +110,7 @@ public class WorldRenamer {
                             .add("%world%", sanitizedNewName)
                             .add("%other%", clash)
                             .build());
-            XSound.ENTITY_ITEM_BREAK.play(player);
+            FeedbackSound.REFUSE.play(player);
             return;
         }
 

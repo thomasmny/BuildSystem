@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.bukkit.entity.Player;
@@ -85,6 +86,7 @@ public class DesignMenu extends ButtonMenu {
                 })
                 .onClick((player, event) -> {
                     settingsService.getSettings(player).setDesignColor(entry.color());
+                    FeedbackSound.CLICK.play(player);
                     menus.openDesign(player);
                 })
                 .build();

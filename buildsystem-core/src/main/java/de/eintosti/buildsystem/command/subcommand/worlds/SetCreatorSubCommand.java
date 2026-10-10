@@ -27,9 +27,9 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
-import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -75,7 +75,7 @@ public class SetCreatorSubCommand extends WorldSubCommand {
         buildWorld.getBuilders().setCreator(creator);
 
         settingsService.forceUpdateSidebar(buildWorld);
-        player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
+        FeedbackSound.CONFIRM.play(player);
         messages.sendMessage(player, "worlds_setcreator_set", Placeholders.of("%world%", buildWorld.getName()));
         player.closeInventory();
     }
