@@ -26,18 +26,28 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.player.PlayerService;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
+import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.util.UpdateChecker;
+import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.UUID;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
@@ -50,7 +60,7 @@ import org.mockbukkit.mockbukkit.entity.PlayerMock;
 
 /**
  * The inventory taken from a player entering an archive world only lives in memory, so quitting must hand it back
- * before the server saves the player.
+ * before the server saves the player, and joining inside the archive world must take it again.
  */
 @NullMarked
 class PlayerQuitListenerTest {
@@ -60,6 +70,8 @@ class PlayerQuitListenerTest {
     private SettingsImpl settings;
     private BuildPlayerImpl buildPlayer;
     private PlayerQuitListener listener;
+    private PlayerService playerService;
+    private SettingsService settingsService;
 
     @BeforeEach
     void setUp() {
@@ -68,9 +80,11 @@ class PlayerQuitListenerTest {
         settings = new SettingsImpl();
         buildPlayer = new BuildPlayerImpl(UUID.randomUUID(), settings);
 
-        PlayerService playerService = mock(PlayerService.class, RETURNS_DEEP_STUBS);
+        playerService = mock(PlayerService.class, RETURNS_DEEP_STUBS);
         when(playerService.getPlayerStorage().getBuildPlayer(any(Player.class))).thenReturn(buildPlayer);
-        SettingsService settingsService = mock(SettingsService.class);
+        when(playerService.getPlayerStorage().createBuildPlayer(any(Player.class)))
+                .thenReturn(buildPlayer);
+        settingsService = mock(SettingsService.class);
         when(settingsService.getSettings(any(Player.class))).thenReturn(settings);
 
         listener = new PlayerQuitListener(
@@ -115,5 +129,40 @@ class PlayerQuitListenerTest {
         listener.onPlayerQuit(new PlayerQuitEvent(player, (String) null));
 
         assertFalse(player.getInventory().contains(Material.DIAMOND));
+    }
+
+    @Test
+    void rejoiningInAnArchiveWorld_takesTheInventoryAgain() {
+        enterArchiveWorld();
+        listener.onPlayerQuit(new PlayerQuitEvent(player, (String) null));
+
+        BuildWorld archive = mock(BuildWorld.class, RETURNS_DEEP_STUBS);
+        BuildWorldStatus archived = mock(BuildWorldStatus.class);
+        when(archive.getData().get(WorldDataKey.STATUS)).thenReturn(archived);
+        when(archive.getData().get(WorldDataKey.PHYSICS)).thenReturn(true);
+        WorldStorage worldStorage = mock(WorldStorage.class);
+        when(worldStorage.getBuildWorld(player.getWorld())).thenReturn(archive);
+        ConfigService configService = mock(ConfigService.class, RETURNS_DEEP_STUBS);
+        when(configService.current().settings().archive())
+                .thenReturn(new PluginConfig.Settings.Archive(false, true, GameMode.ADVENTURE));
+        new PlayerJoinListener(
+                        playerService,
+                        settingsService,
+                        mock(NavigatorService.class),
+                        mock(SpawnService.class),
+                        worldStorage,
+                        mock(PlayerLookupService.class),
+                        mock(NoClipService.class),
+                        configService,
+                        mock(Messages.class),
+                        mock(UpdateChecker.class),
+                        mock(TaskScheduler.class))
+                .onPlayerJoin(new PlayerJoinEvent(player, (String) null));
+
+        assertFalse(player.getInventory().contains(Material.DIAMOND));
+        assertEquals(GameMode.ADVENTURE, player.getGameMode());
+        // Leaving the archive world hands it back again.
+        buildPlayer.getCachedValues().resetArchiveStateIfPresent(player);
+        assertTrue(player.getInventory().contains(Material.DIAMOND, 3));
     }
 }
