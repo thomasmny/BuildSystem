@@ -27,7 +27,6 @@ jspecify = "1.0.1"
 nbt = "1.5.1"
 sshd-sftp = "2.20.0"
 xseries = "14.0.0"
-zip4j = "2.11.6"
 
 [libraries]
 # Test
@@ -58,5 +57,4 @@ fastboard = { group = "fr.mrmicky", name = "fastboard", version.ref = "fastboard
 jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
 nbt = { group = "dev.dewy", name = "nbt", version.ref = "nbt" }
 sftp = { group = "org.apache.sshd", name = "sshd-sftp", version.ref = "sshd-sftp" }
-zip4j = { group = "net.lingala.zip4j", name = "zip4j", version.ref = "zip4j" }
 xseries = { group = "com.github.cryptomorin", name = "XSeries", version.ref = "xseries" }

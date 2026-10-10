@@ -21,8 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -35,6 +37,7 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
+import de.eintosti.buildsystem.api.world.lifecycle.WorldLoader;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldUnloader;
 import de.eintosti.buildsystem.config.ConfigService;
@@ -45,15 +48,19 @@ import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.bukkit.Bukkit;
@@ -284,5 +291,40 @@ class BackupProfileImplTest {
             zip.closeEntry();
         }
         return archive;
+    }
+
+    @Test
+    void restoringALocalBackupFromAnEarlierVersion_putsTheWorldBackInPlace() throws Exception {
+        Path worldFolder = Files.createDirectories(tempDir.resolve("arena"));
+        Files.writeString(worldFolder.resolve("level.dat"), "current");
+        loadedWorld(worldFolder);
+        World world = buildWorld.getWorld().orElseThrow();
+        AtomicBoolean loaded = new AtomicBoolean(true);
+        bukkit.when(() -> Bukkit.getWorld("arena")).thenAnswer(invocation -> loaded.get() ? world : null);
+        WorldUnloader unloader = mock(WorldUnloader.class);
+        doAnswer(invocation -> {
+                    loaded.set(false);
+                    return null;
+                })
+                .when(unloader)
+                .forceUnload(any());
+        when(buildWorld.getUnloader()).thenReturn(unloader);
+        WorldLoader loader = mock(WorldLoader.class);
+        when(buildWorld.getLoader()).thenReturn(loader);
+        lenient().when(plugin.getLogger()).thenReturn(Logger.getLogger("BackupProfileImplTest"));
+        when(messages.formatDateTime(anyLong())).thenReturn("now");
+        Path archive = tempDir.resolve("zip4j-local.zip");
+        try (InputStream in = Objects.requireNonNull(getClass().getResourceAsStream("/backups/zip4j-local.zip"))) {
+            Files.copy(in, archive);
+        }
+        Backup backup = backup(1L);
+        when(backupStorage.downloadBackup(backup)).thenReturn(CompletableFuture.completedFuture(archive.toFile()));
+
+        profile(3).restoreBackup(backup, mock(Player.class)).get(5, TimeUnit.SECONDS);
+
+        assertEquals("level-data", Files.readString(worldFolder.resolve("level.dat")));
+        assertFalse(Files.exists(worldFolder.resolve("legacy")));
+        verify(loader).load();
+        assertFalse(operations.isBusy(buildWorld));
     }
 }

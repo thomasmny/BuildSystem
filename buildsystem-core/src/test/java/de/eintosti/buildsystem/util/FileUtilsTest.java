@@ -27,18 +27,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
@@ -192,53 +187,6 @@ class FileUtilsTest {
 
         assertTrue(Files.isDirectory(resolved));
         assertEquals(tempDir.resolve("parent").resolve("child"), resolved);
-    }
-
-    private Map<String, String> readZipEntries(byte[] zipped) throws IOException {
-        Map<String, String> entries = new HashMap<>();
-        try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(zipped))) {
-            ZipEntry entry;
-            while ((entry = zip.getNextEntry()) != null) {
-                entries.put(entry.getName(), new String(zip.readAllBytes()));
-            }
-        }
-        return entries;
-    }
-
-    @Test
-    void zipDirectoryToMemory_archivesEveryFileWithForwardSlashPaths() throws IOException {
-        File world = createWorldLikeDirectory("source");
-
-        byte[] zipped = FileUtils.zipDirectoryToMemory(world.toPath(), null);
-
-        Map<String, String> entries = readZipEntries(zipped);
-        assertEquals("level", entries.get("level.dat"));
-        assertEquals("region-data", entries.get("region/r.0.0.mca"));
-        assertEquals(4, entries.size(), "Every regular file should be archived");
-    }
-
-    @Test
-    void zipDirectoryToMemory_skipsTheExcludedSubtree() throws IOException {
-        File world = createWorldLikeDirectory("source");
-        File nested = new File(world, "dimensions/minecraft/other");
-        assertTrue(nested.mkdirs(), "test fixture");
-        Files.writeString(nested.toPath().resolve("level.dat"), "other-world");
-
-        byte[] zipped = FileUtils.zipDirectoryToMemory(world.toPath(), new File(world, "dimensions").toPath());
-
-        Map<String, String> entries = readZipEntries(zipped);
-        assertEquals("level", entries.get("level.dat"), "the world's own data is archived");
-        assertFalse(
-                entries.containsKey("dimensions/minecraft/other/level.dat"),
-                "worlds nested under the default world must not be folded into its backup");
-    }
-
-    @Test
-    void zipDirectoryToMemory_missingDirectoryThrows() {
-        Path missing = tempDir.resolve("missing");
-
-        // Failure must surface instead of producing a silently-truncated archive.
-        assertThrows(IOException.class, () -> FileUtils.zipDirectoryToMemory(missing, null));
     }
 
     /**

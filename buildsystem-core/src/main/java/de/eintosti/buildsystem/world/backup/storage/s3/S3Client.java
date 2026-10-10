@@ -136,17 +136,6 @@ public final class S3Client implements AutoCloseable {
     }
 
     /**
-     * Uploads an object, replacing anything already at the key.
-     *
-     * @param key The object key
-     * @param content The object body
-     * @throws IOException If the request fails or S3 returns an error
-     */
-    public void put(String key, byte[] content) throws IOException {
-        body(request("PUT", key, Map.of(), Payload.of(content), BodyHandlers.ofByteArray()), "upload " + key);
-    }
-
-    /**
      * Uploads a file as a multipart upload, streaming each part off disk so neither the heap nor the five-gigabyte
      * ceiling on a single {@code PUT} bounds how large the file may be.
      *

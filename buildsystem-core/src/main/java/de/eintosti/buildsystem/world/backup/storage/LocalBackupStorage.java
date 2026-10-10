@@ -20,7 +20,7 @@ package de.eintosti.buildsystem.world.backup.storage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
-import de.eintosti.buildsystem.util.FileUtils;
+import de.eintosti.buildsystem.util.WorldArchive;
 import de.eintosti.buildsystem.world.backup.BackupImpl;
 import java.io.File;
 import java.io.IOException;
@@ -116,19 +116,25 @@ public class LocalBackupStorage extends AbstractBackupStorage {
             long timestamp = System.currentTimeMillis();
             Path directory = getBackupDirectory(buildWorld);
             try {
-                // zip4j opens the destination archive with a RandomAccessFile, which fails outright if the per-world
-                // directory is missing
                 Files.createDirectories(directory);
             } catch (IOException e) {
                 throw new IOException("Failed to create backup directory " + directory, e);
             }
-            File storage = new File(directory.toFile(), backupName(timestamp));
-            File zip = FileUtils.zipWorld(storage, buildWorld);
-            if (zip == null) {
-                throw new IOException("Failed to complete the backup for " + buildWorld.getName());
+            Path zip = directory.resolve(backupName(timestamp));
+            // Written under another name first, so the listing never shows a backup that is still being written.
+            Path partial = directory.resolve(backupName(timestamp) + ".part");
+            try {
+                WorldArchive.write(buildWorld, partial);
+                Files.move(partial, zip);
+            } catch (IOException e) {
+                Files.deleteIfExists(partial);
+                throw new IOException("Failed to complete the backup for " + buildWorld.getName(), e);
             }
             logDuration(buildWorld, timestamp);
-            return new BackupImpl(profileProvider.apply(buildWorld), timestamp, zip.getAbsolutePath());
+            return new BackupImpl(
+                    profileProvider.apply(buildWorld),
+                    timestamp,
+                    zip.toAbsolutePath().toString());
         });
     }
 
