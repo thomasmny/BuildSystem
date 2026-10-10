@@ -41,7 +41,8 @@ import org.jspecify.annotations.Nullable;
 public class WorldToggleCommand extends CommandBase {
 
     /**
-     * What each label flips. They differ only in the world data key, the permission and the message prefix.
+     * What each label flips: the world data key, its permission and message prefix, whether activating clears the
+     * value, and whether the label has an {@code all} form.
      */
     public enum Toggle {
         EXPLOSIONS("explosions", Permissions.EXPLOSIONS, WorldDataKey.EXPLOSIONS, false, false),

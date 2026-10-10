@@ -106,7 +106,8 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
     }
 
     public void getAddBuilderInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
-        if (!hasAddBuilderPermission(player, buildWorld)) {
+        // The command checked this already; the editor menu reaches this prompt directly.
+        if (!buildWorld.getPermissions().canPerformCommand(player, getArgument().getPermission())) {
             messages.sendPermissionError(player);
             return;
         }
@@ -115,16 +116,6 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
             String builderName = input.trim();
             addBuilder(player, buildWorld, builderName, closeInventory);
         });
-    }
-
-    /**
-     * Whether {@code player} may add builders to {@code buildWorld}, per the argument's permission node. Shared by the
-     * command entry point and the GUI prompt so both are gated by the same check.
-     */
-    private boolean hasAddBuilderPermission(Player player, BuildWorld buildWorld) {
-        return buildWorld
-                .getPermissions()
-                .canPerformCommand(player, getArgument().getPermission());
     }
 
     @Override
