@@ -17,6 +17,9 @@
  */
 package de.eintosti.buildsystem.listener.player;
 
+import de.eintosti.buildsystem.api.storage.WorldStorage;
+import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.player.CachedValues;
 import org.bukkit.entity.Player;
@@ -27,12 +30,27 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * Puts a player into an archive world's spectating state and takes them out of it again. Shared by changing worlds,
- * joining inside an archive world and quitting.
+ * joining inside an archive world, quitting, and the plugin disabling and enabling again.
  */
 @NullMarked
-final class ArchiveMode {
+public final class ArchiveMode {
 
     private ArchiveMode() {}
+
+    /**
+     * Enters archive mode for a player standing in a world where building is not allowed. Joining fires no world change,
+     * and neither does the plugin enabling while players are online, so both come through here.
+     */
+    public static void enterIfInArchiveWorld(
+            Player player,
+            CachedValues cachedValues,
+            WorldStorage worldStorage,
+            PluginConfig.Settings.Archive archive) {
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
+        if (buildWorld != null && !buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
+            enter(player, cachedValues, archive);
+        }
+    }
 
     /**
      * Snapshots the player's gamemode, inventory and armor, then clears them and applies the archive settings. The
@@ -61,9 +79,22 @@ final class ArchiveMode {
         player.setFlying(true);
 
         if (archive.vanish()) {
-            player.addPotionEffect(
-                    new PotionEffect(PotionEffectType.INVISIBILITY, PotionEffect.INFINITE_DURATION, 0, false, false),
-                    false);
+            addArchiveInvisibility(player);
+        }
+    }
+
+    /**
+     * Gives or takes the archive invisibility to match the vanish setting, for a player in archive mode. Used after the
+     * config is reloaded, since the setting may have changed while players were in an archive.
+     */
+    public static void applyVanish(Player player, CachedValues cachedValues, boolean vanish) {
+        if (!cachedValues.hasArchiveState()) {
+            return;
+        }
+        if (vanish) {
+            addArchiveInvisibility(player);
+        } else {
+            removeArchiveInvisibility(player);
         }
     }
 
@@ -76,8 +107,18 @@ final class ArchiveMode {
      * it into player data, so it is also removed from players who carry it without a snapshot. Any other invisibility,
      * such as a potion, is left alone.
      */
-    static void exit(Player player, CachedValues cachedValues) {
+    public static void exit(Player player, CachedValues cachedValues) {
         cachedValues.resetArchiveStateIfPresent(player);
+        removeArchiveInvisibility(player);
+    }
+
+    private static void addArchiveInvisibility(Player player) {
+        player.addPotionEffect(
+                new PotionEffect(PotionEffectType.INVISIBILITY, PotionEffect.INFINITE_DURATION, 0, false, false),
+                false);
+    }
+
+    private static void removeArchiveInvisibility(Player player) {
         PotionEffect invisibility = player.getPotionEffect(PotionEffectType.INVISIBILITY);
         if (invisibility != null && isArchiveInvisibility(invisibility)) {
             player.removePotionEffect(PotionEffectType.INVISIBILITY);

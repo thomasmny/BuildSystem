@@ -21,7 +21,6 @@ import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -105,20 +104,17 @@ public class PlayerJoinListener implements Listener {
         manageSettings(player, buildPlayer.getSettings());
         teleportToCorrectLocation(player, buildPlayer);
 
+        ArchiveMode.enterIfInArchiveWorld(
+                player,
+                buildPlayer.getCachedValues(),
+                worldStorage,
+                configService.current().settings().archive());
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        if (buildWorld != null) {
-            WorldData worldData = buildWorld.getData();
-            if (!worldData.get(WorldDataKey.STATUS).isBuildingAllowed()) {
-                // Joining inside an archive world fires no world change, so archive mode is entered here.
-                ArchiveMode.enter(
-                        player,
-                        buildPlayer.getCachedValues(),
-                        configService.current().settings().archive());
-            }
-            if (!worldData.get(WorldDataKey.PHYSICS) && player.hasPermission(Permissions.PHYSICS_MESSAGE)) {
-                messages.sendMessage(
-                        player, "physics_deactivated_in_world", Placeholders.of("%world%", buildWorld.getName()));
-            }
+        if (buildWorld != null
+                && !buildWorld.getData().get(WorldDataKey.PHYSICS)
+                && player.hasPermission(Permissions.PHYSICS_MESSAGE)) {
+            messages.sendMessage(
+                    player, "physics_deactivated_in_world", Placeholders.of("%world%", buildWorld.getName()));
         }
         settingsManager.updateVisibility(player);
         navigatorService.giveNavigator(player);

@@ -77,6 +77,7 @@ public class WorldServiceImpl implements WorldService {
     private final WorldStorageImpl worldStorage;
 
     private final WorldLoadBootstrap loadBootstrap;
+    private final CompletableFuture<Void> worldsLoaded = new CompletableFuture<>();
     private final WorldCreationPrompts creationPrompts;
     private final WorldImportCoordinator importCoordinator;
 
@@ -91,12 +92,13 @@ public class WorldServiceImpl implements WorldService {
         this.worldStorage = worldStorage;
         this.folderStorage = folderStorage;
         this.loadBootstrap = new WorldLoadBootstrap(
-                plugin,
-                services.scheduler(),
-                this.folderStorage,
-                this.worldStorage,
-                services.config(),
-                () -> services.spawn().loadSpawnWorld());
+                plugin, services.scheduler(), this.folderStorage, this.worldStorage, services.config(), () -> {
+                    try {
+                        services.spawn().loadSpawnWorld();
+                    } finally {
+                        worldsLoaded.complete(null);
+                    }
+                });
         this.creationPrompts = new WorldCreationPrompts(this, services.prompts(), services.messages());
         this.importCoordinator =
                 new WorldImportCoordinator(plugin, this, this.worldStorage, services.config(), services.messages());
@@ -105,6 +107,14 @@ public class WorldServiceImpl implements WorldService {
     public void init() {
         this.folderStorage.loadFolders();
         this.loadBootstrap.loadWorlds();
+    }
+
+    /**
+     * {@return a future that completes on the main thread once the stored worlds are registered} It never completes when
+     * they fail to load.
+     */
+    public CompletableFuture<Void> worldsLoaded() {
+        return worldsLoaded;
     }
 
     @Override

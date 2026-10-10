@@ -26,7 +26,9 @@ import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.integration.Integrations;
 import de.eintosti.buildsystem.listener.ListenerRegistrar;
+import de.eintosti.buildsystem.listener.player.ArchiveMode;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
+import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.TaskScheduler;
@@ -95,6 +97,17 @@ public class BuildSystemPlugin extends JavaPlugin {
             services.settings().displayScoreboard(pl);
         });
         Bukkit.getOnlinePlayers().forEach(services.settings()::updateVisibility);
+        // After a reload, players may be standing in an archive world, which only exists once the stored worlds load.
+        services.world()
+                .worldsLoaded()
+                .thenRun(() -> Bukkit.getOnlinePlayers().forEach(pl -> {
+                    ArchiveMode.enterIfInArchiveWorld(
+                            pl,
+                            cachedValues(pl),
+                            services.world().getWorldStorage(),
+                            configService.current().settings().archive());
+                    services.settings().updateVisibility(pl);
+                }));
 
         services.worldDownload().start();
 
@@ -126,6 +139,8 @@ public class BuildSystemPlugin extends JavaPlugin {
             BuildPlayerImpl buildPlayer =
                     BuildPlayerImpl.of(services.player().getPlayerStorage().getBuildPlayer(pl));
             buildPlayer.getCachedValues().resetCachedValues(pl);
+            // Without this the archive invisibility outlives the plugin; enable enters archive mode again.
+            ArchiveMode.exit(pl, buildPlayer.getCachedValues());
             buildPlayer.setLogoutLocation(new LogoutLocation(WorldNames.of(pl.getWorld()), pl.getLocation()));
 
             services.settings().hideScoreboard(pl);
@@ -235,6 +250,11 @@ public class BuildSystemPlugin extends JavaPlugin {
         return CompletableFuture.allOf(worldSave, playerSave, spawnSave);
     }
 
+    private CachedValues cachedValues(Player player) {
+        return BuildPlayerImpl.of(services.player().getPlayerStorage().getBuildPlayer(player))
+                .getCachedValues();
+    }
+
     /**
      * Reloads the config and config data.
      *
@@ -254,6 +274,12 @@ public class BuildSystemPlugin extends JavaPlugin {
 
         if (init) {
             services.world().remanageAllUnloadTasks();
+
+            boolean vanish = services.config().current().settings().archive().vanish();
+            for (Player pl : Bukkit.getOnlinePlayers()) {
+                ArchiveMode.applyVanish(pl, cachedValues(pl), vanish);
+            }
+            Bukkit.getOnlinePlayers().forEach(services.settings()::updateVisibility);
 
             if (services.config().current().settings().scoreboard()) {
                 services.settings().displayScoreboard();
