@@ -88,7 +88,8 @@ public final class SqlDatabase implements Database {
     @Override
     public EntityStore collection(EntityKind kind) {
         // The only identifier in the SQL, and it cannot be a parameter. It is safe to splice in: the prefix was checked
-        // against [a-z0-9_]{0,32} when the config was parsed, and the rest is the lowercase name of an enum constant.
+        // against [a-z_][a-z0-9_]{0,31}| when the config was parsed, and the rest is the lowercase name of an enum
+        // constant.
         SqlEntityStore store = new SqlEntityStore(this, dialect, tablePrefix + kind.id(), logger);
         store.createTable();
         return store;

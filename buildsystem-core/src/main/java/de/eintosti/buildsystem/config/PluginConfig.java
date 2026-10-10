@@ -138,12 +138,12 @@ public record PluginConfig(Settings settings, Storage storage, World world, Fold
          */
         public record Database(StorageType type, String tablePrefix, Map<StorageType, Server> servers) {
 
-            private static final Pattern TABLE_PREFIX = Pattern.compile("[a-z0-9_]{0,32}");
+            private static final Pattern TABLE_PREFIX = Pattern.compile("[a-z_][a-z0-9_]{0,31}|");
 
             public Database {
                 if (!TABLE_PREFIX.matcher(tablePrefix).matches()) {
                     throw new IllegalArgumentException("storage.table-prefix may only hold lowercase letters, digits"
-                            + " and underscores, at most 32 of them");
+                            + " and underscores, at most 32 of them, and may not start with a digit");
                 }
                 servers = Map.copyOf(servers);
             }

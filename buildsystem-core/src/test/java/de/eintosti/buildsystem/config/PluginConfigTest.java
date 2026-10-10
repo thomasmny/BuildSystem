@@ -703,11 +703,25 @@ class PluginConfigTest {
     }
 
     @Test
+    void storageDatabase_prefixMayBeEmptyOrStartWithAnUnderscore() {
+        for (String prefix : List.of("", "_", "_2b", "b2_")) {
+            assertEquals(
+                    prefix,
+                    parse("storage:\n  table-prefix: \"" + prefix + "\"")
+                            .storage()
+                            .database()
+                            .tablePrefix());
+        }
+    }
+
+    @Test
     void storageDatabase_valuesThatCouldReachAnotherTableOrAddress_failToParse() {
         List<String> hostile = List.of(
                 "type: postgres",
                 "table-prefix: \"x; DROP TABLE worlds; --\"",
                 "table-prefix: Lobby_",
+                "table-prefix: 1lobby_",
+                "table-prefix: \"9\"",
                 "table-prefix: " + "a".repeat(33),
                 "mysql:\n    database: \"buildsystem?allowLoadLocalInfile=true\"",
                 "mysql:\n    database: \"../other\"",

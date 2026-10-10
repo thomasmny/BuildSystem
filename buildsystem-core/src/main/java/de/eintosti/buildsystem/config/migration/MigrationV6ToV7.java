@@ -66,10 +66,10 @@ public class MigrationV6ToV7 implements Migration {
                 "storage.table-prefix",
                 List.of(
                         "Put in front of every table and collection name: lowercase letters, digits",
-                        "and underscores, at most 32. Every server needs its own prefix or its own",
-                        "database. Each server loads the data once on startup and keeps it in memory,",
-                        "so two servers sharing a prefix overwrite each other's worlds, folders and",
-                        "players."));
+                        "and underscores, at most 32 and not starting with a digit. Every server needs",
+                        "its own prefix or its own database. Each server loads the data once on startup",
+                        "and keeps it in memory, so two servers sharing a prefix overwrite each other's",
+                        "worlds, folders and players."));
         server(config, "mysql", 3306);
         config.setComments(
                 "storage.mysql",

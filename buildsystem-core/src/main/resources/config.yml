@@ -148,10 +148,10 @@ storage:
   # fall back to yaml.
   type: sqlite
   # Put in front of every table and collection name: lowercase letters, digits
-  # and underscores, at most 32. Every server needs its own prefix or its own
-  # database. Each server loads the data once on startup and keeps it in memory,
-  # so two servers sharing a prefix overwrite each other's worlds, folders and
-  # players.
+  # and underscores, at most 32 and not starting with a digit. Every server needs
+  # its own prefix or its own database. Each server loads the data once on startup
+  # and keeps it in memory, so two servers sharing a prefix overwrite each other's
+  # worlds, folders and players.
   table-prefix: buildsystem_
   # Each password can also be supplied as an environment variable named after
   # its block, e.g. BUILDSYSTEM_MYSQL_PASSWORD, which takes precedence and keeps
