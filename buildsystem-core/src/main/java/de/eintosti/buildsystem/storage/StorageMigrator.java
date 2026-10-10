@@ -132,15 +132,12 @@ public final class StorageMigrator {
         }
         CompletableFuture<Void> gate = new CompletableFuture<>();
         this.gate = gate;
-        Map<EntityKind, Map<String, Map<String, Object>>> snapshots = new EnumMap<>(EntityKind.class);
-        List<CompletableFuture<Void>> drained = new ArrayList<>();
-        for (Part<?> part : parts) {
-            snapshots.put(part.kind(), part.snapshot());
-            drained.add(part.collection().hold(gate));
-        }
         AtomicReference<@Nullable StorageBackend> target = new AtomicReference<>();
-        return CompletableFuture.allOf(drained.toArray(CompletableFuture[]::new))
-                .thenApplyAsync(ignored -> copy(type, settings, snapshots, target), background)
+        Map<EntityKind, Map<String, Map<String, Object>>> snapshots = new EnumMap<>(EntityKind.class);
+        // Writes are only held once the target is reachable, so a server that never answers holds nothing back.
+        return CompletableFuture.supplyAsync(() -> open(type, settings, target), background)
+                .thenComposeAsync(stores -> hold(gate, snapshots).thenApply(ignored -> stores), mainThread)
+                .thenApplyAsync(stores -> copy(type, stores, snapshots), background)
                 .thenApplyAsync(stores -> switchTo(type, stores, target, gate), mainThread)
                 .thenApply(ignored -> {
                     Map<EntityKind, Integer> counts = new EnumMap<>(EntityKind.class);
@@ -170,23 +167,47 @@ public final class StorageMigrator {
         }
     }
 
-    private Map<EntityKind, EntityStore> copy(
+    private Map<EntityKind, EntityStore> open(
             StorageType type,
             PluginConfig.Storage.Database settings,
-            Map<EntityKind, Map<String, Map<String, Object>>> snapshots,
             AtomicReference<@Nullable StorageBackend> target) {
         StorageBackend backend = StorageBackend.connect(type, settings, dataFolder, logger);
         target.set(backend);
         Map<EntityKind, EntityStore> stores = new EnumMap<>(EntityKind.class);
+        parts.forEach(part -> stores.put(part.kind(), backend.collection(part.kind())));
+        return stores;
+    }
+
+    /**
+     * Takes the snapshots and holds the writes in one step on the main thread, so no change slips between them.
+     *
+     * @return Completes once the writes submitted before are done
+     */
+    private CompletableFuture<Void> hold(
+            CompletableFuture<Void> gate, Map<EntityKind, Map<String, Map<String, Object>>> snapshots) {
+        if (gate.isDone()) {
+            throw new IllegalStateException("BuildSystem is shutting down");
+        }
+        List<CompletableFuture<Void>> drained = new ArrayList<>();
+        for (Part<?> part : parts) {
+            snapshots.put(part.kind(), part.snapshot());
+            drained.add(part.collection().hold(gate));
+        }
+        return CompletableFuture.allOf(drained.toArray(CompletableFuture[]::new));
+    }
+
+    private Map<EntityKind, EntityStore> copy(
+            StorageType type,
+            Map<EntityKind, EntityStore> stores,
+            Map<EntityKind, Map<String, Map<String, Object>>> snapshots) {
         snapshots.forEach((kind, entries) -> {
-            EntityStore store = backend.collection(kind);
+            EntityStore store = stores.get(kind);
             store.replaceAll(entries);
             if (!normalize(store.loadAll()).equals(normalize(entries))) {
                 throw new StorageException(
                         "The " + kind.id() + " read back from " + type.displayName() + " differ from those written",
                         null);
             }
-            stores.put(kind, store);
         });
         return stores;
     }

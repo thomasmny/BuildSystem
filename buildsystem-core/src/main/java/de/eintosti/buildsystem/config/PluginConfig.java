@@ -173,14 +173,15 @@ public record PluginConfig(Settings settings, Storage storage, World world, Fold
                     String username,
                     @Nullable String password) {
 
-                private static final Pattern HOST = Pattern.compile("[^/?&;#\\s]+");
+                // Only names and addresses: drivers read options and further hosts from characters like ( = , @
+                private static final Pattern HOST = Pattern.compile("[A-Za-z0-9.-]{1,253}|\\[[0-9A-Fa-f:.]{2,45}]");
                 private static final Pattern DATABASE = Pattern.compile("[A-Za-z0-9_-]{1,64}");
 
                 public Server {
                     String block = "storage." + type.key() + ".";
                     if (!HOST.matcher(host).matches()) {
                         throw new IllegalArgumentException(
-                                block + "host must be a host name or address, without / ? & ; # or spaces");
+                                block + "host must be a host name, an IP address or an IPv6 address in brackets");
                     }
                     if (port < 1 || port > 65535) {
                         throw new IllegalArgumentException(block + "port must be between 1 and 65535");

@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.storage.StorageException;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Properties;
 import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
@@ -87,14 +86,9 @@ public final class SqlDatabase implements Database {
 
     @Override
     public EntityStore collection(EntityKind kind) {
-        String table = tablePrefix + kind.id();
-        run(connection -> {
-            try (Statement statement = connection.createStatement()) {
-                statement.execute(dialect.createTable(table));
-            }
-            return null;
-        });
-        return new SqlEntityStore(this, dialect, table, logger);
+        SqlEntityStore store = new SqlEntityStore(this, dialect, tablePrefix + kind.id(), logger);
+        store.createTable();
+        return store;
     }
 
     synchronized <R> R run(SqlWork<R> work) {

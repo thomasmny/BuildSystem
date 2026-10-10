@@ -690,6 +690,19 @@ class PluginConfigTest {
     }
 
     @Test
+    void storageDatabase_hostMayBeANameOrAnAddress() {
+        for (String host : List.of("localhost", "db-1.example.com", "10.0.0.5", "[::1]", "[2001:db8::7]")) {
+            assertEquals(
+                    host,
+                    parse("storage:\n  mysql:\n    host: \"" + host + "\"")
+                            .storage()
+                            .database()
+                            .server(StorageType.MYSQL)
+                            .host());
+        }
+    }
+
+    @Test
     void storageDatabase_valuesThatCouldReachAnotherTableOrAddress_failToParse() {
         List<String> hostile = List.of(
                 "type: postgres",
@@ -704,6 +717,11 @@ class PluginConfigTest {
                 "mysql:\n    host: \"db;x=1\"",
                 "mysql:\n    host: \"db#\"",
                 "mysql:\n    host: \"db x\"",
+                "mysql:\n    host: \"(host=db,allowLoadLocalInfile=true)\"",
+                "mysql:\n    host: \"address=(host=db)(allowLoadLocalInfile=true)\"",
+                "mysql:\n    host: \"user:password@db\"",
+                "mysql:\n    host: \"db1,db2\"",
+                "mysql:\n    host: \"db:3307\"",
                 "mysql:\n    port: 0",
                 "mongodb:\n    port: 65536");
         for (String line : hostile) {

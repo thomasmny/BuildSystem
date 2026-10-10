@@ -74,13 +74,13 @@ public final class StorageBackend implements AutoCloseable {
                         yield null;
                     }
                     case SQLITE -> sqlite(sqliteFile, prefix, logger);
-                    case MYSQL, MARIADB ->
-                        SqlDatabase.connect(
-                                SqlDialect.MYSQL,
-                                url("mysql", settings.server(type)),
-                                credentials(settings.server(type)),
-                                prefix,
-                                logger);
+                    case MYSQL, MARIADB -> {
+                        Properties properties = credentials(settings.server(type));
+                        // The driver waits forever by default, PostgreSQL and MongoDB give up after 10 seconds.
+                        properties.setProperty("connectTimeout", "10000");
+                        yield SqlDatabase.connect(
+                                SqlDialect.MYSQL, url("mysql", settings.server(type)), properties, prefix, logger);
+                    }
                     case POSTGRESQL -> {
                         Properties properties = credentials(settings.server(type));
                         // Error details can quote a failing row, which has no place in the log.

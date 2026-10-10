@@ -29,6 +29,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.SequencedMap;
@@ -51,6 +52,7 @@ final class SqlEntityStore implements EntityStore {
 
     private final SqlDatabase database;
     private final String table;
+    private final String createTable;
     private final String selectAll;
     private final String selectAny;
     private final String upsert;
@@ -65,12 +67,22 @@ final class SqlEntityStore implements EntityStore {
     SqlEntityStore(SqlDatabase database, SqlDialect dialect, String table, Logger logger) {
         this.database = database;
         this.table = table;
+        this.createTable = dialect.createTable(table);
         this.selectAll = "SELECT id, data FROM " + table + " ORDER BY id";
         this.selectAny = "SELECT 1 FROM " + table + " LIMIT 1";
         this.upsert = dialect.upsert(table);
         this.delete = "DELETE FROM " + table + " WHERE id = ?";
         this.deleteAll = "DELETE FROM " + table;
         this.logger = logger;
+    }
+
+    void createTable() {
+        database.run(connection -> {
+            try (Statement statement = connection.createStatement()) {
+                statement.execute(createTable);
+            }
+            return null;
+        });
     }
 
     @Override

@@ -71,6 +71,7 @@ class StorageMigratorTest {
 
     // Runs the most recently submitted task first, the worst order a thread pool could pick.
     private final Deque<Runnable> background = new ArrayDeque<>();
+    private final Deque<Runnable> mainThread = new ArrayDeque<>();
     private final List<Note> live = new ArrayList<>();
     private final YamlConfiguration liveConfig = new YamlConfiguration();
     private final AtomicReference<StorageBackend> current = new AtomicReference<>();
@@ -92,7 +93,7 @@ class StorageMigratorTest {
                 dataFolder,
                 () -> liveConfig,
                 background::push,
-                Runnable::run,
+                mainThread::push,
                 LOGGER);
     }
 
@@ -107,9 +108,11 @@ class StorageMigratorTest {
         notes.save(live);
 
         CompletableFuture<Map<EntityKind, Integer>> migration = migrator.migrate(StorageType.SQLITE, settings());
+        drain(background);
+        drain(mainThread);
         live.add(new Note("c", 3));
         notes.save(live.getLast());
-        runBackground();
+        runAll();
 
         assertEquals(Map.of(EntityKind.PLAYERS, 2), migration.join());
         assertEquals(StorageType.SQLITE, current.get().type());
@@ -136,14 +139,14 @@ class StorageMigratorTest {
     void migrate_replacesWhatTheTargetHeldBefore() {
         live.add(new Note("old", 1));
         migrator.migrate(StorageType.SQLITE, settings());
-        runBackground();
+        runAll();
         live.clear();
         live.add(new Note("new", 2));
 
         migrator.migrate(StorageType.YAML, settings());
-        runBackground();
+        runAll();
         migrator.migrate(StorageType.SQLITE, settings());
-        runBackground();
+        runAll();
 
         assertEquals(
                 List.of("new"),
@@ -158,7 +161,7 @@ class StorageMigratorTest {
 
         CompletableFuture<Map<EntityKind, Integer>> migration = migrator.migrate(StorageType.MYSQL, settings());
         notes.save(new Note("held", 2));
-        runBackground();
+        runAll();
 
         assertThrows(CompletionException.class, migration::join);
         assertSame(before, current.get());
@@ -177,7 +180,7 @@ class StorageMigratorTest {
         CompletableFuture<Map<EntityKind, Integer>> second = migrator.migrate(StorageType.SQLITE, settings());
 
         assertTrue(second.isCompletedExceptionally());
-        runBackground();
+        runAll();
         assertEquals(Map.of(EntityKind.PLAYERS, 0), first.join());
     }
 
@@ -188,16 +191,23 @@ class StorageMigratorTest {
         notes.save(new Note("held", 1));
 
         migrator.abort();
-        runBackground();
+        runAll();
 
         assertThrows(CompletionException.class, migration::join);
         assertSame(before, current.get());
         assertTrue(EntityKind.PLAYERS.yaml(dataFolder, LOGGER).loadAll().containsKey("held"));
     }
 
-    private void runBackground() {
-        while (!background.isEmpty()) {
-            background.pop().run();
+    private void runAll() {
+        while (!background.isEmpty() || !mainThread.isEmpty()) {
+            drain(background);
+            drain(mainThread);
+        }
+    }
+
+    private static void drain(Deque<Runnable> tasks) {
+        while (!tasks.isEmpty()) {
+            tasks.pop().run();
         }
     }
 
