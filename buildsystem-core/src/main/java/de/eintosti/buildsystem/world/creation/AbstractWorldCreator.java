@@ -27,8 +27,13 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
@@ -92,7 +97,8 @@ abstract class AbstractWorldCreator {
     /**
      * Registers the build world, then generates its Bukkit world. The world is registered first so its settings (mob
      * AI, physics) already apply to the chunks generated with it; if generation fails or throws, the registration is
-     * rolled back, so no registered world is left without a Bukkit world behind it.
+     * rolled back, so no registered world is left without a Bukkit world behind it. A new world's folder is deleted
+     * as well, so the name can be used again; an imported folder is left alone.
      *
      * @param checkVersion Whether to refuse a world folder saved by a newer Minecraft version
      * @return The registered world, or {@code null} when the Bukkit world could not be generated
@@ -115,9 +121,15 @@ abstract class AbstractWorldCreator {
         } finally {
             if (world == null) {
                 worldStorage.removeBuildWorld(newBuildWorld);
+                if (!isImport()) {
+                    deleteFolderOfFailedWorld();
+                }
             }
         }
         if (world == null) {
+            if (!isImport()) {
+                notifyAudience("worlds_creation_failed", Placeholders.of("%world%", worldName));
+            }
             return null;
         }
 
@@ -126,6 +138,23 @@ abstract class AbstractWorldCreator {
         newBuildWorld.getUnloader().manageUnload();
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostCreateEvent(newBuildWorld, isImport()));
         return newBuildWorld;
+    }
+
+    private void deleteFolderOfFailedWorld() {
+        File folder = FileUtils.worldFolder(worldName);
+        CompletableFuture.runAsync(
+                () -> {
+                    if (!folder.exists()) {
+                        return;
+                    }
+                    try {
+                        FileUtils.deleteDirectory(folder);
+                    } catch (IOException e) {
+                        context.logger()
+                                .log(Level.WARNING, "Could not delete the folder of failed world " + worldName, e);
+                    }
+                },
+                context.scheduler().background());
     }
 
     protected final void notifyAudience(String key) {
