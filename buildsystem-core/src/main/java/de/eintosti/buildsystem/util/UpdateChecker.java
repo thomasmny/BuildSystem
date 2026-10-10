@@ -51,45 +51,18 @@ public final class UpdateChecker {
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
     private static final Duration CACHE_FOR = Duration.ofHours(1);
 
-    /**
-     * The default version scheme for this update checker
-     */
-    public static final VersionScheme VERSION_SCHEME_DECIMAL = (first, second) -> {
-        String[] firstSplit = splitVersionInfo(first), secondSplit = splitVersionInfo(second);
-        if (firstSplit == null || secondSplit == null) {
-            return null;
-        }
-
-        for (int i = 0; i < Math.min(firstSplit.length, secondSplit.length); i++) {
-            int currentValue = NumberUtils.toInt(firstSplit[i]), newestValue = NumberUtils.toInt(secondSplit[i]);
-
-            if (newestValue > currentValue) {
-                return second;
-            } else if (newestValue < currentValue) {
-                return first;
-            }
-        }
-
-        return (secondSplit.length > firstSplit.length) ? second : first;
-    };
-
     private final JavaPlugin plugin;
     private final int pluginID;
-    private final VersionScheme versionScheme;
     private final HttpClient httpClient;
     private final Executor executor;
 
     private @Nullable CompletableFuture<UpdateResult> lastCheck;
     private long lastCheckAt;
 
-    /**
-     * @param executor Runs the HTTP request; in production this is {@link TaskScheduler#background()}
-     */
     public UpdateChecker(JavaPlugin plugin, int pluginID, Executor executor) {
         Preconditions.checkArgument(pluginID > 0, "Plugin ID must be greater than 0");
         this.plugin = plugin;
         this.pluginID = pluginID;
-        this.versionScheme = VERSION_SCHEME_DECIMAL;
         this.httpClient = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
         this.executor = executor;
     }
@@ -102,6 +75,27 @@ public final class UpdateChecker {
         return plugin.getDescription().getVersion();
     }
 
+    /**
+     * {@return the higher of two dotted version numbers, or {@code null} if either has no number in it}
+     */
+    private static @Nullable String compareVersions(String first, String second) {
+        String[] firstSplit = splitVersionInfo(first), secondSplit = splitVersionInfo(second);
+        if (firstSplit == null || secondSplit == null) {
+            return null;
+        }
+
+        for (int i = 0; i < Math.min(firstSplit.length, secondSplit.length); i++) {
+            int currentValue = NumberUtils.toInt(firstSplit[i]), newestValue = NumberUtils.toInt(secondSplit[i]);
+            if (newestValue > currentValue) {
+                return second;
+            } else if (newestValue < currentValue) {
+                return first;
+            }
+        }
+
+        return (secondSplit.length > firstSplit.length) ? second : first;
+    }
+
     private static String @Nullable [] splitVersionInfo(String version) {
         Matcher matcher = DECIMAL_SCHEME_PATTERN.matcher(version);
         return matcher.find() ? matcher.group().split("\\.") : null;
@@ -109,14 +103,17 @@ public final class UpdateChecker {
 
     /**
      * Request an update check to Spigot. This request is asynchronous and may not complete immediately as an HTTP GET
-     * request is published to the Spigot API. The result is reused for an hour, so a player joining does not cost a
-     * request each time.
+     * request is published to the Spigot API. An answer from Spigot is reused for an hour, so a player joining does not
+     * cost a request each time; a failed check is retried on the next call.
      *
      * @return a future update result
      */
     public synchronized CompletableFuture<UpdateResult> requestUpdateCheck() {
         long now = System.nanoTime();
-        if (lastCheck == null || now - lastCheckAt > CACHE_FOR.toNanos()) {
+        boolean reusable = lastCheck != null
+                && now - lastCheckAt <= CACHE_FOR.toNanos()
+                && (!lastCheck.isDone() || lastCheck.join().getReason().isAnswer());
+        if (!reusable) {
             lastCheck = CompletableFuture.supplyAsync(this::check, executor);
             lastCheckAt = now;
         }
@@ -147,7 +144,7 @@ public final class UpdateChecker {
             String currentVersion =
                     json.getAsJsonObject().get("current_version").getAsString();
             String pluginVersion = plugin.getDescription().getVersion();
-            String latest = versionScheme.compareVersions(pluginVersion, currentVersion);
+            String latest = compareVersions(pluginVersion, currentVersion);
 
             if (latest == null) {
                 return new UpdateResult(UpdateReason.UNSUPPORTED_VERSION_SCHEME);
@@ -214,24 +211,17 @@ public final class UpdateChecker {
         /**
          * The plugin is up-to-date with the version released on SpigotMC's resources section.
          */
-        UP_TO_DATE
-    }
-
-    /**
-     * A functional interface to compare two version Strings with similar version schemes.
-     */
-    @FunctionalInterface
-    public interface VersionScheme {
+        UP_TO_DATE;
 
         /**
-         * Compare two versions and return the higher of the two. If null is returned, it is assumed that at least one
-         * of the two versions are unsupported by this version scheme parser.
-         *
-         * @param first the first version to check
-         * @param second the second version to check
-         * @return the greater of the two versions. {@code null} if unsupported version schemes
+         * {@return whether Spigot answered the check, as opposed to the request failing}
          */
-        @Nullable String compareVersions(String first, String second);
+        boolean isAnswer() {
+            return switch (this) {
+                case NEW_UPDATE, UNRELEASED_VERSION, UNSUPPORTED_VERSION_SCHEME, UP_TO_DATE -> true;
+                case COULD_NOT_CONNECT, INVALID_JSON, UNAUTHORIZED_QUERY, UNKNOWN_ERROR -> false;
+            };
+        }
     }
 
     /**
