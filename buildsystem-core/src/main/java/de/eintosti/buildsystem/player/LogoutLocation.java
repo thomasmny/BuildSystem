@@ -56,6 +56,13 @@ public class LogoutLocation {
         return worldName;
     }
 
+    /**
+     * {@return this location, moved to the world with the given name}
+     */
+    public LogoutLocation withWorldName(String worldName) {
+        return new LogoutLocation(worldName, x, y, z, yaw, pitch);
+    }
+
     public @Nullable Location location() {
         World world = WorldNames.bukkitWorld(worldName);
         if (world == null) {

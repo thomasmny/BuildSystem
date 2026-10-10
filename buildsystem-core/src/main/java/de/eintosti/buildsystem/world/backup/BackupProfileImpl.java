@@ -35,9 +35,7 @@ import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.WorldFlush;
-import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.File;
 import java.io.IOException;
 import java.util.Comparator;
@@ -52,7 +50,6 @@ import java.util.logging.Level;
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.model.FileHeader;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -67,7 +64,6 @@ public class BackupProfileImpl implements BackupProfile {
     private final ConfigService configService;
     private final Messages messages;
     private final WorldServiceImpl worldService;
-    private final SpawnService spawnService;
     private final Supplier<BackupStorage> storage;
     private final BuildWorld buildWorld;
 
@@ -90,7 +86,6 @@ public class BackupProfileImpl implements BackupProfile {
             ConfigService configService,
             Messages messages,
             WorldServiceImpl worldService,
-            SpawnService spawnService,
             Supplier<BackupStorage> storage,
             BuildWorld buildWorld) {
         this.plugin = plugin;
@@ -98,7 +93,6 @@ public class BackupProfileImpl implements BackupProfile {
         this.configService = configService;
         this.messages = messages;
         this.worldService = worldService;
-        this.spawnService = spawnService;
         this.storage = storage;
         this.buildWorld = buildWorld;
     }
@@ -230,9 +224,6 @@ public class BackupProfileImpl implements BackupProfile {
             List<@Nullable Player> removedPlayers,
             File backupFile)
             throws IOException {
-        Location spawn = spawnService.getSpawn();
-        boolean isSpawn = spawn != null && Objects.equals(spawn.getWorld(), world);
-
         File targetDirectory = FileUtils.worldFolder(worldName);
 
         // Must happen before the world is deleted: a corrupt archive would otherwise only be detected once there
@@ -256,11 +247,6 @@ public class BackupProfileImpl implements BackupProfile {
         this.buildWorld.getLoader().load();
         WorldTeleporter worldTeleporter = this.buildWorld.getTeleporter();
         removedPlayers.stream().filter(Objects::nonNull).forEach(worldTeleporter::teleport);
-
-        if (isSpawn) {
-            spawn.setWorld(WorldNames.bukkitWorld(worldName));
-            spawnService.set(spawn, worldName);
-        }
 
         Bukkit.getPluginManager().callEvent(new BackupRestoredEvent(this.buildWorld, backup));
 
