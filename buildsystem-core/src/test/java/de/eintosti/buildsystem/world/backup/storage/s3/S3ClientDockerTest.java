@@ -52,25 +52,24 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * Runs the hand-written S3 client against MinIO, which checks the signatures and parses nothing of ours, so a wrong
- * canonical request or a misread response fails here. Needs Docker: run with {@code ./gradlew dockerTest}.
+ * Runs the hand-written S3 client against Versity's S3 gateway, which checks the signatures and parses nothing of
+ * ours, so a wrong canonical request or a misread response fails here. Needs Docker: run with {@code ./gradlew dockerTest}.
  */
 @NullMarked
 @Tag("docker")
-class S3ClientMinioTest {
+class S3ClientDockerTest {
 
     private static final String ACCESS_KEY = "buildsystem";
     private static final String SECRET_KEY = "buildsystem-secret";
     private static final String BUCKET = "backups";
     private static final int PAGED_KEYS = 1001;
 
-    private static final GenericContainer<?> MINIO = new GenericContainer<>(
-                    DockerImageName.parse("minio/minio:RELEASE.2024-10-13T13-34-11Z"))
-            .withCommand("server", "/data")
-            .withEnv("MINIO_ROOT_USER", ACCESS_KEY)
-            .withEnv("MINIO_ROOT_PASSWORD", SECRET_KEY)
-            .withExposedPorts(9000)
-            .waitingFor(Wait.forHttp("/minio/health/live").forPort(9000));
+    // Serves the directories under /mnt as buckets and the files in them as objects.
+    private static final GenericContainer<?> GATEWAY = new GenericContainer<>(
+                    DockerImageName.parse("versity/versitygw:v1.8.0"))
+            .withCommand("--access", ACCESS_KEY, "--secret", SECRET_KEY, "posix", "/mnt")
+            .withExposedPorts(7070)
+            .waitingFor(Wait.forListeningPort());
 
     @TempDir
     Path tempDir;
@@ -79,40 +78,27 @@ class S3ClientMinioTest {
 
     @BeforeAll
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
-    static void startMinio() throws Exception {
-        MINIO.start();
-        mc("alias", "set", "local", "http://localhost:9000", ACCESS_KEY, SECRET_KEY);
-        mc("mb", "local/" + BUCKET);
-        // More keys than one listing page holds, copied in one go rather than uploaded one request at a time.
-        exec(
+    static void startGateway() throws Exception {
+        GATEWAY.start();
+        // The bucket, and more keys than one listing page holds, written as files rather than uploaded one at a time.
+        String paged = "/mnt/" + BUCKET + "/paged";
+        ExecResult result = GATEWAY.execInContainer(
                 "sh",
                 "-c",
-                "mkdir -p /tmp/paged && i=1; while [ $i -le " + PAGED_KEYS
-                        + " ]; do echo $i > /tmp/paged/$i; i=$((i+1)); done");
-        mc("cp", "--recursive", "--quiet", "/tmp/paged/", "local/" + BUCKET + "/paged/");
-    }
-
-    @AfterAll
-    static void stopMinio() {
-        MINIO.stop();
-    }
-
-    private static void mc(String... args) throws Exception {
-        String[] command = new String[args.length + 1];
-        command[0] = "mc";
-        System.arraycopy(args, 0, command, 1, args.length);
-        exec(command);
-    }
-
-    private static void exec(String... command) throws Exception {
-        ExecResult result = MINIO.execInContainer(command);
+                "mkdir -p " + paged + " && i=1; while [ $i -le " + PAGED_KEYS + " ]; do echo $i > " + paged
+                        + "/$i; i=$((i+1)); done");
         if (result.getExitCode() != 0) {
-            throw new IllegalStateException(String.join(" ", command) + " failed: " + result.getStderr());
+            throw new IllegalStateException("Creating the bucket failed: " + result.getStderr());
         }
     }
 
+    @AfterAll
+    static void stopGateway() {
+        GATEWAY.stop();
+    }
+
     private static S3Client client(String secretKey) {
-        URI endpoint = URI.create("http://" + MINIO.getHost() + ":" + MINIO.getMappedPort(9000));
+        URI endpoint = URI.create("http://" + GATEWAY.getHost() + ":" + GATEWAY.getMappedPort(7070));
         return new S3Client(ACCESS_KEY, secretKey, "us-east-1", BUCKET, endpoint);
     }
 

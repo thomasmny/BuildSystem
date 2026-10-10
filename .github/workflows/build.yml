@@ -42,6 +42,6 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      # Starts MinIO through Testcontainers to check the S3 client against a real S3 API.
+      # Starts an S3 gateway through Testcontainers to check the S3 client against a real S3 API.
       - name: Run Docker tests
         run: ./gradlew :buildsystem-core:dockerTest
