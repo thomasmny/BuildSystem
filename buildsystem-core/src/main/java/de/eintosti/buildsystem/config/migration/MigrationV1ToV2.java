@@ -44,11 +44,21 @@ public class MigrationV1ToV2 implements Migration {
             config.set("settings.archive-world-game-mode", null);
         }
 
+        if (config.contains("settings.save-from-death.enable")) {
+            config.set("settings.save-from-death.enabled", config.getBoolean("settings.save-from-death.enable"));
+            config.set("settings.save-from-death.enable", null);
+        }
+
         if (config.contains("settings.teleport-after-creation")) {
             config.set("settings.teleport-after-creation", null);
         }
 
-        if (config.contains("world.void-block")) {
+        // 2.x had a plain on/off switch here, which is now world.void-block.enabled.
+        if (config.isBoolean("world.void-block")) {
+            boolean enabled = config.getBoolean("world.void-block");
+            config.set("world.void-block", null);
+            config.set("world.void-block.enabled", enabled);
+        } else if (config.contains("world.void-block") && !config.isConfigurationSection("world.void-block")) {
             config.set("world.void-block", null);
         }
     }

@@ -65,6 +65,27 @@ class MigrationV1ToV2Test {
     }
 
     @Test
+    void migrate_saveFromDeathEnable_renamedKeepingValue() {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("settings.save-from-death.enable", false);
+
+        new MigrationV1ToV2().migrate(config);
+
+        assertEquals(false, config.get("settings.save-from-death.enabled"));
+        assertNull(config.get("settings.save-from-death.enable"));
+    }
+
+    @Test
+    void migrate_voidBlockSwitch_becomesEnabledFlag() {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("world.void-block", false);
+
+        new MigrationV1ToV2().migrate(config);
+
+        assertEquals(false, config.get("world.void-block.enabled"));
+    }
+
+    @Test
     void migrate_missingKeys_noException() {
         YamlConfiguration config = new YamlConfiguration();
         // Empty config — migration should not crash
