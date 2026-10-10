@@ -73,13 +73,7 @@ public final class StorageBackend implements AutoCloseable {
                         }
                         yield null;
                     }
-                    case SQLITE ->
-                        SqlDatabase.connect(
-                                SqlDialect.SQLITE,
-                                "jdbc:sqlite:" + sqliteFile.getAbsolutePath(),
-                                new Properties(),
-                                prefix,
-                                logger);
+                    case SQLITE -> sqlite(sqliteFile, prefix, logger);
                     case MYSQL, MARIADB ->
                         SqlDatabase.connect(
                                 SqlDialect.MYSQL,
@@ -117,6 +111,27 @@ public final class StorageBackend implements AutoCloseable {
                             : settings.server(type).database()));
         }
         return new StorageBackend(type, database, dataFolder, logger);
+    }
+
+    private static SqlDatabase sqlite(File file, String prefix, Logger logger) {
+        try {
+            return SqlDatabase.connect(
+                    SqlDialect.SQLITE, "jdbc:sqlite:" + file.getAbsolutePath(), new Properties(), prefix, logger);
+        } catch (StorageException | LinkageError e) {
+            for (Throwable cause = e; cause != null; cause = cause.getCause()) {
+                if (cause instanceof LinkageError
+                        || cause.getClass().getSimpleName().equals("NativeLibraryNotFoundException")) {
+                    throw new StorageException(
+                            "SQLite could not load its native library: " + cause.getMessage()
+                                    + ". It is unpacked into the temp folder first, so this usually means that folder"
+                                    + " does not allow running native code. Start the server with"
+                                    + " -Dorg.sqlite.tmpdir=<a folder that does>, or set storage.type to another"
+                                    + " backend.",
+                            e);
+                }
+            }
+            throw e;
+        }
     }
 
     private static String url(String scheme, PluginConfig.Storage.Database.Server server) {
