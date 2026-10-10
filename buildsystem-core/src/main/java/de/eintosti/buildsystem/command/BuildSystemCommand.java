@@ -28,7 +28,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class BuildSystemCommand extends CommandBase {
 
-    private static final List<Entry> COMMANDS = List.of(
+    static final List<Entry> COMMANDS = List.of(
             new Entry("/back", "buildsystem_back", "/back", Permissions.BACK),
             new Entry("/blocks", "buildsystem_blocks", "/blocks", Permissions.BLOCKS),
             new Entry("/build [player]", "buildsystem_build", "/build", Permissions.BUILD),
@@ -43,9 +43,9 @@ public class BuildSystemCommand extends CommandBase {
             new Entry("/setup", "buildsystem_setup", "/setup", Permissions.SETUP),
             new Entry("/skull [player/id]", "buildsystem_skull", "/skull", Permissions.SKULL),
             new Entry("/spawn", "buildsystem_spawn", "/spawn", "-"),
-            new Entry("/speed <1-5>", "buildsystem_speed", "/speed ", Permissions.SPEED),
+            new Entry("/speed [1-5]", "buildsystem_speed", "/speed ", Permissions.SPEED),
             new Entry("/top", "buildsystem_top", "/top", Permissions.TOP),
-            new Entry("/worlds help", "buildsystem_worlds", "/worlds help", "-"));
+            new Entry("/worlds help", "buildsystem_worlds", "/worlds help", Permissions.HELP_WORLDS));
 
     private final HelpPages pages;
 

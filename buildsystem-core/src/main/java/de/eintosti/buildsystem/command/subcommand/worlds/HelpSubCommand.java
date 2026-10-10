@@ -30,54 +30,68 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class HelpSubCommand implements SubCommand {
 
-    private static final List<Entry> COMMANDS = List.of(
-            new Entry("/worlds help <page>", "worlds_help_help", "/worlds help", "-"),
-            new Entry("/worlds info", "worlds_help_info", "/worlds info", Permissions.INFO),
+    static final List<Entry> COMMANDS = List.of(
+            new Entry("/worlds help [page]", "worlds_help_help", "/worlds help", Permissions.HELP_WORLDS),
+            new Entry("/worlds info [world]", "worlds_help_info", "/worlds info ", Permissions.INFO),
             new Entry("/worlds item", "worlds_help_item", "/worlds item", Permissions.NAVIGATOR_ITEM),
             new Entry("/worlds tp <world>", "worlds_help_tp", "/worlds tp ", Permissions.WORLDTP),
-            new Entry("/worlds edit <world>", "worlds_help_edit", "/worlds edit ", Permissions.EDIT),
+            new Entry("/worlds edit [world]", "worlds_help_edit", "/worlds edit ", Permissions.EDIT),
             new Entry(
-                    "/worlds addBuilder <world>",
+                    "/worlds addBuilder [player]",
                     "worlds_help_addbuilder",
                     "/worlds addBuilder ",
                     Permissions.ADDBUILDER),
             new Entry(
-                    "/worlds removeBuilder <world>",
+                    "/worlds removeBuilder [player]",
                     "worlds_help_removebuilder",
                     "/worlds removeBuilder ",
                     Permissions.REMOVEBUILDER),
-            new Entry("/worlds builders <world>", "worlds_help_builders", "/worlds builders ", Permissions.BUILDERS),
-            new Entry("/worlds rename <world>", "worlds_help_rename", "/worlds rename ", Permissions.RENAME),
-            new Entry("/worlds setItem <world>", "worlds_help_setitem", "/worlds setItem ", Permissions.SETITEM),
+            new Entry("/worlds builders [world]", "worlds_help_builders", "/worlds builders ", Permissions.BUILDERS),
+            new Entry("/worlds rename [world]", "worlds_help_rename", "/worlds rename ", Permissions.RENAME),
+            new Entry("/worlds setItem [world]", "worlds_help_setitem", "/worlds setItem ", Permissions.SETITEM),
             new Entry(
-                    "/worlds setCreator <world>",
+                    "/worlds setCreator [world]",
                     "worlds_help_setcreator",
                     "/worlds setCreator ",
                     Permissions.SETCREATOR),
             new Entry(
-                    "/worlds setProject <world>",
+                    "/worlds setProject [world]",
                     "worlds_help_setproject",
                     "/worlds setProject ",
                     Permissions.SETPROJECT),
             new Entry(
-                    "/worlds saveTemplate <world> [template]",
+                    "/worlds saveTemplate [world] [template]",
                     "worlds_help_savetemplate",
                     "/worlds saveTemplate ",
                     Permissions.SAVETEMPLATE),
             new Entry(
-                    "/worlds setPermission <world>",
+                    "/worlds setPermission [world]",
                     "worlds_help_setpermission",
                     "/worlds setPermission ",
                     Permissions.SETPERMISSION),
             new Entry(
-                    "/worlds setStatus <world>", "worlds_help_setstatus", "/worlds setStatus ", Permissions.SETSTATUS),
+                    "/worlds setStatus [world]", "worlds_help_setstatus", "/worlds setStatus ", Permissions.SETSTATUS),
             new Entry("/worlds setSpawn", "worlds_help_setspawn", "/worlds setSpawn", Permissions.SETSPAWN),
             new Entry("/worlds removeSpawn", "worlds_help_removespawn", "/worlds removeSpawn", Permissions.REMOVESPAWN),
-            new Entry("/worlds delete <world>", "worlds_help_delete", "/worlds delete ", Permissions.DELETE),
-            new Entry("/worlds download <world>", "worlds_help_download", "/worlds download ", Permissions.DOWNLOAD),
-            new Entry("/worlds import <world>", "worlds_help_import", "/worlds import ", Permissions.IMPORT),
-            new Entry("/worlds importAll", "worlds_help_importall", "/worlds importAll", Permissions.IMPORT_ALL),
-            new Entry("/worlds unimport", "worlds_help_unimport", "/worlds unimport", Permissions.UNIMPORT));
+            new Entry("/worlds backup [create]", "worlds_help_backup", "/worlds backup", Permissions.BACKUP),
+            new Entry(
+                    "/worlds folder <folder> <add|remove|delete|setPermission|setProject|setItem> [world]",
+                    "worlds_help_folder",
+                    "/worlds folder ",
+                    Permissions.FOLDER),
+            new Entry("/worlds delete [world]", "worlds_help_delete", "/worlds delete ", Permissions.DELETE),
+            new Entry("/worlds download [world]", "worlds_help_download", "/worlds download ", Permissions.DOWNLOAD),
+            new Entry(
+                    "/worlds import <world> [-g <generator>] [-c <creator>] [-t <type>]",
+                    "worlds_help_import",
+                    "/worlds import ",
+                    Permissions.IMPORT),
+            new Entry(
+                    "/worlds importAll [-g <generator>] [-c <creator>]",
+                    "worlds_help_importall",
+                    "/worlds importAll",
+                    Permissions.IMPORT_ALL),
+            new Entry("/worlds unimport [world]", "worlds_help_unimport", "/worlds unimport ", Permissions.UNIMPORT));
 
     private final Messages messages;
     private final HelpPages pages;
