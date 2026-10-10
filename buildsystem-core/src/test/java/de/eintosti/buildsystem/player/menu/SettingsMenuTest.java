@@ -22,17 +22,24 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.navigator.NavigatorService;
-import de.eintosti.buildsystem.player.menu.SettingsMenu.ClickOutcome;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.test.SoundlessPlayer;
 import java.util.Map;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,17 +48,25 @@ import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 
 /**
- * Golden test pinning the {@link SettingsMenu} slot &rarr; permission-node mapping and the design/scoreboard
- * classifications. Built through the real production constructor under a {@link MockBukkit} server.
+ * Golden test pinning the {@link SettingsMenu} slot &rarr; permission-node mapping, plus what a click does. Built through the real production constructor under a {@link MockBukkit} server.
  */
 @NullMarked
 class SettingsMenuTest {
 
     private ServerMock server;
+    private Messages messages;
+    private SettingsService settingsService;
+    private Menus menus;
+    private SoundlessPlayer player;
 
     @BeforeEach
     void setUp() {
         server = MockBukkit.mock();
+        messages = mock(Messages.class);
+        when(messages.getString(anyString(), any())).thenReturn("Title");
+        settingsService = mock(SettingsService.class);
+        menus = mock(Menus.class);
+        player = SoundlessPlayer.join(server, "Alex");
     }
 
     @AfterEach
@@ -60,17 +75,15 @@ class SettingsMenuTest {
     }
 
     private SettingsMenu menu() {
-        Messages messages = mock(Messages.class);
-        when(messages.getString(anyString(), any())).thenReturn("Title");
         return new SettingsMenu(
                 messages,
-                mock(SettingsService.class),
+                settingsService,
                 mock(ConfigService.class),
                 mock(MenuItems.class),
                 mock(NavigatorService.class),
                 mock(NoClipService.class),
-                mock(Menus.class),
-                server.addPlayer());
+                menus,
+                player);
     }
 
     @Test
@@ -100,14 +113,44 @@ class SettingsMenuTest {
     }
 
     @Test
-    void outcomeBySlot_designIsSubmenu_scoreboardIsRejectable_restAreToggles() {
-        Map<Integer, ClickOutcome> outcomes = menu().outcomeBySlot();
+    void design_opensTheDesignMenu() {
+        click(menu(), 11);
 
-        assertEquals(ClickOutcome.SUBMENU, outcomes.get(11)); // design
-        assertEquals(ClickOutcome.REJECTABLE, outcomes.get(30)); // scoreboard
+        verify(menus).openDesign(player);
+    }
 
-        for (int slot : new int[] {12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 31, 32}) {
-            assertEquals(ClickOutcome.TOGGLE, outcomes.get(slot), "slot " + slot + " should be a plain toggle");
-        }
+    @Test
+    void toggle_flipsTheSettingAndReopens() {
+        player.setOp(true);
+        Settings settings = mock(Settings.class);
+        when(settingsService.getSettings(player)).thenReturn(settings);
+
+        click(menu(), 12);
+
+        verify(settings).setClearInventory(true);
+        verify(menus).openSettings(player);
+    }
+
+    @Test
+    void deniedToggle_keepsTheMenuOpenAndChangesNothing() {
+        Settings settings = mock(Settings.class);
+        when(settingsService.getSettings(player)).thenReturn(settings);
+        SettingsMenu menu = menu();
+
+        click(menu, 12);
+
+        verify(messages).sendPermissionError(player);
+        verify(settings, never()).setClearInventory(true);
+        assertEquals(menu.getInventory(), player.getOpenInventory().getTopInventory());
+    }
+
+    private void click(SettingsMenu menu, int slot) {
+        InventoryClickEvent event = new InventoryClickEvent(
+                player.openInventory(menu.getInventory()),
+                SlotType.CONTAINER,
+                slot,
+                ClickType.LEFT,
+                InventoryAction.PICKUP_ALL);
+        menu.handleClick(event);
     }
 }
