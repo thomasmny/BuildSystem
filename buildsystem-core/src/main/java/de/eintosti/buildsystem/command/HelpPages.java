@@ -21,7 +21,6 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -31,20 +30,23 @@ import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public abstract class PagedCommand extends CommandBase {
+public final class HelpPages {
 
     private static final int MAX_COMMANDS_PER_PAGE = 7;
 
+    private final Messages messages;
     private final String title, permissionTemplate;
 
-    protected PagedCommand(Messages messages, Logger logger, String title, String permissionTemplate) {
-        super(messages, logger, true);
+    public HelpPages(Messages messages, String title, String permissionTemplate) {
+        this.messages = messages;
         this.title = title;
         this.permissionTemplate = permissionTemplate;
     }
 
-    protected void sendMessage(Player player, int pageNum) {
-        List<TextComponent> commands = getCommands(player);
+    /**
+     * Sends one page of {@code commands}, clamping {@code pageNum} into range.
+     */
+    public void send(Player player, int pageNum, List<TextComponent> commands) {
         int numPages = Math.max(1, Math.ceilDiv(commands.size(), MAX_COMMANDS_PER_PAGE));
         pageNum = Math.clamp(pageNum, 1, numPages);
 
@@ -65,10 +67,8 @@ public abstract class PagedCommand extends CommandBase {
         return new ArrayList<>(commands.subList(from, Math.min(from + MAX_COMMANDS_PER_PAGE, commands.size())));
     }
 
-    protected abstract List<TextComponent> getCommands(Player player);
-
     @Contract("_, _, _, _, _-> new")
-    protected TextComponent createComponent(
+    public TextComponent component(
             Player player, String command, String commandDescriptionKey, String suggest, String permission) {
         if (command.isEmpty()) {
             return new TextComponent();

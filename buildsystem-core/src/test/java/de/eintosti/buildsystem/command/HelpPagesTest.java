@@ -27,7 +27,6 @@ import static org.mockito.Mockito.when;
 import de.eintosti.buildsystem.i18n.Messages;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -38,27 +37,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 @NullMarked
-class PagedCommandTest {
+class HelpPagesTest {
 
     private static final int COMMANDS = 10;
 
-    private static final class TenCommands extends PagedCommand {
-
-        TenCommands(Messages messages) {
-            super(messages, mock(Logger.class), "title", "permission");
-        }
-
-        @Override
-        protected List<TextComponent> getCommands(Player player) {
-            return new ArrayList<>(IntStream.range(0, COMMANDS)
-                    .mapToObj(i -> new TextComponent("cmd" + i))
-                    .toList());
-        }
-    }
-
     @ParameterizedTest
     @CsvSource({"1, 1, 7", "2, 2, 3", "0, 1, 7", "-3, 1, 7", "99, 2, 3"})
-    void sendMessage_clampsThePageIntoRange(int requested, int shown, int commandLines) {
+    void send_clampsThePageIntoRange(int requested, int shown, int commandLines) {
         Messages messages = mock(Messages.class);
         when(messages.getString(anyString(), any(CommandSender.class))).thenReturn("%page%/%max%");
         List<String> lines = new ArrayList<>();
@@ -72,7 +57,10 @@ class PagedCommandTest {
                 .when(spigot)
                 .sendMessage(any(BaseComponent.class));
 
-        new TenCommands(messages).sendMessage(player, requested);
+        List<TextComponent> commands = IntStream.range(0, COMMANDS)
+                .mapToObj(i -> new TextComponent("cmd" + i))
+                .toList();
+        new HelpPages(messages, "title", "permission").send(player, requested, commands);
 
         assertEquals(shown + "/2\n", lines.get(1));
         assertEquals(commandLines + 3, lines.size());
