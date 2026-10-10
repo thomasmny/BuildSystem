@@ -78,14 +78,13 @@ public class PhysicsCommand extends CommandBase {
     protected List<String> complete(Player player, String label, String[] args) {
         List<String> list = new ArrayList<>();
         if (args.length == 1) {
-            worldStorage.getBuildWorlds().stream()
-                    .filter(world -> world.getPermissions().canPerformCommand(player, Permissions.PHYSICS))
-                    .forEach(world -> addArgument(
-                            args[0],
-                            WorldNames.toInput(
-                                    world.getName(),
-                                    configService.current().world().defaultNamespace()),
-                            list));
+            addWorldArguments(
+                    player,
+                    args[0],
+                    worldStorage.getBuildWorlds(),
+                    Permissions.PHYSICS,
+                    configService.current().world().defaultNamespace(),
+                    list);
         }
         return list;
     }

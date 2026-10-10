@@ -68,14 +68,13 @@ public class ExplosionsCommand extends CommandBase {
     protected List<String> complete(Player player, String label, String[] args) {
         List<String> list = new ArrayList<>();
         if (args.length == 1) {
-            worldStorage.getBuildWorlds().stream()
-                    .filter(world -> world.getPermissions().canPerformCommand(player, Permissions.EXPLOSIONS))
-                    .forEach(world -> addArgument(
-                            args[0],
-                            WorldNames.toInput(
-                                    world.getName(),
-                                    configService.current().world().defaultNamespace()),
-                            list));
+            addWorldArguments(
+                    player,
+                    args[0],
+                    worldStorage.getBuildWorlds(),
+                    Permissions.EXPLOSIONS,
+                    configService.current().world().defaultNamespace(),
+                    list);
         }
         return list;
     }

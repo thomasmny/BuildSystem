@@ -17,8 +17,10 @@
  */
 package de.eintosti.buildsystem.command;
 
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.world.WorldNames;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
@@ -85,6 +87,21 @@ public abstract class CommandBase implements CommandExecutor, TabCompleter {
         return args.length <= index
                 ? WorldNames.of(player.getWorld())
                 : WorldNames.fromInput(args[index], defaultNamespace);
+    }
+
+    /**
+     * Adds the worlds {@code player} may run the command in to {@code list}, named the way the player would type them.
+     */
+    protected static void addWorldArguments(
+            Player player,
+            String input,
+            Collection<BuildWorld> worlds,
+            String permission,
+            String defaultNamespace,
+            List<String> list) {
+        worlds.stream()
+                .filter(world -> world.getPermissions().canPerformCommand(player, permission))
+                .forEach(world -> addArgument(input, WorldNames.toInput(world.getName(), defaultNamespace), list));
     }
 
     protected static void addArgument(String input, String argument, List<String> list) {
