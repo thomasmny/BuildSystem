@@ -19,13 +19,17 @@ package de.eintosti.buildsystem.storage.codec;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.WorldContext;
+import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
+import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -167,6 +171,26 @@ class FolderCodecTest {
         knownChild.setCategory(top.getCategory());
         knownChild.setParent(top);
         assertEquals("deleted_category", codec.serialize(knownChild).get("category"));
+    }
+
+    @Test
+    void storedCategory_resolvesOnceTheCategoryExistsAgain() {
+        String key = CodecSamples.FOLDER_ID.toString();
+        ConfigurationSection section = CodecSamples.section("""
+                %s:
+                  creator: 0c0c0c0c-0000-4000-8000-000000000001,Alex
+                  category: someday
+                """.formatted(key), key);
+        String written = CodecSamples.toYaml(Map.of(key, codec.serialize(codec.deserialize(key, section))));
+        NavigatorCategoryRegistryImpl categories = TestData.categoryRegistry();
+        NavigatorCategoryImpl someday =
+                NavigatorCategoryImpl.builder("someday").displayName("Someday").build();
+        when(categories.get("someday")).thenReturn(Optional.of(someday));
+
+        FolderImpl folder = new FolderCodec(context, categories).deserialize(key, CodecSamples.section(written, key));
+
+        assertEquals(someday, folder.getCategory());
+        assertNull(folder.getUnresolvedCategory());
     }
 
     private FolderImpl parent(UUID uuid, FolderImpl child) {

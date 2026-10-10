@@ -115,6 +115,26 @@ public class WorldDataImpl implements WorldData {
         return unresolved.get(key);
     }
 
+    /**
+     * {@return whether the value of {@code key} is only a fallback for a stored value that could not be resolved}
+     */
+    public static boolean isUnresolved(WorldData data, WorldDataKey<?> key) {
+        return data instanceof WorldDataImpl impl && impl.unresolved(key) != null;
+    }
+
+    /**
+     * Changes the fallback a world shows for {@code key}, such as when the default status is deleted, without dropping
+     * a stored value that could not be resolved. That value is still what gets saved. For any other world this is
+     * {@link #set}.
+     */
+    public static <T> void setFallback(WorldData data, WorldDataKey<T> key, T value) {
+        String raw = data instanceof WorldDataImpl impl ? impl.unresolved(key) : null;
+        data.set(key, value);
+        if (raw != null) {
+            ((WorldDataImpl) data).keepUnresolved(key, raw);
+        }
+    }
+
     @Override
     public @Nullable Location getCustomSpawnLocation() {
         return CustomSpawn.parse(WorldNames.bukkitWorld(worldName), get(WorldDataKey.CUSTOM_SPAWN));

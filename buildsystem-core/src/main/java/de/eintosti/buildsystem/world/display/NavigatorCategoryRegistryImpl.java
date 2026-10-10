@@ -271,7 +271,7 @@ public class NavigatorCategoryRegistryImpl extends AbstractRegistry<NavigatorCat
         List<Folder> rehomed = new ArrayList<>();
         for (Folder folder : folderStorage.getFolders()) {
             if (folder.getCategory().getId().equals(deletedId)) {
-                ((FolderImpl) folder).setCategory(fallback);
+                ((FolderImpl) folder).rehome(fallback);
                 rehomed.add(folder);
             }
         }

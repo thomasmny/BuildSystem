@@ -34,10 +34,12 @@ import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
+import de.eintosti.buildsystem.world.data.WorldStatusImpl;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
@@ -234,6 +236,25 @@ class WorldCodecTest {
         assertEquals("STONE", changed.get("material"));
         assertEquals(context.statusRegistry().getDefault().getId(), changed.get("status"));
         assertEquals("nightmare", changed.get("difficulty"));
+    }
+
+    @Test
+    void storedStatus_resolvesOnceTheStatusExistsAgain() {
+        BuildWorldImpl world = load("""
+                data:
+                  status: someday
+                """);
+        String key = world.getUniqueId().toString();
+        String written = CodecSamples.toYaml(Map.of(key, codec.serialize(world)));
+        WorldStatusImpl someday =
+                WorldStatusImpl.builder("someday").displayName("Someday").build();
+        when(context.statusRegistry().get("someday")).thenReturn(Optional.of(someday));
+
+        WorldDataImpl data = (WorldDataImpl)
+                codec.deserialize(key, CodecSamples.section(written, key)).getData();
+
+        assertEquals(someday, data.get(WorldDataKey.STATUS));
+        assertNull(data.unresolved(WorldDataKey.STATUS));
     }
 
     private BuildWorldImpl load(String body) {

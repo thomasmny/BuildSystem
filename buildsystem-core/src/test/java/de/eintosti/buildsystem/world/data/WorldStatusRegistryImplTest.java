@@ -141,6 +141,27 @@ class WorldStatusRegistryImplTest {
     }
 
     @Test
+    void deletingTheDefault_keepsAWorldStatusThatCouldNotBeResolved() {
+        BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
+        when(plugin.getDataFolder()).thenReturn(dataFolder);
+        WorldServiceImpl worldService = mock(WorldServiceImpl.class, RETURNS_DEEP_STUBS);
+        WorldStatusRegistryImpl statuses = new WorldStatusRegistryImpl(
+                plugin, categories, mock(Messages.class, RETURNS_DEEP_STUBS), () -> worldService);
+        BuildWorldStatus oldDefault = statuses.getDefault();
+        // Loaded with a status that no longer exists, so it shows the default.
+        WorldDataImpl data = WorldDataSchema.create("arena", oldDefault);
+        data.keepUnresolved(WorldDataKey.STATUS, "retired");
+        BuildWorld world = mock(BuildWorld.class);
+        when(world.getData()).thenReturn(data);
+        when(worldService.getWorldStorage().getBuildWorlds()).thenReturn(List.of(world));
+
+        assertTrue(statuses.delete(oldDefault.getId()));
+
+        assertEquals(statuses.getDefault(), data.get(WorldDataKey.STATUS));
+        assertEquals("retired", data.unresolved(WorldDataKey.STATUS));
+    }
+
+    @Test
     void deleteStatus_refusesLastRemaining() {
         // Delete down to a single status; the final one must never be removable.
         for (BuildWorldStatus status : List.copyOf(registry.getAll())) {

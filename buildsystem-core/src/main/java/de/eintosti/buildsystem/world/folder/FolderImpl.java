@@ -187,6 +187,14 @@ public class FolderImpl implements Folder {
     }
 
     /**
+     * Moves the folder to {@code category} because its own was deleted. Unlike {@link #setCategory}, a stored category
+     * that could not be resolved is kept, since the folder only showed the deleted one as a fallback.
+     */
+    public void rehome(NavigatorCategory category) {
+        this.category = category;
+    }
+
+    /**
      * Keeps the stored category id and icon material that could not be resolved, to be saved instead of the fallbacks.
      */
     public void keepUnresolved(@Nullable String category, @Nullable String material) {
