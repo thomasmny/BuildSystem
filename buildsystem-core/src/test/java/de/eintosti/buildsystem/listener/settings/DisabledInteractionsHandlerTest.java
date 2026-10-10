@@ -50,12 +50,12 @@ import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import org.mockbukkit.mockbukkit.world.WorldMock;
 
 @NullMarked
-class DisabledInteractionsListenerTest {
+class DisabledInteractionsHandlerTest {
 
     private ServerMock server;
     private WorldMock world;
     private PlayerMock player;
-    private DisabledInteractionsListener listener;
+    private SettingInteractionListener listener;
 
     @BeforeEach
     void setUp() {
@@ -70,7 +70,7 @@ class DisabledInteractionsListenerTest {
         ConfigService configService = mock(ConfigService.class, RETURNS_DEEP_STUBS);
         when(configService.current().settings().builder().worldEditWand()).thenReturn(XMaterial.WOODEN_AXE);
 
-        listener = new DisabledInteractionsListener(settingsService, mock(WorldStorage.class), configService);
+        listener = new SettingInteractionListener(settingsService, mock(WorldStorage.class), configService);
     }
 
     @AfterEach
@@ -96,7 +96,7 @@ class DisabledInteractionsListenerTest {
     void interactionStaysDenied() {
         PlayerInteractEvent event = interact(Material.RED_WOOL, BlockFace.NORTH);
 
-        listener.manageDisabledInteractSetting(event);
+        listener.onInteract(event);
 
         assertTrue(event.isCancelled());
         assertEquals(Event.Result.DENY, event.useInteractedBlock());
@@ -121,7 +121,7 @@ class DisabledInteractionsListenerTest {
 
     private Block clickChestWith(Material held, BlockFace face) {
         PlayerInteractEvent event = interact(held, face);
-        listener.manageDisabledInteractSetting(event);
+        listener.onInteract(event);
         return event.getClickedBlock().getRelative(face);
     }
 

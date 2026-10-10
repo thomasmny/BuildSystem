@@ -19,12 +19,8 @@ package de.eintosti.buildsystem.listener.settings;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XTag;
-import de.eintosti.buildsystem.api.storage.WorldStorage;
-import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.access.WorldSetting;
-import de.eintosti.buildsystem.player.settings.SettingsService;
-import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
-import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
+import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.listener.settings.SettingInteractionListener.SettingHandler;
 import de.eintosti.buildsystem.util.DirectionUtil;
 import de.eintosti.buildsystem.util.MaterialUtils;
 import org.bukkit.Material;
@@ -32,63 +28,33 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class InstantSignPlacementListener implements Listener {
+final class InstantSignPlacementHandler implements SettingHandler {
 
-    private final SettingsService settingsManager;
-    private final WorldStorage worldStorage;
-    private final WorldProtectionPolicy policy;
+    @Override
+    public boolean takes(PlayerInteractEvent event, Block block, Settings settings) {
+        ItemStack itemStack = event.getItem();
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || !settings.isInstantPlaceSigns() || itemStack == null) {
+            return false;
+        }
 
-    public InstantSignPlacementListener(SettingsService settingsManager, WorldStorage worldStorage) {
-        this.settingsManager = settingsManager;
-        this.worldStorage = worldStorage;
-        this.policy = new WorldProtectionPolicy();
+        XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
+        return (XTag.SIGNS.isTagged(xMaterial) || XTag.HANGING_SIGNS.isTagged(xMaterial))
+                && block.getRelative(event.getBlockFace()).getType().isAir();
     }
 
-    @EventHandler
-    public void manageInstantPlaceSignsSetting(PlayerInteractEvent event) {
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.isCancelled()) {
-            return;
-        }
-
+    @Override
+    public void handle(PlayerInteractEvent event, Block clickedBlock) {
         Player player = event.getPlayer();
-        if (!settingsManager.getSettings(player).isInstantPlaceSigns()) {
-            return;
-        }
-
-        ItemStack itemStack = event.getItem();
-        if (itemStack == null) {
-            return;
-        }
-
-        Material material = itemStack.getType();
-        XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (!XTag.SIGNS.isTagged(xMaterial) && !XTag.HANGING_SIGNS.isTagged(xMaterial)) {
-            return;
-        }
-
-        Block clickedBlock = event.getClickedBlock();
+        Material material = event.getItem().getType();
+        XMaterial xMaterial = XMaterial.matchXMaterial(event.getItem());
         BlockFace blockFace = event.getBlockFace();
-        if (clickedBlock == null) {
-            return;
-        }
-
         Block adjacent = clickedBlock.getRelative(blockFace);
-        if (!adjacent.getType().isAir()) {
-            return;
-        }
-
-        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        if (buildWorld != null && policy.mayModify(player, buildWorld, WorldSetting.BLOCK_PLACEMENT) != Denial.NONE) {
-            return;
-        }
 
         event.setUseItemInHand(Event.Result.DENY);
         event.setCancelled(true);
