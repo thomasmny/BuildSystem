@@ -31,7 +31,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 @NullMarked
-class SlabListenerTest {
+class SlabHandlerTest {
 
     @ParameterizedTest
     @CsvSource({
@@ -51,6 +51,6 @@ class SlabListenerTest {
         Player player = mock(Player.class);
         when(player.rayTraceBlocks(6)).thenReturn(new RayTraceResult(new Vector(0.5, hitY, 0.5), BlockFace.NORTH));
 
-        assertEquals(expected, SlabListener.hitsTopHalf(player, block));
+        assertEquals(expected, SlabHandler.hitsTopHalf(player, block));
     }
 }

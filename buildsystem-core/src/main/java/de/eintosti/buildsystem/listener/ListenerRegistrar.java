@@ -88,13 +88,10 @@ public final class ListenerRegistrar {
         register(new BlockPhysicsListener(worldStorage));
         register(new BuildModePreventationListener(playerService, configService));
         register(new BuildWorldResetUnloadListener(worldStorage));
-        register(new DisabledInteractionsListener(settingsService, worldStorage, configService));
         register(new EntityDamageListener(configService, worldStorage));
         register(new EntitySpawnListener(worldStorage));
         register(new FoodLevelChangeListener(worldStorage));
-        register(new InstantSignPlacementListener(settingsService, worldStorage));
         register(new InventoryCreativeListener(navigatorItems, scheduler));
-        register(new IronDoorListener(settingsService, worldStorage));
         register(new MenuListener());
         register(new PlayerChatInput.ChatInputListener());
         register(new NavigatorListener(
@@ -134,9 +131,8 @@ public final class ListenerRegistrar {
                 messages));
         register(new PlayerRespawnListener(settingsService, spawnService));
         register(new PlayerTeleportListener(messages, playerService.getPlayerStorage(), worldStorage));
-        register(new PlantPlacementListener(settingsService, worldStorage));
         register(new SignChangeListener());
-        register(new SlabListener(settingsService, worldStorage));
+        register(new SettingInteractionListener(settingsService, worldStorage, configService));
         register(new WeatherChangeListener(configService));
         register(new WorldManipulateListener(worldStorage, configService, worldStatusRegistry, settingsService));
 
