@@ -145,12 +145,20 @@ class PlayerCodecTest {
                   glass: PLAID
                   world-display:
                     sort: BY_MOOD
+                    filter:
+                      mode: ENDS_WITH
+                      text: lob
+                  scoreboard: false
                 """);
 
         Settings settings = player.getSettings();
         assertEquals(NavigatorType.OLD, settings.getNavigatorType());
         assertEquals(DesignColor.BLACK, settings.getDesignColor());
         assertEquals(WorldSort.NAME_A_TO_Z, settings.getWorldDisplay().getWorldSort());
+        assertEquals(
+                WorldFilter.Mode.NONE,
+                settings.getWorldDisplay().getWorldFilter().getMode());
+        assertFalse(settings.isScoreboard(), "the player's other settings are kept");
     }
 
     private BuildPlayerImpl load(String body) {

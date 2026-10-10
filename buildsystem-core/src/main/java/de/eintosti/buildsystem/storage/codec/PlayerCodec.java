@@ -40,7 +40,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * {@link Codec} for {@link BuildPlayer}s, mapping a player's settings and last logout location to and from the
- * {@code players.<uuid>} section.
+ * {@code players.<uuid>} section. An unknown or missing value falls back to the default, so one bad entry never costs a
+ * player all their settings.
  */
 @NullMarked
 public final class PlayerCodec implements Codec<BuildPlayer> {
@@ -118,9 +119,7 @@ public final class PlayerCodec implements Codec<BuildPlayer> {
         WorldDisplay display = settings.getWorldDisplay();
         display.setWorldSort(WorldSort.matchWorldSort(
                 section.getString("settings.world-display.sort", WorldSort.NEWEST_FIRST.name())));
-        display.getWorldFilter()
-                .setMode(WorldFilter.Mode.valueOf(
-                        section.getString("settings.world-display.filter.mode", WorldFilter.Mode.NONE.name())));
+        display.getWorldFilter().setMode(parseFilterMode(section.getString("settings.world-display.filter.mode")));
         display.getWorldFilter().setText(section.getString("settings.world-display.filter.text", ""));
 
         BuildPlayerImpl player = new BuildPlayerImpl(UUID.fromString(key), settings);
@@ -137,6 +136,18 @@ public final class PlayerCodec implements Codec<BuildPlayer> {
         } catch (IllegalArgumentException e) {
             logger.warning("Unknown navigator type \"" + raw + "\". Defaulting to OLD.");
             return NavigatorType.OLD;
+        }
+    }
+
+    private WorldFilter.Mode parseFilterMode(@Nullable String raw) {
+        if (raw == null) {
+            return WorldFilter.Mode.NONE;
+        }
+        try {
+            return WorldFilter.Mode.valueOf(raw);
+        } catch (IllegalArgumentException e) {
+            logger.warning("Unknown world filter mode \"" + raw + "\". Defaulting to NONE.");
+            return WorldFilter.Mode.NONE;
         }
     }
 }
