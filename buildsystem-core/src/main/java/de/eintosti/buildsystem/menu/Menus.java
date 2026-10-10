@@ -27,9 +27,6 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.SetPermissionSubCommand;
-import de.eintosti.buildsystem.command.subcommand.worlds.SetProjectSubCommand;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.player.customblock.CustomBlockMenu;
@@ -51,6 +48,7 @@ import de.eintosti.buildsystem.world.menu.NavigatorMenu;
 import de.eintosti.buildsystem.world.menu.PhysicsMenu;
 import de.eintosti.buildsystem.world.menu.SetupMenu;
 import de.eintosti.buildsystem.world.menu.StatusMenu;
+import de.eintosti.buildsystem.world.menu.WorldPrompts;
 import de.eintosti.buildsystem.world.menu.setup.CategoryEditorMenu;
 import de.eintosti.buildsystem.world.menu.setup.CategoryStatusesMenu;
 import de.eintosti.buildsystem.world.menu.setup.DefaultIconsMenu;
@@ -80,11 +78,18 @@ public final class Menus {
     private final BuildSystemPlugin plugin;
     private final Services services;
     private final TaskScheduler scheduler;
+    private final WorldPrompts worldPrompts;
 
     public Menus(BuildSystemPlugin plugin, Services services) {
         this.plugin = plugin;
         this.services = services;
         this.scheduler = services.scheduler();
+        this.worldPrompts = new WorldPrompts(
+                services.messages(),
+                services.prompts(),
+                services.settings(),
+                services.config(),
+                services.playerLookup());
     }
 
     public void openSpeed(Player player) {
@@ -196,37 +201,27 @@ public final class Menus {
     }
 
     /**
-     * Opens the world-project chat prompt by borrowing the subcommand's input flow, so the menu and {@code
-     * /worlds setProject} cannot drift apart. The subcommand is built per call because it is a plain object over
-     * {@link Services}; lifting the flow into its own collaborator would be the tidier shape, but it is untested
-     * prompt logic and moving it buys nothing today.
+     * {@return the world chat prompts the editor menus and the {@code /worlds} subcommands share}
      */
+    public WorldPrompts worldPrompts() {
+        return worldPrompts;
+    }
+
     public void promptWorldProject(BuildWorld buildWorld, Player player) {
-        new SetProjectSubCommand(services.messages(), services.world(), this, services.prompts(), services.settings())
-                .getProjectInput(player, buildWorld, false);
+        worldPrompts.promptProject(player, buildWorld, () -> reopenEdit(buildWorld, player));
     }
 
-    /**
-     * Opens the world-permission chat prompt; borrows the subcommand's flow, see {@link #promptWorldProject}.
-     */
     public void promptWorldPermission(BuildWorld buildWorld, Player player) {
-        new SetPermissionSubCommand(
-                        services.messages(),
-                        services.world(),
-                        services.config(),
-                        this,
-                        services.prompts(),
-                        services.settings())
-                .getPermissionInput(player, buildWorld, false);
+        worldPrompts.promptPermission(player, buildWorld, () -> reopenEdit(buildWorld, player));
     }
 
-    /**
-     * Opens the add-builder chat prompt; borrows the subcommand's flow, see {@link #promptWorldProject}.
-     */
     public void promptAddBuilder(BuildWorld buildWorld, Player player) {
-        new AddBuilderSubCommand(
-                        services.messages(), services.world(), this, services.playerLookup(), services.prompts())
-                .getAddBuilderInput(player, buildWorld, false);
+        // The builder menu reaches this without the permission check /worlds addBuilder runs first.
+        if (!buildWorld.getPermissions().canPerformCommand(player, Permissions.ADDBUILDER)) {
+            services.messages().sendPermissionError(player);
+            return;
+        }
+        worldPrompts.promptAddBuilder(player, buildWorld, () -> openBuilder(buildWorld, player));
     }
 
     public void openNavigator(Player player) {

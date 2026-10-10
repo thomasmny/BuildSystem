@@ -144,8 +144,8 @@ public final class Services {
                 taskScheduler,
                 new NamespacedKey(plugin, "owner"),
                 new NamespacedKey(plugin, "category"));
-        this.menus = new Menus(plugin, this);
         this.prompts = new Prompts(messages(), config(), taskScheduler);
+        this.menus = new Menus(plugin, this);
 
         // Load persisted worlds/folders last: world entities pull collaborators from a WorldContext that bundles
         // services created above (e.g. MenuItems, SpawnService), so the whole service graph must exist before loading.
