@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.WorldNames;
 import io.papermc.lib.PaperLib;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -116,13 +115,13 @@ public class WorldTeleporterImpl implements WorldTeleporter {
 
     public static boolean isSafeLocation(Location location) {
         Block feet = location.getBlock();
-        if (feet.getType() != Material.AIR
-                && feet.getLocation().add(0, 1, 0).getBlock().getType() != Material.AIR) {
+        if (!feet.getType().isAir()
+                && !feet.getLocation().add(0, 1, 0).getBlock().getType().isAir()) {
             return false;
         }
 
         Block head = feet.getRelative(BlockFace.UP);
-        if (head.getType() != Material.AIR) {
+        if (!head.getType().isAir()) {
             return false;
         }
 

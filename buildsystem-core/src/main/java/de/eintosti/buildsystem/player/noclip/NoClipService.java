@@ -114,9 +114,9 @@ public class NoClipService {
     }
 
     private boolean isSolid(World world, double x, double y, double z) {
-        return world.getBlockAt((int) Math.floor(x), (int) Math.floor(y), (int) Math.floor(z))
-                        .getType()
-                != Material.AIR;
+        return !world.getBlockAt((int) Math.floor(x), (int) Math.floor(y), (int) Math.floor(z))
+                .getType()
+                .isAir();
     }
 
     public boolean isNoClip(UUID uuid) {
