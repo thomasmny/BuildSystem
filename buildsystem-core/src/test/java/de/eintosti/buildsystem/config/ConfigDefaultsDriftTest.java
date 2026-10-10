@@ -17,9 +17,11 @@
  */
 package de.eintosti.buildsystem.config;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.cryptomorin.xseries.XMaterial;
+import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -128,6 +130,18 @@ class ConfigDefaultsDriftTest {
 
     private static PluginConfig parse(YamlConfiguration config) {
         return ConfigService.parse(config, LOGGER, XMaterial.WOODEN_AXE);
+    }
+
+    @Test
+    @DisplayName("A fresh config.yml is already at the latest version, an old one without the key still migrates")
+    void bundledConfig_isAtTheLatestVersion() {
+        YamlConfiguration bundled = loadBundledConfig();
+        assertEquals(ConfigMigrationManager.LATEST_VERSION, bundled.getInt("version", 1));
+
+        // Bukkit attaches the bundled file as defaults; the migration's explicit fallback must not read through them.
+        YamlConfiguration oldConfig = new YamlConfiguration();
+        oldConfig.setDefaults(bundled);
+        assertEquals(1, oldConfig.getInt("version", 1));
     }
 
     private static YamlConfiguration loadBundledConfig() {
