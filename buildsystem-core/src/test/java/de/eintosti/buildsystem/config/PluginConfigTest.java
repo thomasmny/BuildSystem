@@ -19,11 +19,15 @@ package de.eintosti.buildsystem.config;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.cryptomorin.xseries.XGameRule;
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
+import de.eintosti.buildsystem.world.menu.GameRuleEntry;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.bukkit.Difficulty;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -179,6 +183,15 @@ class PluginConfigTest {
     }
 
     @Test
+    void archiveGameMode_unknown_fallsBackToAdventure() {
+        assertEquals(GameMode.ADVENTURE, parse("""
+                        settings:
+                          archive:
+                            world-gamemode: "flying"
+                        """).settings().archive().worldGameMode());
+    }
+
+    @Test
     void navigatorItem_lowercase_isAccepted() {
         assertEquals(XMaterial.COMPASS, parse("""
                         settings:
@@ -290,8 +303,7 @@ class PluginConfigTest {
                       enabled: false
                       interval: 1800
                       only-active-worlds: false
-                    storage:
-                      type: local
+                    storage: local
                 folder:
                   override-permissions: false
                   override-projects: true
@@ -352,7 +364,7 @@ class PluginConfigTest {
     void backupStorage_s3Type_returnsS3Record() {
         PluginConfig cfg = parse("""
                 world:
-                  default:
+                  defaults:
                     gamerules: {}
                   backup:
                     max-backups-per-world: 5
@@ -391,7 +403,7 @@ class PluginConfigTest {
     void backupStorage_sftpType_returnsSftpRecord() {
         PluginConfig cfg = parse("""
                 world:
-                  default:
+                  defaults:
                     gamerules: {}
                   backup:
                     max-backups-per-world: 5
@@ -436,6 +448,23 @@ class PluginConfigTest {
         assertEquals(PluginConfig.Storage.Type.LOCAL, cfg.world().backup().storage());
     }
 
+    @Test
+    void backupStorage_sftpBlankHost_fallsBackToLocal() {
+        // A key that is present but blank is as unusable as a missing one.
+        PluginConfig cfg = parse("""
+                world:
+                  backup:
+                    storage: sftp
+                storage:
+                  sftp:
+                    host: "  "
+                    username: "user"
+                    password: "pass"
+                """);
+
+        assertEquals(PluginConfig.Storage.Type.LOCAL, cfg.world().backup().storage());
+    }
+
     // -----------------------------------------------------------------------
     // 5. Backup storage: unknown type defaults to Local
     // -----------------------------------------------------------------------
@@ -444,7 +473,7 @@ class PluginConfigTest {
     void backupStorage_unknownType_defaultsToLocal() {
         PluginConfig cfg = parse("""
                 world:
-                  default:
+                  defaults:
                     gamerules: {}
                   backup:
                     max-backups-per-world: 5
@@ -500,15 +529,46 @@ class PluginConfigTest {
     // 6. GameRule parsing
     // -----------------------------------------------------------------------
 
-    // NOTE: Full GameRule parsing tests (e.g. verifying advance_time or random_tick_speed are
-    // resolved and stored) require a running Bukkit server for registry access, and therefore
-    // cannot be exercised in plain unit tests. The cases below cover what is safe to check.
+    @Test
+    void gameRules_booleanAndIntegerRules_areParsed() {
+        PluginConfig cfg = parse("""
+                world:
+                  defaults:
+                    gamerules:
+                      advance_time: false
+                      random_tick_speed: 0
+                """);
+
+        assertEquals(
+                List.of(
+                        new GameRuleEntry<>(XGameRule.ADVANCE_TIME, false),
+                        new GameRuleEntry<>(XGameRule.RANDOM_TICK_SPEED, 0)),
+                cfg.world().defaults().gameRules());
+    }
+
+    @Test
+    void gameRules_unknownNameOrWrongValueType_areSkipped() {
+        PluginConfig cfg = parse("""
+                world:
+                  defaults:
+                    gamerules:
+                      no_such_rule: true
+                      advance_time: 3
+                      random_tick_speed: false
+                      spawn_mobs: "no"
+                      fire_damage: false
+                """);
+
+        assertEquals(
+                List.of(new GameRuleEntry<>(XGameRule.FIRE_DAMAGE, false)),
+                cfg.world().defaults().gameRules());
+    }
 
     @Test
     void gameRules_emptySection_producesEmptyList() {
         PluginConfig cfg = parse("""
                 world:
-                  default:
+                  defaults:
                     gamerules: {}
                   backup:
                     max-backups-per-world: 5
@@ -516,8 +576,7 @@ class PluginConfigTest {
                       enabled: true
                       interval: 900
                       only-active-worlds: true
-                    storage:
-                      type: local
+                    storage: local
                 """);
 
         var rules = cfg.world().defaults().gameRules();
@@ -534,8 +593,7 @@ class PluginConfigTest {
                       enabled: true
                       interval: 900
                       only-active-worlds: true
-                    storage:
-                      type: local
+                    storage: local
                 """);
 
         // No gamerules section at all — should default to empty list without error
@@ -555,7 +613,7 @@ class PluginConfigTest {
                   deletion-blacklist:
                     - world
                     - world_nether
-                  default:
+                  defaults:
                     gamerules: {}
                   backup:
                     max-backups-per-world: 5
@@ -563,8 +621,7 @@ class PluginConfigTest {
                       enabled: true
                       interval: 900
                       only-active-worlds: true
-                    storage:
-                      type: local
+                    storage: local
                 """);
 
         var blacklist = cfg.world().deletionBlacklist();
@@ -579,7 +636,7 @@ class PluginConfigTest {
     void maxBackupsPerWorld_valueAbove18_isCappedAt18() {
         PluginConfig cfg = parse("""
                 world:
-                  default:
+                  defaults:
                     gamerules: {}
                   backup:
                     max-backups-per-world: 100
@@ -587,8 +644,7 @@ class PluginConfigTest {
                       enabled: true
                       interval: 900
                       only-active-worlds: true
-                    storage:
-                      type: local
+                    storage: local
                 """);
 
         assertEquals(18, cfg.world().backup().maxBackupsPerWorld());

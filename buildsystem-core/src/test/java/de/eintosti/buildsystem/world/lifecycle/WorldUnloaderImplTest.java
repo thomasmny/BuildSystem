@@ -49,6 +49,8 @@ import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
@@ -227,5 +229,20 @@ class WorldUnloaderImplTest {
 
         assertFalse(world.isLoaded());
         assertTrue(world.getWorld().isEmpty());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"1h", "01:xx:00"})
+    void malformedDelay_unloadsAfterOneHour(String delay) {
+        unloadingEnabled(true);
+        when(configService.current().world().unload().timeUntilUnload()).thenReturn(delay);
+        server.addSimpleWorld("malformed");
+        BuildWorldImpl world = buildWorld("malformed");
+        world.getUnloader().manageUnload();
+
+        server.getScheduler().performTicks(20 * 3599);
+        assertTrue(world.isLoaded());
+        server.getScheduler().performTicks(21);
+        assertFalse(world.isLoaded());
     }
 }
