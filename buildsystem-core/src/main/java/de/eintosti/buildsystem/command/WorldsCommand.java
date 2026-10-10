@@ -77,7 +77,7 @@ public class WorldsCommand extends CommandBase {
                         new DownloadSubCommand(messages, worldService, downloadService, scheduler, logger),
                         new EditSubCommand(messages, worldService, menus),
                         new FolderSubCommand(messages, worldService, navigatorCategoryRegistry, prompts),
-                        new HelpSubCommand(messages, logger),
+                        new HelpSubCommand(messages),
                         new ImportAllSubCommand(messages, worldService, playerLookupService, scheduler),
                         new ImportSubCommand(
                                 messages, worldService, configService, prompts, playerLookupService, scheduler),
