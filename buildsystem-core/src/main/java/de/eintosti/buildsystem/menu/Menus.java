@@ -61,7 +61,6 @@ import de.eintosti.buildsystem.world.menu.setup.StatusLayoutMenu;
 import java.util.List;
 import java.util.function.Consumer;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -79,13 +78,11 @@ public final class Menus {
     private final BuildSystemPlugin plugin;
     private final Services services;
     private final TaskScheduler scheduler;
-    private final NamespacedKey builderNameKey;
 
     public Menus(BuildSystemPlugin plugin, Services services) {
         this.plugin = plugin;
         this.services = services;
         this.scheduler = services.scheduler();
-        this.builderNameKey = new NamespacedKey(plugin, "builder_name");
     }
 
     public void openSpeed(Player player) {
@@ -175,8 +172,7 @@ public final class Menus {
     }
 
     public void openBuilder(BuildWorld buildWorld, Player player) {
-        new BuilderMenu(services.messages(), services.menuItems(), this, builderNameKey, buildWorld, player)
-                .open(player);
+        new BuilderMenu(services.messages(), services.menuItems(), this, buildWorld, player).open(player);
     }
 
     /**
@@ -190,7 +186,9 @@ public final class Menus {
                 .getProjectInput(player, buildWorld, false);
     }
 
-    /** Opens the world-permission chat prompt; borrows the subcommand's flow, see {@link #promptWorldProject}. */
+    /**
+     * Opens the world-permission chat prompt; borrows the subcommand's flow, see {@link #promptWorldProject}.
+     */
     public void promptWorldPermission(BuildWorld buildWorld, Player player) {
         new SetPermissionSubCommand(
                         services.messages(),
@@ -202,7 +200,9 @@ public final class Menus {
                 .getPermissionInput(player, buildWorld, false);
     }
 
-    /** Opens the add-builder chat prompt; borrows the subcommand's flow, see {@link #promptWorldProject}. */
+    /**
+     * Opens the add-builder chat prompt; borrows the subcommand's flow, see {@link #promptWorldProject}.
+     */
     public void promptAddBuilder(BuildWorld buildWorld, Player player) {
         new AddBuilderSubCommand(
                         services.messages(),
@@ -227,7 +227,9 @@ public final class Menus {
         new FolderContentMenu(displayablesContext(), player, category, folder, parent).open(player);
     }
 
-    /** Bundles the collaborators shared by every {@link DisplayablesMenu} so its constructors stay small. */
+    /**
+     * Bundles the collaborators shared by every {@link DisplayablesMenu} so its constructors stay small.
+     */
     private DisplayablesContext displayablesContext() {
         return new DisplayablesContext(
                 services.messages(),

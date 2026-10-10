@@ -48,7 +48,9 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class PlayerChatInput {
 
-    /** All currently-pending prompts, keyed by player UUID. Read on the async chat thread; written on the main thread. */
+    /**
+     * All currently-pending prompts, keyed by player UUID. Read on the async chat thread; written on the main thread.
+     */
     private static final Map<UUID, PlayerChatInput> ACTIVE = new ConcurrentHashMap<>();
 
     private final Messages messages;
@@ -116,7 +118,9 @@ public final class PlayerChatInput {
         });
     }
 
-    /** Drops a player's pending prompt (if any) when they disconnect, cancelling its title task. */
+    /**
+     * Drops a player's pending prompt (if any) when they disconnect, cancelling its title task.
+     */
     private static void handleQuit(UUID playerUuid) {
         PlayerChatInput input = ACTIVE.remove(playerUuid);
         if (input != null) {

@@ -71,7 +71,8 @@ public class BuildSystemPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         this.services.initClasses();
-        this.updateChecker = new UpdateChecker(this, SPIGOT_ID);
+        this.updateChecker =
+                new UpdateChecker(this, SPIGOT_ID, services.scheduler().background());
         performUpdateCheck();
 
         new CommandRegistrar(this, services).registerAll();

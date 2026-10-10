@@ -19,7 +19,7 @@ package de.eintosti.buildsystem.util.color.patterns;
 
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.util.color.ColorPattern;
-import java.awt.*;
+import java.awt.Color;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jspecify.annotations.NullMarked;

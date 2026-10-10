@@ -19,9 +19,7 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.util.Permissions;
-import java.util.Arrays;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public enum WorldsArgument implements Argument {
@@ -56,13 +54,6 @@ public enum WorldsArgument implements Argument {
     WorldsArgument(String command, String permission) {
         this.command = command;
         this.permission = permission;
-    }
-
-    public static @Nullable WorldsArgument matchArgument(String input) {
-        return Arrays.stream(values())
-                .filter(argument -> argument.getName().equalsIgnoreCase(input))
-                .findFirst()
-                .orElse(null);
     }
 
     @Override

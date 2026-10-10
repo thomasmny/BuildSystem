@@ -34,7 +34,9 @@ public final class StringCleaner {
 
     private static final Pattern INVALID_NAME_PATTERN = Pattern.compile(INVALID_NAME_CHARACTERS);
 
-    /** Windows device names that cannot back a directory regardless of extension. */
+    /**
+     * Windows device names that cannot back a directory regardless of extension.
+     */
     private static final Set<String> RESERVED_NAMES = Set.of(
             "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1",
             "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9");

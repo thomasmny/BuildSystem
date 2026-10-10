@@ -20,10 +20,8 @@ package de.eintosti.buildsystem.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -32,12 +30,10 @@ public class ArgumentParser {
 
     private final List<String> args;
     private final Map<String, List<String>> map;
-    private final Set<String> flags;
 
     public ArgumentParser(String[] arguments) {
         this.args = Arrays.asList(arguments);
         this.map = new HashMap<>();
-        this.flags = new HashSet<>();
         map();
     }
 
@@ -50,18 +46,6 @@ public class ArgumentParser {
      */
     public boolean isArgument(String name) {
         return args.stream().map(arg -> arg.replace("-", "")).anyMatch(name::equalsIgnoreCase);
-    }
-
-    /**
-     * Gets whether the flag is present in the array of arguments. A flag is a true or false argument with no value.
-     *
-     * <p>For example: {@code -nogui}
-     *
-     * @param name The name of the flag
-     * @return {@code true} if the flag is present, otherwise {@code false}
-     */
-    public boolean getFlag(String name) {
-        return flags.contains(name);
     }
 
     /**
@@ -81,9 +65,8 @@ public class ArgumentParser {
     }
 
     /**
-     * Maps the arguments passed to the ArgumentParser. Arguments starting with "-" are considered flags, and their
-     * presence is added to the 'flags' set. Arguments without "-" are considered argument names, and their values are
-     * stored in the 'map' HashMap.
+     * Maps the arguments passed to the ArgumentParser. An argument starting with "-" that is followed by a value is
+     * stored in the 'map' HashMap with that value. One with no value is a flag, which {@link #isArgument} answers.
      */
     public void map() {
         for (int index = 0; index < args.size(); index++) {
@@ -91,9 +74,7 @@ public class ArgumentParser {
             if (!arg.startsWith("-")) {
                 continue;
             }
-            if (isFlagArgument(arg, index)) {
-                flags.add(arg.replace("-", ""));
-            } else {
+            if (!isFlagArgument(arg, index)) {
                 map.put(arg.replace("-", ""), storeArgumentValues(arg, index));
             }
         }

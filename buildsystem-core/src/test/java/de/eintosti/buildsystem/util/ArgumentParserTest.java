@@ -47,26 +47,6 @@ class ArgumentParserTest {
     }
 
     @Test
-    void getFlag_presentFlag_returnsTrue() {
-        // -t is a flag: it is last and/or followed by a dash-argument
-        ArgumentParser parser = new ArgumentParser(new String[] {"-g", "Generator", "-t"});
-        assertTrue(parser.getFlag("t"));
-    }
-
-    @Test
-    void getFlag_absentFlag_returnsFalse() {
-        ArgumentParser parser = new ArgumentParser(new String[] {"-g", "Generator"});
-        assertFalse(parser.getFlag("x"));
-    }
-
-    @Test
-    void getFlag_argWithValue_notAFlag() {
-        // -g has a following non-dash value, so it is stored in map, not flags
-        ArgumentParser parser = new ArgumentParser(new String[] {"-g", "Generator"});
-        assertFalse(parser.getFlag("g"));
-    }
-
-    @Test
     void getValue_presentArg_returnsValue() {
         ArgumentParser parser = new ArgumentParser(new String[] {"-g", "Generator"});
         assertEquals("Generator", parser.getValue("g"));
@@ -88,7 +68,6 @@ class ArgumentParserTest {
     void emptyArray_noFlagsNoValues() {
         ArgumentParser parser = new ArgumentParser(new String[] {});
         assertFalse(parser.isArgument("g"));
-        assertFalse(parser.getFlag("g"));
         assertNull(parser.getValue("g"));
     }
 }

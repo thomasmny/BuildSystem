@@ -80,7 +80,9 @@ class PromptFlowTest {
         MockBukkit.unmock();
     }
 
-    /** Delivers a chat line to the listener directly, then ticks the scheduler so the queued callback runs. */
+    /**
+     * Delivers a chat line to the listener directly, then ticks the scheduler so the queued callback runs.
+     */
     private void chat(String message) {
         listener.onPlayerChat(new AsyncPlayerChatEvent(false, player, message, new HashSet<>()));
         server.getScheduler().performOneTick();

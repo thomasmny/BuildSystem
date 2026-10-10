@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.listener.player;
 
 import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
-import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
@@ -29,6 +28,7 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.Permissions;
 import org.bukkit.Bukkit;
@@ -44,7 +44,7 @@ import org.jspecify.annotations.NullMarked;
 public class PlayerChangedWorldListener implements Listener {
 
     private final NavigatorService navigatorService;
-    private final PlayerService playerManager;
+    private final PlayerServiceImpl playerManager;
     private final SettingsService settingsManager;
     private final WorldStorage worldStorage;
     private final ConfigService configService;
@@ -52,7 +52,7 @@ public class PlayerChangedWorldListener implements Listener {
 
     public PlayerChangedWorldListener(
             NavigatorService navigatorService,
-            PlayerService playerManager,
+            PlayerServiceImpl playerManager,
             SettingsService settingsManager,
             WorldStorage worldStorage,
             ConfigService configService,
@@ -98,14 +98,10 @@ public class PlayerChangedWorldListener implements Listener {
     }
 
     private void removeBuildMode(Player player) {
-        if (!playerManager.leaveBuildMode(player.getUniqueId())) {
+        if (!playerManager.endBuildSession(player)) {
             return;
         }
 
-        CachedValues cachedValues = BuildPlayerImpl.of(
-                        playerManager.getPlayerStorage().getBuildPlayer(player))
-                .getCachedValues();
-        cachedValues.resetBuildStateIfPresent(player);
         XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
         messages.sendMessage(player, "build_deactivated_self");
     }

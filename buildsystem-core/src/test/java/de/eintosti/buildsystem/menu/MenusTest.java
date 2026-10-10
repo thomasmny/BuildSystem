@@ -58,8 +58,6 @@ class MenusTest {
     @Test
     void openEdit_unloadedWorld_showsTitleInsteadOfTheMenu() {
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class);
-        when(plugin.getName()).thenReturn("BuildSystem");
-        when(plugin.namespace()).thenReturn("buildsystem");
         Messages messages = mock(Messages.class);
         when(messages.getString(anyString(), any(Player.class))).thenReturn("not loaded");
         Services services = mock(Services.class);

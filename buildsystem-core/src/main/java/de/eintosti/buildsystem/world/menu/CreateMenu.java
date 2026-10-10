@@ -290,19 +290,6 @@ public class CreateMenu extends PaginatedMenu {
             this.slot = slot;
         }
 
-        /**
-         * Gets the {@link Page} for the given slot.
-         *
-         * @param slot The clicked slot
-         * @return The {@link Page} for the given slot, or {@code null} if the slot does not correspond to a page
-         */
-        public static @Nullable Page of(int slot) {
-            return Arrays.stream(values())
-                    .filter(value -> value.slot == slot)
-                    .findFirst()
-                    .orElse(null);
-        }
-
         public int getSlot() {
             return slot;
         }

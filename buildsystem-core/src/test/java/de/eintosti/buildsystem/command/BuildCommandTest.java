@@ -22,8 +22,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
-import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.List;
 import java.util.logging.Logger;
@@ -37,7 +37,7 @@ import org.mockito.MockedStatic;
 class BuildCommandTest {
 
     private final BuildCommand command =
-            new BuildCommand(mock(Messages.class), mock(Logger.class), mock(PlayerService.class));
+            new BuildCommand(mock(Messages.class), mock(Logger.class), mock(PlayerServiceImpl.class));
 
     @Test
     void complete_suggestsPlayersOnlyToThoseAllowedToToggleOthers() {

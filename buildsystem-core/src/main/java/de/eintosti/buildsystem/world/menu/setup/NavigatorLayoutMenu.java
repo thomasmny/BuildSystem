@@ -267,7 +267,9 @@ public class NavigatorLayoutMenu extends LayoutEditorMenu<NavigatorCategory> {
             return loreKey != null ? builder.lore(messages.getStringList(loreKey, player)) : builder;
         }
 
-        /** The palette slot the settings token occupies, immediately after the not-yet-added categories. */
+        /**
+         * The palette slot the settings token occupies, immediately after the not-yet-added categories.
+         */
         private int paletteSlot(int entryCount) {
             int slot = PALETTE_FIRST_SLOT + entryCount;
             return slot <= PALETTE_LAST_SLOT ? slot : -1;

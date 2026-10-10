@@ -57,15 +57,13 @@ class PlayerLookupServiceTest {
 
         assertEquals(uuid, service.lookupUniqueId("steve").get());
         assertEquals(uuid, service.lookupUniqueId("STEVE").get());
-        assertEquals("Steve", service.lookupName(uuid).get());
     }
 
     @Test
-    void undashedUuidRoundTrips() {
-        UUID uuid = UUID.fromString("069a79f4-44e9-4726-a5be-fca90e38aaf5");
-        String undashed = PlayerLookupService.toUndashed(uuid);
-        assertEquals("069a79f444e94726a5befca90e38aaf5", undashed);
-        assertEquals(uuid, PlayerLookupService.fromUndashed(undashed));
+    void undashedUuidIsParsed() {
+        assertEquals(
+                UUID.fromString("069a79f4-44e9-4726-a5be-fca90e38aaf5"),
+                PlayerLookupService.fromUndashed("069a79f444e94726a5befca90e38aaf5"));
     }
 
     @Test

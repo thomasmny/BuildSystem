@@ -19,15 +19,12 @@ package de.eintosti.buildsystem.command;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.event.world.PlayerBuildModeToggleEvent;
-import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
-import de.eintosti.buildsystem.player.BuildPlayerImpl;
-import de.eintosti.buildsystem.player.CachedValues;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -37,9 +34,9 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class BuildCommand extends CommandBase {
 
-    private final PlayerService playerService;
+    private final PlayerServiceImpl playerService;
 
-    public BuildCommand(Messages messages, Logger logger, PlayerService playerService) {
+    public BuildCommand(Messages messages, Logger logger, PlayerServiceImpl playerService) {
         super(messages, logger, true);
         this.playerService = playerService;
     }
@@ -86,7 +83,6 @@ public class BuildCommand extends CommandBase {
     }
 
     private void toggleBuildMode(Player target, Player sender) {
-        UUID targetUuid = target.getUniqueId();
         boolean isEnteringBuildMode = !playerService.isInBuildMode(target);
 
         PlayerBuildModeToggleEvent toggleEvent = new PlayerBuildModeToggleEvent(target, isEnteringBuildMode, sender);
@@ -95,13 +91,10 @@ public class BuildCommand extends CommandBase {
             return;
         }
 
-        BuildPlayerImpl buildPlayer =
-                BuildPlayerImpl.of(playerService.getPlayerStorage().getBuildPlayer(target));
-        CachedValues cachedValues = buildPlayer.getCachedValues();
-
         if (isEnteringBuildMode) {
-            playerService.enterBuildMode(targetUuid);
-            cachedValues.saveBuildState(target);
+            if (!playerService.startBuildSession(target)) {
+                return;
+            }
             target.setGameMode(GameMode.CREATIVE);
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
@@ -115,11 +108,9 @@ public class BuildCommand extends CommandBase {
                         target, "build_activated_other_target", Placeholders.of("%sender%", sender.getName()));
             }
         } else {
-            if (!playerService.leaveBuildMode(targetUuid)) {
+            if (!playerService.endBuildSession(target)) {
                 return;
             }
-
-            cachedValues.resetBuildStateIfPresent(target);
 
             XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
             if (sender.equals(target)) {

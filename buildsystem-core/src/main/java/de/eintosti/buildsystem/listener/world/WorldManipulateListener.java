@@ -30,7 +30,10 @@ import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
-import org.bukkit.event.*;
+import org.bukkit.event.Cancellable;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -128,7 +131,6 @@ public class WorldManipulateListener implements Listener {
         WorldSetting setting = worldSettingFor(parentEvent);
         if (!buildWorld.getPermissions().canModify(player, setting)) {
             parentEvent.setCancelled(true);
-            denyPlayerInteraction(event);
             return;
         }
 
@@ -142,13 +144,6 @@ public class WorldManipulateListener implements Listener {
             case BlockPlaceEvent ignored -> WorldSetting.BLOCK_PLACEMENT;
             default -> WorldSetting.BLOCK_INTERACTIONS;
         };
-    }
-
-    private void denyPlayerInteraction(Event event) {
-        if (event instanceof PlayerInteractEvent interactEvent) {
-            interactEvent.setUseItemInHand(Event.Result.DENY);
-            interactEvent.setUseInteractedBlock(Event.Result.DENY);
-        }
     }
 
     private void updateStatus(WorldData worldData, Player player) {

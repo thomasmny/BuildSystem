@@ -91,6 +91,37 @@ public class PlayerServiceImpl implements PlayerService {
         return buildModePlayers.remove(playerId);
     }
 
+    /**
+     * Puts the player in build mode and snapshots their gamemode and inventory, which {@link #endBuildSession} gives
+     * back. Unlike {@link #enterBuildMode(UUID)}, which only flags the player, this is the whole transition.
+     *
+     * @return {@code false}, leaving the existing snapshot alone, if the player was already in build mode
+     */
+    public boolean startBuildSession(Player player) {
+        if (!enterBuildMode(player.getUniqueId())) {
+            return false;
+        }
+        BuildPlayerImpl.of(playerStorage.getBuildPlayer(player))
+                .getCachedValues()
+                .saveBuildState(player);
+        return true;
+    }
+
+    /**
+     * Takes the player out of build mode and gives back the gamemode and inventory {@link #startBuildSession} saved.
+     *
+     * @return {@code false} if the player was not in build mode
+     */
+    public boolean endBuildSession(Player player) {
+        if (!leaveBuildMode(player.getUniqueId())) {
+            return false;
+        }
+        BuildPlayerImpl.of(playerStorage.getBuildPlayer(player))
+                .getCachedValues()
+                .resetBuildStateIfPresent(player);
+        return true;
+    }
+
     @Override
     public boolean canCreateWorld(Player player, Visibility visibility) {
         if (player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION)) {

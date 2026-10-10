@@ -92,7 +92,9 @@ public final class TaskScheduler {
         return background;
     }
 
-    /** Shuts the background executor down; call once on plugin disable, after the final saves have completed. */
+    /**
+     * Shuts the background executor down; call once on plugin disable, after the final saves have completed.
+     */
     public void shutdown() {
         background.shutdown();
     }
