@@ -304,18 +304,27 @@ public abstract class EntityStoreContractTest {
         // No dots: a key is always a UUID, and a dot would nest the entry in YAML.
         List<String> hostile = List.of(
                 "x'); DROP TABLE " + tablePrefix + "players; --",
+                "'; DROP TABLE " + tablePrefix + "worlds; --",
                 "\" OR \"1\"=\"1",
+                "\" OR 1=1 --",
                 "$where",
                 "{\"$ne\": null}",
+                "{\"$gt\": \"\"}",
                 "back\\slash\\'",
                 "%_*?",
                 "Case",
                 "case",
-                "ünïcødé 名前 🧱");
+                "ünïcødé 名前 🧱",
+                "x".repeat(64));
         Map<String, Map<String, Object>> entries = new LinkedHashMap<>();
-        for (int i = 0; i < hostile.size(); i++) {
-            String value = hostile.get(i);
+        for (String value : hostile) {
             entries.put(value, Map.of("name", value, "nested", Map.of("text", value, "list", List.of(value, "plain"))));
+        }
+        // Only as a value: PostgreSQL text cannot hold NUL, and no key ever does, being a UUID. Not for YAML, which
+        // writes
+        // such a string as !!binary and reads it back as bytes; chat input and world names cannot carry NUL anyway.
+        if (settings().type() != StorageType.YAML) {
+            entries.put("nul", Map.of("name", "before\0after"));
         }
 
         store("players").upsert(entries);
