@@ -34,10 +34,12 @@ import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
+import de.eintosti.buildsystem.world.data.WorldStatusImpl;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
@@ -212,6 +214,47 @@ class WorldCodecTest {
         assertEquals(context.statusRegistry().getDefault(), data.get(WorldDataKey.STATUS));
         assertEquals(Difficulty.PEACEFUL, data.get(WorldDataKey.DIFFICULTY));
         assertEquals(Visibility.EVERYONE, data.get(WorldDataKey.VISIBILITY));
+    }
+
+    @Test
+    void unresolvedValues_areWrittenBackUntilSet() {
+        BuildWorldImpl world = load("""
+                data:
+                  status: someday
+                  difficulty: nightmare
+                  material: FUTURE_BLOCK
+                """);
+
+        Map<?, ?> data = (Map<?, ?>) codec.serialize(world).get("data");
+        assertEquals("someday", data.get("status"));
+        assertEquals("nightmare", data.get("difficulty"));
+        assertEquals("FUTURE_BLOCK", data.get("material"));
+
+        world.getData().set(WorldDataKey.MATERIAL, Material.STONE);
+        world.getData().set(WorldDataKey.STATUS, context.statusRegistry().getDefault());
+        Map<?, ?> changed = (Map<?, ?>) codec.serialize(world).get("data");
+        assertEquals("STONE", changed.get("material"));
+        assertEquals(context.statusRegistry().getDefault().getId(), changed.get("status"));
+        assertEquals("nightmare", changed.get("difficulty"));
+    }
+
+    @Test
+    void storedStatus_resolvesOnceTheStatusExistsAgain() {
+        BuildWorldImpl world = load("""
+                data:
+                  status: someday
+                """);
+        String key = world.getUniqueId().toString();
+        String written = CodecSamples.toYaml(Map.of(key, codec.serialize(world)));
+        WorldStatusImpl someday =
+                WorldStatusImpl.builder("someday").displayName("Someday").build();
+        when(context.statusRegistry().get("someday")).thenReturn(Optional.of(someday));
+
+        WorldDataImpl data = (WorldDataImpl)
+                codec.deserialize(key, CodecSamples.section(written, key)).getData();
+
+        assertEquals(someday, data.get(WorldDataKey.STATUS));
+        assertNull(data.unresolved(WorldDataKey.STATUS));
     }
 
     private BuildWorldImpl load(String body) {

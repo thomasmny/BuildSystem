@@ -67,11 +67,24 @@ public final class FolderCodec implements Codec<Folder> {
         serialized.put("uuid", folder.getUniqueId().toString());
         serialized.put("creator", folder.getCreator().toString());
         serialized.put("creation", folder.getCreation());
-        serialized.put("category", folder.getCategory().getId());
+        // A subfolder always has its parent's category, so a whole tree saves its top folder's, which keeps an
+        // unresolved category the same across the tree.
+        FolderImpl top = (FolderImpl) folder;
+        while (top.getParent() != null) {
+            top = (FolderImpl) top.getParent();
+        }
+        serialized.put(
+                "category",
+                Objects.requireNonNullElse(
+                        top.getUnresolvedCategory(), folder.getCategory().getId()));
         if (folder.hasParent()) {
             serialized.put(PARENT, folder.getParent().getUniqueId().toString());
         }
-        serialized.put("material", folder.getIcon().name());
+        serialized.put(
+                "material",
+                Objects.requireNonNullElse(
+                        ((FolderImpl) folder).getUnresolvedMaterial(),
+                        folder.getIcon().name()));
         Codec.putIfPresent(serialized, "icon-skull-texture", folder.getIconSkullTexture());
         serialized.put("permission", folder.getPermission());
         serialized.put("project", folder.getProject());
@@ -84,15 +97,18 @@ public final class FolderCodec implements Codec<Folder> {
     public FolderImpl deserialize(String key, ConfigurationSection section) {
         // The name falls back to the key, which held it before v4 keyed folders by UUID.
         String name = section.getString("name", key);
-        return FolderImpl.builder(context, UUID.fromString(key))
+        String categoryId = section.getString("category");
+        NavigatorCategory category = parseCategory(categoryId);
+        String materialName = section.getString("material");
+        Material material = MaterialUtils.match(materialName);
+        FolderImpl folder = FolderImpl.builder(context, UUID.fromString(key))
                 .name(name)
                 .creator(Objects.requireNonNull(
                         Builder.deserialize(section.getString("creator")),
                         "Creator cannot be null for folder: " + name))
                 .creation(section.getLong("creation", System.currentTimeMillis()))
-                .category(parseCategory(section.getString("category")))
-                .material(
-                        Objects.requireNonNullElse(MaterialUtils.match(section.getString("material")), Material.CHEST))
+                .category(category != null ? category : categoryRegistry.getDefault())
+                .material(material != null ? material : Material.CHEST)
                 .iconSkullTexture(section.getString("icon-skull-texture"))
                 .permission(section.getString("permission", "-"))
                 .project(section.getString("project", "-"))
@@ -100,6 +116,9 @@ public final class FolderCodec implements Codec<Folder> {
                         .map(UUID::fromString)
                         .toList())
                 .build();
+        // Kept as read so that saving does not replace them with the fallbacks.
+        folder.keepUnresolved(category == null ? categoryId : null, material == null ? materialName : null);
+        return folder;
     }
 
     /**
@@ -114,12 +133,13 @@ public final class FolderCodec implements Codec<Folder> {
 
     /**
      * Resolves the stored category id. Pre-4.0 stored this as an upper-case enum name ({@code PUBLIC}, {@code ARCHIVE}
-     * or {@code PRIVATE}), which lower-casing turns into the built-in category id. Falls back to the default category
-     * when the key is missing or unknown.
+     * or {@code PRIVATE}), which lower-casing turns into the built-in category id.
+     *
+     * @return The category, or {@code null} when the key is missing or unknown
      */
-    private NavigatorCategory parseCategory(@Nullable String categoryId) {
+    private @Nullable NavigatorCategory parseCategory(@Nullable String categoryId) {
         return categoryId == null
-                ? categoryRegistry.getDefault()
-                : categoryRegistry.get(categoryId.toLowerCase(Locale.ROOT)).orElseGet(categoryRegistry::getDefault);
+                ? null
+                : categoryRegistry.get(categoryId.toLowerCase(Locale.ROOT)).orElse(null);
     }
 }

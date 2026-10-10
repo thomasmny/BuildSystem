@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.event.EventDispatcher;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
@@ -142,6 +143,10 @@ public class WorldManipulateListener implements Listener {
     }
 
     private void updateStatus(WorldData worldData, Player player) {
+        // The status shown is a fallback for one that no longer exists; moving it on would overwrite the stored one.
+        if (WorldDataImpl.isUnresolved(worldData, WorldDataKey.STATUS)) {
+            return;
+        }
         worldData
                 .get(WorldDataKey.STATUS)
                 .getProgressesTo()

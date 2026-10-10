@@ -19,13 +19,17 @@ package de.eintosti.buildsystem.storage.codec;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.WorldContext;
+import de.eintosti.buildsystem.world.display.NavigatorCategoryImpl;
+import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -122,6 +126,71 @@ class FolderCodecTest {
 
         assertEquals(TestData.PRIVATE, folder.getCategory());
         assertEquals(Material.CHEST, folder.getIcon());
+    }
+
+    @Test
+    void unresolvedCategoryAndIcon_areWrittenBackUntilSet() {
+        String key = CodecSamples.FOLDER_ID.toString();
+        ConfigurationSection section = CodecSamples.section("""
+                %s:
+                  creator: 0c0c0c0c-0000-4000-8000-000000000001,Alex
+                  category: deleted_category
+                  material: not_a_material
+                """.formatted(key), key);
+
+        FolderImpl folder = codec.deserialize(key, section);
+
+        assertEquals(TestData.categoryRegistry().getDefault(), folder.getCategory());
+        assertEquals("deleted_category", codec.serialize(folder).get("category"));
+        assertEquals("not_a_material", codec.serialize(folder).get("material"));
+
+        folder.setCategory(TestData.PRIVATE);
+        folder.setIcon(Material.OAK_SIGN);
+        assertEquals(TestData.PRIVATE.getId(), codec.serialize(folder).get("category"));
+        assertEquals("OAK_SIGN", codec.serialize(folder).get("material"));
+    }
+
+    @Test
+    void subfolder_savesItsTopFoldersCategory() {
+        String key = CodecSamples.FOLDER_ID.toString();
+        ConfigurationSection unknown = CodecSamples.section("""
+                %s:
+                  creator: 0c0c0c0c-0000-4000-8000-000000000001,Alex
+                  category: deleted_category
+                """.formatted(key), key);
+        FolderImpl top = codec.deserialize(key, unknown);
+        FolderImpl child = codec.deserialize(key, unknown);
+        FolderImpl resolvedTop = CodecSamples.minimalFolder(context);
+        resolvedTop.setCategory(child.getCategory());
+
+        child.setParent(resolvedTop);
+        assertEquals(child.getCategory().getId(), codec.serialize(child).get("category"));
+
+        child.setParent(null);
+        FolderImpl knownChild = CodecSamples.minimalFolder(context);
+        knownChild.setCategory(top.getCategory());
+        knownChild.setParent(top);
+        assertEquals("deleted_category", codec.serialize(knownChild).get("category"));
+    }
+
+    @Test
+    void storedCategory_resolvesOnceTheCategoryExistsAgain() {
+        String key = CodecSamples.FOLDER_ID.toString();
+        ConfigurationSection section = CodecSamples.section("""
+                %s:
+                  creator: 0c0c0c0c-0000-4000-8000-000000000001,Alex
+                  category: someday
+                """.formatted(key), key);
+        String written = CodecSamples.toYaml(Map.of(key, codec.serialize(codec.deserialize(key, section))));
+        NavigatorCategoryRegistryImpl categories = TestData.categoryRegistry();
+        NavigatorCategoryImpl someday =
+                NavigatorCategoryImpl.builder("someday").displayName("Someday").build();
+        when(categories.get("someday")).thenReturn(Optional.of(someday));
+
+        FolderImpl folder = new FolderCodec(context, categories).deserialize(key, CodecSamples.section(written, key));
+
+        assertEquals(someday, folder.getCategory());
+        assertNull(folder.getUnresolvedCategory());
     }
 
     private FolderImpl parent(UUID uuid, FolderImpl child) {

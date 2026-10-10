@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.world.WorldNames;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -37,6 +38,13 @@ import org.jspecify.annotations.Nullable;
 public class WorldDataImpl implements WorldData {
 
     private final Map<WorldDataKey<?>, Object> values;
+
+    /**
+     * Stored values that could not be resolved when loading, such as a status deleted since, as they were read. They
+     * are saved in place of the fallback in effect, so a missing status or an unknown material does not overwrite the
+     * stored one. Setting the key drops its entry.
+     */
+    private final Map<WorldDataKey<?>, String> unresolved = new HashMap<>();
 
     private String worldName;
     private Function<WorldDataKey<?>, @Nullable Object> override = key -> null;
@@ -78,6 +86,7 @@ public class WorldDataImpl implements WorldData {
     public <T> void set(WorldDataKey<T> key, T value) {
         requireKnown(key);
         Object previous = values.put(key, key.type().cast(Objects.requireNonNull(value, "value")));
+        unresolved.remove(key);
         BiConsumer<BuildWorldStatus, BuildWorldStatus> listener = this.statusChangeListener;
         if (listener != null && key.equals(WorldDataKey.STATUS) && !value.equals(previous)) {
             listener.accept((BuildWorldStatus) previous, (BuildWorldStatus) value);
@@ -89,6 +98,41 @@ public class WorldDataImpl implements WorldData {
      */
     public Map<WorldDataKey<?>, Object> storedValues() {
         return Collections.unmodifiableMap(values);
+    }
+
+    /**
+     * Keeps a stored value that could not be resolved, to be saved instead of the key's current value.
+     */
+    public void keepUnresolved(WorldDataKey<?> key, String raw) {
+        requireKnown(key);
+        unresolved.put(key, raw);
+    }
+
+    /**
+     * {@return the stored value of {@code key} as it was read, if it could not be resolved and has not been set since}
+     */
+    public @Nullable String unresolved(WorldDataKey<?> key) {
+        return unresolved.get(key);
+    }
+
+    /**
+     * {@return whether the value of {@code key} is only a fallback for a stored value that could not be resolved}
+     */
+    public static boolean isUnresolved(WorldData data, WorldDataKey<?> key) {
+        return data instanceof WorldDataImpl impl && impl.unresolved(key) != null;
+    }
+
+    /**
+     * Changes the fallback a world shows for {@code key}, such as when the default status is deleted, without dropping
+     * a stored value that could not be resolved. That value is still what gets saved. For any other world this is
+     * {@link #set}.
+     */
+    public static <T> void setFallback(WorldData data, WorldDataKey<T> key, T value) {
+        String raw = data instanceof WorldDataImpl impl ? impl.unresolved(key) : null;
+        data.set(key, value);
+        if (raw != null) {
+            ((WorldDataImpl) data).keepUnresolved(key, raw);
+        }
     }
 
     @Override

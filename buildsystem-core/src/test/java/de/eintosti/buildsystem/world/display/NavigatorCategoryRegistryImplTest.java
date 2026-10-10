@@ -26,15 +26,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
+import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.io.File;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import org.bukkit.Material;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -154,8 +157,32 @@ class NavigatorCategoryRegistryImplTest {
         categoryRegistry.resetToDefaults();
 
         // Without the cascade the folder keeps a category the registry no longer lists, so it renders in none of them.
-        verify(folder).setCategory(categoryRegistry.getDefault());
+        verify(folder).rehome(categoryRegistry.getDefault());
         verify(folderStorage).save(List.of(folder));
+    }
+
+    @Test
+    void deletingTheDefault_keepsAFolderCategoryThatCouldNotBeResolved() {
+        BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
+        when(plugin.getDataFolder()).thenReturn(dataFolder);
+        FolderStorageImpl folderStorage = mock(FolderStorageImpl.class);
+        WorldServiceImpl worldService = mock(WorldServiceImpl.class);
+        when(worldService.getFolderStorage()).thenReturn(folderStorage);
+        NavigatorCategoryRegistryImpl categoryRegistry = new NavigatorCategoryRegistryImpl(plugin, () -> worldService);
+        NavigatorCategory oldDefault = categoryRegistry.getDefault();
+        // Loaded with a category that no longer exists, so it shows the default.
+        FolderImpl folder = FolderImpl.builder(TestData.worldContext(), UUID.randomUUID())
+                .name("Lobbies")
+                .creator(Builder.of(UUID.randomUUID(), "Alex"))
+                .category(oldDefault)
+                .build();
+        folder.keepUnresolved("retired", null);
+        when(folderStorage.getFolders()).thenReturn(List.of(folder));
+
+        assertTrue(categoryRegistry.delete(oldDefault.getId()));
+
+        assertEquals(categoryRegistry.getDefault(), folder.getCategory());
+        assertEquals("retired", folder.getUnresolvedCategory());
     }
 
     @Test

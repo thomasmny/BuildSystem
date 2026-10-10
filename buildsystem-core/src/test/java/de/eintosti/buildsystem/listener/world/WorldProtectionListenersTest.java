@@ -31,8 +31,10 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.NavigatorItems;
+import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.storage.codec.WorldCodec;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
@@ -40,6 +42,7 @@ import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
@@ -228,6 +231,21 @@ class WorldProtectionListenersTest {
 
         assertTrue(buildWorld.getData().get(WorldDataKey.LAST_EDITED) > 0);
         assertEquals(TestData.IN_PROGRESS, buildWorld.getData().get(WorldDataKey.STATUS));
+    }
+
+    @Test
+    void editInAWorldWhoseStatusIsAFallback_keepsTheStoredStatus() {
+        WorldDataImpl data = (WorldDataImpl) buildWorld.getData();
+        // Loaded with a status that no longer exists, so it shows the default, which would progress on an edit.
+        data.keepUnresolved(WorldDataKey.STATUS, "retired");
+
+        assertFalse(placeCancelled(builder));
+
+        assertEquals(TestData.NOT_STARTED, data.get(WorldDataKey.STATUS));
+        Map<?, ?> written = (Map<?, ?>) new WorldCodec(TestData.worldContext(), mock(PlayerLookupService.class))
+                .serialize(buildWorld)
+                .get("data");
+        assertEquals("retired", written.get("status"));
     }
 
     @Test

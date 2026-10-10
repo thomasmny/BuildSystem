@@ -124,7 +124,8 @@ public final class WorldCodec implements Codec<BuildWorld> {
         Map<String, Map<String, Object>> sections = new HashMap<>();
         worldData.storedValues().forEach((key, value) -> {
             String id = key.id();
-            Object yaml = WorldDataSchema.toYaml(value);
+            String raw = worldData.unresolved(key);
+            Object yaml = raw != null ? raw : WorldDataSchema.toYaml(value);
             int dot = id.indexOf('.');
             if (dot < 0) {
                 data.put(id, yaml);
@@ -169,7 +170,9 @@ public final class WorldCodec implements Codec<BuildWorld> {
     }
 
     private WorldDataImpl parseWorldData(String worldName, ConfigurationSection section) {
-        WorldDataImpl data = WorldDataSchema.create(worldName, parseStatus(section, worldName));
+        // Values that cannot be resolved load as a fallback but are saved as they were read.
+        Map<WorldDataKey<?>, String> unresolved = new HashMap<>();
+        WorldDataImpl data = WorldDataSchema.create(worldName, parseStatus(section, worldName, unresolved));
         PluginConfig.World.Defaults defaults =
                 context.configService().current().world().defaults();
         for (PhysicsCategory category : PhysicsCategory.values()) {
@@ -183,9 +186,10 @@ public final class WorldCodec implements Codec<BuildWorld> {
             }
         }
         data.set(WorldDataKey.CUSTOM_SPAWN, parseCustomSpawn(section));
-        data.set(WorldDataKey.DIFFICULTY, parseDifficulty(section, worldName));
-        data.set(WorldDataKey.MATERIAL, parseMaterial(section, worldName));
+        data.set(WorldDataKey.DIFFICULTY, parseDifficulty(section, worldName, unresolved));
+        data.set(WorldDataKey.MATERIAL, parseMaterial(section, worldName, unresolved));
         data.set(WorldDataKey.VISIBILITY, parseVisibility(section));
+        unresolved.forEach(data::keepUnresolved);
         return data;
     }
 
@@ -245,13 +249,15 @@ public final class WorldCodec implements Codec<BuildWorld> {
      * Resolves a world's {@link Difficulty}, falling back to {@link Difficulty#PEACEFUL} when the persisted value is
      * unknown. Like the other enums, an unparseable difficulty must not abort the world's load.
      */
-    private Difficulty parseDifficulty(ConfigurationSection section, String worldName) {
+    private Difficulty parseDifficulty(
+            ConfigurationSection section, String worldName, Map<WorldDataKey<?>, String> unresolved) {
         String raw = section.getString(dataPath(WorldDataKey.DIFFICULTY), Difficulty.PEACEFUL.name());
         try {
             return Difficulty.valueOf(raw.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             context.logger()
                     .warning("Unknown difficulty \"" + raw + "\" for \"" + worldName + "\". Defaulting to PEACEFUL.");
+            unresolved.put(WorldDataKey.DIFFICULTY, raw);
             return Difficulty.PEACEFUL;
         }
     }
@@ -260,7 +266,8 @@ public final class WorldCodec implements Codec<BuildWorld> {
      * Resolves a world's status from its persisted id, migrating pre-4.0 enum names (e.g. {@code NOT_STARTED}) to the
      * equivalent lower-case status id. Falls back to the registry default when the id is unknown.
      */
-    private BuildWorldStatus parseStatus(ConfigurationSection section, String worldName) {
+    private BuildWorldStatus parseStatus(
+            ConfigurationSection section, String worldName, Map<WorldDataKey<?>, String> unresolved) {
         WorldStatusRegistry registry = context.statusRegistry();
         String raw = section.getString(dataPath(WorldDataKey.STATUS));
         if (raw == null) {
@@ -272,6 +279,7 @@ public final class WorldCodec implements Codec<BuildWorld> {
             context.logger()
                     .warning("Unknown status \"" + raw + "\" for \"" + worldName + "\". Defaulting to "
                             + registry.getDefault().getId() + ".");
+            unresolved.put(WorldDataKey.STATUS, raw);
             return registry.getDefault();
         });
     }
@@ -292,7 +300,8 @@ public final class WorldCodec implements Codec<BuildWorld> {
         return Visibility.matchVisibility(section.getBoolean(DATA + "." + LEGACY_PRIVATE));
     }
 
-    private Material parseMaterial(ConfigurationSection section, String worldName) {
+    private Material parseMaterial(
+            ConfigurationSection section, String worldName, Map<WorldDataKey<?>, String> unresolved) {
         String itemString = section.getString(dataPath(WorldDataKey.MATERIAL));
         if (itemString == null) {
             context.logger().warning("Could not find material for \"" + worldName + "\". Defaulting to BEDROCK.");
@@ -303,6 +312,7 @@ public final class WorldCodec implements Codec<BuildWorld> {
         if (material == null) {
             context.logger().warning("Unknown material found for \"" + worldName + "\" (" + itemString + ").");
             context.logger().warning("Defaulting back to BEDROCK.");
+            unresolved.put(WorldDataKey.MATERIAL, itemString);
             return Material.BEDROCK;
         }
         return material;

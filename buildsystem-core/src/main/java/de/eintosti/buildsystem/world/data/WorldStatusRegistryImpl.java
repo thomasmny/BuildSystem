@@ -212,7 +212,8 @@ public class WorldStatusRegistryImpl extends AbstractRegistry<WorldStatusImpl> i
     protected void onDiscarded(String id) {
         BuildWorldStatus fallback = getDefault();
         for (BuildWorld world : worldsWithStatus(id)) {
-            world.getData().set(WorldDataKey.STATUS, fallback);
+            // A world that only shows the deleted status as a fallback keeps its stored one.
+            WorldDataImpl.setFallback(world.getData(), WorldDataKey.STATUS, fallback);
             worldService.get().getWorldStorage().save(world);
         }
         clearDanglingProgression(id);
