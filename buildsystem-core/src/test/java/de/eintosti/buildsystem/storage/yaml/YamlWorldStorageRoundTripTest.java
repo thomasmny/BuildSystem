@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
@@ -127,6 +128,34 @@ class YamlWorldStorageRoundTripTest {
         assertTrue(world.getData().get(WorldDataKey.VISIBILITY).isPrivate());
         assertTrue(world.getData().get(WorldDataKey.BLOCK_BREAKING));
         assertEquals(42, world.getData().get(WorldDataKey.TIME_SINCE_BACKUP));
+    }
+
+    @Test
+    void save_inOverridingFolder_keepsTheWorldsOwnPermissionAndProject() {
+        UUID uuid = UUID.randomUUID();
+        WorldDataImpl data = new WorldDataBuilder("FolderWorld")
+                .withStatus(TestData.FINISHED)
+                .withPermission("build.secret")
+                .withProject("OwnProject")
+                .withPermissionOverrideEnabled(() -> true)
+                .withProjectOverrideEnabled(() -> true)
+                .build();
+        BuildWorldImpl world = new BuildWorldImpl(
+                context, uuid, "FolderWorld", BuildWorldType.NORMAL, data, null, List.of(), 1L, null, null);
+        Folder folder = mock(Folder.class);
+        when(folder.getPermission()).thenReturn("-");
+        when(folder.getProject()).thenReturn("FolderProject");
+        world.setFolder(folder);
+
+        // While in the folder, the folder's values are the ones in effect.
+        assertEquals("-", world.getData().get(WorldDataKey.PERMISSION));
+        assertEquals("FolderProject", world.getData().get(WorldDataKey.PROJECT));
+
+        newStorage().save(world).join();
+
+        BuildWorld loaded = newStorage().load().join().iterator().next();
+        assertEquals("build.secret", loaded.getData().get(WorldDataKey.PERMISSION));
+        assertEquals("OwnProject", loaded.getData().get(WorldDataKey.PROJECT));
     }
 
     @Test
