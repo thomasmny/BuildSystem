@@ -20,8 +20,9 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
-import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
+import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
@@ -34,7 +35,7 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SetPermissionSubCommand extends AbstractSubCommand {
+public class SetPermissionSubCommand extends WorldSubCommand {
 
     private final ConfigService configService;
     private final Menus menus;
@@ -48,7 +49,7 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
             Menus menus,
             Prompts prompts,
             SettingsService settingsService) {
-        super(messages, worldService);
+        super(messages, worldService, WorldTarget.argument(2, "worlds_setpermission"));
         this.configService = configService;
         this.menus = menus;
         this.prompts = prompts;
@@ -56,12 +57,7 @@ public class SetPermissionSubCommand extends AbstractSubCommand {
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_setpermission");
-        if (buildWorld == null) {
-            return;
-        }
-
+    protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         getPermissionInput(player, buildWorld, true);
     }
 

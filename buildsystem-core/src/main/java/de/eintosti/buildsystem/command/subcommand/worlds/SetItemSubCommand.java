@@ -20,8 +20,9 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import com.cryptomorin.xseries.profiles.exceptions.ProfileException;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
+import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -34,19 +35,14 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class SetItemSubCommand extends AbstractSubCommand {
+public class SetItemSubCommand extends WorldSubCommand {
 
     public SetItemSubCommand(Messages messages, WorldServiceImpl worldService) {
-        super(messages, worldService);
+        super(messages, worldService, WorldTarget.argument(2, "worlds_setitem"));
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_setitem");
-        if (buildWorld == null) {
-            return;
-        }
-
+    protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         ItemStack itemStack = player.getInventory().getItemInMainHand();
         if (itemStack.getType() == Material.AIR) {
             messages.sendMessage(player, "worlds_setitem_hand_empty");

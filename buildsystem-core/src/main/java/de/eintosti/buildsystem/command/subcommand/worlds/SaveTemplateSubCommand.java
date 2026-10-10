@@ -19,8 +19,9 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
+import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
@@ -41,7 +42,7 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SaveTemplateSubCommand extends AbstractSubCommand {
+public class SaveTemplateSubCommand extends WorldSubCommand {
 
     private final ConfigService configService;
     private final File dataFolder;
@@ -55,7 +56,7 @@ public class SaveTemplateSubCommand extends AbstractSubCommand {
             File dataFolder,
             Logger logger,
             TaskScheduler scheduler) {
-        super(messages, worldService);
+        super(messages, worldService, WorldTarget.argument(3, "worlds_savetemplate"));
         this.configService = configService;
         this.dataFolder = dataFolder;
         this.logger = logger;
@@ -63,12 +64,7 @@ public class SaveTemplateSubCommand extends AbstractSubCommand {
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = requireWorld(player, worldName, args, 3, "worlds_savetemplate");
-        if (buildWorld == null) {
-            return;
-        }
-
+    protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         // A namespace is left out: the colon is not allowed in a template name, and cannot be in a folder on Windows.
         String templateName = args.length == 3 ? args[2] : WorldNames.path(buildWorld.getName());
 

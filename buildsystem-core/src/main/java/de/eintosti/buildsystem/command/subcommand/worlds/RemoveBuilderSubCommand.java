@@ -22,8 +22,9 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.Completions;
-import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
+import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Prompts;
@@ -36,7 +37,7 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class RemoveBuilderSubCommand extends AbstractSubCommand {
+public class RemoveBuilderSubCommand extends WorldSubCommand {
 
     private final PlayerLookupService playerLookupService;
     private final Prompts prompts;
@@ -46,18 +47,13 @@ public class RemoveBuilderSubCommand extends AbstractSubCommand {
             WorldServiceImpl worldService,
             PlayerLookupService playerLookupService,
             Prompts prompts) {
-        super(messages, worldService);
+        super(messages, worldService, WorldTarget.current("worlds_removebuilder_unknown_world"));
         this.playerLookupService = playerLookupService;
         this.prompts = prompts;
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = requireCurrentWorld(player, "worlds_removebuilder_unknown_world");
-        if (buildWorld == null) {
-            return;
-        }
-
+    protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         switch (args.length) {
             case 1 -> getRemoveBuilderInput(player, buildWorld);
             case 2 -> removeBuilder(player, buildWorld, args[1]);

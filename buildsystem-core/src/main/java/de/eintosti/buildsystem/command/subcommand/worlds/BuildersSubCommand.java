@@ -18,8 +18,9 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
+import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -28,22 +29,17 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class BuildersSubCommand extends AbstractSubCommand {
+public class BuildersSubCommand extends WorldSubCommand {
 
     private final Menus menus;
 
     public BuildersSubCommand(Messages messages, WorldServiceImpl worldService, Menus menus) {
-        super(messages, worldService);
+        super(messages, worldService, WorldTarget.argument(2, "worlds_builders"));
         this.menus = menus;
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_builders");
-        if (buildWorld == null) {
-            return;
-        }
-
+    protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         menus.openBuilder(buildWorld, player);
     }
 

@@ -19,8 +19,9 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
-import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
+import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -29,19 +30,14 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class UnimportSubCommand extends AbstractSubCommand {
+public class UnimportSubCommand extends WorldSubCommand {
 
     public UnimportSubCommand(Messages messages, WorldServiceImpl worldService) {
-        super(messages, worldService);
+        super(messages, worldService, WorldTarget.argument(2, "worlds_unimport"));
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_unimport");
-        if (buildWorld == null) {
-            return;
-        }
-
+    protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         worldService
                 .unimportWorld(buildWorld, SaveBehavior.SAVE)
                 .thenRun(() -> messages.sendMessage(

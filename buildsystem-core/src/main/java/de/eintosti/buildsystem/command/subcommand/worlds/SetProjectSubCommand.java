@@ -20,8 +20,9 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
-import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
+import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Menus;
@@ -33,7 +34,7 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SetProjectSubCommand extends AbstractSubCommand {
+public class SetProjectSubCommand extends WorldSubCommand {
 
     private final Menus menus;
     private final Prompts prompts;
@@ -45,19 +46,14 @@ public class SetProjectSubCommand extends AbstractSubCommand {
             Menus menus,
             Prompts prompts,
             SettingsService settingsService) {
-        super(messages, worldService);
+        super(messages, worldService, WorldTarget.argument(2, "worlds_setproject"));
         this.menus = menus;
         this.prompts = prompts;
         this.settingsService = settingsService;
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_setproject");
-        if (buildWorld == null) {
-            return;
-        }
-
+    protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         getProjectInput(player, buildWorld, true);
     }
 

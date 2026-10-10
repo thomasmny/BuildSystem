@@ -20,8 +20,9 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.Completions;
-import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
+import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Menus;
@@ -34,25 +35,20 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class BackupsSubCommand extends AbstractSubCommand {
+public class BackupsSubCommand extends WorldSubCommand {
 
     private final BackupServiceImpl backupService;
     private final Menus menus;
 
     public BackupsSubCommand(
             Messages messages, WorldServiceImpl worldService, BackupServiceImpl backupService, Menus menus) {
-        super(messages, worldService);
+        super(messages, worldService, WorldTarget.current("worlds_backup_world_not_imported"));
         this.backupService = backupService;
         this.menus = menus;
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = requireCurrentWorld(player, "worlds_backup_world_not_imported");
-        if (buildWorld == null) {
-            return;
-        }
-
+    protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         switch (args.length) {
             case 1 -> {
                 XSound.BLOCK_CHEST_OPEN.play(player);

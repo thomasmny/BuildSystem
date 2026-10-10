@@ -20,8 +20,9 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
+import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Prompts;
@@ -34,7 +35,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class SetCreatorSubCommand extends AbstractSubCommand {
+public class SetCreatorSubCommand extends WorldSubCommand {
 
     private final PlayerLookupService playerLookupService;
     private final Prompts prompts;
@@ -46,19 +47,14 @@ public class SetCreatorSubCommand extends AbstractSubCommand {
             PlayerLookupService playerLookupService,
             Prompts prompts,
             SettingsService settingsService) {
-        super(messages, worldService);
+        super(messages, worldService, WorldTarget.argument(2, "worlds_setcreator"));
         this.playerLookupService = playerLookupService;
         this.prompts = prompts;
         this.settingsService = settingsService;
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_setcreator");
-        if (buildWorld == null) {
-            return;
-        }
-
+    protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         prompts.prompt(player).title("enter_world_creator").request(input -> {
             String creatorName = input.trim();
             if (creatorName.equalsIgnoreCase("-")) {
