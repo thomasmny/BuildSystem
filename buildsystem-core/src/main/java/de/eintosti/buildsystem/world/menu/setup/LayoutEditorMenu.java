@@ -371,8 +371,13 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
     }
 
     private void deleteHeld(Player player) {
-        if (held.isHolding() && registry().delete(held.getEntryId())) {
-            XSound.ENTITY_ITEM_BREAK.play(player);
+        if (held.isHolding()) {
+            if (registry().delete(held.getEntryId())) {
+                XSound.ENTITY_ITEM_BREAK.play(player);
+            } else {
+                // The registry refuses to delete its last remaining entry.
+                messages.sendMessage(player, "setup_delete_last");
+            }
         }
         clearHeld(player);
         refresh(player);
