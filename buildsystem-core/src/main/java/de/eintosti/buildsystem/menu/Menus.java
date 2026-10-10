@@ -186,7 +186,9 @@ public final class Menus {
                 .getProjectInput(player, buildWorld, false);
     }
 
-    /** Opens the world-permission chat prompt; borrows the subcommand's flow, see {@link #promptWorldProject}. */
+    /**
+     * Opens the world-permission chat prompt; borrows the subcommand's flow, see {@link #promptWorldProject}.
+     */
     public void promptWorldPermission(BuildWorld buildWorld, Player player) {
         new SetPermissionSubCommand(
                         services.messages(),
@@ -198,7 +200,9 @@ public final class Menus {
                 .getPermissionInput(player, buildWorld, false);
     }
 
-    /** Opens the add-builder chat prompt; borrows the subcommand's flow, see {@link #promptWorldProject}. */
+    /**
+     * Opens the add-builder chat prompt; borrows the subcommand's flow, see {@link #promptWorldProject}.
+     */
     public void promptAddBuilder(BuildWorld buildWorld, Player player) {
         new AddBuilderSubCommand(
                         services.messages(),
@@ -223,7 +227,9 @@ public final class Menus {
         new FolderContentMenu(displayablesContext(), player, category, folder, parent).open(player);
     }
 
-    /** Bundles the collaborators shared by every {@link DisplayablesMenu} so its constructors stay small. */
+    /**
+     * Bundles the collaborators shared by every {@link DisplayablesMenu} so its constructors stay small.
+     */
     private DisplayablesContext displayablesContext() {
         return new DisplayablesContext(
                 services.messages(),

@@ -209,7 +209,9 @@ public final class Prompts {
             new PlayerChatInput(messages, scheduler, new PlayerChatInput.Request(player, title, completion, onCancel));
         }
 
-        /** Wraps {@code onValidName} so it only fires for input that survives name sanitization. */
+        /**
+         * Wraps {@code onValidName} so it only fires for input that survives name sanitization.
+         */
         private InputRunnable sanitizing(InputRunnable onValidName) {
             String invalidCharactersKey = Objects.requireNonNull(invalidCharactersMessageKey);
             String emptyNameKey = Objects.requireNonNull(emptyNameMessageKey);

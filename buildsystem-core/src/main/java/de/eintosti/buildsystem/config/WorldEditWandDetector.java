@@ -33,7 +33,9 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class WorldEditWandDetector {
 
-    /** Used when no WorldEdit install is found or its wand cannot be resolved. */
+    /**
+     * Used when no WorldEdit install is found or its wand cannot be resolved.
+     */
     public static final XMaterial DEFAULT_WAND = XMaterial.WOODEN_AXE;
 
     private final @Nullable File pluginsDir;

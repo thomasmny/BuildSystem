@@ -247,7 +247,9 @@ public class SettingsImpl implements Settings {
 
         private Builder() {}
 
-        /** Sets the navigator type; {@code null} keeps the default {@link NavigatorType#OLD}. */
+        /**
+         * Sets the navigator type; {@code null} keeps the default {@link NavigatorType#OLD}.
+         */
         public Builder navigatorType(@Nullable NavigatorType navigatorType) {
             if (navigatorType != null) {
                 this.navigatorType = navigatorType;
@@ -255,7 +257,9 @@ public class SettingsImpl implements Settings {
             return this;
         }
 
-        /** Sets the design colour; {@code null} keeps the default {@link DesignColor#BLACK}. */
+        /**
+         * Sets the design colour; {@code null} keeps the default {@link DesignColor#BLACK}.
+         */
         public Builder designColor(@Nullable DesignColor designColor) {
             if (designColor != null) {
                 this.designColor = designColor;
