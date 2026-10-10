@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.world.creation;
 
 import de.eintosti.buildsystem.util.FileUtils;
 import dev.dewy.nbt.Nbt;
-import dev.dewy.nbt.io.CompressionType;
 import dev.dewy.nbt.tags.collection.CompoundTag;
 import dev.dewy.nbt.tags.primitive.IntTag;
 import java.io.File;
@@ -69,32 +68,6 @@ public class WorldDataVersionGuard {
         } catch (IOException e) {
             logger.log(Level.WARNING, "Failed to parse level.dat for world " + worldName, e);
             return -1;
-        }
-    }
-
-    public void updateWorldDataVersion() {
-        File levelFile = new File(FileUtils.worldFolder(worldName), LEVEL_DAT_FILE_NAME);
-        if (!levelFile.exists()) {
-            return;
-        }
-
-        try {
-            Nbt nbt = new Nbt();
-            CompoundTag level = nbt.fromFile(levelFile);
-            CompoundTag data = level.get("Data");
-            IntTag dataVersionTag = data.getInt("DataVersion");
-            if (dataVersionTag == null) {
-                return;
-            }
-
-            int worldVersion = dataVersionTag.getValue();
-            int serverVersion = getServerDataVersion();
-            if (worldVersion < serverVersion) {
-                dataVersionTag.setValue(serverVersion);
-                nbt.toFile(level, levelFile, CompressionType.GZIP);
-            }
-        } catch (IOException e) {
-            logger.log(Level.WARNING, "Failed to update level.dat for world " + worldName, e);
         }
     }
 }
