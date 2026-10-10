@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.config;
 
 import de.eintosti.buildsystem.config.PluginConfig.Storage;
+import de.eintosti.buildsystem.storage.StorageTls;
 import de.eintosti.buildsystem.storage.StorageType;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
@@ -79,7 +80,8 @@ final class StorageSettingsFactory {
                                 config.getInt(block + "port", type.defaultPort()),
                                 config.getString(block + "database", "buildsystem"),
                                 config.getString(block + "username", ""),
-                                config.getString(block + "password", "")));
+                                config.getString(block + "password", ""),
+                                StorageTls.parse(block + "tls", config.getString(block + "tls", "prefer"))));
             }
         }
         return new Storage.Database(

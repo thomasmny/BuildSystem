@@ -194,7 +194,13 @@ class StorageMigratorTest {
                 Map.of(
                         StorageType.POSTGRESQL,
                         new PluginConfig.Storage.Database.Server(
-                                StorageType.POSTGRESQL, "localhost", 1, "buildsystem", " ", "secret")));
+                                StorageType.POSTGRESQL,
+                                "localhost",
+                                1,
+                                "buildsystem",
+                                " ",
+                                "secret",
+                                StorageTls.PREFER)));
 
         CompletableFuture<Map<EntityKind, Integer>> migration = migrator.migrate(StorageType.POSTGRESQL, settings);
         runAll();
@@ -324,7 +330,7 @@ class StorageMigratorTest {
         return Map.of(
                 StorageType.MYSQL,
                 new PluginConfig.Storage.Database.Server(
-                        StorageType.MYSQL, "localhost", 1, "buildsystem", "builder", ""));
+                        StorageType.MYSQL, "localhost", 1, "buildsystem", "builder", "", StorageTls.PREFER));
     }
 
     private PluginConfig.Storage.Database settings() {

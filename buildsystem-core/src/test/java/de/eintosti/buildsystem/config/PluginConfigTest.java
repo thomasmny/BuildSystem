@@ -21,9 +21,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.cryptomorin.xseries.XGameRule;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
+import de.eintosti.buildsystem.storage.StorageTls;
 import de.eintosti.buildsystem.storage.StorageType;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.bukkit.Difficulty;
@@ -687,6 +689,20 @@ class PluginConfigTest {
         assertEquals("build-system_2", server.database());
         assertEquals("builder", server.username());
         assertFalse(server.toString().contains("hunter2"));
+        assertEquals(StorageTls.PREFER, server.tls());
+    }
+
+    @Test
+    void storageDatabase_tlsIsOneOfFourModes() {
+        for (StorageTls tls : StorageTls.values()) {
+            assertEquals(
+                    tls,
+                    parse("storage:\n  mysql:\n    tls: " + tls.name().toLowerCase(Locale.ROOT))
+                            .storage()
+                            .database()
+                            .server(StorageType.MYSQL)
+                            .tls());
+        }
     }
 
     @Test
@@ -738,6 +754,10 @@ class PluginConfigTest {
                 "mysql:\n    host: \"db:3307\"",
                 "mysql:\n    port: 0",
                 "mongodb:\n    port: 65536",
+                "mysql:\n    tls: \"verify&sslMode=DISABLED\"",
+                "postgresql:\n    tls: disable",
+                "mongodb:\n    tls: \"\"",
+                "mongodb:\n    tls: true",
                 "postgresql:\n    username: \"builder\\0search_path\\0evil\"",
                 "postgresql:\n    username: \"builder\\n\"",
                 "postgresql:\n    password: \"hunter2\\0options\\0-c x=y\"",

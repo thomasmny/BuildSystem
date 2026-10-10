@@ -76,7 +76,13 @@ public class MigrationV6ToV7 implements Migration {
                 List.of(
                         "Each password can also be supplied as an environment variable named after",
                         "its block, e.g. BUILDSYSTEM_MYSQL_PASSWORD, which takes precedence and keeps",
-                        "the secret out of this file."));
+                        "the secret out of this file.",
+                        "tls sets whether the connection is encrypted: prefer (when the server offers",
+                        "it), off, require (always, without checking the certificate) or verify",
+                        "(always, checking the certificate and host name). verify trusts what the Java",
+                        "trust store trusts, or ~/.postgresql/root.crt for PostgreSQL. MongoDB cannot",
+                        "fall back to plain text, so there prefer does what off does, and require still",
+                        "checks the certificate, only not the host name."));
         server(config, "mariadb", 3306);
         server(config, "postgresql", 5432);
         server(config, "mongodb", 27017);
@@ -94,5 +100,6 @@ public class MigrationV6ToV7 implements Migration {
         config.set(block + "database", "buildsystem");
         config.set(block + "username", "");
         config.set(block + "password", "");
+        config.set(block + "tls", "prefer");
     }
 }

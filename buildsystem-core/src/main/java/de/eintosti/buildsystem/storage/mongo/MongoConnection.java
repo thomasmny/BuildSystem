@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.storage.Database;
 import de.eintosti.buildsystem.storage.EntityKind;
 import de.eintosti.buildsystem.storage.EntityStore;
 import de.eintosti.buildsystem.storage.StorageException;
+import de.eintosti.buildsystem.storage.StorageTls;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -68,11 +69,15 @@ public final class MongoConnection implements Database {
             String databaseName,
             String username,
             @Nullable String password,
+            StorageTls tls,
             String collectionPrefix,
             Logger logger) {
         MongoClientSettings.Builder settings = MongoClientSettings.builder()
                 .applyToClusterSettings(cluster -> cluster.hosts(List.of(new ServerAddress(host, port)))
-                        .serverSelectionTimeout(SERVER_TIMEOUT_SECONDS, TimeUnit.SECONDS));
+                        .serverSelectionTimeout(SERVER_TIMEOUT_SECONDS, TimeUnit.SECONDS))
+                // The driver cannot fall back to plain text, so prefer does what off does.
+                .applyToSslSettings(ssl -> ssl.enabled(tls == StorageTls.REQUIRE || tls == StorageTls.VERIFY)
+                        .invalidHostNameAllowed(tls == StorageTls.REQUIRE));
         if (!username.isEmpty()) {
             settings.credential(MongoCredential.createCredential(
                     username, "admin", (password == null ? "" : password).toCharArray()));

@@ -156,24 +156,33 @@ storage:
   # Each password can also be supplied as an environment variable named after
   # its block, e.g. BUILDSYSTEM_MYSQL_PASSWORD, which takes precedence and keeps
   # the secret out of this file.
+  # tls sets whether the connection is encrypted: prefer (when the server offers
+  # it), off, require (always, without checking the certificate) or verify
+  # (always, checking the certificate and host name). verify trusts what the Java
+  # trust store trusts, or ~/.postgresql/root.crt for PostgreSQL. MongoDB cannot
+  # fall back to plain text, so there prefer does what off does, and require still
+  # checks the certificate, only not the host name.
   mysql:
     host: localhost
     port: 3306
     database: buildsystem
     username: ''
     password: ''
+    tls: prefer
   mariadb:
     host: localhost
     port: 3306
     database: buildsystem
     username: ''
     password: ''
+    tls: prefer
   postgresql:
     host: localhost
     port: 5432
     database: buildsystem
     username: ''
     password: ''
+    tls: prefer
   # Leave username empty for a server without authentication. Users are
   # authenticated against the admin database.
   mongodb:
@@ -182,6 +191,7 @@ storage:
     database: buildsystem
     username: ''
     password: ''
+    tls: prefer
   s3:
     # Leave empty for Amazon S3. Set it to point at an S3-compatible service instead,
     # e.g. MinIO, Backblaze B2 or Cloudflare R2: "https://s3.example.com"

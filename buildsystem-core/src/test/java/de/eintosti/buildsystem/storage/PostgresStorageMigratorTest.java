@@ -63,7 +63,8 @@ class PostgresStorageMigratorTest extends StorageMigratorTest {
                         DATABASE.getMappedPort(5432),
                         DATABASE.getDatabaseName(),
                         DATABASE.getUsername(),
-                        DATABASE.getPassword()),
+                        DATABASE.getPassword(),
+                        StorageTls.PREFER),
                 StorageType.MYSQL,
                 super.servers().get(StorageType.MYSQL));
     }

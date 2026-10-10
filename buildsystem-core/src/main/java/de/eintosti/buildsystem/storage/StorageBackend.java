@@ -72,6 +72,8 @@ public final class StorageBackend implements AutoCloseable {
                         Properties properties = credentials(settings.server(type));
                         // The driver waits forever by default, PostgreSQL and MongoDB give up after 10 seconds.
                         properties.setProperty("connectTimeout", "10000");
+                        properties.setProperty(
+                                "sslMode", settings.server(type).tls().mysqlSslMode());
                         yield SqlDatabase.connect(
                                 SqlDialect.MYSQL, url("mysql", settings.server(type)), properties, prefix, logger);
                     }
@@ -79,6 +81,8 @@ public final class StorageBackend implements AutoCloseable {
                         Properties properties = credentials(settings.server(type));
                         // Error details can quote a failing row, which has no place in the log.
                         properties.setProperty("logServerErrorDetail", "false");
+                        properties.setProperty(
+                                "sslmode", settings.server(type).tls().postgresSslMode());
                         yield SqlDatabase.connect(
                                 SqlDialect.POSTGRESQL,
                                 url("postgresql", settings.server(type)),
@@ -94,6 +98,7 @@ public final class StorageBackend implements AutoCloseable {
                                 server.database(),
                                 server.username(),
                                 server.resolvedPassword(),
+                                server.tls(),
                                 prefix,
                                 logger);
                     }

@@ -137,7 +137,10 @@ public abstract class EntityStoreContractTest {
     protected static PluginConfig.Storage.Database settings(
             StorageType type, String host, int port, String database, String username, String password, String prefix) {
         Map<StorageType, PluginConfig.Storage.Database.Server> servers = type.hasServer()
-                ? Map.of(type, new PluginConfig.Storage.Database.Server(type, host, port, database, username, password))
+                ? Map.of(
+                        type,
+                        new PluginConfig.Storage.Database.Server(
+                                type, host, port, database, username, password, StorageTls.PREFER))
                 : Map.of();
         return new PluginConfig.Storage.Database(type, prefix, servers);
     }
@@ -301,6 +304,31 @@ public abstract class EntityStoreContractTest {
                 List.of(UUID.fromString(good)),
                 loaded.stream().map(BuildPlayer::getUniqueId).toList());
         assertEquals(3, store("players").loadAll().size(), "the rows that could not load stay stored");
+    }
+
+    @Test
+    void tlsVerify_withoutACertificateTheJvmTrusts_refusesToConnect() {
+        PluginConfig.Storage.Database plain = settings();
+        Assumptions.assumeTrue(plain.type().hasServer());
+        PluginConfig.Storage.Database.Server server = plain.server(plain.type());
+        PluginConfig.Storage.Database verify = new PluginConfig.Storage.Database(
+                plain.type(),
+                plain.tablePrefix(),
+                Map.of(
+                        plain.type(),
+                        new PluginConfig.Storage.Database.Server(
+                                server.type(),
+                                server.host(),
+                                server.port(),
+                                server.database(),
+                                server.username(),
+                                server.password(),
+                                StorageTls.VERIFY)));
+
+        assertThrows(
+                StorageException.class,
+                () -> StorageBackend.connect(verify.type(), verify, dataFolder, LOGGER)
+                        .close());
     }
 
     @Test

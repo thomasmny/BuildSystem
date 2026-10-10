@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.config;
 
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
+import de.eintosti.buildsystem.storage.StorageTls;
 import de.eintosti.buildsystem.storage.StorageType;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.List;
@@ -171,7 +172,8 @@ public record PluginConfig(Settings settings, Storage storage, World world, Fold
                     int port,
                     String database,
                     String username,
-                    @Nullable String password) {
+                    @Nullable String password,
+                    StorageTls tls) {
 
                 // Only names and addresses: drivers read options and further hosts from characters like ( = , @
                 private static final Pattern HOST = Pattern.compile("[A-Za-z0-9.-]{1,253}|\\[[0-9A-Fa-f:.]{2,45}]");
@@ -213,8 +215,8 @@ public record PluginConfig(Settings settings, Storage storage, World world, Fold
                  */
                 @Override
                 public String toString() {
-                    return "Server[type=%s, host=%s, port=%d, database=%s, username=%s, password=%s]"
-                            .formatted(type, host, port, database, username, password == null ? null : "***");
+                    return "Server[type=%s, host=%s, port=%d, database=%s, username=%s, password=%s, tls=%s]"
+                            .formatted(type, host, port, database, username, password == null ? null : "***", tls);
                 }
             }
         }
