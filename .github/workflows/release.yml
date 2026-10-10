@@ -9,10 +9,13 @@ permissions:
 
 jobs:
   upload:
+    if: github.repository_owner_id == 29168243
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Git Repository
         uses: actions/checkout@v7
+        with:
+          persist-credentials: false
 
       - name: Set up JDK 25
         uses: actions/setup-java@v6
@@ -26,16 +29,13 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
-      # The shaded plugin jar, named BuildSystem-<version>.jar by buildsystem-core's shadowJar task.
+      # buildsystem-core's shadowJar writes the plugin jar as BuildSystem-<version>.jar. Requiring the tag's version
+      # keeps a SNAPSHOT jar off a release.
       - name: Upload jar to the release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ github.event.release.tag_name }}
         run: |
-          shopt -s nullglob
-          jars=(build/libs/BuildSystem-*.jar)
-          if [ "${#jars[@]}" -ne 1 ]; then
-            echo "Expected one plugin jar in build/libs, found: ${jars[*]}"
-            exit 1
-          fi
-          gh release upload "$TAG" "${jars[0]}" --clobber
+          jar="build/libs/BuildSystem-${TAG#v}.jar"
+          [ -f "$jar" ] || { echo "Expected $jar; is the version in gradle.properties bumped?"; ls build/libs; exit 1; }
+          gh release upload "$TAG" "$jar" --clobber --repo "$GITHUB_REPOSITORY"
