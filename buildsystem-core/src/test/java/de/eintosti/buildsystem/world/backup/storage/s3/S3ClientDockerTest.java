@@ -65,8 +65,8 @@ class S3ClientDockerTest {
     private static final int PAGED_KEYS = 1001;
 
     // Serves the directories under /mnt as buckets and the files in them as objects.
-    private static final GenericContainer<?> GATEWAY = new GenericContainer<>(
-                    DockerImageName.parse("versity/versitygw:v1.8.0"))
+    private static final GenericContainer<?> GATEWAY = new GenericContainer<>(DockerImageName.parse(
+                    "versity/versitygw:v1.8.0@sha256:30292fc2eeacc67a36993b01f7a7a5e3361a19cced0e80c1d71cfa2a4b0a2499"))
             .withCommand("--access", ACCESS_KEY, "--secret", SECRET_KEY, "posix", "/mnt")
             .withExposedPorts(7070)
             .waitingFor(Wait.forListeningPort());
