@@ -70,15 +70,14 @@ class PlayerLookupServiceTest {
 
     @Test
     void namesMojangCannotHaveAreRejectedBeforeAnyRequest() {
-        // A null plugin makes any attempt to log a failed request throw, so reaching the network would fail the test.
+        // Neither name forms a valid URI, so without the check URI.create throws and the null plugin fails the log
+        // call. Neither can reach Mojang if the check is removed.
         PlayerLookupService service = new PlayerLookupService(null, Runnable::run);
         try (MockedStatic<ServerModeChecker> mode = mockStatic(ServerModeChecker.class)) {
             mode.when(ServerModeChecker::getServerMode).thenReturn(ServerMode.ONLINE);
 
             assertNull(service.lookupUniqueIdBlocking("two words"));
-            assertNull(service.lookupUniqueIdBlocking("a/b"));
-            assertNull(service.lookupUniqueIdBlocking("NameThatIsFarTooLong"));
-            assertNull(service.lookupUniqueIdBlocking(""));
+            assertNull(service.lookupUniqueIdBlocking("a^b"));
         }
     }
 }
