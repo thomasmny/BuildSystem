@@ -26,10 +26,13 @@ repositories {
         url = uri("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     }
     maven {
-        // Test-only: MockBukkit is built against the Paper API. The plugin itself compiles against spigot-api;
-        // paper-api is used solely on the test classpath (see testImplementation below).
+        // paperlib, which is shaded into the plugin, and paper-api, which MockBukkit needs on the test classpath.
         name = "PaperMC"
         url = uri("https://repo.papermc.io/repository/maven-public/")
+        content {
+            includeGroup("io.papermc")
+            includeGroup("io.papermc.paper")
+        }
     }
     modrinthMavenWorkaround(
         "axiom-paper-plugin",
