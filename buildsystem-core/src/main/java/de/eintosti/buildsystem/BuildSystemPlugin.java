@@ -75,6 +75,11 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        if (messages == null) {
+            // onLoad failed, for example on an invalid storage setting, and the server logged why.
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
         this.scheduler = new TaskScheduler(this);
         this.services = new Services(this, scheduler, configService, messages);
         this.services.loadWorlds();
