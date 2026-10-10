@@ -36,8 +36,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.potion.PotionEffect;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -119,18 +117,8 @@ public class PlayerChangedWorldListener implements Listener {
         cachedValues.resetArchiveStateIfPresent(player);
 
         if (!buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
-            cachedValues.saveArchiveState(player);
-
-            removeArmorContent(player);
-            player.getInventory().clear();
-            setSpectatorMode(player);
-
-            if (configService.current().settings().archive().vanish()) {
-                player.addPotionEffect(
-                        new PotionEffect(XPotion.INVISIBILITY.get(), PotionEffect.INFINITE_DURATION, 0, false, false),
-                        false);
-                Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
-            }
+            ArchiveMode.enter(
+                    player, cachedValues, configService.current().settings().archive());
         } else {
             player.removePotionEffect(XPotion.INVISIBILITY.get());
             Bukkit.getOnlinePlayers().stream()
@@ -139,23 +127,5 @@ public class PlayerChangedWorldListener implements Listener {
         }
 
         navigatorService.giveNavigator(player);
-    }
-
-    private void setSpectatorMode(Player player) {
-        if (configService.current().settings().archive().changeGamemode()) {
-            player.setGameMode(configService.current().settings().archive().worldGameMode());
-        }
-        player.setSaturation(20);
-        player.setHealth(20);
-        player.setAllowFlight(true);
-        player.setFlying(true);
-    }
-
-    private void removeArmorContent(Player player) {
-        PlayerInventory playerInventory = player.getInventory();
-        playerInventory.setHelmet(null);
-        playerInventory.setChestplate(null);
-        playerInventory.setLeggings(null);
-        playerInventory.setBoots(null);
     }
 }

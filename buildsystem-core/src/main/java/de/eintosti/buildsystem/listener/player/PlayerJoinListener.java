@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.listener.player;
 
-import com.cryptomorin.xseries.XPotion;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.player.settings.Settings;
@@ -47,7 +46,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.potion.PotionEffect;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -110,22 +108,22 @@ public class PlayerJoinListener implements Listener {
         manageHidePlayer(player, buildPlayer);
         manageSettings(player, buildPlayer.getSettings());
         teleportToCorrectLocation(player, buildPlayer);
-        navigatorService.giveNavigator(player);
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
+        if (buildWorld != null && !buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
+            // Joining inside an archive world fires no world change, so archive mode is entered here.
+            ArchiveMode.enter(
+                    player,
+                    buildPlayer.getCachedValues(),
+                    configService.current().settings().archive());
+        }
+        navigatorService.giveNavigator(player);
+
         if (buildWorld != null) {
             WorldData worldData = buildWorld.getData();
             if (!worldData.get(WorldDataKey.PHYSICS) && player.hasPermission(Permissions.PHYSICS_MESSAGE)) {
                 messages.sendMessage(
                         player, "physics_deactivated_in_world", Placeholders.of("%world%", buildWorld.getName()));
-            }
-
-            if (configService.current().settings().archive().vanish()
-                    && !worldData.get(WorldDataKey.STATUS).isBuildingAllowed()) {
-                player.addPotionEffect(
-                        new PotionEffect(XPotion.INVISIBILITY.get(), PotionEffect.INFINITE_DURATION, 0, false, false),
-                        false);
-                Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
             }
         }
 
