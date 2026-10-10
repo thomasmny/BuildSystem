@@ -58,6 +58,14 @@ public class FolderImpl implements Folder {
     private String permission;
     private String project;
 
+    /**
+     * The stored category and icon as they were read, when they could not be resolved. They are saved in place of the
+     * fallback in effect until the category or icon is set.
+     */
+    private @Nullable String unresolvedCategory;
+
+    private @Nullable String unresolvedMaterial;
+
     public FolderImpl(
             WorldContext context, String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
         this(builder(context, UUID.randomUUID())
@@ -131,6 +139,7 @@ public class FolderImpl implements Folder {
     @Override
     public void setIcon(Material material) {
         this.material = material;
+        this.unresolvedMaterial = null;
     }
 
     @Override
@@ -174,6 +183,23 @@ public class FolderImpl implements Folder {
      */
     public void setCategory(NavigatorCategory category) {
         this.category = category;
+        this.unresolvedCategory = null;
+    }
+
+    /**
+     * Keeps the stored category id and icon material that could not be resolved, to be saved instead of the fallbacks.
+     */
+    public void keepUnresolved(@Nullable String category, @Nullable String material) {
+        this.unresolvedCategory = category;
+        this.unresolvedMaterial = material;
+    }
+
+    public @Nullable String getUnresolvedCategory() {
+        return unresolvedCategory;
+    }
+
+    public @Nullable String getUnresolvedMaterial() {
+        return unresolvedMaterial;
     }
 
     @Override

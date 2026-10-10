@@ -124,6 +124,28 @@ class FolderCodecTest {
         assertEquals(Material.CHEST, folder.getIcon());
     }
 
+    @Test
+    void unresolvedCategoryAndIcon_areWrittenBackUntilSet() {
+        String key = CodecSamples.FOLDER_ID.toString();
+        ConfigurationSection section = CodecSamples.section("""
+                %s:
+                  creator: 0c0c0c0c-0000-4000-8000-000000000001,Alex
+                  category: deleted_category
+                  material: not_a_material
+                """.formatted(key), key);
+
+        FolderImpl folder = codec.deserialize(key, section);
+
+        assertEquals(TestData.categoryRegistry().getDefault(), folder.getCategory());
+        assertEquals("deleted_category", codec.serialize(folder).get("category"));
+        assertEquals("not_a_material", codec.serialize(folder).get("material"));
+
+        folder.setCategory(TestData.PRIVATE);
+        folder.setIcon(Material.OAK_SIGN);
+        assertEquals(TestData.PRIVATE.getId(), codec.serialize(folder).get("category"));
+        assertEquals("OAK_SIGN", codec.serialize(folder).get("material"));
+    }
+
     private FolderImpl parent(UUID uuid, FolderImpl child) {
         return FolderImpl.builder(context, uuid)
                 .name("Parent")

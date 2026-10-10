@@ -214,6 +214,28 @@ class WorldCodecTest {
         assertEquals(Visibility.EVERYONE, data.get(WorldDataKey.VISIBILITY));
     }
 
+    @Test
+    void unresolvedValues_areWrittenBackUntilSet() {
+        BuildWorldImpl world = load("""
+                data:
+                  status: someday
+                  difficulty: nightmare
+                  material: FUTURE_BLOCK
+                """);
+
+        Map<?, ?> data = (Map<?, ?>) codec.serialize(world).get("data");
+        assertEquals("someday", data.get("status"));
+        assertEquals("nightmare", data.get("difficulty"));
+        assertEquals("FUTURE_BLOCK", data.get("material"));
+
+        world.getData().set(WorldDataKey.MATERIAL, Material.STONE);
+        world.getData().set(WorldDataKey.STATUS, context.statusRegistry().getDefault());
+        Map<?, ?> changed = (Map<?, ?>) codec.serialize(world).get("data");
+        assertEquals("STONE", changed.get("material"));
+        assertEquals(context.statusRegistry().getDefault().getId(), changed.get("status"));
+        assertEquals("nightmare", changed.get("difficulty"));
+    }
+
     private BuildWorldImpl load(String body) {
         String key = UUID.fromString("0a0a0a0a-0000-4000-8000-000000000009").toString();
         String yaml = key + ":\n  name: stored\n" + body.indent(2);
