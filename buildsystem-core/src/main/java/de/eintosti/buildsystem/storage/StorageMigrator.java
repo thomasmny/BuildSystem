@@ -154,6 +154,10 @@ public final class StorageMigrator {
                                 + " have not loaded, so what is in memory may be incomplete. See the startup log."));
             }
         }
+        CompletableFuture<Map<EntityKind, Integer>> refused = refuseStorageInUse(type, settings);
+        if (refused != null) {
+            return refused;
+        }
         if (!running.compareAndSet(false, true)) {
             return CompletableFuture.failedFuture(new IllegalStateException("A storage migration is already running"));
         }
@@ -209,6 +213,10 @@ public final class StorageMigrator {
      * the connection again, and fails as a migration would when the backend cannot be reached.
      */
     public CompletableFuture<Boolean> holdsData(StorageType type, PluginConfig.Storage.Database settings) {
+        CompletableFuture<Boolean> refused = refuseStorageInUse(type, settings);
+        if (refused != null) {
+            return refused;
+        }
         return CompletableFuture.supplyAsync(
                 () -> {
                     if (type == StorageType.SQLITE && !new File(dataFolder, StorageBackend.SQLITE_FILE).exists()) {
@@ -228,6 +236,22 @@ public final class StorageMigrator {
                     }
                 },
                 background);
+    }
+
+    /**
+     * {@return a failed future when {@code type} points at the storage in use, which a copy would replace with itself}
+     */
+    private <R> @Nullable CompletableFuture<R> refuseStorageInUse(
+            StorageType type, PluginConfig.Storage.Database settings) {
+        try {
+            if (StorageBackend.location(type, settings).equals(current.get().location())) {
+                return CompletableFuture.failedFuture(new IllegalStateException(type.displayName()
+                        + " points at the storage in use: the same address, database and table prefix"));
+            }
+            return null;
+        } catch (IllegalArgumentException e) {
+            return CompletableFuture.failedFuture(e);
+        }
     }
 
     private Map<EntityKind, EntityStore> open(

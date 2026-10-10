@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.storage.sql.SqlDatabase;
 import de.eintosti.buildsystem.storage.sql.SqlDialect;
 import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
 import java.io.File;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -42,12 +43,15 @@ public final class StorageBackend implements AutoCloseable {
     public static final String SQLITE_FILE = "storage.db";
 
     private final StorageType type;
+    private final String location;
     private final @Nullable Database database;
     private final File dataFolder;
     private final Logger logger;
 
-    private StorageBackend(StorageType type, @Nullable Database database, File dataFolder, Logger logger) {
+    private StorageBackend(
+            StorageType type, String location, @Nullable Database database, File dataFolder, Logger logger) {
         this.type = type;
+        this.location = location;
         this.database = database;
         this.dataFolder = dataFolder;
         this.logger = logger;
@@ -109,7 +113,25 @@ public final class StorageBackend implements AutoCloseable {
                             ? SQLITE_FILE
                             : settings.server(type).database()));
         }
-        return new StorageBackend(type, database, dataFolder, logger);
+        return new StorageBackend(type, location(type, settings), database, dataFolder, logger);
+    }
+
+    /**
+     * {@return where {@code type} keeps its entries with these settings} Two types with the same location write to the
+     * same tables, as MySQL and MariaDB do with their default blocks.
+     *
+     * @throws IllegalArgumentException If the block of {@code type} is invalid
+     */
+    public static String location(StorageType type, PluginConfig.Storage.Database settings) {
+        return switch (type) {
+            case YAML -> "yaml";
+            case SQLITE -> SQLITE_FILE + "/" + settings.tablePrefix();
+            case MYSQL, MARIADB, POSTGRESQL, MONGODB -> {
+                PluginConfig.Storage.Database.Server server = settings.server(type);
+                yield server.host().toLowerCase(Locale.ROOT) + ":" + server.port() + "/" + server.database() + "/"
+                        + settings.tablePrefix();
+            }
+        };
     }
 
     private static SqlDatabase sqlite(File file, String prefix, Logger logger) {
@@ -152,6 +174,14 @@ public final class StorageBackend implements AutoCloseable {
 
     public StorageType type() {
         return type;
+    }
+
+    /**
+     * {@return where the entries are kept, as {@link #location(StorageType, PluginConfig.Storage.Database)} put it when
+     * this connected}
+     */
+    public String location() {
+        return location;
     }
 
     /**

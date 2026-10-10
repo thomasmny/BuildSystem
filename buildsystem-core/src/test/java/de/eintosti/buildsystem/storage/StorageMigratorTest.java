@@ -305,9 +305,9 @@ class StorageMigratorTest {
 
     @Test
     void holdsData_saysWhetherTheTargetHasEntries() {
-        CompletableFuture<Boolean> emptyYaml = migrator.holdsData(StorageType.YAML, settings());
+        CompletableFuture<Boolean> empty = migrator.holdsData(target(), settings());
         runAll();
-        assertFalse(emptyYaml.join());
+        assertFalse(empty.join());
 
         live.add(new Note("a", 1));
         migrator.migrate(target(), settings());
@@ -357,6 +357,43 @@ class StorageMigratorTest {
                     List.of("a"),
                     List.copyOf(started.store(EntityKind.PLAYERS).loadAll().keySet()));
         }
+    }
+
+    @Test
+    void migrate_toTheStorageInUse_isRefused() {
+        live.add(new Note("a", 1));
+        migrator.migrate(target(), settings());
+        runAll();
+        StorageBackend before = current.get();
+
+        CompletableFuture<Boolean> preview = migrator.holdsData(target(), settings());
+        CompletableFuture<Map<EntityKind, Integer>> again = migrator.migrate(target(), settings());
+        runAll();
+
+        assertThrows(CompletionException.class, preview::join);
+        assertThrows(CompletionException.class, again::join);
+        assertSame(before, current.get());
+        assertEquals(
+                List.of("a"),
+                List.copyOf(before.collection(EntityKind.PLAYERS).loadAll().keySet()));
+    }
+
+    @Test
+    void location_ofMySqlAndMariaDbWithTheSameBlock_isTheSame() {
+        PluginConfig.Storage.Database settings = new PluginConfig.Storage.Database(
+                StorageType.MYSQL,
+                prefix,
+                Map.of(
+                        StorageType.MYSQL,
+                        new PluginConfig.Storage.Database.Server(
+                                StorageType.MYSQL, "DB.local", 3306, "buildsystem", "a", "", StorageTls.PREFER),
+                        StorageType.MARIADB,
+                        new PluginConfig.Storage.Database.Server(
+                                StorageType.MARIADB, "db.local", 3306, "buildsystem", "b", "", StorageTls.PREFER)));
+
+        assertEquals(
+                StorageBackend.location(StorageType.MYSQL, settings),
+                StorageBackend.location(StorageType.MARIADB, settings));
     }
 
     @Test
