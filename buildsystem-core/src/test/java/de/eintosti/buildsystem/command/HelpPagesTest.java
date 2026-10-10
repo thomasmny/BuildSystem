@@ -22,43 +22,30 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.eintosti.buildsystem.command.HelpPages.Entry;
 import de.eintosti.buildsystem.i18n.Messages;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 @NullMarked
-class PagedCommandTest {
+class HelpPagesTest {
 
     private static final int COMMANDS = 10;
 
-    private static final class TenCommands extends PagedCommand {
-
-        TenCommands(Messages messages) {
-            super(messages, mock(Logger.class), "title", "permission");
-        }
-
-        @Override
-        protected List<TextComponent> getCommands(Player player) {
-            return new ArrayList<>(IntStream.range(0, COMMANDS)
-                    .mapToObj(i -> new TextComponent("cmd" + i))
-                    .toList());
-        }
-    }
-
     @ParameterizedTest
     @CsvSource({"1, 1, 7", "2, 2, 3", "0, 1, 7", "-3, 1, 7", "99, 2, 3"})
-    void sendMessage_clampsThePageIntoRange(int requested, int shown, int commandLines) {
+    void send_clampsThePageIntoRange(int requested, int shown, int commandLines) {
         Messages messages = mock(Messages.class);
         when(messages.getString(anyString(), any(CommandSender.class))).thenReturn("%page%/%max%");
         List<String> lines = new ArrayList<>();
@@ -72,9 +59,23 @@ class PagedCommandTest {
                 .when(spigot)
                 .sendMessage(any(BaseComponent.class));
 
-        new TenCommands(messages).sendMessage(player, requested);
+        List<Entry> commands = IntStream.range(0, COMMANDS)
+                .mapToObj(i -> new Entry("/cmd" + i, "description", "/cmd" + i, "-"))
+                .toList();
+        new HelpPages(messages, "help", commands).send(player, requested);
 
         assertEquals(shown + "/2\n", lines.get(1));
         assertEquals(commandLines + 3, lines.size());
+        assertEquals("§b/cmd" + (shown - 1) * 7 + " §8» %page%/%max%", lines.get(2));
+    }
+
+    @Test
+    void send_withAPageThatIsNotANumber_sendsTheInvalidPageKey() {
+        Messages messages = mock(Messages.class);
+        Player player = mock(Player.class);
+
+        new HelpPages(messages, "help", List.of()).send(player, "two");
+
+        verify(messages).sendMessage(player, "help_invalid_page");
     }
 }

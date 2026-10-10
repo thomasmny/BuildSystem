@@ -20,14 +20,14 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
+import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
 import org.bukkit.entity.Player;
@@ -35,34 +35,26 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class SetCreatorSubCommand extends AbstractSubCommand {
+public class SetCreatorSubCommand extends WorldSubCommand {
 
     private final PlayerLookupService playerLookupService;
     private final Prompts prompts;
     private final SettingsService settingsService;
-    private final TaskScheduler scheduler;
 
     public SetCreatorSubCommand(
             Messages messages,
             WorldServiceImpl worldService,
             PlayerLookupService playerLookupService,
             Prompts prompts,
-            SettingsService settingsService,
-            TaskScheduler scheduler) {
-        super(messages, worldService);
+            SettingsService settingsService) {
+        super(messages, worldService, WorldTarget.argument(2, "worlds_setcreator"));
         this.playerLookupService = playerLookupService;
         this.prompts = prompts;
         this.settingsService = settingsService;
-        this.scheduler = scheduler;
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_setcreator");
-        if (buildWorld == null) {
-            return;
-        }
-
+    protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         prompts.prompt(player).title("enter_world_creator").request(input -> {
             String creatorName = input.trim();
             if (creatorName.equalsIgnoreCase("-")) {
@@ -70,16 +62,12 @@ public class SetCreatorSubCommand extends AbstractSubCommand {
                 return;
             }
 
-            playerLookupService
-                    .lookupUniqueId(creatorName)
-                    .thenAccept(creatorId -> scheduler.run(() -> {
-                        if (creatorId == null) {
-                            messages.sendMessage(player, "worlds_setcreator_player_not_found");
-                            player.closeInventory();
-                            return;
-                        }
-                        applyCreator(player, buildWorld, Builder.of(creatorId, creatorName));
-                    }));
+            resolvePlayer(
+                    playerLookupService,
+                    player,
+                    creatorName,
+                    "worlds_setcreator_player_not_found",
+                    creator -> applyCreator(player, buildWorld, creator));
         });
     }
 
@@ -94,12 +82,7 @@ public class SetCreatorSubCommand extends AbstractSubCommand {
 
     @Override
     public List<String> complete(Player player, String[] args) {
-        if (args.length != 2) {
-            return List.of();
-        }
-
-        return WorldsCompletions.permittedWorldNames(
-                player, worldService, getArgument().getPermission(), args[1]);
+        return completeWorldName(player, args);
     }
 
     @Override

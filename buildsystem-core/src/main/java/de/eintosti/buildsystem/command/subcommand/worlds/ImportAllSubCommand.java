@@ -17,14 +17,12 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.util.ArgumentParser;
-import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.Locale;
 import org.bukkit.entity.Player;
@@ -34,16 +32,11 @@ import org.jspecify.annotations.NullMarked;
 public class ImportAllSubCommand extends AbstractSubCommand {
 
     private final PlayerLookupService playerLookupService;
-    private final TaskScheduler scheduler;
 
     public ImportAllSubCommand(
-            Messages messages,
-            WorldServiceImpl worldService,
-            PlayerLookupService playerLookupService,
-            TaskScheduler scheduler) {
+            Messages messages, WorldServiceImpl worldService, PlayerLookupService playerLookupService) {
         super(messages, worldService);
         this.playerLookupService = playerLookupService;
-        this.scheduler = scheduler;
     }
 
     @Override
@@ -104,18 +97,13 @@ public class ImportAllSubCommand extends AbstractSubCommand {
             return;
         }
 
-        String creatorName = creatorArg;
         Generator resolvedGenerator = generator;
-        playerLookupService
-                .lookupUniqueId(creatorName)
-                .thenAccept(creatorId -> scheduler.run(() -> {
-                    if (creatorId == null) {
-                        messages.sendMessage(player, "worlds_importall_player_not_found");
-                        return;
-                    }
-                    worldService.importWorlds(
-                            player, directories, resolvedGenerator, Builder.of(creatorId, creatorName));
-                }));
+        resolvePlayer(
+                playerLookupService,
+                player,
+                creatorArg,
+                "worlds_importall_player_not_found",
+                creator -> worldService.importWorlds(player, directories, resolvedGenerator, creator));
     }
 
     @Override

@@ -96,7 +96,6 @@ public final class SubCommandDispatcher {
      */
     public List<String> complete(Player player, String[] args) {
         if (args.length == 1) {
-            String prefix = args[0].toLowerCase(Locale.ROOT);
             List<String> result = new ArrayList<>();
             Set<String> staticNames = new HashSet<>();
 
@@ -104,7 +103,7 @@ public final class SubCommandDispatcher {
                 String name = cmd.getArgument().getName();
                 staticNames.add(name.toLowerCase(Locale.ROOT));
                 String permission = cmd.getArgument().getPermission();
-                if ((permission == null || player.hasPermission(permission)) && matchesPrefix(name, prefix)) {
+                if ((permission == null || player.hasPermission(permission)) && Completions.matches(args[0], name)) {
                     result.add(name);
                 }
             }
@@ -115,7 +114,7 @@ public final class SubCommandDispatcher {
                 if (staticNames.contains(name.toLowerCase(Locale.ROOT))) {
                     continue;
                 }
-                if (matchesPrefix(name, prefix)) {
+                if (Completions.matches(args[0], name)) {
                     result.add(name);
                 }
             }
@@ -124,9 +123,5 @@ public final class SubCommandDispatcher {
 
         SubCommand subCommand = resolve(args[0]);
         return subCommand != null ? subCommand.complete(player, args) : List.of();
-    }
-
-    private static boolean matchesPrefix(String name, String prefix) {
-        return name.toLowerCase(Locale.ROOT).startsWith(prefix);
     }
 }

@@ -19,8 +19,9 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
+import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.TaskScheduler;
@@ -53,7 +54,7 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class DownloadSubCommand extends AbstractSubCommand {
+public class DownloadSubCommand extends WorldSubCommand {
 
     /**
      * How often the action bar is redrawn. Four frames a second reads as motion without spamming packets, and the
@@ -82,19 +83,14 @@ public class DownloadSubCommand extends AbstractSubCommand {
             WorldDownloadService downloadService,
             TaskScheduler scheduler,
             Logger logger) {
-        super(messages, worldService);
+        super(messages, worldService, WorldTarget.argument(2, "worlds_download"));
         this.downloadService = downloadService;
         this.scheduler = scheduler;
         this.logger = logger;
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_download");
-        if (buildWorld == null) {
-            return;
-        }
-
+    protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         if (!downloadService.isEnabled()) {
             messages.sendMessage(player, "worlds_download_disabled");
             return;
@@ -259,12 +255,7 @@ public class DownloadSubCommand extends AbstractSubCommand {
 
     @Override
     public List<String> complete(Player player, String[] args) {
-        if (args.length != 2) {
-            return List.of();
-        }
-
-        return WorldsCompletions.permittedWorldNames(
-                player, worldService, getArgument().getPermission(), args[1]);
+        return completeWorldName(player, args);
     }
 
     @Override

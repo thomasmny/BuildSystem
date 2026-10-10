@@ -18,11 +18,9 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
-import java.util.Locale;
 import java.util.logging.Logger;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -90,21 +88,5 @@ public abstract class CommandBase implements CommandExecutor, TabCompleter {
         return args.length <= index
                 ? WorldNames.of(player.getWorld())
                 : worldService.resolveWorldName(player, args[index], permission);
-    }
-
-    /**
-     * Adds the worlds {@code player} may run the command in to {@code list}, named the way the player would type them.
-     */
-    protected static void addWorldArguments(
-            Player player, String input, WorldStorageImpl worldStorage, String permission, List<String> list) {
-        worldStorage.getBuildWorlds().stream()
-                .filter(world -> world.getPermissions().canPerformCommand(player, permission))
-                .forEach(world -> addArgument(input, worldStorage.typedName(world.getName()), list));
-    }
-
-    protected static void addArgument(String input, String argument, List<String> list) {
-        if (input.isEmpty() || argument.toLowerCase(Locale.ROOT).startsWith(input.toLowerCase(Locale.ROOT))) {
-            list.add(argument);
-        }
     }
 }

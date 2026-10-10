@@ -19,8 +19,9 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
+import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -29,22 +30,17 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class RenameSubCommand extends AbstractSubCommand {
+public class RenameSubCommand extends WorldSubCommand {
 
     private final Prompts prompts;
 
     public RenameSubCommand(Messages messages, WorldServiceImpl worldService, Prompts prompts) {
-        super(messages, worldService);
+        super(messages, worldService, WorldTarget.argument(2, "worlds_rename"));
         this.prompts = prompts;
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_rename");
-        if (buildWorld == null) {
-            return;
-        }
-
+    protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         prompts.prompt(player).title("enter_world_name").request(input -> {
             player.closeInventory();
             worldService.renameWorld(player, buildWorld, input.trim());
@@ -54,12 +50,7 @@ public class RenameSubCommand extends AbstractSubCommand {
 
     @Override
     public List<String> complete(Player player, String[] args) {
-        if (args.length != 2) {
-            return List.of();
-        }
-
-        return WorldsCompletions.permittedWorldNames(
-                player, worldService, getArgument().getPermission(), args[1]);
+        return completeWorldName(player, args);
     }
 
     @Override

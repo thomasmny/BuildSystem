@@ -205,12 +205,7 @@ public final class Menus {
      */
     public void promptAddBuilder(BuildWorld buildWorld, Player player) {
         new AddBuilderSubCommand(
-                        services.messages(),
-                        services.world(),
-                        this,
-                        services.playerLookup(),
-                        services.prompts(),
-                        scheduler)
+                        services.messages(), services.world(), this, services.playerLookup(), services.prompts())
                 .getAddBuilderInput(player, buildWorld, false);
     }
 

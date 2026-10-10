@@ -350,14 +350,14 @@ class WorldStorageImplTest {
     }
 
     @Test
-    void typedName_isTheBarePathOnlyWhenNoOtherWorldSharesIt() {
+    void typedNames_isTheBarePathOnlyWhenNoOtherWorldSharesIt() {
         storage.addBuildWorld(world("events:Arena"));
         storage.addBuildWorld(world("Lobby"));
         storage.addBuildWorld(world("maps:Lobby"));
 
-        assertEquals("Arena", storage.typedName("events:Arena"));
-        assertEquals("minecraft:Lobby", storage.typedName("Lobby"));
-        assertEquals("maps:Lobby", storage.typedName("maps:Lobby"));
+        assertEquals("Arena", storage.typedNames().apply("events:Arena"));
+        assertEquals("minecraft:Lobby", storage.typedNames().apply("Lobby"));
+        assertEquals("maps:Lobby", storage.typedNames().apply("maps:Lobby"));
     }
 
     @Test

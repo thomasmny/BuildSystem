@@ -22,8 +22,9 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
-import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
+import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.color.ColorAPI;
@@ -34,19 +35,14 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class InfoSubCommand extends AbstractSubCommand {
+public class InfoSubCommand extends WorldSubCommand {
 
     public InfoSubCommand(Messages messages, WorldServiceImpl worldService) {
-        super(messages, worldService);
+        super(messages, worldService, WorldTarget.argument(2, "worlds_info"));
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_info");
-        if (buildWorld == null) {
-            return;
-        }
-
+    protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         // TODO: Print information about the custom generator?
         Builders builders = buildWorld.getBuilders();
         WorldData worldData = buildWorld.getData();
@@ -106,12 +102,7 @@ public class InfoSubCommand extends AbstractSubCommand {
 
     @Override
     public List<String> complete(Player player, String[] args) {
-        if (args.length != 2) {
-            return List.of();
-        }
-
-        return WorldsCompletions.permittedWorldNames(
-                player, worldService, getArgument().getPermission(), args[1]);
+        return completeWorldName(player, args);
     }
 
     @Override

@@ -122,7 +122,11 @@ public class TimeCommand extends CommandBase {
         switch (lc) {
             case "day":
             case "night":
-                addWorldArguments(player, args[0], worldStorage, Permissions.command(lc), list);
+                Completions.addWorldNames(
+                        args[0],
+                        worldStorage,
+                        world -> world.getPermissions().canPerformCommand(player, Permissions.command(lc)),
+                        list);
                 break;
         }
         return list;

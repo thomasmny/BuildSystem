@@ -19,57 +19,41 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
-import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
+import de.eintosti.buildsystem.command.Completions;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
+import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
-import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class RemoveBuilderSubCommand extends AbstractSubCommand {
+public class RemoveBuilderSubCommand extends WorldSubCommand {
 
     private final PlayerLookupService playerLookupService;
     private final Prompts prompts;
-    private final TaskScheduler scheduler;
 
     public RemoveBuilderSubCommand(
             Messages messages,
             WorldServiceImpl worldService,
             PlayerLookupService playerLookupService,
-            Prompts prompts,
-            TaskScheduler scheduler) {
-        super(messages, worldService);
+            Prompts prompts) {
+        super(messages, worldService, WorldTarget.current("worlds_removebuilder_unknown_world"));
         this.playerLookupService = playerLookupService;
         this.prompts = prompts;
-        this.scheduler = scheduler;
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(player.getWorld());
-        if (buildWorld != null
-                && !buildWorld
-                        .getPermissions()
-                        .canPerformCommand(player, getArgument().getPermission())) {
-            messages.sendPermissionError(player);
-            return;
-        }
-
-        if (buildWorld == null) {
-            messages.sendMessage(player, "worlds_removebuilder_unknown_world");
-            return;
-        }
-
+    protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         switch (args.length) {
             case 1 -> getRemoveBuilderInput(player, buildWorld);
             case 2 -> removeBuilder(player, buildWorld, args[1]);
@@ -78,25 +62,16 @@ public class RemoveBuilderSubCommand extends AbstractSubCommand {
     }
 
     private void removeBuilder(Player player, BuildWorld buildWorld, String builderName) {
-        Player builderPlayer = Bukkit.getPlayerExact(builderName);
-        if (builderPlayer != null) {
-            applyRemove(player, buildWorld, builderPlayer.getUniqueId(), builderName);
-            return;
-        }
-
-        playerLookupService
-                .lookupUniqueId(builderName)
-                .thenAccept(builderId -> scheduler.run(() -> {
-                    if (builderId == null) {
-                        messages.sendMessage(player, "worlds_removebuilder_player_not_found");
-                        player.closeInventory();
-                        return;
-                    }
-                    applyRemove(player, buildWorld, builderId, builderName);
-                }));
+        resolvePlayer(
+                playerLookupService,
+                player,
+                builderName,
+                "worlds_removebuilder_player_not_found",
+                builder -> applyRemove(player, buildWorld, builder));
     }
 
-    private void applyRemove(Player player, BuildWorld buildWorld, UUID builderId, String builderName) {
+    private void applyRemove(Player player, BuildWorld buildWorld, Builder builder) {
+        UUID builderId = builder.getUniqueId();
         Builders builders = buildWorld.getBuilders();
         if (builderId.equals(player.getUniqueId()) && builders.isCreator(player)) {
             messages.sendMessage(player, "worlds_removebuilder_not_yourself");
@@ -112,7 +87,7 @@ public class RemoveBuilderSubCommand extends AbstractSubCommand {
 
         builders.removeBuilder(builderId);
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
-        messages.sendMessage(player, "worlds_removebuilder_removed", Placeholders.of("%builder%", builderName));
+        messages.sendMessage(player, "worlds_removebuilder_removed", Placeholders.of("%builder%", builder.getName()));
 
         player.closeInventory();
     }
@@ -141,7 +116,7 @@ public class RemoveBuilderSubCommand extends AbstractSubCommand {
         }
 
         List<String> result = new ArrayList<>();
-        builders.getBuilderNames().forEach(name -> WorldsCompletions.addIfStartsWith(args[1], name, result));
+        builders.getBuilderNames().forEach(name -> Completions.addMatching(args[1], name, result));
         return result;
     }
 

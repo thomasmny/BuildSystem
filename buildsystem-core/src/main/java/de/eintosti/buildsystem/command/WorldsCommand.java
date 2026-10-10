@@ -93,27 +93,24 @@ public class WorldsCommand extends CommandBase {
         this.dispatcher = new SubCommandDispatcher(
                 messages,
                 List.of(
-                        new AddBuilderSubCommand(
-                                messages, worldService, menus, playerLookupService, prompts, scheduler),
+                        new AddBuilderSubCommand(messages, worldService, menus, playerLookupService, prompts),
                         new BackupsSubCommand(messages, worldService, backupService, menus),
                         new BuildersSubCommand(messages, worldService, menus),
                         new DeleteSubCommand(messages, worldService, configService, menus),
                         new DownloadSubCommand(messages, worldService, downloadService, scheduler, logger),
                         new EditSubCommand(messages, worldService, menus),
                         new FolderSubCommand(messages, worldService, navigatorCategoryRegistry, prompts),
-                        new HelpSubCommand(messages, logger),
-                        new ImportAllSubCommand(messages, worldService, playerLookupService, scheduler),
-                        new ImportSubCommand(
-                                messages, worldService, configService, prompts, playerLookupService, scheduler),
+                        new HelpSubCommand(messages),
+                        new ImportAllSubCommand(messages, worldService, playerLookupService),
+                        new ImportSubCommand(messages, worldService, configService, prompts, playerLookupService),
                         new InfoSubCommand(messages, worldService),
                         new ItemSubCommand(messages, worldService, navigatorItems),
-                        new RemoveBuilderSubCommand(messages, worldService, playerLookupService, prompts, scheduler),
+                        new RemoveBuilderSubCommand(messages, worldService, playerLookupService, prompts),
                         new RemoveSpawnSubCommand(messages, worldService),
                         new RenameSubCommand(messages, worldService, prompts),
                         new SaveTemplateSubCommand(
                                 messages, worldService, configService, dataFolder, logger, scheduler),
-                        new SetCreatorSubCommand(
-                                messages, worldService, playerLookupService, prompts, settingsService, scheduler),
+                        new SetCreatorSubCommand(messages, worldService, playerLookupService, prompts, settingsService),
                         new SetItemSubCommand(messages, worldService),
                         new SetPermissionSubCommand(
                                 messages, worldService, configService, menus, prompts, settingsService),

@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.command.Completions;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.config.ConfigService;
@@ -33,7 +34,6 @@ import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
-import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
@@ -53,20 +53,17 @@ public class ImportSubCommand extends AbstractSubCommand {
     private final ConfigService configService;
     private final Prompts prompts;
     private final PlayerLookupService playerLookupService;
-    private final TaskScheduler scheduler;
 
     public ImportSubCommand(
             Messages messages,
             WorldServiceImpl worldService,
             ConfigService configService,
             Prompts prompts,
-            PlayerLookupService playerLookupService,
-            TaskScheduler scheduler) {
+            PlayerLookupService playerLookupService) {
         super(messages, worldService);
         this.configService = configService;
         this.prompts = prompts;
         this.playerLookupService = playerLookupService;
-        this.scheduler = scheduler;
     }
 
     @Override
@@ -122,22 +119,13 @@ public class ImportSubCommand extends AbstractSubCommand {
             return;
         }
 
-        String creatorName = options.creatorName();
-        playerLookupService
-                .lookupUniqueId(creatorName)
-                .thenAccept(creatorId -> scheduler.run(() -> {
-                    if (creatorId == null) {
-                        messages.sendMessage(player, "worlds_import_player_not_found");
-                        return;
-                    }
-                    startImport(
-                            player,
-                            worldName,
-                            Builder.of(creatorId, creatorName),
-                            options.worldType(),
-                            options.generator(),
-                            options.generatorName());
-                }));
+        resolvePlayer(
+                playerLookupService,
+                player,
+                options.creatorName(),
+                "worlds_import_player_not_found",
+                creator -> startImport(
+                        player, worldName, creator, options.worldType(), options.generator(), options.generatorName()));
     }
 
     /**
@@ -231,8 +219,7 @@ public class ImportSubCommand extends AbstractSubCommand {
                 if (StringCleaner.hasInvalidNameCharacters(WorldNames.path(worldName), invalidCharacters)) {
                     continue;
                 }
-                WorldsCompletions.addIfStartsWith(
-                        args[1], worldService.getWorldStorage().typedNewName(worldName), result);
+                Completions.addMatching(args[1], worldService.getWorldStorage().typedNewName(worldName), result);
             }
             return result;
         }
@@ -252,12 +239,12 @@ public class ImportSubCommand extends AbstractSubCommand {
         if (args.length % 2 == 1) {
             flags.keySet().stream()
                     .filter(key -> !Lists.newArrayList(args).contains(key))
-                    .forEach(key -> WorldsCompletions.addIfStartsWith(args[args.length - 1], key, result));
+                    .forEach(key -> Completions.addMatching(args[args.length - 1], key, result));
         } else {
             List<String> values = flags.get(args[args.length - 2]);
             if (values != null) {
                 for (String v : values) {
-                    WorldsCompletions.addIfStartsWith(args[args.length - 1], v, result);
+                    Completions.addMatching(args[args.length - 1], v, result);
                 }
             }
         }

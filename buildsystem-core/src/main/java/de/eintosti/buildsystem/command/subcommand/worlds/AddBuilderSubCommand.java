@@ -21,14 +21,15 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
-import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
+import de.eintosti.buildsystem.command.Completions;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
+import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
-import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,85 +39,44 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class AddBuilderSubCommand extends AbstractSubCommand {
+public class AddBuilderSubCommand extends WorldSubCommand {
 
     private final Menus menus;
     private final PlayerLookupService playerLookupService;
     private final Prompts prompts;
-    private final TaskScheduler scheduler;
 
     public AddBuilderSubCommand(
             Messages messages,
             WorldServiceImpl worldService,
             Menus menus,
             PlayerLookupService playerLookupService,
-            Prompts prompts,
-            TaskScheduler scheduler) {
-        super(messages, worldService);
+            Prompts prompts) {
+        super(messages, worldService, WorldTarget.current("worlds_addbuilder_unknown_world"));
         this.menus = menus;
         this.playerLookupService = playerLookupService;
         this.prompts = prompts;
-        this.scheduler = scheduler;
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(player.getWorld());
-        if (buildWorld == null) {
-            messages.sendMessage(player, "worlds_addbuilder_unknown_world");
-            return;
-        }
-
-        if (!hasAddBuilderPermission(player, buildWorld)) {
-            messages.sendPermissionError(player);
-            return;
-        }
-
+    protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         switch (args.length) {
-            case 1 -> getAddBuilderInput(player, buildWorld, true);
+            case 1 -> promptForBuilder(player, buildWorld, true);
             case 2 -> addBuilder(player, buildWorld, args[1], true);
             default -> messages.sendMessage(player, "worlds_addbuilder_usage");
         }
     }
 
     private void addBuilder(Player player, BuildWorld buildWorld, String builderName, boolean closeInventory) {
-        Player builderPlayer = Bukkit.getPlayerExact(builderName);
-        if (builderPlayer != null) {
-            applyBuilder(
-                    player,
-                    buildWorld,
-                    Builder.of(builderPlayer),
-                    builderPlayer.getUniqueId(),
-                    builderName,
-                    closeInventory);
-            return;
-        }
-
-        playerLookupService
-                .lookupUniqueId(builderName)
-                .thenAccept(builderId -> scheduler.run(() -> {
-                    if (builderId == null) {
-                        messages.sendMessage(player, "worlds_addbuilder_player_not_found");
-                        player.closeInventory();
-                        return;
-                    }
-                    applyBuilder(
-                            player,
-                            buildWorld,
-                            Builder.of(builderId, builderName),
-                            builderId,
-                            builderName,
-                            closeInventory);
-                }));
+        resolvePlayer(
+                playerLookupService,
+                player,
+                builderName,
+                "worlds_addbuilder_player_not_found",
+                builder -> applyBuilder(player, buildWorld, builder, closeInventory));
     }
 
-    private void applyBuilder(
-            Player player,
-            BuildWorld buildWorld,
-            Builder builder,
-            UUID builderId,
-            String builderName,
-            boolean closeInventory) {
+    private void applyBuilder(Player player, BuildWorld buildWorld, Builder builder, boolean closeInventory) {
+        UUID builderId = builder.getUniqueId();
         Builders builders = buildWorld.getBuilders();
         if (builderId.equals(player.getUniqueId()) && builders.isCreator(player)) {
             messages.sendMessage(player, "worlds_addbuilder_already_creator");
@@ -132,7 +92,7 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
 
         builders.addBuilder(builder);
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
-        messages.sendMessage(player, "worlds_addbuilder_added", Placeholders.of("%builder%", builderName));
+        messages.sendMessage(player, "worlds_addbuilder_added", Placeholders.of("%builder%", builder.getName()));
 
         if (closeInventory) {
             player.closeInventory();
@@ -141,26 +101,22 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
         }
     }
 
+    /**
+     * Asks for a builder's name from the editor menu, which reaches this without the command's permission check.
+     */
     public void getAddBuilderInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
-        if (!hasAddBuilderPermission(player, buildWorld)) {
+        if (!buildWorld.getPermissions().canPerformCommand(player, getArgument().getPermission())) {
             messages.sendPermissionError(player);
             return;
         }
+        promptForBuilder(player, buildWorld, closeInventory);
+    }
 
+    private void promptForBuilder(Player player, BuildWorld buildWorld, boolean closeInventory) {
         prompts.prompt(player).title("enter_player_name").request(input -> {
             String builderName = input.trim();
             addBuilder(player, buildWorld, builderName, closeInventory);
         });
-    }
-
-    /**
-     * Whether {@code player} may add builders to {@code buildWorld}, per the argument's permission node. Shared by the
-     * command entry point and the GUI prompt so both are gated by the same check.
-     */
-    private boolean hasAddBuilderPermission(Player player, BuildWorld buildWorld) {
-        return buildWorld
-                .getPermissions()
-                .canPerformCommand(player, getArgument().getPermission());
     }
 
     @Override
@@ -178,7 +134,7 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
         Builders builders = buildWorld.getBuilders();
         Bukkit.getOnlinePlayers().stream()
                 .filter(pl -> !builders.isBuilder(pl) && !builders.isCreator(pl))
-                .forEach(pl -> WorldsCompletions.addIfStartsWith(args[1], pl.getName(), result));
+                .forEach(pl -> Completions.addMatching(args[1], pl.getName(), result));
         return result;
     }
 

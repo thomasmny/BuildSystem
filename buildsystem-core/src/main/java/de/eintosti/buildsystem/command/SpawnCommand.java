@@ -114,8 +114,8 @@ public class SpawnCommand extends CommandBase {
     protected List<String> complete(Player player, String label, String[] args) {
         List<String> list = new ArrayList<>();
         if (player.hasPermission(Permissions.SPAWN)) {
-            addArgument(args[0], "set", list);
-            addArgument(args[0], "remove", list);
+            Completions.addMatching(args[0], "set", list);
+            Completions.addMatching(args[0], "remove", list);
         }
         return list;
     }

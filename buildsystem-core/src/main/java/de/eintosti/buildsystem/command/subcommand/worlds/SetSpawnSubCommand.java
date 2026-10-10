@@ -19,8 +19,9 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
-import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
+import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -30,28 +31,14 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SetSpawnSubCommand extends AbstractSubCommand {
+public class SetSpawnSubCommand extends WorldSubCommand {
 
     public SetSpawnSubCommand(Messages messages, WorldServiceImpl worldService) {
-        super(messages, worldService);
+        super(messages, worldService, WorldTarget.current("worlds_setspawn_world_not_imported"));
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(player.getWorld());
-        if (buildWorld != null
-                && !buildWorld
-                        .getPermissions()
-                        .canPerformCommand(player, getArgument().getPermission())) {
-            messages.sendPermissionError(player);
-            return;
-        }
-
-        if (buildWorld == null) {
-            messages.sendMessage(player, "worlds_setspawn_world_not_imported");
-            return;
-        }
-
+    protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         Location playerLocation = player.getLocation();
         buildWorld.getData().set(WorldDataKey.CUSTOM_SPAWN, CustomSpawn.format(playerLocation));
         messages.sendMessage(

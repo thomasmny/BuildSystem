@@ -18,8 +18,9 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
+import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
+import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -28,33 +29,23 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class EditSubCommand extends AbstractSubCommand {
+public class EditSubCommand extends WorldSubCommand {
 
     private final Menus menus;
 
     public EditSubCommand(Messages messages, WorldServiceImpl worldService, Menus menus) {
-        super(messages, worldService);
+        super(messages, worldService, WorldTarget.argument(2, "worlds_edit"));
         this.menus = menus;
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = requireWorld(player, worldName, args, 2, "worlds_edit");
-        if (buildWorld == null) {
-            return;
-        }
-
+    protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         menus.openEdit(buildWorld, player);
     }
 
     @Override
     public List<String> complete(Player player, String[] args) {
-        if (args.length != 2) {
-            return List.of();
-        }
-
-        return WorldsCompletions.permittedWorldNames(
-                player, worldService, getArgument().getPermission(), args[1]);
+        return completeWorldName(player, args);
     }
 
     @Override
