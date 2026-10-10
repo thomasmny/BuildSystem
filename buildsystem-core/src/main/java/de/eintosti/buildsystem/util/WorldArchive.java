@@ -73,6 +73,8 @@ public final class WorldArchive {
                     .toList();
         }
 
+        // The remote storages write into a temp directory that their close() deletes.
+        Files.createDirectories(target.toAbsolutePath().getParent());
         try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(target));
                 ZipOutputStream zip = new ZipOutputStream(out)) {
             for (Path file : files) {
