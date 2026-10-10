@@ -31,6 +31,7 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
@@ -167,6 +168,7 @@ class WorldServiceImplDeleteTest {
         assertFalse(Files.exists(worldDirectory), "world directory must be deleted");
         assertNull(worldService.getWorldStorage().getBuildWorld("doomed"), "registry entry must be removed");
         assertFalse(buildWorld.isLoaded());
+        verify(services.backup()).removeProfile(buildWorld);
     }
 
     @Test

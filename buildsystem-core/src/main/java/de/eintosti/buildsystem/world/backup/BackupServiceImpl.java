@@ -67,9 +67,8 @@ public class BackupServiceImpl implements BackupService {
     private final WorldStorage worldStorage;
 
     /**
-     * Kept for as long as the plugin runs: a profile holds its world's backup chain, which keeps retention passes from
-     * overlapping, so it must not be dropped while a backup is running. That is one small entry per world backed up
-     * since the last restart.
+     * Kept for as long as the world is registered: a profile holds its world's backup chain, which keeps retention
+     * passes from overlapping. A backup still running when its world is deleted keeps its own reference.
      */
     private final Map<UUID, BackupProfile> profiles = new ConcurrentHashMap<>();
 
@@ -223,7 +222,7 @@ public class BackupServiceImpl implements BackupService {
      * has passed its {@link PluginConfig.World.Backup.AutoBackup#interval() interval}. With {@code onlyActiveWorlds} the
      * tracked set is the worlds players are currently building in, otherwise every world.
      */
-    private void incrementTimeSinceBackup() {
+    void incrementTimeSinceBackup() {
         PluginConfig.World.Backup.AutoBackup autoBackup =
                 configService.current().world().backup().autoBackup();
 
@@ -250,20 +249,24 @@ public class BackupServiceImpl implements BackupService {
                     continue;
                 }
                 backedUpOneThisTick = true;
-                autoBackup(buildWorld);
-                elapsed = 0;
+                // Reset before starting, since a refusal puts the timer back and may complete right away.
+                worldData.set(WorldDataKey.TIME_SINCE_BACKUP, 0);
+                autoBackup(buildWorld, autoBackup.interval());
+                continue;
             }
             worldData.set(WorldDataKey.TIME_SINCE_BACKUP, elapsed);
         }
     }
 
-    private void autoBackup(BuildWorld buildWorld) {
+    private void autoBackup(BuildWorld buildWorld, int interval) {
         getProfile(buildWorld).createBackup().whenComplete((backup, throwable) -> {
             if (throwable == null) {
                 return;
             }
             String worldName = buildWorld.getName();
             if (WorldOperationRefusedException.find(throwable) != null) {
+                // Taken by another operation after this tick checked: try again on the next tick.
+                buildWorld.getData().set(WorldDataKey.TIME_SINCE_BACKUP, interval);
                 plugin.getLogger().info("Skipped the automatic backup of \"" + worldName + "\" while it was busy.");
             } else {
                 plugin.getLogger()
@@ -296,6 +299,13 @@ public class BackupServiceImpl implements BackupService {
     @Override
     public BackupProfile getProfile(BuildWorld buildWorld) {
         return profiles.computeIfAbsent(buildWorld.getUniqueId(), uuid -> createProfile(buildWorld));
+    }
+
+    /**
+     * Drops the profile of a world that was deleted or unimported.
+     */
+    public void removeProfile(BuildWorld buildWorld) {
+        profiles.remove(buildWorld.getUniqueId());
     }
 
     /**

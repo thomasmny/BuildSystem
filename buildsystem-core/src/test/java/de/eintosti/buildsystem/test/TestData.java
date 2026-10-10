@@ -35,6 +35,7 @@ import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
+import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
@@ -203,6 +204,7 @@ public final class TestData {
         NavigatorCategoryRegistryImpl categoryRegistry = categoryRegistry();
         PlayerLookupService playerLookup = mock(PlayerLookupService.class);
         Prompts prompts = mock(Prompts.class);
+        BackupServiceImpl backup = mock(BackupServiceImpl.class);
         Services services = mock(Services.class);
         lenient().when(services.worldContext()).thenReturn(context);
         lenient().when(services.operations()).thenReturn(context.operations());
@@ -215,6 +217,7 @@ public final class TestData {
         lenient().when(services.navigatorCategoryRegistry()).thenReturn(categoryRegistry);
         lenient().when(services.playerLookup()).thenReturn(playerLookup);
         lenient().when(services.prompts()).thenReturn(prompts);
+        lenient().when(services.backup()).thenReturn(backup);
         return services;
     }
 

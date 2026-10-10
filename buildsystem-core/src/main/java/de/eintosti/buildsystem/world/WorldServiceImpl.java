@@ -320,6 +320,7 @@ public class WorldServiceImpl implements WorldService {
      */
     private CompletableFuture<Void> unregister(BuildWorld buildWorld) {
         this.worldStorage.removeBuildWorld(buildWorld);
+        services.backup().removeProfile(buildWorld);
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldUnimportEvent(buildWorld));
         return this.worldStorage.delete(buildWorld);
     }
