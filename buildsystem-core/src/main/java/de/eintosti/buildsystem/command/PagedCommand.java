@@ -22,7 +22,6 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -46,9 +45,10 @@ public abstract class PagedCommand extends CommandBase {
 
     protected void sendMessage(Player player, int pageNum) {
         List<TextComponent> commands = getCommands(player);
-        int numPages = (int) Math.ceil((double) commands.size() / MAX_COMMANDS_PER_PAGE);
+        int numPages = Math.max(1, Math.ceilDiv(commands.size(), MAX_COMMANDS_PER_PAGE));
+        pageNum = Math.clamp(pageNum, 1, numPages);
 
-        List<TextComponent> page = createPage(commands, numPages, pageNum);
+        List<TextComponent> page = createPage(commands, pageNum);
         page.add(0, new TextComponent("§7§m----------------------------------------------------"));
         page.add(
                 1,
@@ -60,23 +60,9 @@ public abstract class PagedCommand extends CommandBase {
         page.forEach(line -> player.spigot().sendMessage(line));
     }
 
-    private List<TextComponent> createPage(List<TextComponent> commands, int numPages, int page) {
-        List<List<TextComponent>> pages = new ArrayList<>(numPages);
-        IntStream.range(0, numPages).forEach(i -> pages.add(new ArrayList<>()));
-
-        int currentPage = 0;
-        int commandsInPage = 0;
-        for (TextComponent command : commands) {
-            pages.get(currentPage).add(command);
-            commandsInPage++;
-
-            if (commandsInPage >= MAX_COMMANDS_PER_PAGE) {
-                currentPage++;
-                commandsInPage = 0;
-            }
-        }
-
-        return pages.get(page - 1);
+    private static List<TextComponent> createPage(List<TextComponent> commands, int page) {
+        int from = (page - 1) * MAX_COMMANDS_PER_PAGE;
+        return new ArrayList<>(commands.subList(from, Math.min(from + MAX_COMMANDS_PER_PAGE, commands.size())));
     }
 
     protected abstract List<TextComponent> getCommands(Player player);
