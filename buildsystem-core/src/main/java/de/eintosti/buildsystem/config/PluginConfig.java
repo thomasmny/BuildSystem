@@ -135,9 +135,16 @@ public record PluginConfig(Settings settings, Storage storage, World world, Fold
          *
          * @param type The backend in use
          * @param tablePrefix Put in front of every table and collection name
-         * @param servers The connection block of every type that has one
+         * @param servers The connection block of every type that has a valid one
+         * @param invalidServers Why the block of each other type is invalid. Only the block of {@code type} has to be
+         *     valid, so a mistake in a block nobody uses does not stop the server; the others are checked when they are
+         *     used.
          */
-        public record Database(StorageType type, String tablePrefix, Map<StorageType, Server> servers) {
+        public record Database(
+                StorageType type,
+                String tablePrefix,
+                Map<StorageType, Server> servers,
+                Map<StorageType, String> invalidServers) {
 
             private static final Pattern TABLE_PREFIX = Pattern.compile("[a-z_][a-z0-9_]{0,31}|");
 
@@ -146,15 +153,28 @@ public record PluginConfig(Settings settings, Storage storage, World world, Fold
                     throw new IllegalArgumentException("storage.table-prefix may only hold lowercase letters, digits"
                             + " and underscores, at most 32 of them, and may not start with a digit");
                 }
+                String invalid = invalidServers.get(type);
+                if (invalid != null) {
+                    throw new IllegalArgumentException(invalid);
+                }
                 servers = Map.copyOf(servers);
+                invalidServers = Map.copyOf(invalidServers);
+            }
+
+            public Database(StorageType type, String tablePrefix, Map<StorageType, Server> servers) {
+                this(type, tablePrefix, servers, Map.of());
             }
 
             /**
              * {@return the connection block of {@code type}}
              *
-             * @throws IllegalArgumentException If the type has no server to connect to
+             * @throws IllegalArgumentException If the type has no server to connect to, or its block is invalid
              */
             public Server server(StorageType type) {
+                String invalid = invalidServers.get(type);
+                if (invalid != null) {
+                    throw new IllegalArgumentException(invalid);
+                }
                 Server server = servers.get(type);
                 if (server == null) {
                     throw new IllegalArgumentException(type.displayName() + " has no server to connect to");

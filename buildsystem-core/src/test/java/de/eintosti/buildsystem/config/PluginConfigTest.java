@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.storage.StorageTls;
 import de.eintosti.buildsystem.storage.StorageType;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -763,7 +764,30 @@ class PluginConfigTest {
                 "postgresql:\n    password: \"hunter2\\0options\\0-c x=y\"",
                 "mysql:\n    password: \"hunter2\\r\"");
         for (String line : hostile) {
-            assertThrows(IllegalArgumentException.class, () -> parse("storage:\n  " + line), line);
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> {
+                        PluginConfig.Storage.Database database =
+                                parse("storage:\n  " + line).storage().database();
+                        Arrays.stream(StorageType.values())
+                                .filter(StorageType::hasServer)
+                                .forEach(database::server);
+                    },
+                    line);
         }
+    }
+
+    @Test
+    void storageDatabase_anInvalidBlock_onlyFailsOnceItIsUsed() {
+        String mysql = "  mysql:\n    host: \"db?user=root\"\n";
+
+        PluginConfig.Storage.Database database =
+                parse("storage:\n  type: sqlite\n" + mysql).storage().database();
+
+        IllegalArgumentException unused =
+                assertThrows(IllegalArgumentException.class, () -> database.server(StorageType.MYSQL));
+        assertTrue(unused.getMessage().startsWith("storage.mysql.host"), unused.getMessage());
+        assertEquals("localhost", database.server(StorageType.POSTGRESQL).host());
+        assertThrows(IllegalArgumentException.class, () -> parse("storage:\n  type: mysql\n" + mysql));
     }
 }
