@@ -92,8 +92,9 @@ abstract class AbstractWorldCreator {
     }
 
     /**
-     * Generates the Bukkit world and only then registers the build world, so a generation that fails or throws leaves
-     * no registered world without a Bukkit world behind it.
+     * Registers the build world, then generates its Bukkit world. The world is registered first so its settings (mob
+     * AI, physics) already apply to the chunks generated with it; if generation fails or throws, the registration is
+     * rolled back, so no registered world is left without a Bukkit world behind it.
      *
      * @param checkVersion Whether to refuse a world folder saved by a newer Minecraft version
      * @return The registered world, or {@code null} when the Bukkit world could not be generated
@@ -101,29 +102,38 @@ abstract class AbstractWorldCreator {
     protected @Nullable BuildWorld generateAndRegister(boolean checkVersion) {
         BuildWorldImpl newBuildWorld = new BuildWorldImpl(
                 context, worldName, creator, worldType, creationDate, privateWorld, customGenerator, folder);
-
-        World world = new BukkitWorldFactory(
-                        context.configService(),
-                        context.logger(),
-                        worldName,
-                        worldType,
-                        customGenerator,
-                        difficulty,
-                        time,
-                        worldBorderSize,
-                        seed,
-                        !isImport())
-                .generate(
-                        checkVersion ? BukkitWorldFactory.VersionCheck.REQUIRED : BukkitWorldFactory.VersionCheck.SKIP);
-        if (world == null) {
-            return null;
-        }
-
         if (folder != null) {
             folder.addWorld(newBuildWorld);
         }
         newBuildWorld.getData().set(WorldDataKey.LAST_LOADED, System.currentTimeMillis());
         worldStorage.addBuildWorld(newBuildWorld);
+
+        World world = null;
+        try {
+            world = new BukkitWorldFactory(
+                            context.configService(),
+                            context.logger(),
+                            worldName,
+                            worldType,
+                            customGenerator,
+                            difficulty,
+                            time,
+                            worldBorderSize,
+                            seed,
+                            !isImport())
+                    .generate(
+                            checkVersion
+                                    ? BukkitWorldFactory.VersionCheck.REQUIRED
+                                    : BukkitWorldFactory.VersionCheck.SKIP);
+        } finally {
+            if (world == null) {
+                worldStorage.removeBuildWorld(newBuildWorld);
+            }
+        }
+        if (world == null) {
+            return null;
+        }
+
         newBuildWorld.getUnloader().manageUnload();
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostCreateEvent(newBuildWorld, isImport()));
         this.buildWorld = newBuildWorld;
