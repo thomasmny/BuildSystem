@@ -34,7 +34,7 @@ import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
-import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
+import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.nio.file.Path;
@@ -68,8 +68,7 @@ class BackupServiceImplTest {
                         "backups",
                         new PluginConfig.World.Backup.AutoBackup(true, false, INTERVAL)));
 
-        WorldDataImpl data =
-                new WorldDataBuilder("held").withStatus(TestData.NOT_STARTED).build();
+        WorldDataImpl data = WorldDataSchema.create("held", TestData.NOT_STARTED);
         data.set(WorldDataKey.TIME_SINCE_BACKUP, INTERVAL);
         BuildWorld buildWorld = mock(BuildWorld.class);
         when(buildWorld.getUniqueId()).thenReturn(UUID.randomUUID());
