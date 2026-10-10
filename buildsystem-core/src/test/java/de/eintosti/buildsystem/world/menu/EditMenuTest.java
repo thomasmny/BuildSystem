@@ -44,6 +44,7 @@ import de.eintosti.buildsystem.test.SoundlessPlayer;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
+import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -88,9 +89,7 @@ class EditMenuTest {
         when(messages.getString(anyString(), any())).thenReturn("Title");
         menus = mock(Menus.class);
         playerService = mock(PlayerServiceImpl.class);
-        data = new WorldDataImpl.WorldDataBuilder("world")
-                .withStatus(TestData.NOT_STARTED)
-                .build();
+        data = WorldDataSchema.create("world", TestData.NOT_STARTED);
         buildWorld = mock(BuildWorld.class);
         when(buildWorld.getName()).thenReturn("world");
         when(buildWorld.getData()).thenReturn(data);

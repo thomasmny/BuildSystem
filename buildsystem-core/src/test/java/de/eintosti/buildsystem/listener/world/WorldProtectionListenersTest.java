@@ -27,7 +27,6 @@ import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
-import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -39,7 +38,7 @@ import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
-import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
+import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import java.util.List;
 import java.util.UUID;
 import org.bukkit.Difficulty;
@@ -90,17 +89,9 @@ class WorldProtectionListenersTest {
         builder = player("Builder");
         stranger = player("Stranger");
 
-        WorldDataImpl data = new WorldDataBuilder("lobby")
-                .withStatus(TestData.NOT_STARTED)
-                .withDifficulty(Difficulty.NORMAL)
-                .withMaterial(Material.GRASS_BLOCK)
-                .withPermission("-")
-                .withProject("-")
-                .withVisibility(Visibility.EVERYONE)
-                .withBuildersEnabled(true)
-                .withPermissionOverrideEnabled(() -> false)
-                .withProjectOverrideEnabled(() -> false)
-                .build();
+        WorldDataImpl data = WorldDataSchema.create("lobby", TestData.NOT_STARTED);
+        data.set(WorldDataKey.DIFFICULTY, Difficulty.NORMAL);
+        data.set(WorldDataKey.BUILDERS_ENABLED, true);
         buildWorld = new BuildWorldImpl(
                 context,
                 UUID.randomUUID(),
