@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
 import java.util.List;
+import org.bukkit.Difficulty;
 import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
@@ -60,6 +61,22 @@ class WorldDefaultsTest {
     private WorldDefaults defaults(PluginConfig.World.VoidBlock voidBlock) {
         lenient().when(configService.current().world().voidBlock()).thenReturn(voidBlock);
         return new WorldDefaults(configService, null, null, null);
+    }
+
+    @Test
+    void worldWithoutAClock_getsEveryOtherDefault() {
+        WorldMock nether = new WorldMock() {
+            @Override
+            public void setTime(long time) {
+                throw new IllegalArgumentException("Cannot set time in world without world clock");
+            }
+        };
+        lenient().when(configService.current().world().defaults().gameRules()).thenReturn(List.of());
+
+        new WorldDefaults(configService, Difficulty.HARD, 6000, 500).apply(nether, BuildWorldType.NETHER, true);
+
+        assertEquals(Difficulty.HARD, nether.getDifficulty());
+        assertEquals(500, nether.getWorldBorder().getSize());
     }
 
     @Test

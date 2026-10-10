@@ -157,6 +157,9 @@ night_usage: "%prefix% &7Usage: &b/night [world]"
 night_unknown_world: "%prefix% &cUnknown world."
 night_set: "%prefix% &7It is now night in &b%world%&7."
 
+# /day, /night and the world editor's time button in a world whose time cannot change, like the nether
+time_fixed: "%prefix% &cThe time in &b%world% &cis fixed and cannot be changed."
+
 # /top
 top_usage: "%prefix% &7Usage: &b/top"
 top_teleported: "%prefix% &7You were teleported to the &btop&7."

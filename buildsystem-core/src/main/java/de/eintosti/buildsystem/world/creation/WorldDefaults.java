@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.world.creation;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.world.WorldClock;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
@@ -65,7 +66,7 @@ final class WorldDefaults {
             world.setDifficulty(difficulty);
         }
         if (time != null) {
-            world.setTime(time);
+            WorldClock.trySetTime(world, time);
         }
         if (worldBorderSize != null) {
             world.getWorldBorder().setSize(worldBorderSize);
