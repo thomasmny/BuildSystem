@@ -31,6 +31,7 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
@@ -40,6 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Openable;
 import org.bukkit.block.data.type.Slab;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -183,18 +185,89 @@ class SettingInteractionListenerTest {
         PlayerInteractEvent event = rightClick(grass, BlockFace.UP, Material.FERN);
 
         assertFalse(event.isCancelled());
+        assertEquals(Material.AIR, grass.getRelative(BlockFace.UP).getType());
     }
 
-    private void lockedBuildWorld() {
+    @Test
+    void ironDoors_togglesAnIronTrapdoor() {
+        when(settings.isOpenTrapDoors()).thenReturn(true);
+        Block trapdoor = block(Material.IRON_TRAPDOOR);
+
+        PlayerInteractEvent event = rightClick(trapdoor, BlockFace.UP, null);
+
+        assertTrue(event.isCancelled());
+        assertTrue(((Openable) trapdoor.getBlockData()).isOpen());
+    }
+
+    @Test
+    void alreadyCancelledClick_isIgnored() {
+        when(settings.isPlacePlants()).thenReturn(true);
+        Block grass = block(Material.GRASS_BLOCK);
+        PlayerInteractEvent event = new PlayerInteractEvent(
+                player,
+                Action.RIGHT_CLICK_BLOCK,
+                new ItemStack(Material.FERN),
+                grass,
+                BlockFace.UP,
+                EquipmentSlot.HAND);
+        event.setCancelled(true);
+
+        server.getPluginManager().callEvent(event);
+
+        assertEquals(Material.AIR, grass.getRelative(BlockFace.UP).getType());
+    }
+
+    @Test
+    void openBuildWorld_placesThePlant() {
+        when(settings.isPlacePlants()).thenReturn(true);
+        buildWorld(TestData.NOT_STARTED, true, false);
+        Block grass = block(Material.GRASS_BLOCK);
+
+        rightClick(grass, BlockFace.UP, Material.FERN);
+
+        assertEquals(Material.FERN, grass.getRelative(BlockFace.UP).getType());
+    }
+
+    @Test
+    void lockedBuildWorld_letsAnAdminPlaceThePlant() {
+        when(settings.isPlacePlants()).thenReturn(true);
+        WorldPermissions permissions = lockedBuildWorld();
+        when(permissions.hasAdminPermission(player)).thenReturn(true);
+        Block grass = block(Material.GRASS_BLOCK);
+
+        rightClick(grass, BlockFace.UP, Material.FERN);
+
+        assertEquals(Material.FERN, grass.getRelative(BlockFace.UP).getType());
+    }
+
+    @Test
+    void placementOffAndNotABuilder_letsTheSettingsBypassPlaceThePlant() {
+        when(settings.isPlacePlants()).thenReturn(true);
+        buildWorld(TestData.NOT_STARTED, false, true);
+        player.addAttachment(MockBukkit.createMockPlugin(), "buildsystem.bypass.settings", true);
+        Block grass = block(Material.GRASS_BLOCK);
+
+        rightClick(grass, BlockFace.UP, Material.FERN);
+
+        assertEquals(Material.FERN, grass.getRelative(BlockFace.UP).getType());
+    }
+
+    private WorldPermissions lockedBuildWorld() {
+        return buildWorld(TestData.ARCHIVE_STATUS, true, false);
+    }
+
+    private WorldPermissions buildWorld(BuildWorldStatus status, boolean placement, boolean buildersEnabled) {
         WorldPermissions permissions = mock(WorldPermissions.class);
         WorldData data = mock(WorldData.class);
-        when(data.get(WorldDataKey.STATUS)).thenReturn(TestData.ARCHIVE_STATUS);
-        when(data.get(WorldDataKey.BLOCK_PLACEMENT)).thenReturn(true);
+        when(data.get(WorldDataKey.STATUS)).thenReturn(status);
+        when(data.get(WorldDataKey.BLOCK_PLACEMENT)).thenReturn(placement);
+        when(data.get(WorldDataKey.BUILDERS_ENABLED)).thenReturn(buildersEnabled);
         BuildWorld buildWorld = mock(BuildWorld.class);
         when(buildWorld.getPermissions()).thenReturn(permissions);
         when(buildWorld.getData()).thenReturn(data);
         when(buildWorld.getBuilders()).thenReturn(mock(Builders.class));
         when(worldStorage.getBuildWorld(world)).thenReturn(buildWorld);
+        return permissions;
     }
 
     private Block block(Material type) {
