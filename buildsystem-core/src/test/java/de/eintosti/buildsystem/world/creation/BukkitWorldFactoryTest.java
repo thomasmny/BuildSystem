@@ -21,12 +21,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import com.cryptomorin.xseries.XGameRule;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
+import de.eintosti.buildsystem.world.menu.GameRuleEntry;
+import java.util.List;
 import java.util.logging.Logger;
+import org.bukkit.GameRule;
 import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
@@ -149,5 +155,23 @@ class BukkitWorldFactoryTest {
                 BuildWorldType.FLAT,
                 BukkitWorldFactory.generationType(
                         BuildWorldType.FLAT, new CustomGeneratorImpl("BuildSystem", "void", null)));
+    }
+
+    @Test
+    void loadingAnExistingWorld_keepsItsGameRulesAndSpawn() {
+        WorldMock world = server.addSimpleWorld("void-world");
+        world.setSpawnLocation(10, 80, 10);
+        world.setGameRule(GameRule.KEEP_INVENTORY, true);
+        lenient()
+                .when(configService.current().world().defaults().gameRules())
+                .thenReturn(List.of(new GameRuleEntry<>(XGameRule.KEEP_INVENTORY, false)));
+        BuildWorld buildWorld = mock(BuildWorld.class);
+        when(buildWorld.getName()).thenReturn("void-world");
+        when(buildWorld.getType()).thenReturn(BuildWorldType.VOID);
+
+        new BukkitWorldFactory(configService, Logger.getLogger("test"), buildWorld).applyWorldSettings(world);
+
+        assertEquals(Boolean.TRUE, world.getGameRuleValue(GameRule.KEEP_INVENTORY));
+        assertEquals(80, world.getSpawnLocation().getBlockY());
     }
 }

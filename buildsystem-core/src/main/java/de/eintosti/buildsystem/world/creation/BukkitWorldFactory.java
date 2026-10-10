@@ -54,12 +54,14 @@ public class BukkitWorldFactory {
     private final @Nullable Integer worldBorderSize;
     private final @Nullable Long seed;
     private final boolean initialGeneration;
+    private final boolean applyDefaults;
 
     private final WorldDataVersionGuard versionGuard;
     private final GenerationDataStore generationDataStore;
 
     /**
-     * Used when loading or regenerating an existing world (no default settings to apply).
+     * Used when loading or regenerating an existing world. No default settings are applied, so changes made to the
+     * world since it was created (gamerules, its spawn) survive an unload.
      */
     public BukkitWorldFactory(ConfigService configService, Logger logger, BuildWorld buildWorld) {
         this.configService = configService;
@@ -72,6 +74,7 @@ public class BukkitWorldFactory {
         this.worldBorderSize = null;
         this.seed = null;
         this.initialGeneration = false;
+        this.applyDefaults = false;
         this.versionGuard = new WorldDataVersionGuard(logger, worldName);
         this.generationDataStore = new GenerationDataStore(logger);
     }
@@ -102,6 +105,7 @@ public class BukkitWorldFactory {
         this.worldBorderSize = worldBorderSize;
         this.seed = seed;
         this.initialGeneration = initialGeneration;
+        this.applyDefaults = true;
         this.versionGuard = new WorldDataVersionGuard(logger, worldName);
         this.generationDataStore = new GenerationDataStore(logger);
     }
@@ -124,8 +128,7 @@ public class BukkitWorldFactory {
         }
 
         if (bukkitWorld != null) {
-            applyDefaultWorldSettings(bukkitWorld);
-            applyPostGenerationSettings(bukkitWorld, this.worldType);
+            applyWorldSettings(bukkitWorld);
             versionGuard.updateWorldDataVersion();
             generationDataStore.save(bukkitWorld, this.worldType, this.customGenerator);
         }
@@ -209,6 +212,18 @@ public class BukkitWorldFactory {
         }
     }
 
+    /**
+     * Applies the configured defaults to a world being created or imported. A world that is only being loaded again is
+     * left as it is.
+     */
+    void applyWorldSettings(World bukkitWorld) {
+        if (!applyDefaults) {
+            return;
+        }
+        applyDefaultWorldSettings(bukkitWorld);
+        applyPostGenerationSettings(bukkitWorld, this.worldType);
+    }
+
     private void applyDefaultWorldSettings(World bukkitWorld) {
         if (difficulty != null) {
             bukkitWorld.setDifficulty(difficulty);
@@ -221,7 +236,6 @@ public class BukkitWorldFactory {
                     .getWorldBorder()
                     .setSize(configService.current().world().defaults().worldBorderSize());
         }
-        bukkitWorld.setKeepSpawnInMemory(true);
         configService
                 .current()
                 .world()
