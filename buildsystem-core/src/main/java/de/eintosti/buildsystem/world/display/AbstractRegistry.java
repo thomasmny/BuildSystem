@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.display;
 
 import de.eintosti.buildsystem.api.world.display.RegistryEntry;
 import de.eintosti.buildsystem.storage.EntityCollection;
+import de.eintosti.buildsystem.storage.StorageException;
 import de.eintosti.buildsystem.storage.codec.Codec;
 import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
 import de.eintosti.buildsystem.storage.yaml.YamlStore;
@@ -29,6 +30,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletionException;
 import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
 
@@ -82,7 +84,16 @@ public abstract class AbstractRegistry<E extends RegistryEntryImpl> {
      * Loads the stored entries, seeding the built-ins when there are none. Called once by the subclass constructor.
      */
     protected final void loadOrSeed() {
-        entries.putAll(storage.load().join());
+        try {
+            entries.putAll(storage.load().join());
+        } catch (CompletionException e) {
+            // Seeding here would overwrite the file, and every entry the admin made with it.
+            throw new StorageException(
+                    "Could not read " + file.fileName() + ", so BuildSystem does not start rather than replace it with"
+                            + " the built-in entries. Fix the error logged above, or delete " + file.fileName()
+                            + " to start over with the built-ins, then restart the server.",
+                    e.getCause());
+        }
         if (entries.isEmpty()) {
             seed();
         }
