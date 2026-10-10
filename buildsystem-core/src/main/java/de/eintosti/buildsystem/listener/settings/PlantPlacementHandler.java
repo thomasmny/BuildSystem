@@ -20,28 +20,22 @@ package de.eintosti.buildsystem.listener.settings;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XTag;
 import com.google.common.collect.Sets;
-import de.eintosti.buildsystem.api.storage.WorldStorage;
-import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.access.WorldSetting;
-import de.eintosti.buildsystem.player.settings.SettingsService;
-import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
-import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
+import de.eintosti.buildsystem.api.player.settings.Settings;
+import de.eintosti.buildsystem.listener.settings.SettingInteractionListener.SettingHandler;
 import de.eintosti.buildsystem.util.DirectionUtil;
 import java.util.Arrays;
 import java.util.EnumSet;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.MultipleFacing;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class PlantPlacementListener implements Listener {
+final class PlantPlacementHandler implements SettingHandler {
 
     private static final EnumSet<XMaterial> OTHER_PLANTS = Sets.newEnumSet(
             Sets.newHashSet(
@@ -69,52 +63,27 @@ public class PlantPlacementListener implements Listener {
                     XMaterial.SWEET_BERRIES),
             XMaterial.class);
 
-    private final SettingsService settingsManager;
-    private final WorldStorage worldStorage;
-    private final WorldProtectionPolicy policy;
-
-    public PlantPlacementListener(SettingsService settingsManager, WorldStorage worldStorage) {
-        this.settingsManager = settingsManager;
-        this.worldStorage = worldStorage;
-        this.policy = new WorldProtectionPolicy();
-    }
-
-    @EventHandler
-    public void managePlacePlantsSetting(PlayerInteractEvent event) {
-        if (event.isCancelled()) {
-            return;
-        }
-
-        Block block = event.getClickedBlock();
-        if (block == null || event.getAction() != Action.RIGHT_CLICK_BLOCK) {
-            return;
-        }
-
-        Player player = event.getPlayer();
-        if (!settingsManager.getSettings(player).isPlacePlants()) {
-            return;
-        }
-
+    @Override
+    public @Nullable Runnable claim(PlayerInteractEvent event, Block block, Settings settings) {
         ItemStack itemStack = event.getItem();
-        if (itemStack == null) {
-            return;
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || !settings.isPlacePlants() || itemStack == null) {
+            return null;
         }
 
         XMaterial xMaterial = XMaterial.matchXMaterial(itemStack.getType());
-        if (!XTag.FLOWERS.isTagged(xMaterial)
-                && !XTag.REPLACEABLE_PLANTS.isTagged(xMaterial)
-                && !XTag.ALIVE_CORAL_PLANTS.isTagged(xMaterial)
-                && !XTag.DEAD_CORAL_PLANTS.isTagged(xMaterial)
-                && !XTag.SAPLINGS.isTagged(xMaterial)
-                && !OTHER_PLANTS.contains(xMaterial)) {
-            return;
-        }
+        return isPlant(xMaterial) ? () -> place(event, block, xMaterial) : null;
+    }
 
-        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        if (buildWorld != null && policy.mayModify(player, buildWorld, WorldSetting.BLOCK_PLACEMENT) != Denial.NONE) {
-            return;
-        }
+    private static boolean isPlant(XMaterial xMaterial) {
+        return XTag.FLOWERS.isTagged(xMaterial)
+                || XTag.REPLACEABLE_PLANTS.isTagged(xMaterial)
+                || XTag.ALIVE_CORAL_PLANTS.isTagged(xMaterial)
+                || XTag.DEAD_CORAL_PLANTS.isTagged(xMaterial)
+                || XTag.SAPLINGS.isTagged(xMaterial)
+                || OTHER_PLANTS.contains(xMaterial);
+    }
 
+    private static void place(PlayerInteractEvent event, Block block, XMaterial xMaterial) {
         event.setCancelled(true);
         Block adjacent = block.getRelative(event.getBlockFace());
 

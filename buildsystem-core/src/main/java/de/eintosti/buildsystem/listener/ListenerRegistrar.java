@@ -38,12 +38,8 @@ import de.eintosti.buildsystem.listener.player.PlayerJoinListener;
 import de.eintosti.buildsystem.listener.player.PlayerQuitListener;
 import de.eintosti.buildsystem.listener.player.PlayerRespawnListener;
 import de.eintosti.buildsystem.listener.player.PlayerTeleportListener;
-import de.eintosti.buildsystem.listener.settings.DisabledInteractionsListener;
-import de.eintosti.buildsystem.listener.settings.InstantSignPlacementListener;
-import de.eintosti.buildsystem.listener.settings.IronDoorListener;
-import de.eintosti.buildsystem.listener.settings.PlantPlacementListener;
 import de.eintosti.buildsystem.listener.settings.PlayerInventoryClearListener;
-import de.eintosti.buildsystem.listener.settings.SlabListener;
+import de.eintosti.buildsystem.listener.settings.SettingInteractionListener;
 import de.eintosti.buildsystem.listener.world.BlockPhysicsListener;
 import de.eintosti.buildsystem.listener.world.BuildWorldResetUnloadListener;
 import de.eintosti.buildsystem.listener.world.EntitySpawnListener;
@@ -106,13 +102,10 @@ public final class ListenerRegistrar {
         register(new BlockPhysicsListener(worldStorage));
         register(new BuildModePreventationListener(playerService, configService));
         register(new BuildWorldResetUnloadListener(worldStorage));
-        register(new DisabledInteractionsListener(settingsService, worldStorage, configService));
         register(new EntityDamageListener(configService, worldStorage));
         register(new EntitySpawnListener(worldStorage));
         register(new FoodLevelChangeListener(worldStorage));
-        register(new InstantSignPlacementListener(settingsService, worldStorage));
         register(new InventoryCreativeListener(navigatorItems, scheduler));
-        register(new IronDoorListener(settingsService, worldStorage));
         register(new MenuListener());
         register(new PlayerChatInput.ChatInputListener());
         register(new NavigatorListener(
@@ -145,9 +138,10 @@ public final class ListenerRegistrar {
                 messages));
         register(new PlayerRespawnListener(settingsService, spawnService));
         register(new PlayerTeleportListener(messages, playerService.getPlayerStorage(), worldStorage));
-        register(new PlantPlacementListener(settingsService, worldStorage));
+        // Listeners on the same event run in registration order, so this must stay after NavigatorListener. A click
+        // with the navigator item is cancelled there first, and the build settings then leave it alone.
+        register(new SettingInteractionListener(settingsService, worldStorage, configService));
         register(new SignChangeListener());
-        register(new SlabListener(settingsService, worldStorage));
         register(new WeatherChangeListener(configService));
         register(new WorldManipulateListener(worldStorage, configService, worldStatusRegistry, settingsService));
 

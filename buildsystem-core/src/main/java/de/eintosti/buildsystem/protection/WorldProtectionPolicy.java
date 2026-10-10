@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.protection;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.access.WorldSetting;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
@@ -29,7 +30,8 @@ import org.jspecify.annotations.NullMarked;
 /**
  * Answers "may this player modify this world right now?" in one place so every listener and integration checks it the
  * same way. Composes three independent restrictions: the world's {@link BuildWorldStatus status} disallowing building,
- * the builders feature, and the per-action {@link WorldSetting settings} — each short-circuited by the build bypass.
+ * the builders feature, and the per-action {@link WorldSetting settings}, each short-circuited by build mode and the
+ * admin permission. {@link WorldPermissions#canModify} answers from here too.
  */
 @NullMarked
 public final class WorldProtectionPolicy {
@@ -58,74 +60,6 @@ public final class WorldProtectionPolicy {
     }
 
     /**
-     * Checks whether the world's current status permits building. Any status whose
-     * {@link BuildWorldStatus#isBuildingAllowed() building-allowed} flag is off locks the world, not just the built-in
-     * archive; the bypass permission node stays {@code buildsystem.bypass.archive} for backwards compatibility.
-     *
-     * @param player The player attempting to build
-     * @param world The world being modified
-     * @return {@link Denial#STATUS_LOCKED} when the status forbids building, otherwise {@link Denial#NONE}
-     */
-    public Denial checkStatus(Player player, BuildWorld world) {
-        if (world.getPermissions().canBypassBuildRestriction(player)
-                || player.hasPermission(Permissions.BYPASS_ARCHIVE)) {
-            return Denial.NONE;
-        }
-
-        if (!world.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
-            return Denial.STATUS_LOCKED;
-        }
-
-        return Denial.NONE;
-    }
-
-    /**
-     * Checks whether the builders feature blocks the player. When it is enabled, only the creator and registered
-     * builders may modify the world.
-     *
-     * @param player The player attempting to build
-     * @param world The world being modified
-     * @return {@link Denial#NOT_A_BUILDER} when the player is not allowed, otherwise {@link Denial#NONE}
-     */
-    public Denial checkBuilders(Player player, BuildWorld world) {
-        if (world.getPermissions().canBypassBuildRestriction(player)
-                || player.hasPermission(Permissions.BYPASS_BUILDERS)) {
-            return Denial.NONE;
-        }
-
-        Builders builders = world.getBuilders();
-        if (builders.isCreator(player)) {
-            return Denial.NONE;
-        }
-
-        if (world.getData().get(WorldDataKey.BUILDERS_ENABLED) && !builders.isBuilder(player)) {
-            return Denial.NOT_A_BUILDER;
-        }
-
-        return Denial.NONE;
-    }
-
-    /**
-     * Checks whether a per-action {@link WorldSetting} (e.g. block placement) is enabled for the world.
-     *
-     * @param player The player attempting the action
-     * @param world The world being modified
-     * @param setting The setting governing the action
-     * @return {@link Denial#SETTING_DISABLED} when the setting is off, otherwise {@link Denial#NONE}
-     */
-    public Denial checkSetting(Player player, BuildWorld world, WorldSetting setting) {
-        if (world.getPermissions().canBypassBuildRestriction(player)) {
-            return Denial.NONE;
-        }
-
-        if (!setting.isEnabled(world.getData())) {
-            return Denial.SETTING_DISABLED;
-        }
-
-        return Denial.NONE;
-    }
-
-    /**
      * Runs the full modification check (status, then builders), returning the first {@link Denial} that applies.
      *
      * @param player The player attempting to build
@@ -133,21 +67,18 @@ public final class WorldProtectionPolicy {
      * @return The first applicable denial, or {@link Denial#NONE} when the modification is allowed
      */
     public Denial mayModify(Player player, BuildWorld world) {
-        if (world.getPermissions().canBypassBuildRestriction(player)) {
+        if (isExempt(player, world)) {
             return Denial.NONE;
         }
 
         Denial status = checkStatus(player, world);
-        if (status != Denial.NONE) {
-            return status;
-        }
-
-        return checkBuilders(player, world);
+        return status != Denial.NONE ? status : checkBuilders(player, world);
     }
 
     /**
      * Runs the full modification check for a setting-gated action (status, then the setting, then builders), returning
-     * the first {@link Denial} that applies.
+     * the first {@link Denial} that applies. Holding the setting's {@link WorldSetting#getBypassPermission() bypass
+     * permission} skips the setting and the builders check.
      *
      * @param player The player attempting the action
      * @param world The world being modified
@@ -155,7 +86,7 @@ public final class WorldProtectionPolicy {
      * @return The first applicable denial, or {@link Denial#NONE} when the modification is allowed
      */
     public Denial mayModify(Player player, BuildWorld world, WorldSetting setting) {
-        if (world.getPermissions().canBypassBuildRestriction(player)) {
+        if (isExempt(player, world)) {
             return Denial.NONE;
         }
 
@@ -164,11 +95,48 @@ public final class WorldProtectionPolicy {
             return status;
         }
 
-        Denial settingDenial = checkSetting(player, world, setting);
-        if (settingDenial != Denial.NONE) {
-            return settingDenial;
+        if (player.hasPermission(setting.getBypassPermission())) {
+            return Denial.NONE;
+        }
+
+        if (!setting.isEnabled(world.getData())) {
+            return Denial.SETTING_DISABLED;
         }
 
         return checkBuilders(player, world);
+    }
+
+    /**
+     * Any status whose {@link BuildWorldStatus#isBuildingAllowed() building-allowed} flag is off locks the world, not
+     * just the built-in archive. The bypass node stays {@code buildsystem.bypass.archive} for backwards compatibility.
+     */
+    private static Denial checkStatus(Player player, BuildWorld world) {
+        if (player.hasPermission(Permissions.BYPASS_ARCHIVE)
+                || world.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
+            return Denial.NONE;
+        }
+        return Denial.STATUS_LOCKED;
+    }
+
+    /**
+     * When the builders feature is on, only the creator and registered builders may modify the world.
+     */
+    private static Denial checkBuilders(Player player, BuildWorld world) {
+        if (player.hasPermission(Permissions.BYPASS_BUILDERS)) {
+            return Denial.NONE;
+        }
+
+        Builders builders = world.getBuilders();
+        if (builders.isCreator(player)
+                || !world.getData().get(WorldDataKey.BUILDERS_ENABLED)
+                || builders.isBuilder(player)) {
+            return Denial.NONE;
+        }
+        return Denial.NOT_A_BUILDER;
+    }
+
+    private static boolean isExempt(Player player, BuildWorld world) {
+        return world.getPermissions().canBypassBuildRestriction(player)
+                || world.getPermissions().hasAdminPermission(player);
     }
 }
