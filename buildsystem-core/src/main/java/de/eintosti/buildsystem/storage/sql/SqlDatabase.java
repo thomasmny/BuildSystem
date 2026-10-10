@@ -77,11 +77,7 @@ public final class SqlDatabase implements Database {
             throw new StorageException("The " + dialect.driverClass() + " driver is not available", e);
         }
         SqlDatabase database = new SqlDatabase(dialect, driver, url, properties, tablePrefix, logger);
-        try {
-            database.run("connect to the database", connection -> null);
-        } catch (StorageException e) {
-            throw new StorageException(e.getMessage(), e.getCause());
-        }
+        database.run("connect to the database", connection -> null);
         return database;
     }
 
@@ -95,9 +91,6 @@ public final class SqlDatabase implements Database {
         return store;
     }
 
-    /**
-     * @param action What the work does, for the error, such as {@code "load buildsystem_worlds"}
-     */
     @Override
     public boolean exists(EntityKind kind) {
         String table = tablePrefix + kind.id();
@@ -127,6 +120,9 @@ public final class SqlDatabase implements Database {
         });
     }
 
+    /**
+     * @param action What the work does, for the error, such as {@code "load buildsystem_worlds"}
+     */
     synchronized <R> R run(String action, SqlWork<R> work) {
         try {
             return work.apply(connection());

@@ -246,8 +246,8 @@ public final class StorageBackend implements AutoCloseable {
 
     /**
      * {@return where entries of {@code kind} are kept} For a database, a table or collection created by this call is
-     * first filled from the YAML file, read through the same path as a YAML load so a legacy file is migrated first. The file is left as it
-     * is.
+     * first filled from the YAML file, read through the same path as a YAML load so a legacy file is migrated first.
+     * The file is left as it is.
      */
     public EntityStore store(EntityKind kind) {
         YamlEntityStore yaml = kind.yaml(dataFolder, logger);
