@@ -35,13 +35,11 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.test.SoundlessPlayer;
 import java.util.List;
 import java.util.UUID;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Sound;
-import org.bukkit.SoundCategory;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -119,14 +117,7 @@ class BuilderMenuTest {
     }
 
     private PlayerMock admin() {
-        // XSound plays through the seeded overload, which MockBukkit does not implement.
-        PlayerMock player = new PlayerMock(server, "Admin") {
-            @Override
-            public void playSound(
-                    Location location, Sound sound, SoundCategory category, float volume, float pitch, long seed) {}
-        };
-        server.addPlayer(player);
-        return player;
+        return SoundlessPlayer.join(server, "Admin");
     }
 
     private BuilderMenu menu(BuildWorld buildWorld, PlayerMock player) {

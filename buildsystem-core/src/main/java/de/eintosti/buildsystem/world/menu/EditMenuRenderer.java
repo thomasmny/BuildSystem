@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.List;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
@@ -79,7 +80,7 @@ final class EditMenuRenderer {
     void renderTime(Player player, Inventory inventory, int slot) {
         XMaterial material;
         String value;
-        switch (getWorldTime()) {
+        switch (buildWorld.getWorld().map(this::timeOfDay).orElse(TimeOfDay.SUNRISE)) {
             case NIGHT -> {
                 material = XMaterial.BLUE_STAINED_GLASS;
                 value = messages.getString("worldeditor_time_lore_night", player);
@@ -100,10 +101,9 @@ final class EditMenuRenderer {
                 .into(inventory, slot);
     }
 
-    private TimeOfDay getWorldTime() {
-        int worldTime = (int) buildWorld.getWorld().orElseThrow().getTime();
+    TimeOfDay timeOfDay(World world) {
         int noonTime = configService.current().world().defaults().time().noon();
-        return TimeOfDay.fromTicks(worldTime, noonTime);
+        return TimeOfDay.fromTicks((int) world.getTime(), noonTime);
     }
 
     void renderButcher(Player player, Inventory inventory, int slot) {
