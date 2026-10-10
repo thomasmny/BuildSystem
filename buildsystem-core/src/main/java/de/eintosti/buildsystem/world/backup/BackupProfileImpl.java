@@ -33,8 +33,8 @@ import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.FileUtils;
-import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.util.WorldArchive;
 import de.eintosti.buildsystem.util.WorldFlush;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
@@ -48,8 +48,6 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 import java.util.logging.Level;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.model.FileHeader;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -241,7 +239,7 @@ public class BackupProfileImpl implements BackupProfile {
 
         // Must happen before the world is deleted: a corrupt archive would otherwise only be detected once there
         // was nothing left to restore.
-        validateBackup(backupFile, targetDirectory);
+        WorldArchive.validate(backupFile, targetDirectory);
 
         // The players are only moved once the archive is here and valid, so a failed download leaves them in place.
         List<Player> removedPlayers =
@@ -263,7 +261,7 @@ public class BackupProfileImpl implements BackupProfile {
         if (!targetDirectory.isDirectory() && !targetDirectory.mkdirs()) {
             throw new IOException("Failed to create world directory for restore: " + targetDirectory.getAbsolutePath());
         }
-        extractBackup(backupFile, targetDirectory);
+        WorldArchive.extract(backupFile, targetDirectory);
 
         this.buildWorld.getLoader().load();
         removedPlayers.forEach(worldTeleporter::teleport);
@@ -274,45 +272,6 @@ public class BackupProfileImpl implements BackupProfile {
                 player,
                 "worlds_backup_restoration_successful",
                 Placeholders.of("%timestamp%", messages.formatDateTime(backup.creationTime())));
-    }
-
-    /**
-     * Checks that {@code backupFile} is a readable archive and that no entry's resolved path escapes
-     * {@code targetDirectory} (zip-slip / path traversal).
-     *
-     * <p>Called before the world is deleted, so a corrupt archive fails the restore while the world is still
-     * intact. Reading the central directory is what detects truncation.
-     *
-     * @param backupFile The downloaded archive
-     * @param targetDirectory The directory the archive would be extracted into
-     * @throws IOException If the archive cannot be read or an entry escapes the target directory
-     */
-    private void validateBackup(File backupFile, File targetDirectory) throws IOException {
-        try (ZipFile zip = new ZipFile(backupFile)) {
-            List<FileHeader> headers = zip.getFileHeaders();
-            if (headers.isEmpty()) {
-                throw new IOException(
-                        "Refusing to restore backup: archive contains no entries: %s".formatted(backupFile));
-            }
-
-            for (FileHeader header : headers) {
-                File resolved = new File(targetDirectory, header.getFileName());
-                if (StringCleaner.isPathEscape(targetDirectory, resolved)) {
-                    throw new IOException("Refusing to restore backup: archive entry escapes the world directory: %s"
-                            .formatted(header.getFileName()));
-                }
-            }
-        }
-    }
-
-    /**
-     * Extracts a backup archive into {@code targetDirectory}. Entries are validated by
-     * {@link #validateBackup(File, File)} before the world is deleted.
-     */
-    private void extractBackup(File backupFile, File targetDirectory) throws IOException {
-        try (ZipFile zip = new ZipFile(backupFile)) {
-            zip.extractAll(targetDirectory.getPath());
-        }
     }
 
     /**

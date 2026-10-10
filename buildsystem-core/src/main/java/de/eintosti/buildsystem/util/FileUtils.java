@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.util;
 
 import com.google.common.collect.Sets;
-import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.world.WorldNames;
 import java.io.*;
 import java.nio.file.AtomicMoveNotSupportedException;
@@ -37,10 +36,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.io.outputstream.ZipOutputStream;
-import net.lingala.zip4j.model.ExcludeFileFilter;
-import net.lingala.zip4j.model.ZipParameters;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
@@ -319,31 +314,6 @@ public final class FileUtils {
         return creation;
     }
 
-    public static @Nullable File zipWorld(File storage, BuildWorld buildWorld) {
-        try (ZipFile zipFile = new ZipFile(storage.getAbsolutePath())) {
-            File worldContainer = worldFolder(buildWorld.getName());
-
-            Set<File> runtimeFiles =
-                    Sets.newHashSet(new File(worldContainer, "uid.dat"), new File(worldContainer, "session.lock"));
-            Path nestedWorlds = nestedWorldsRoot(worldContainer);
-            ExcludeFileFilter excludeFileFilter =
-                    file -> runtimeFiles.contains(file) || isUnder(file.toPath(), nestedWorlds);
-            ZipParameters zipParameters = new ZipParameters();
-            zipParameters.setExcludeFileFilter(excludeFileFilter);
-
-            zipFile.addFolder(worldContainer, zipParameters);
-            return zipFile.getFile();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to zip world " + storage.getAbsolutePath(), e);
-        }
-        return null;
-    }
-
-    public static byte[] zipWorldToMemory(BuildWorld buildWorld) throws IOException {
-        File worldContainer = worldFolder(buildWorld.getName());
-        return zipDirectoryToMemory(worldContainer.toPath(), nestedWorldsRoot(worldContainer));
-    }
-
     /**
      * {@return the {@code dimensions} directory holding other worlds nested inside this one, or {@code null} when
      * this is not the default world}
@@ -354,7 +324,7 @@ public final class FileUtils {
      *
      * @param worldContainer The world folder being archived
      */
-    private static @Nullable Path nestedWorldsRoot(File worldContainer) {
+    static @Nullable Path nestedWorldsRoot(File worldContainer) {
         List<World> worlds = Bukkit.getWorlds();
         if (worlds.isEmpty()) {
             return null;
@@ -362,39 +332,5 @@ public final class FileUtils {
 
         File defaultWorldFolder = worlds.getFirst().getWorldFolder();
         return defaultWorldFolder.equals(worldContainer) ? new File(worldContainer, "dimensions").toPath() : null;
-    }
-
-    private static boolean isUnder(Path path, @Nullable Path directory) {
-        return directory != null && path.startsWith(directory);
-    }
-
-    /**
-     * Zips every regular file under {@code worldPath} into an in-memory archive. A failure reading any single file
-     * aborts the whole archive (propagated as {@link IOException}) rather than being swallowed and producing a
-     * silently-truncated backup.
-     *
-     * @param worldPath The directory to archive
-     * @return The zipped bytes
-     * @throws IOException If the directory cannot be walked or any file cannot be read
-     */
-    static byte[] zipDirectoryToMemory(Path worldPath, @Nullable Path excludedSubtree) throws IOException {
-        ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-
-        try (ZipOutputStream zipOut = new ZipOutputStream(byteOut);
-                Stream<Path> walk = Files.walk(worldPath)) {
-            List<Path> files = walk.filter(Files::isRegularFile)
-                    .filter(file -> !isUnder(file, excludedSubtree))
-                    .toList();
-            for (Path file : files) {
-                Path relativePath = worldPath.relativize(file);
-                ZipParameters zipParameters = new ZipParameters();
-                zipParameters.setFileNameInZip(relativePath.toString().replace("\\", "/"));
-                zipOut.putNextEntry(zipParameters);
-                Files.copy(file, zipOut);
-                zipOut.closeEntry();
-            }
-        }
-
-        return byteOut.toByteArray();
     }
 }

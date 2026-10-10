@@ -22,11 +22,13 @@ import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.util.FileUtils;
+import de.eintosti.buildsystem.util.WorldArchive;
 import de.eintosti.buildsystem.world.backup.BackupImpl;
 import de.eintosti.buildsystem.world.backup.storage.s3.S3Client;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -99,12 +101,14 @@ public class S3BackupStorage extends AbstractBackupStorage {
             long timestamp = System.currentTimeMillis();
             String key = getBackupDirectory(buildWorld) + backupName(timestamp);
 
-            byte[] zipBytes = FileUtils.zipWorldToMemory(buildWorld);
-
+            Path archive = tmpDownloadDirectory.resolve(UUID.randomUUID() + ".zip");
             try {
-                s3Client.put(key, zipBytes);
+                WorldArchive.write(buildWorld, archive);
+                s3Client.putFile(key, archive, uploaded -> {});
             } catch (IOException e) {
                 throw new IOException("Failed to upload S3 backup for " + buildWorld.getName(), e);
+            } finally {
+                Files.deleteIfExists(archive);
             }
 
             logDuration(buildWorld, timestamp);
