@@ -19,10 +19,12 @@ package de.eintosti.buildsystem.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.mysql.cj.conf.ConnectionUrl;
 import de.eintosti.buildsystem.config.PluginConfig;
 import java.util.Properties;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
+import org.postgresql.Driver;
 
 @NullMarked
 class StorageBackendTest {
@@ -38,8 +40,28 @@ class StorageBackendTest {
         assertEquals("30", postgres.getProperty("socketTimeout"), "seconds");
     }
 
+    @Test
+    void hostWithAnUnderscore_reachesTheDriversAsThatHost() throws Exception {
+        Properties postgres =
+                Driver.parseURL(StorageBackend.url("postgresql", server(StorageType.POSTGRESQL, "postgres_db")), null);
+        ConnectionUrl mysql = ConnectionUrl.getConnectionUrlInstance(
+                StorageBackend.url("mysql", server(StorageType.MYSQL, "mysql_db")), new Properties());
+
+        assertEquals("postgres_db", postgres.getProperty("PGHOST"));
+        assertEquals("5432", postgres.getProperty("PGPORT"));
+        assertEquals("buildsystem", postgres.getProperty("PGDBNAME"));
+        assertEquals(1, mysql.getHostsList().size());
+        assertEquals("mysql_db", mysql.getMainHost().getHost());
+        assertEquals(3306, mysql.getMainHost().getPort());
+        assertEquals("buildsystem", mysql.getDatabase());
+    }
+
     private static PluginConfig.Storage.Database.Server server(StorageType type) {
+        return server(type, "localhost");
+    }
+
+    private static PluginConfig.Storage.Database.Server server(StorageType type, String host) {
         return new PluginConfig.Storage.Database.Server(
-                type, "localhost", type.defaultPort(), "buildsystem", "builder", "secret", StorageTls.PREFER);
+                type, host, type.defaultPort(), "buildsystem", "builder", "secret", StorageTls.PREFER);
     }
 }

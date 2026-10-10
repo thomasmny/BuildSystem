@@ -153,7 +153,7 @@ public final class StorageBackend implements AutoCloseable {
         }
     }
 
-    private static String url(String scheme, PluginConfig.Storage.Database.Server server) {
+    static String url(String scheme, PluginConfig.Storage.Database.Server server) {
         return "jdbc:" + scheme + "://" + server.host() + ":" + server.port() + "/" + server.database();
     }
 

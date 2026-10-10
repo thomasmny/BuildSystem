@@ -707,7 +707,7 @@ class PluginConfigTest {
 
     @Test
     void storageDatabase_hostMayBeANameOrAnAddress() {
-        for (String host : List.of("localhost", "db-1.example.com", "10.0.0.5", "[::1]", "[2001:db8::7]")) {
+        for (String host : List.of("localhost", "db-1.example.com", "mysql_db", "10.0.0.5", "[::1]", "[2001:db8::7]")) {
             assertEquals(
                     host,
                     parse("storage:\n  mysql:\n    host: \"" + host + "\"")

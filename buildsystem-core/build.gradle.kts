@@ -84,8 +84,8 @@ dependencies {
     testImplementation(libs.testcontainers.mysql)
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.mongodb.driver)
-    testRuntimeOnly(libs.mysql.connector)
-    testRuntimeOnly(libs.postgresql)
+    testImplementation(libs.mysql.connector)
+    testImplementation(libs.postgresql)
     testRuntimeOnly(libs.sqlite.jdbc)
     // Test-only Bukkit API: MockBukkit requires the Paper API. The plugin itself targets spigot-api (compileOnly
     // above); paper-api is a strict superset and is confined to the test classpath, so the shipped plugin stays

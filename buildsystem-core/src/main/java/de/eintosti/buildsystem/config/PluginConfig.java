@@ -175,8 +175,9 @@ public record PluginConfig(Settings settings, Storage storage, World world, Fold
                     @Nullable String password,
                     StorageTls tls) {
 
-                // Only names and addresses: drivers read options and further hosts from characters like ( = , @
-                private static final Pattern HOST = Pattern.compile("[A-Za-z0-9.-]{1,253}|\\[[0-9A-Fa-f:.]{2,45}]");
+                // Only names and addresses: drivers read options and further hosts from characters like ( = , @. The _
+                // is for Docker service names.
+                private static final Pattern HOST = Pattern.compile("[A-Za-z0-9._-]{1,253}|\\[[0-9A-Fa-f:.]{2,45}]");
                 private static final Pattern DATABASE = Pattern.compile("[A-Za-z0-9_-]{1,64}");
                 // The PostgreSQL driver sends the login as NUL-separated startup parameters, so a NUL would add one.
                 private static final Pattern CONTROL = Pattern.compile("\\p{Cntrl}");
