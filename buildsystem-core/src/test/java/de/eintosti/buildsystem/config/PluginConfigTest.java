@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.config;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.cryptomorin.xseries.XGameRule;
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.List;
@@ -58,7 +57,7 @@ class PluginConfigTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return ConfigService.parse(config, LOGGER, XMaterial.WOODEN_AXE);
+        return ConfigService.parse(config, LOGGER, Material.WOODEN_AXE);
     }
 
     // -----------------------------------------------------------------------
@@ -193,7 +192,7 @@ class PluginConfigTest {
 
     @Test
     void navigatorItem_lowercase_isAccepted() {
-        assertEquals(XMaterial.COMPASS, parse("""
+        assertEquals(Material.COMPASS, parse("""
                         settings:
                           navigator:
                             item: compass
@@ -202,7 +201,7 @@ class PluginConfigTest {
 
     @Test
     void navigatorItem_unknown_fallsBackToClock() {
-        assertEquals(XMaterial.CLOCK, parse("""
+        assertEquals(Material.CLOCK, parse("""
                         settings:
                           navigator:
                             item: CLOKC
@@ -211,7 +210,7 @@ class PluginConfigTest {
 
     @Test
     void navigatorItem_withoutAnItemForm_fallsBackToClock() {
-        assertEquals(XMaterial.CLOCK, parse("""
+        assertEquals(Material.CLOCK, parse("""
                         settings:
                           navigator:
                             item: water
@@ -322,7 +321,7 @@ class PluginConfigTest {
         assertFalse(cfg.settings().buildMode().dropItems());
         assertFalse(cfg.settings().buildMode().moveItems());
         assertFalse(cfg.settings().builder().blockWorldEditNonBuilder());
-        assertEquals(XMaterial.COMPASS, cfg.settings().navigator().item());
+        assertEquals(Material.COMPASS, cfg.settings().navigator().item());
         assertFalse(cfg.settings().navigator().giveItemOnJoin());
         assertFalse(cfg.world().lockWeather());
         assertEquals("[!]", cfg.world().invalidCharacters());

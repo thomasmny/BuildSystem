@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.listener.player;
 
-import com.cryptomorin.xseries.XPotion;
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
@@ -31,10 +29,12 @@ import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.Permissions;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.potion.PotionEffectType;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -83,6 +83,7 @@ public class PlayerChangedWorldListener implements Listener {
         removeOldNavigator(player);
         removeBuildMode(player);
         checkWorldStatus(player);
+        settingsManager.updateVisibility(player);
 
         if (settingsManager.getSettings(player).isScoreboard()) {
             settingsManager.forceUpdateSidebar(player);
@@ -91,7 +92,7 @@ public class PlayerChangedWorldListener implements Listener {
 
     private void removeOldNavigator(Player player) {
         navigatorService.removeArmorStands(player);
-        player.removePotionEffect(XPotion.BLINDNESS.get());
+        player.removePotionEffect(PotionEffectType.BLINDNESS);
     }
 
     private void removeBuildMode(Player player) {
@@ -99,13 +100,13 @@ public class PlayerChangedWorldListener implements Listener {
             return;
         }
 
-        XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(player);
+        player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
         messages.sendMessage(player, "build_deactivated_self");
     }
 
     private void checkWorldStatus(Player player) {
         CachedValues cachedValues = cachedValues(player);
-        ArchiveMode.exit(player, cachedValues, settingsManager);
+        ArchiveMode.exit(player, cachedValues);
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         if (buildWorld == null) {

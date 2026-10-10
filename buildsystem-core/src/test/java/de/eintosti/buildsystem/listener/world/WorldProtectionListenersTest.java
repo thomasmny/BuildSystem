@@ -56,6 +56,7 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -110,6 +111,7 @@ class WorldProtectionListenersTest {
         ConfigService configService = mock(ConfigService.class, RETURNS_DEEP_STUBS);
         when(configService.current().settings().builder().blockWorldEditNonBuilder())
                 .thenReturn(true);
+        when(configService.current().settings().builder().worldEditWand()).thenReturn(Material.WOODEN_AXE);
         messages = mock(Messages.class);
 
         server.getPluginManager()
@@ -160,8 +162,12 @@ class WorldProtectionListenersTest {
     }
 
     private boolean interactDenied(PlayerMock player) {
-        PlayerInteractEvent event =
-                new PlayerInteractEvent(player, Action.RIGHT_CLICK_BLOCK, null, block(), BlockFace.UP);
+        return interactDenied(player, null);
+    }
+
+    private boolean interactDenied(PlayerMock player, @Nullable Material held) {
+        PlayerInteractEvent event = new PlayerInteractEvent(
+                player, Action.RIGHT_CLICK_BLOCK, held == null ? null : new ItemStack(held), block(), BlockFace.UP);
         server.getPluginManager().callEvent(event);
         return event.useInteractedBlock() == Event.Result.DENY;
     }
@@ -248,6 +254,27 @@ class WorldProtectionListenersTest {
 
         assertTrue(commandCancelled(builder, "//set stone"));
         verify(messages).sendMessage(builder, "command_archive_world");
+    }
+
+    @Test
+    void clickWithTheWorldEditWand_isLeftToWorldEdit() {
+        assertTrue(interactDenied(stranger, Material.STONE));
+        assertFalse(interactDenied(stranger, Material.WOODEN_AXE));
+    }
+
+    @Test
+    void tramplingFarmland_isCancelledOnlyWithPhysicsOff() {
+        block().setType(Material.FARMLAND);
+        assertFalse(trampleCancelled());
+
+        buildWorld.getData().set(WorldDataKey.PHYSICS, false);
+        assertTrue(trampleCancelled());
+    }
+
+    private boolean trampleCancelled() {
+        PlayerInteractEvent event = new PlayerInteractEvent(builder, Action.PHYSICAL, null, block(), BlockFace.SELF);
+        server.getPluginManager().callEvent(event);
+        return event.isCancelled();
     }
 
     @Test

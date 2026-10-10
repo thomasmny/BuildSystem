@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
@@ -89,7 +88,7 @@ abstract class RegistryEditorMenu extends ButtonMenu {
 
     protected final MenuButton renameButton(String nameKey, String promptKey, Consumer<String> apply) {
         return labelled(
-                XMaterial.NAME_TAG,
+                Material.NAME_TAG,
                 nameKey,
                 (player, event) -> prompts.prompt(player)
                         .title(promptKey)
@@ -141,7 +140,7 @@ abstract class RegistryEditorMenu extends ButtonMenu {
                     String stateText =
                             messages.getString(on ? "setup_toggle_state_on" : "setup_toggle_state_off", player);
 
-                    ItemBuilder.of(on ? XMaterial.LIME_DYE : XMaterial.GRAY_DYE)
+                    ItemBuilder.of(on ? Material.LIME_DYE : Material.GRAY_DYE)
                             .name(messages.getString(nameKey, player))
                             .lore(messages.getStringList(
                                     nameKey + "_lore", player, Placeholders.of("%state%", stateText)))
@@ -159,7 +158,7 @@ abstract class RegistryEditorMenu extends ButtonMenu {
      * Builds a labelled action button whose lore is read from {@code <nameKey>_lore}, so every property button carries a
      * short description.
      */
-    protected final MenuButton labelled(XMaterial icon, String nameKey, MenuButton.ClickHandler onClick) {
+    protected final MenuButton labelled(Material icon, String nameKey, MenuButton.ClickHandler onClick) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(icon)
                         .name(messages.getString(nameKey, player))

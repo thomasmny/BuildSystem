@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
@@ -100,8 +99,8 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
      */
     private List<MenuButton> groupingButtons() {
         return List.of(
-                visibilityButton(Visibility.EVERYONE, XMaterial.ENDER_EYE, "setup_category_visibility_everyone"),
-                visibilityButton(Visibility.ADDED_PLAYERS, XMaterial.ENDER_PEARL, "setup_category_visibility_added"),
+                visibilityButton(Visibility.EVERYONE, Material.ENDER_EYE, "setup_category_visibility_everyone"),
+                visibilityButton(Visibility.ADDED_PLAYERS, Material.ENDER_PEARL, "setup_category_visibility_added"),
                 statusesButton());
     }
 
@@ -161,7 +160,7 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                 });
     }
 
-    private MenuButton visibilityButton(Visibility visibility, XMaterial icon, String nameKey) {
+    private MenuButton visibilityButton(Visibility visibility, Material icon, String nameKey) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> {
                     boolean active = category.getVisibilities().contains(visibility);
@@ -207,7 +206,7 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
                     lore.add("");
                     lore.add(messages.getString("setup_category_statuses_hint", player));
 
-                    ItemBuilder.of(XMaterial.BOOK)
+                    ItemBuilder.of(Material.BOOK)
                             .name(messages.getString("setup_category_statuses", player))
                             .lore(lore)
                             .into(inventory, slot);

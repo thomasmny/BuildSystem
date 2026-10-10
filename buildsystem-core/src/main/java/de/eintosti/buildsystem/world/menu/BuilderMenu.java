@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -34,6 +32,8 @@ import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.ArrayList;
 import java.util.List;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -90,7 +90,7 @@ public class BuilderMenu extends PaginatedMenu {
                 .render((player, inventory, slot) -> {
                     Builder creator = buildWorld.getBuilders().getCreator();
                     if (creator == null) {
-                        ItemBuilder.of(XMaterial.BARRIER)
+                        ItemBuilder.of(Material.BARRIER)
                                 .name(messages.getString("worldeditor_builders_no_creator_item", player))
                                 .into(inventory, slot);
                         return;
@@ -131,7 +131,7 @@ public class BuilderMenu extends PaginatedMenu {
                 })
                 .usableBy(this::canManageBuilders)
                 .onClick((player, event) -> {
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                     menus.promptAddBuilder(buildWorld, player);
                 })
                 .build();
@@ -184,9 +184,9 @@ public class BuilderMenu extends PaginatedMenu {
 
     private void removeBuilder(Player player, Builder builder) {
         buildWorld.getBuilders().removeBuilder(builder);
-        XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
+        player.playSound(player, Sound.ENTITY_ENDERMAN_TELEPORT, 1f, 1f);
         messages.sendMessage(player, "worlds_removebuilder_removed", Placeholders.of("%builder%", builder.getName()));
-        XSound.ENTITY_CHICKEN_EGG.play(player);
+        player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
         populate(player);
     }
 }

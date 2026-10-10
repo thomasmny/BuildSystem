@@ -25,7 +25,6 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import org.bukkit.Material;
@@ -50,7 +49,7 @@ class NavigatorItemsTest {
         server = MockBukkit.mock();
         player = server.addPlayer();
         ConfigService configService = mock(ConfigService.class, RETURNS_DEEP_STUBS);
-        when(configService.current().settings().navigator().item()).thenReturn(XMaterial.CLOCK);
+        when(configService.current().settings().navigator().item()).thenReturn(Material.CLOCK);
         Messages messages = mock(Messages.class);
         when(messages.getString(any(), any())).thenReturn("Navigator");
         items = new NavigatorItems(MockBukkit.createMockPlugin(), configService, messages);

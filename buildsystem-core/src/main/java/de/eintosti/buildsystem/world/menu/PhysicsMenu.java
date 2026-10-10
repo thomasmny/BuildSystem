@@ -19,8 +19,6 @@ package de.eintosti.buildsystem.world.menu;
 
 import static java.util.Map.entry;
 
-import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
@@ -32,6 +30,8 @@ import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.menu.EditMenuToggles.Toggle;
 import java.util.Map;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
@@ -50,22 +50,22 @@ public class PhysicsMenu extends ButtonMenu {
     private static final int SLOT_MASTER = 4;
 
     private static final Toggle MASTER_TOGGLE = new Toggle(
-            XMaterial.SAND,
+            Material.SAND,
             PERMISSION,
             "worldeditor_physics_master_item",
             "worldeditor_physics_master_lore",
             WorldDataKey.PHYSICS);
 
     private static final Map<Integer, Toggle> CATEGORY_TOGGLES = Map.ofEntries(
-            entry(12, categoryToggle(PhysicsCategory.BLOCK_UPDATES, XMaterial.OBSERVER)),
-            entry(13, categoryToggle(PhysicsCategory.CONNECTIONS, XMaterial.OAK_FENCE)),
-            entry(14, categoryToggle(PhysicsCategory.FALLING_BLOCKS, XMaterial.GRAVEL)),
-            entry(21, categoryToggle(PhysicsCategory.FLUID_FLOW, XMaterial.WATER_BUCKET)),
-            entry(22, categoryToggle(PhysicsCategory.LEAF_DECAY, XMaterial.OAK_LEAVES)),
-            entry(23, categoryToggle(PhysicsCategory.GROWTH, XMaterial.WHEAT)),
-            entry(30, categoryToggle(PhysicsCategory.SPREADING, XMaterial.VINE)),
-            entry(31, categoryToggle(PhysicsCategory.BLOCK_FORMING, XMaterial.SNOW_BLOCK)),
-            entry(32, categoryToggle(PhysicsCategory.BLOCK_FADING, XMaterial.ICE)));
+            entry(12, categoryToggle(PhysicsCategory.BLOCK_UPDATES, Material.OBSERVER)),
+            entry(13, categoryToggle(PhysicsCategory.CONNECTIONS, Material.OAK_FENCE)),
+            entry(14, categoryToggle(PhysicsCategory.FALLING_BLOCKS, Material.GRAVEL)),
+            entry(21, categoryToggle(PhysicsCategory.FLUID_FLOW, Material.WATER_BUCKET)),
+            entry(22, categoryToggle(PhysicsCategory.LEAF_DECAY, Material.OAK_LEAVES)),
+            entry(23, categoryToggle(PhysicsCategory.GROWTH, Material.WHEAT)),
+            entry(30, categoryToggle(PhysicsCategory.SPREADING, Material.VINE)),
+            entry(31, categoryToggle(PhysicsCategory.BLOCK_FORMING, Material.SNOW_BLOCK)),
+            entry(32, categoryToggle(PhysicsCategory.BLOCK_FADING, Material.ICE)));
 
     private final MenuItems menuItems;
     private final Menus menus;
@@ -87,7 +87,7 @@ public class PhysicsMenu extends ButtonMenu {
      * {@code worldeditor_physics_blockupdates_item}), so adding a category only means adding its entry above and its
      * two message keys.
      */
-    private static Toggle categoryToggle(PhysicsCategory category, XMaterial material) {
+    private static Toggle categoryToggle(PhysicsCategory category, Material material) {
         String messageName = category.id().replace("-", "");
         return new Toggle(
                 material,
@@ -104,7 +104,7 @@ public class PhysicsMenu extends ButtonMenu {
                         toggle.render(menuItems, buildWorld.getData(), player, inventory, slot))
                 .onClick((player, event) -> {
                     toggle.flip(buildWorld.getData());
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                     populate(player);
                 })
                 .build();

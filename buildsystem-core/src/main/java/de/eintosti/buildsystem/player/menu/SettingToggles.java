@@ -17,15 +17,14 @@
  */
 package de.eintosti.buildsystem.player.menu;
 
-import com.cryptomorin.xseries.XPotion;
 import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -52,18 +51,18 @@ final class SettingToggles {
         } else {
             settings.setNavigatorType(NavigatorType.OLD);
             navigatorService.removeArmorStands(player);
-            player.removePotionEffect(XPotion.BLINDNESS.get());
+            player.removePotionEffect(PotionEffectType.BLINDNESS);
         }
     }
 
     void toggleNightVision(Player player, Settings settings) {
         if (settings.isNightVision()) {
             settings.setNightVision(false);
-            player.removePotionEffect(XPotion.NIGHT_VISION.get());
+            player.removePotionEffect(PotionEffectType.NIGHT_VISION);
         } else {
             settings.setNightVision(true);
             player.addPotionEffect(
-                    new PotionEffect(XPotion.NIGHT_VISION.get(), PotionEffect.INFINITE_DURATION, 0, false, false));
+                    new PotionEffect(PotionEffectType.NIGHT_VISION, PotionEffect.INFINITE_DURATION, 0, false, false));
         }
     }
 
@@ -97,12 +96,7 @@ final class SettingToggles {
         return true;
     }
 
-    @SuppressWarnings("deprecation")
-    void toggleHidePlayers(Player player, Settings settings) {
-        if (settings.isHidePlayers()) {
-            Bukkit.getOnlinePlayers().forEach(player::hidePlayer);
-        } else {
-            Bukkit.getOnlinePlayers().forEach(player::showPlayer);
-        }
+    void toggleHidePlayers(Player player) {
+        settingsManager.updateVisibility(player);
     }
 }

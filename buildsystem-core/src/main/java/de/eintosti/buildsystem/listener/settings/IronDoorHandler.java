@@ -17,9 +17,9 @@
  */
 package de.eintosti.buildsystem.listener.settings;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.listener.settings.SettingInteractionListener.SettingHandler;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Openable;
 import org.bukkit.event.block.Action;
@@ -40,8 +40,8 @@ final class IronDoorHandler implements SettingHandler {
             return null;
         }
 
-        XMaterial material = XMaterial.matchXMaterial(block.getType());
-        if ((material != XMaterial.IRON_DOOR && material != XMaterial.IRON_TRAPDOOR)
+        Material material = block.getType();
+        if ((material != Material.IRON_DOOR && material != Material.IRON_TRAPDOOR)
                 || !(block.getBlockData() instanceof Openable openable)) {
             return null;
         }

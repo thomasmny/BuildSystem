@@ -17,11 +17,11 @@
  */
 package de.eintosti.buildsystem.menu;
 
-import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.i18n.Messages;
 import java.util.List;
 import java.util.function.Function;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -37,9 +37,6 @@ import org.jspecify.annotations.NullMarked;
  * <p><strong>Items per page</strong> is passed in per call rather than stored, because different paginated menus lay
  * their content out across different numbers of slots. {@link #totalPages(int)} always reports at least one page, so an
  * empty collection still renders a valid (blank) first page.
- *
- * <p>The page-change and refusal sounds are overridable ({@link #playPageSound}/{@link #playRefuseSound}) for menus
- * that want different audio feedback.
  *
  * <p>Being a {@link ButtonMenu}, a paginated menu may also {@link #register(int, MenuButton) register} fixed control
  * buttons (e.g. the page arrows and a close button) whose clicks are routed by the base {@code handleClick}, while the
@@ -102,10 +99,10 @@ public abstract class PaginatedMenu extends ButtonMenu {
     protected boolean previousPage(Player player, int itemsPerPage) {
         if (totalPages(itemsPerPage) > 1 && page > 0) {
             page--;
-            playPageSound(player);
+            player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
             return true;
         }
-        playRefuseSound(player);
+        player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
         return false;
     }
 
@@ -120,10 +117,10 @@ public abstract class PaginatedMenu extends ButtonMenu {
     protected boolean nextPage(Player player, int itemsPerPage) {
         if (totalPages(itemsPerPage) > 1 && page < totalPages(itemsPerPage) - 1) {
             page++;
-            playPageSound(player);
+            player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
             return true;
         }
-        playRefuseSound(player);
+        player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
         return false;
     }
 
@@ -207,23 +204,5 @@ public abstract class PaginatedMenu extends ButtonMenu {
                     }
                 })
                 .build();
-    }
-
-    /**
-     * Plays the sound for a successful page change. Override to customise.
-     *
-     * @param player The player to play the sound to
-     */
-    protected void playPageSound(Player player) {
-        XSound.ENTITY_CHICKEN_EGG.play(player);
-    }
-
-    /**
-     * Plays the sound for a refused page change (already at the first/last page). Override to customise.
-     *
-     * @param player The player to play the sound to
-     */
-    protected void playRefuseSound(Player player) {
-        XSound.ENTITY_ITEM_BREAK.play(player);
     }
 }

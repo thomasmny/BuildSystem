@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.menu;
 
-import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.data.Visibility;
@@ -25,7 +24,6 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Logger;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.Inventory;
@@ -39,12 +37,12 @@ import org.jspecify.annotations.Nullable;
 /**
  * Fluent builder for the {@link ItemStack}s shown in menus.
  *
- * <p>Construction starts with a factory method that fixes the item's base type: {@link #of(XMaterial)} for a regular
+ * <p>Construction starts with a factory method that fixes the item's base type: {@link #of(Material)} for a regular
  * material or {@link #skull(Profileable)} for a textured player head. From there, chainable mutators
  * ({@link #name(String)}, {@link #lore(List)}, {@link #glow(boolean)}, {@link #pdc}) decorate the item, and a terminal
  * call ({@link #build()} or {@link #into(Inventory, int)}) materialises it.
  *
- * <p><strong>Default flags.</strong> {@link #of(XMaterial)} hides all {@link ItemFlag}s, because menu items are
+ * <p><strong>Default flags.</strong> {@link #of(Material)} hides all {@link ItemFlag}s, because menu items are
  * decorative and their vanilla attribute/enchant tooltips would be noise. {@link #skull(Profileable)} does <em>not</em>
  * hide flags, preserving the previous skull-rendering behaviour.
  *
@@ -57,8 +55,6 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public final class ItemBuilder {
-
-    private static final Logger LOGGER = Logger.getLogger(ItemBuilder.class.getName());
 
     /**
      * Sentinel skull-texture value meaning "render the viewing player's own head" rather than a fixed texture.
@@ -84,24 +80,7 @@ public final class ItemBuilder {
     }
 
     /**
-     * Variant of {@link #of(Material)} for an {@link XMaterial}. If the material cannot be resolved to a Bukkit item
-     * it falls back to {@link XMaterial#BEDROCK} and logs a warning, so callers always receive a usable builder.
-     *
-     * @param material The material of the item
-     * @return A new builder wrapping the resolved item
-     */
-    public static ItemBuilder of(XMaterial material) {
-        ItemStack base = material.parseItem();
-        if (base == null) {
-            base = XMaterial.BEDROCK.parseItem();
-            LOGGER.warning("Unknown material (%s). Defaulting to BEDROCK.".formatted(material.name()));
-        }
-        assert base != null;
-        return new ItemBuilder(base).hideAttributes();
-    }
-
-    /**
-     * Starts a builder for a textured player head. Unlike {@link #of(XMaterial)} this does not hide item flags, matching
+     * Starts a builder for a textured player head. Unlike {@link #of(Material)} this does not hide item flags, matching
      * the historical skull-rendering behaviour. Profile resolution is lenient: an unresolvable profile yields a plain
      * head rather than throwing.
      *

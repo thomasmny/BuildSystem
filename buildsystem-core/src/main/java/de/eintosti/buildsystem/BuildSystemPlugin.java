@@ -88,6 +88,7 @@ public class BuildSystemPlugin extends JavaPlugin {
             services.noClip().startNoClip(pl, settings);
             services.settings().displayScoreboard(pl);
         });
+        Bukkit.getOnlinePlayers().forEach(services.settings()::updateVisibility);
 
         services.worldDownload().start();
 
@@ -117,6 +118,7 @@ public class BuildSystemPlugin extends JavaPlugin {
             services.noClip().stopNoClip(pl.getUniqueId());
             services.navigator().closeNewNavigator(pl);
         });
+        services.settings().showAllPlayers();
         services.navigatorEditor().restoreAll();
 
         services.worldDownload().stop();

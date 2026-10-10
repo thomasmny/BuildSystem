@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import static java.util.Map.entry;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
@@ -42,6 +41,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
@@ -204,7 +204,7 @@ public class FolderSubCommand extends AbstractSubCommand {
         this.prompts.prompt(player).title("enter_world_permission").request(input -> {
             folder.setPermission(input.trim());
 
-            XSound.ENTITY_PLAYER_LEVELUP.play(player);
+            player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
             messages.sendMessage(player, "worlds_folder_permission_set", Placeholders.of("%folder%", folder.getName()));
         });
     }
@@ -218,7 +218,7 @@ public class FolderSubCommand extends AbstractSubCommand {
         this.prompts.prompt(player).title("enter_world_project").request(input -> {
             folder.setProject(input.trim());
 
-            XSound.ENTITY_PLAYER_LEVELUP.play(player);
+            player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
             messages.sendMessage(player, "worlds_folder_project_set", Placeholders.of("%folder%", folder.getName()));
         });
     }
@@ -255,7 +255,7 @@ public class FolderSubCommand extends AbstractSubCommand {
 
         this.folderStorage.removeFolder(folder);
         messages.sendMessage(player, "worlds_folder_deleted", Placeholders.of("%folder%", folder.getName()));
-        XSound.ENTITY_PLAYER_LEVELUP.play(player);
+        player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
     }
 
     @Override

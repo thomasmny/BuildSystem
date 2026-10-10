@@ -19,12 +19,12 @@ package de.eintosti.buildsystem.world.menu;
 
 import static java.util.Map.entry;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.Map;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
@@ -44,8 +44,8 @@ final class EditMenuToggles {
             entry(
                     SLOT_PIN,
                     new Toggle(
-                            XMaterial.ITEM_FRAME,
-                            XMaterial.GLOW_ITEM_FRAME,
+                            Material.ITEM_FRAME,
+                            Material.GLOW_ITEM_FRAME,
                             Permissions.EDIT_PIN,
                             "worldeditor_pin_item",
                             "worldeditor_pin_lore",
@@ -53,7 +53,7 @@ final class EditMenuToggles {
             entry(
                     20,
                     new Toggle(
-                            XMaterial.OAK_PLANKS,
+                            Material.OAK_PLANKS,
                             Permissions.EDIT_BREAKING,
                             "worldeditor_blockbreaking_item",
                             "worldeditor_blockbreaking_lore",
@@ -61,7 +61,7 @@ final class EditMenuToggles {
             entry(
                     21,
                     new Toggle(
-                            XMaterial.POLISHED_ANDESITE,
+                            Material.POLISHED_ANDESITE,
                             Permissions.EDIT_PLACEMENT,
                             "worldeditor_blockplacement_item",
                             "worldeditor_blockplacement_lore",
@@ -69,7 +69,7 @@ final class EditMenuToggles {
             entry(
                     24,
                     new Toggle(
-                            XMaterial.TNT,
+                            Material.TNT,
                             Permissions.EDIT_EXPLOSIONS,
                             "worldeditor_explosions_item",
                             "worldeditor_explosions_lore",
@@ -77,7 +77,7 @@ final class EditMenuToggles {
             entry(
                     31,
                     new Toggle(
-                            XMaterial.ARMOR_STAND,
+                            Material.ARMOR_STAND,
                             Permissions.EDIT_MOBAI,
                             "worldeditor_mobai_item",
                             "worldeditor_mobai_lore",
@@ -85,7 +85,7 @@ final class EditMenuToggles {
             entry(
                     33,
                     new Toggle(
-                            XMaterial.TRIPWIRE_HOOK,
+                            Material.TRIPWIRE_HOOK,
                             Permissions.EDIT_INTERACTIONS,
                             "worldeditor_blockinteractions_item",
                             "worldeditor_blockinteractions_lore",
@@ -94,8 +94,8 @@ final class EditMenuToggles {
     private EditMenuToggles() {}
 
     record Toggle(
-            XMaterial material,
-            XMaterial enabledMaterial,
+            Material material,
+            Material enabledMaterial,
             String permission,
             String itemKey,
             String loreKey,
@@ -104,7 +104,7 @@ final class EditMenuToggles {
         /**
          * Creates a toggle whose icon is the same whether the setting is enabled or not.
          */
-        Toggle(XMaterial material, String permission, String itemKey, String loreKey, WorldDataKey<Boolean> key) {
+        Toggle(Material material, String permission, String itemKey, String loreKey, WorldDataKey<Boolean> key) {
             this(material, material, permission, itemKey, loreKey, key);
         }
 
@@ -123,7 +123,7 @@ final class EditMenuToggles {
             menuItems.addToggleItem(player, inventory, slot, iconFor(enabled), enabled, itemKey, loreKey);
         }
 
-        private XMaterial iconFor(boolean enabled) {
+        private Material iconFor(boolean enabled) {
             return enabled ? enabledMaterial : material;
         }
     }

@@ -51,7 +51,6 @@ class PaginatedMenuTest {
         return new TestMenu(mock(Messages.class), totalItems);
     }
 
-    // Concrete subclass — sound is a no-op so XSound does not reach the server
     private static class TestMenu extends PaginatedMenu {
 
         private final int total;
@@ -72,12 +71,6 @@ class PaginatedMenuTest {
 
         @Override
         protected void populate(Player player) {}
-
-        @Override
-        protected void playPageSound(Player player) {}
-
-        @Override
-        protected void playRefuseSound(Player player) {}
     }
 
     @Test

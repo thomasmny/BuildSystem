@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.menu;
 
-import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.exceptions.ProfileException;
 import com.cryptomorin.xseries.profiles.objects.ProfileInputType;
@@ -36,6 +34,7 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.stream.IntStream;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -68,11 +67,11 @@ public final class MenuItems {
      */
     public MenuButton backButton(Consumer<Player> onBack) {
         return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.BARRIER)
+                .render((player, inventory, slot) -> ItemBuilder.of(Material.BARRIER)
                         .name(messages.getString("setup_back", player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
-                    XSound.BLOCK_CHEST_OPEN.play(player);
+                    player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
                     onBack.accept(player);
                 })
                 .build();
@@ -133,14 +132,14 @@ public final class MenuItems {
     public void renderIcon(
             Inventory inventory,
             int slot,
-            XMaterial icon,
+            Material icon,
             @Nullable String texture,
             @Nullable Profileable defaultProfile,
             @Nullable Profileable fallback,
             Player viewer,
             String name,
             List<String> lore) {
-        if (icon != XMaterial.PLAYER_HEAD) {
+        if (icon != Material.PLAYER_HEAD) {
             ItemBuilder.of(icon).name(name).lore(lore).into(inventory, slot);
             return;
         }
@@ -152,7 +151,7 @@ public final class MenuItems {
 
         Profileable profile = texture != null && !texture.isBlank() ? profileFor(texture, viewer) : defaultProfile;
         if (profile == null) {
-            ItemBuilder.of(XMaterial.PLAYER_HEAD).name(name).lore(lore).into(inventory, slot);
+            ItemBuilder.of(Material.PLAYER_HEAD).name(name).lore(lore).into(inventory, slot);
             return;
         }
         applyHeadProfileAsync(inventory, slot, profile, fallback, name, lore);
@@ -210,7 +209,7 @@ public final class MenuItems {
         renderIcon(
                 inventory,
                 slot,
-                XMaterial.matchXMaterial(displayable.getIcon()),
+                displayable.getIcon(),
                 displayable.getIconSkullTexture(),
                 source != null ? source.getHeadProfile() : null,
                 source != null ? source.getHeadFallbackProfile() : null,
@@ -235,7 +234,7 @@ public final class MenuItems {
         renderIcon(
                 inventory,
                 slot,
-                XMaterial.matchXMaterial(category.getIcon()),
+                category.getIcon(),
                 ItemBuilder.categoryTexture(category),
                 null,
                 null,
@@ -265,7 +264,7 @@ public final class MenuItems {
             String name,
             List<String> lore) {
         ItemStack placeholder =
-                ItemBuilder.of(XMaterial.PLAYER_HEAD).name(name).lore(lore).build();
+                ItemBuilder.of(Material.PLAYER_HEAD).name(name).lore(lore).build();
         inventory.setItem(slot, placeholder);
 
         resolveHeadAsync(profile, fallback, name, lore, itemStack -> {
@@ -347,7 +346,7 @@ public final class MenuItems {
             Player player,
             Inventory inventory,
             int slot,
-            XMaterial material,
+            Material material,
             boolean enabled,
             String displayNameKey,
             String loreKey) {

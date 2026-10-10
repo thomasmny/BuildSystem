@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
@@ -35,6 +34,7 @@ import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -111,7 +111,7 @@ public class StatusMenu extends ButtonMenu {
                     buildWorld.getData().set(WorldDataKey.STATUS, status);
                     settingsService.forceUpdateSidebar(buildWorld);
 
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                     messages.sendMessage(
                             player,
                             "worlds_setstatus_set",
@@ -135,7 +135,7 @@ public class StatusMenu extends ButtonMenu {
      */
     @Override
     protected void onPermissionDenied(Player player, InventoryClickEvent event) {
-        XSound.ENTITY_ITEM_BREAK.play(player);
+        player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
     }
 
     @Override

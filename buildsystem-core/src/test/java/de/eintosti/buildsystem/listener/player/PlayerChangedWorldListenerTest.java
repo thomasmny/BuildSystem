@@ -18,7 +18,7 @@
 package de.eintosti.buildsystem.listener.player;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -26,15 +26,11 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
-import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.navigator.NavigatorService;
-import de.eintosti.buildsystem.player.BuildPlayerImpl;
-import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.player.settings.SettingsImpl;
-import de.eintosti.buildsystem.player.settings.SettingsService;
-import de.eintosti.buildsystem.storage.PlayerStorageImpl;
+import de.eintosti.buildsystem.test.SoundlessPlayer;
 import de.eintosti.buildsystem.test.TestData;
+import de.eintosti.buildsystem.test.VisibilityFixture;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
@@ -53,27 +49,19 @@ class PlayerChangedWorldListenerTest {
     }
 
     @Test
-    @SuppressWarnings("deprecation")
-    void changingIntoABuildableWorld_keepsThePlayerHiddenFromHidePlayersViewers() {
+    void leavingAnArchiveForABuildableWorld_showsThePlayer_exceptToHidePlayersViewers() {
         ServerMock server = MockBukkit.mock();
         WorldMock from = server.addSimpleWorld("from");
         WorldMock to = server.addSimpleWorld("to");
-        PlayerMock viewer = server.addPlayer("Viewer");
-        PlayerMock target = server.addPlayer("Target");
-        viewer.hidePlayer(target);
+        VisibilityFixture fixture = new VisibilityFixture(MockBukkit.createMockPlugin());
+        PlayerMock viewer = SoundlessPlayer.join(server, "Viewer");
+        PlayerMock bystander = SoundlessPlayer.join(server, "Bystander");
+        PlayerMock target = SoundlessPlayer.join(server, "Target");
+        fixture.hidePlayers(viewer, true);
+        fixture.enterArchive(target);
+        fixture.settingsService.updateVisibility(target);
+        assertFalse(bystander.canSee(target));
         target.teleport(to.getSpawnLocation());
-
-        SettingsImpl viewerSettings = new SettingsImpl();
-        viewerSettings.setHidePlayers(true);
-        SettingsService settingsService = mock(SettingsService.class);
-        when(settingsService.getSettings(viewer)).thenReturn(viewerSettings);
-        when(settingsService.getSettings(target)).thenReturn(new SettingsImpl());
-
-        PlayerStorageImpl playerStorage = mock(PlayerStorageImpl.class);
-        when(playerStorage.getBuildPlayer(target))
-                .thenReturn(new BuildPlayerImpl(target.getUniqueId(), new SettingsImpl()));
-        PlayerServiceImpl playerService = mock(PlayerServiceImpl.class);
-        when(playerService.getPlayerStorage()).thenReturn(playerStorage);
 
         WorldData data = mock(WorldData.class);
         when(data.get(WorldDataKey.STATUS)).thenReturn(TestData.NOT_STARTED);
@@ -85,13 +73,14 @@ class PlayerChangedWorldListenerTest {
 
         PlayerChangedWorldListener listener = new PlayerChangedWorldListener(
                 mock(NavigatorService.class),
-                playerService,
-                settingsService,
+                fixture.playerService,
+                fixture.settingsService,
                 worldStorage,
-                mock(ConfigService.class, RETURNS_DEEP_STUBS),
+                fixture.configService,
                 mock(Messages.class));
         listener.onPlayerChangedWorld(new PlayerChangedWorldEvent(target, from));
 
+        assertTrue(bystander.canSee(target));
         assertFalse(viewer.canSee(target));
     }
 }

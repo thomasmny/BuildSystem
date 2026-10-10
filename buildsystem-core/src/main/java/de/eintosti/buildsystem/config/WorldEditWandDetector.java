@@ -17,9 +17,11 @@
  */
 package de.eintosti.buildsystem.config;
 
-import com.cryptomorin.xseries.XMaterial;
+import de.eintosti.buildsystem.util.MaterialUtils;
 import java.io.File;
 import java.util.Locale;
+import java.util.Objects;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -36,7 +38,7 @@ public final class WorldEditWandDetector {
     /**
      * Used when no WorldEdit install is found or its wand cannot be resolved.
      */
-    public static final XMaterial DEFAULT_WAND = XMaterial.WOODEN_AXE;
+    public static final Material DEFAULT_WAND = Material.WOODEN_AXE;
 
     private final @Nullable File pluginsDir;
 
@@ -52,7 +54,7 @@ public final class WorldEditWandDetector {
      * {@return the configured WorldEdit wand, or {@link #DEFAULT_WAND} when WorldEdit is absent or its wand cannot be
      * resolved}
      */
-    public XMaterial detect() {
+    public Material detect() {
         File configFile = locateConfig();
         if (configFile == null) {
             return DEFAULT_WAND;
@@ -68,7 +70,7 @@ public final class WorldEditWandDetector {
         if (wand.toLowerCase(Locale.ROOT).startsWith(namespace)) {
             wand = wand.substring(namespace.length());
         }
-        return XMaterial.matchXMaterial(wand).orElse(DEFAULT_WAND);
+        return Objects.requireNonNullElse(MaterialUtils.match(wand), DEFAULT_WAND);
     }
 
     /**

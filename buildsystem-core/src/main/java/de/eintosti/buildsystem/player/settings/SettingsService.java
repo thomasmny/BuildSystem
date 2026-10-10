@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.player.settings;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builders;
@@ -26,6 +25,7 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.color.ColorAPI;
@@ -39,6 +39,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
@@ -46,7 +47,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SettingsService {
 
-    private final BuildSystemPlugin plugin;
+    private final Plugin plugin;
     private final TaskScheduler scheduler;
     private final ConfigService configService;
     private final Messages messages;
@@ -57,7 +58,7 @@ public class SettingsService {
     private final Map<UUID, BukkitTask> scoreboardTasks;
 
     public SettingsService(
-            BuildSystemPlugin plugin,
+            Plugin plugin,
             TaskScheduler scheduler,
             ConfigService configService,
             Messages messages,
@@ -76,6 +77,57 @@ public class SettingsService {
 
     public Settings getSettings(Player player) {
         return playerService.getPlayerStorage().getBuildPlayer(player).getSettings();
+    }
+
+    /**
+     * Shows or hides the player to every other online player, and every other online player to them. A viewer who
+     * turned on hide players sees nobody, and nobody sees a player in archive mode while the archive vanish is on.
+     *
+     * <p>A player that another plugin made invisible by default is never shown, since showing them would reveal them
+     * to everyone that plugin hid them from.
+     *
+     * @param player The player who joined, changed world or toggled hide players
+     */
+    public void updateVisibility(Player player) {
+        boolean hidesOthers = getSettings(player).isHidePlayers();
+        boolean vanished = isArchiveVanished(player);
+        for (Player other : Bukkit.getOnlinePlayers()) {
+            if (other.equals(player)) {
+                continue;
+            }
+            setVisible(other, player, !vanished && !getSettings(other).isHidePlayers());
+            setVisible(player, other, !hidesOthers && !isArchiveVanished(other));
+        }
+    }
+
+    /**
+     * Lifts every hide this plugin made. Paper keeps hides per plugin instance, so after a reload the new instance
+     * could not undo the old one's and players would stay hidden until they relog. Called on disable; the next
+     * instance applies the rule again on enable.
+     */
+    public void showAllPlayers() {
+        for (Player viewer : Bukkit.getOnlinePlayers()) {
+            for (Player target : Bukkit.getOnlinePlayers()) {
+                if (!target.equals(viewer) && target.isVisibleByDefault()) {
+                    viewer.showPlayer(plugin, target);
+                }
+            }
+        }
+    }
+
+    private boolean isArchiveVanished(Player player) {
+        return configService.current().settings().archive().vanish()
+                && BuildPlayerImpl.of(playerService.getPlayerStorage().getBuildPlayer(player))
+                        .getCachedValues()
+                        .hasArchiveState();
+    }
+
+    private void setVisible(Player viewer, Player target, boolean visible) {
+        if (!visible) {
+            viewer.hidePlayer(plugin, target);
+        } else if (target.isVisibleByDefault()) {
+            viewer.showPlayer(plugin, target);
+        }
     }
 
     /**

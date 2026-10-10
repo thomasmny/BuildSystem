@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -54,6 +52,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -273,7 +273,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                         .name(messages.getString(nameKey, p))
                         .into(inventory, slot))
                 .onClick((p, event) -> {
-                    XSound.ENTITY_CHICKEN_EGG.play(p);
+                    p.playSound(p, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                     onCreate.accept(p);
                 })
                 .build();
@@ -342,7 +342,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     protected void onUnhandledClick(Player player, InventoryClickEvent event) {
         int slot = event.getRawSlot();
         if (slot >= FIRST_BOTTOM_BAR_SLOT && slot <= LAST_BOTTOM_BAR_SLOT) {
-            XSound.BLOCK_CHEST_OPEN.play(player);
+            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
             returnToPreviousInventory();
         }
     }
@@ -414,7 +414,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
                         case OLDEST_FIRST -> "world_sort_date_oldest";
                     };
 
-            ItemBuilder.of(XMaterial.BOOK)
+            ItemBuilder.of(Material.BOOK)
                     .name(messages.getString("world_sort_title", player))
                     .lore(messages.getString(messageKey, player))
                     .into(inventory, SLOT_WORLD_SORT);
@@ -436,7 +436,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
             lore.add(messages.getString(loreKey, player, Placeholders.of("%text%", worldFilter.getText())));
             lore.addAll(messages.getStringList("world_filter_lore", player));
 
-            ItemBuilder.of(XMaterial.HOPPER)
+            ItemBuilder.of(Material.HOPPER)
                     .name(messages.getString("world_filter_title", player))
                     .lore(lore)
                     .into(inventory, SLOT_WORLD_FILTER);

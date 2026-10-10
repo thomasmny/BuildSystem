@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.config;
 
 import com.cryptomorin.xseries.XGameRule;
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.util.MaterialUtils;
@@ -84,7 +83,7 @@ public class ConfigService {
      * @param worldEditWand The resolved WorldEdit wand material
      * @return The parsed {@link PluginConfig}
      */
-    static PluginConfig parse(FileConfiguration config, Logger logger, XMaterial worldEditWand) {
+    static PluginConfig parse(FileConfiguration config, Logger logger, Material worldEditWand) {
         PluginConfig.Storage storage = StorageSettingsFactory.fromConfig(config);
         return new PluginConfig(
                 parseSettings(config, worldEditWand, logger),
@@ -94,7 +93,7 @@ public class ConfigService {
     }
 
     private static PluginConfig.Settings parseSettings(
-            FileConfiguration config, XMaterial worldEditWand, Logger logger) {
+            FileConfiguration config, Material worldEditWand, Logger logger) {
         PluginConfig.Settings.Archive archive = new PluginConfig.Settings.Archive(
                 config.getBoolean("settings.archive.vanish", true),
                 config.getBoolean("settings.archive.change-gamemode", true),
@@ -262,15 +261,14 @@ public class ConfigService {
         return new PluginConfig.World.VoidBlock(enabled, material);
     }
 
-    private static XMaterial parseNavigatorItem(FileConfiguration config, Logger logger) {
+    private static Material parseNavigatorItem(FileConfiguration config, Logger logger) {
         String raw = Objects.requireNonNullElse(config.getString("settings.navigator.item"), "CLOCK");
-        return XMaterial.matchXMaterial(raw)
-                .filter(XMaterial::isSupported)
-                .filter(material -> material.get().isItem())
-                .orElseGet(() -> {
-                    logger.warning("Invalid navigator item \"" + raw + "\". Defaulting to CLOCK.");
-                    return XMaterial.CLOCK;
-                });
+        Material material = MaterialUtils.match(raw);
+        if (material == null || !material.isItem()) {
+            logger.warning("Invalid navigator item \"" + raw + "\". Defaulting to CLOCK.");
+            return Material.CLOCK;
+        }
+        return material;
     }
 
     private static Difficulty parseDifficulty(FileConfiguration config, Logger logger) {

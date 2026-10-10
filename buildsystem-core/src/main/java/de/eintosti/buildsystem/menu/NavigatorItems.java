@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.menu;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import java.util.List;
@@ -76,7 +75,7 @@ public final class NavigatorItems {
      */
     @Contract("_ -> new")
     public ItemStack createBarrier(Player player) {
-        return ItemBuilder.of(XMaterial.BARRIER)
+        return ItemBuilder.of(Material.BARRIER)
                 .name(messages.getString("barrier_item", player))
                 .pdc(barrierKey, PersistentDataType.BOOLEAN, true)
                 .build();
@@ -100,7 +99,7 @@ public final class NavigatorItems {
     public boolean is(@Nullable ItemStack itemStack) {
         if (itemStack == null
                 || itemStack.getType()
-                        != configService.current().settings().navigator().item().get()) {
+                        != configService.current().settings().navigator().item()) {
             return false;
         }
 
@@ -161,7 +160,7 @@ public final class NavigatorItems {
         }
 
         ItemStack slot8 = inventory.getItem(8);
-        if (slot8 == null || slot8.getType() == XMaterial.AIR.get()) {
+        if (slot8 == null || slot8.getType() == Material.AIR) {
             inventory.setItem(8, replaceItem);
         } else {
             inventory.addItem(replaceItem);

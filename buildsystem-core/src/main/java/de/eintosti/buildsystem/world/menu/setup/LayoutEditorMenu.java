@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
-import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.display.Registry;
 import de.eintosti.buildsystem.api.world.display.RegistryEntry;
@@ -33,6 +31,8 @@ import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.List;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -223,7 +223,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
         Inventory playerInventory = player.getInventory();
         playerInventory.clear();
 
-        ItemBuilder.of(XMaterial.BARRIER)
+        ItemBuilder.of(Material.BARRIER)
                 .name(messages.getString("setup_back", player))
                 .into(playerInventory, BACK_SLOT);
         ItemBuilder.skull(Profileable.detect(SkullTextures.ADD_ITEM))
@@ -346,7 +346,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
         }
 
         if (slot == BACK_SLOT) {
-            XSound.BLOCK_CHEST_OPEN.play(player);
+            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
             player.closeInventory();
             menus.openSetup(player);
             return;
@@ -383,7 +383,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
             if (refusesLastEntry() && registry().getAll().size() == 1) {
                 messages.sendMessage(player, "setup_delete_last");
             } else if (registry().delete(held.getEntryId())) {
-                XSound.ENTITY_ITEM_BREAK.play(player);
+                player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
             }
         }
         clearHeld(player);
@@ -417,7 +417,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
                     } else {
                         registry().resetLayout();
                     }
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                     reopen(player);
                 },
                 () -> reopen(player));
@@ -459,7 +459,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
         }
 
         setCursorNextTick(player, cursor);
-        XSound.ITEM_ARMOR_EQUIP_LEATHER.play(player);
+        player.playSound(player, Sound.ITEM_ARMOR_EQUIP_LEATHER, 1f, 1f);
         refresh(player);
     }
 

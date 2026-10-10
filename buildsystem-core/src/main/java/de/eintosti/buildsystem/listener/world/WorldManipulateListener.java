@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.listener.world;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.event.world.BuildWorldManipulationEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldSetting;
@@ -28,6 +27,7 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.event.EventDispatcher;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import org.bukkit.Material;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -93,12 +93,7 @@ public class WorldManipulateListener implements Listener {
         ItemStack itemStack = event.getItem();
         if (itemStack != null
                 && itemStack.getType()
-                        == configService
-                                .current()
-                                .settings()
-                                .builder()
-                                .worldEditWand()
-                                .get()) {
+                        == configService.current().settings().builder().worldEditWand()) {
             return;
         }
 
@@ -111,7 +106,7 @@ public class WorldManipulateListener implements Listener {
         dispatcher.tryDispatchManipulationEvent(player, event);
 
         if (!buildWorld.getData().get(WorldDataKey.PHYSICS) && event.getClickedBlock() != null) {
-            if (event.getAction() == Action.PHYSICAL && event.getClickedBlock().getType() == XMaterial.FARMLAND.get()) {
+            if (event.getAction() == Action.PHYSICAL && event.getClickedBlock().getType() == Material.FARMLAND) {
                 event.setCancelled(true);
             }
         }

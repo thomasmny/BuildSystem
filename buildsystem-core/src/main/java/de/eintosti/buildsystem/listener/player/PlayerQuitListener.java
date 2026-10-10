@@ -29,7 +29,6 @@ import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.world.WorldNames;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -96,30 +95,12 @@ public class PlayerQuitListener implements Listener {
         // The snapshots only live in memory, so hand them back before the server saves the player. Build mode is
         // unwound first, as on a world change: inside an archive world its snapshot is the emptied inventory.
         playerManager.endBuildSession(player);
-        ArchiveMode.exit(player, buildPlayer.getCachedValues(), settingsManager);
+        ArchiveMode.exit(player, buildPlayer.getCachedValues());
 
         if (settings.isClearInventory()) {
             player.getInventory().clear();
         }
 
         buildPlayer.setLogoutLocation(new LogoutLocation(WorldNames.of(player.getWorld()), player.getLocation()));
-
-        manageHidePlayer(player);
-    }
-
-    @SuppressWarnings("deprecation")
-    private void manageHidePlayer(Player player) {
-        // Show all hidden players to player
-        if (settingsManager.getSettings(player).isHidePlayers()) {
-            Bukkit.getOnlinePlayers().forEach(player::showPlayer);
-        }
-
-        // Show player to all players who had them hidden
-        for (Player pl : Bukkit.getOnlinePlayers()) {
-            if (!settingsManager.getSettings(pl).isHidePlayers()) {
-                continue;
-            }
-            pl.showPlayer(player);
-        }
     }
 }

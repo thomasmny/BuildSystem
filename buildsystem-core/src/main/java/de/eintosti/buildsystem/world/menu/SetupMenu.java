@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
@@ -26,6 +24,8 @@ import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import java.util.function.Consumer;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -50,19 +50,19 @@ public class SetupMenu extends ButtonMenu {
 
         register(
                 SLOT_DEFAULT_ICONS,
-                hubButton(XMaterial.ITEM_FRAME, "setup_default_icons_item", menus::openDefaultIcons));
-        register(SLOT_STATUSES, hubButton(XMaterial.NAME_TAG, "setup_statuses_item", menus::openStatusLayout));
-        register(SLOT_NAVIGATOR, hubButton(XMaterial.COMPASS, "setup_navigator_item", menus::openNavigatorLayout));
+                hubButton(Material.ITEM_FRAME, "setup_default_icons_item", menus::openDefaultIcons));
+        register(SLOT_STATUSES, hubButton(Material.NAME_TAG, "setup_statuses_item", menus::openStatusLayout));
+        register(SLOT_NAVIGATOR, hubButton(Material.COMPASS, "setup_navigator_item", menus::openNavigatorLayout));
     }
 
-    private MenuButton hubButton(XMaterial icon, String nameKey, Consumer<Player> open) {
+    private MenuButton hubButton(Material icon, String nameKey, Consumer<Player> open) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(icon)
                         .name(messages.getString(nameKey, player))
                         .lore(messages.getStringList(nameKey + "_lore", player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
-                    XSound.BLOCK_CHEST_OPEN.play(player);
+                    player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
                     open.accept(player);
                 })
                 .build();

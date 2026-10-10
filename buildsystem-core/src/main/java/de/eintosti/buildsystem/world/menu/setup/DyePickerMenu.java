@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
-import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
@@ -27,6 +25,8 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.List;
 import java.util.function.Consumer;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -45,27 +45,27 @@ public class DyePickerMenu extends ButtonMenu {
      * @param swatch The dye material used as the swatch icon
      * @param label The colour's name, rendered in its own colour
      */
-    private record Swatch(String token, XMaterial swatch, String label) {}
+    private record Swatch(String token, Material swatch, String label) {}
 
     // Ordered by colour family — reds, oranges/yellows, greens, aquas, blues, purples, then greyscale dark→light — so
     // the palette reads as a sorted gradient rather than the raw chat-code order.
     private static final List<Swatch> SWATCHES = List.of(
-            new Swatch("&4", XMaterial.REDSTONE, "Dark Red"),
-            new Swatch("&c", XMaterial.RED_DYE, "Red"),
-            new Swatch("&6", XMaterial.ORANGE_DYE, "Gold"),
-            new Swatch("&e", XMaterial.YELLOW_DYE, "Yellow"),
-            new Swatch("&2", XMaterial.GREEN_DYE, "Dark Green"),
-            new Swatch("&a", XMaterial.LIME_DYE, "Green"),
-            new Swatch("&3", XMaterial.CYAN_DYE, "Dark Aqua"),
-            new Swatch("&b", XMaterial.LIGHT_BLUE_DYE, "Aqua"),
-            new Swatch("&1", XMaterial.BLUE_DYE, "Dark Blue"),
-            new Swatch("&9", XMaterial.LAPIS_LAZULI, "Blue"),
-            new Swatch("&5", XMaterial.PURPLE_DYE, "Dark Purple"),
-            new Swatch("&d", XMaterial.MAGENTA_DYE, "Light Purple"),
-            new Swatch("&0", XMaterial.BLACK_DYE, "Black"),
-            new Swatch("&8", XMaterial.GRAY_DYE, "Dark Gray"),
-            new Swatch("&7", XMaterial.LIGHT_GRAY_DYE, "Gray"),
-            new Swatch("&f", XMaterial.WHITE_DYE, "White"));
+            new Swatch("&4", Material.REDSTONE, "Dark Red"),
+            new Swatch("&c", Material.RED_DYE, "Red"),
+            new Swatch("&6", Material.ORANGE_DYE, "Gold"),
+            new Swatch("&e", Material.YELLOW_DYE, "Yellow"),
+            new Swatch("&2", Material.GREEN_DYE, "Dark Green"),
+            new Swatch("&a", Material.LIME_DYE, "Green"),
+            new Swatch("&3", Material.CYAN_DYE, "Dark Aqua"),
+            new Swatch("&b", Material.LIGHT_BLUE_DYE, "Aqua"),
+            new Swatch("&1", Material.BLUE_DYE, "Dark Blue"),
+            new Swatch("&9", Material.LAPIS_LAZULI, "Blue"),
+            new Swatch("&5", Material.PURPLE_DYE, "Dark Purple"),
+            new Swatch("&d", Material.MAGENTA_DYE, "Light Purple"),
+            new Swatch("&0", Material.BLACK_DYE, "Black"),
+            new Swatch("&8", Material.GRAY_DYE, "Dark Gray"),
+            new Swatch("&7", Material.LIGHT_GRAY_DYE, "Gray"),
+            new Swatch("&f", Material.WHITE_DYE, "White"));
 
     // Three rows of swatches, seven per row (the last holds the remaining two), inside the plugin's one-slot border.
     private static final int[] SWATCH_SLOTS = {
@@ -104,12 +104,12 @@ public class DyePickerMenu extends ButtonMenu {
      *
      * @param token The legacy colour token (e.g. {@code "&a"})
      */
-    public static XMaterial dyeFor(String token) {
+    public static Material dyeFor(String token) {
         return SWATCHES.stream()
                 .filter(swatch -> swatch.token().equalsIgnoreCase(token))
                 .map(Swatch::swatch)
                 .findFirst()
-                .orElse(XMaterial.BLACK_DYE);
+                .orElse(Material.BLACK_DYE);
     }
 
     private void setupButtons() {
@@ -126,7 +126,7 @@ public class DyePickerMenu extends ButtonMenu {
                         .glow(swatch.token().equalsIgnoreCase(currentToken))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                     onPick.accept(swatch.token());
                 })
                 .build();

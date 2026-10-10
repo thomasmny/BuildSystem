@@ -18,8 +18,6 @@
 package de.eintosti.buildsystem.world.menu;
 
 import com.cryptomorin.xseries.XGameRule;
-import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
@@ -34,6 +32,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Logger;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -109,13 +109,13 @@ public class GameRulesMenu extends PaginatedMenu {
                                 "GameRule '%s' does not exist in world '%s'.".formatted(gameRuleName, world.getName()));
                         return;
                     }
-                    ItemBuilder.of(isEnabled(world, gameRule) ? XMaterial.FILLED_MAP : XMaterial.MAP)
+                    ItemBuilder.of(isEnabled(world, gameRule) ? Material.FILLED_MAP : Material.MAP)
                             .name(ChatColor.YELLOW + gameRule.name())
                             .lore(getLore(world, gameRule, player))
                             .into(inventory, slot);
                 })
                 .onClick((player, event) -> {
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                     modifyGameRule(world, gameRuleName, event);
                     populate(player);
                 })

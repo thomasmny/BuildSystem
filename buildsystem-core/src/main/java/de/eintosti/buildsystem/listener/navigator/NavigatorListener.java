@@ -17,9 +17,6 @@
  */
 package de.eintosti.buildsystem.listener.navigator;
 
-import com.cryptomorin.xseries.XPotion;
-import com.cryptomorin.xseries.XSound;
-import com.cryptomorin.xseries.inventory.XInventoryView;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
@@ -38,6 +35,7 @@ import de.eintosti.buildsystem.util.Permissions;
 import java.util.Objects;
 import java.util.UUID;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -51,6 +49,7 @@ import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 import org.jspecify.annotations.NullMarked;
 
@@ -98,7 +97,7 @@ public class NavigatorListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        if (XInventoryView.of(player.getOpenInventory()).getTopInventory().getType() != InventoryType.CRAFTING) {
+        if (player.getOpenInventory().getTopInventory().getType() != InventoryType.CRAFTING) {
             return;
         }
 
@@ -120,7 +119,7 @@ public class NavigatorListener implements Listener {
         switch (settings.getNavigatorType()) {
             case OLD -> {
                 menus.openNavigator(player);
-                XSound.BLOCK_CHEST_OPEN.play(player);
+                player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
             }
             case NEW -> {
                 if (navigatorService.isNavigatorOpen(player)) {
@@ -146,9 +145,9 @@ public class NavigatorListener implements Listener {
         player.setVelocity(new Vector(0, 0, 0));
         player.teleport(player.getLocation());
         player.addPotionEffect(
-                new PotionEffect(XPotion.BLINDNESS.get(), PotionEffect.INFINITE_DURATION, 0, false, false));
+                new PotionEffect(PotionEffectType.BLINDNESS, PotionEffect.INFINITE_DURATION, 0, false, false));
         player.addPotionEffect(
-                new PotionEffect(XPotion.JUMP_BOOST.get(), PotionEffect.INFINITE_DURATION, 250, false, false));
+                new PotionEffect(PotionEffectType.JUMP_BOOST, PotionEffect.INFINITE_DURATION, 250, false, false));
 
         navigatorService.spawnArmorStands(player);
         navigatorService.markNavigatorOpen(player);
@@ -188,7 +187,7 @@ public class NavigatorListener implements Listener {
                 return;
             }
 
-            XSound.BLOCK_CHEST_OPEN.play(player);
+            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
             menus.openCategoryWorlds(category, player);
         }
     }

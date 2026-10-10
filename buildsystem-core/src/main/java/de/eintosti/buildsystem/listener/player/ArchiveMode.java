@@ -17,14 +17,12 @@
  */
 package de.eintosti.buildsystem.listener.player;
 
-import com.cryptomorin.xseries.XPotion;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.player.CachedValues;
-import de.eintosti.buildsystem.player.settings.SettingsService;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -41,7 +39,6 @@ final class ArchiveMode {
      * snapshot is handed back by {@link CachedValues#resetArchiveStateIfPresent(Player)}. Does nothing for a player
      * already in archive mode, whose snapshot would otherwise be replaced by the emptied inventory.
      */
-    @SuppressWarnings("deprecation")
     static void enter(Player player, CachedValues cachedValues, PluginConfig.Settings.Archive archive) {
         if (cachedValues.hasArchiveState()) {
             return;
@@ -65,14 +62,13 @@ final class ArchiveMode {
 
         if (archive.vanish()) {
             player.addPotionEffect(
-                    new PotionEffect(XPotion.INVISIBILITY.get(), PotionEffect.INFINITE_DURATION, 0, false, false),
+                    new PotionEffect(PotionEffectType.INVISIBILITY, PotionEffect.INFINITE_DURATION, 0, false, false),
                     false);
-            Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
         }
     }
 
     /**
-     * Hands back what {@link #enter} took and makes the player visible again. Safe to call for a player who is not in
+     * Hands back what {@link #enter} took and removes the archive invisibility. Safe to call for a player who is not in
      * archive mode. Called before the player quits as well, so the endless invisibility is never saved into their
      * player data.
      *
@@ -80,18 +76,12 @@ final class ArchiveMode {
      * it into player data, so it is also removed from players who carry it without a snapshot. Any other invisibility,
      * such as a potion, is left alone.
      */
-    @SuppressWarnings("deprecation")
-    static void exit(Player player, CachedValues cachedValues, SettingsService settingsService) {
+    static void exit(Player player, CachedValues cachedValues) {
         cachedValues.resetArchiveStateIfPresent(player);
-        PotionEffect invisibility = player.getPotionEffect(XPotion.INVISIBILITY.get());
-        if (invisibility == null || !isArchiveInvisibility(invisibility)) {
-            return;
+        PotionEffect invisibility = player.getPotionEffect(PotionEffectType.INVISIBILITY);
+        if (invisibility != null && isArchiveInvisibility(invisibility)) {
+            player.removePotionEffect(PotionEffectType.INVISIBILITY);
         }
-
-        player.removePotionEffect(XPotion.INVISIBILITY.get());
-        Bukkit.getOnlinePlayers().stream()
-                .filter(pl -> !settingsService.getSettings(pl).isHidePlayers())
-                .forEach(pl -> pl.showPlayer(player));
     }
 
     private static boolean isArchiveInvisibility(PotionEffect effect) {

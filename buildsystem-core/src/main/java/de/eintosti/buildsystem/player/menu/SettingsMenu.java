@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.player.menu;
 
-import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
@@ -37,6 +35,8 @@ import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -78,7 +78,7 @@ public class SettingsMenu extends ButtonMenu {
                         .render(this::renderDesign)
                         .onClick((player, event) -> {
                             menus.openDesign(player);
-                            XSound.ENTITY_ITEM_PICKUP.play(player);
+                            player.playSound(player, Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
                         })
                         .build());
 
@@ -88,7 +88,7 @@ public class SettingsMenu extends ButtonMenu {
                         "clear-inventory",
                         "settings_clear_inventory_item",
                         "settings_clear_inventory_lore",
-                        s -> s.isClearInventory() ? XMaterial.MINECART : XMaterial.CHEST_MINECART,
+                        s -> s.isClearInventory() ? Material.MINECART : Material.CHEST_MINECART,
                         Settings::isClearInventory,
                         (player, s) -> s.setClearInventory(!s.isClearInventory())));
         register(
@@ -97,7 +97,7 @@ public class SettingsMenu extends ButtonMenu {
                         "disable-interact",
                         "settings_disableinteract_item",
                         "settings_disableinteract_lore",
-                        XMaterial.DIAMOND_AXE,
+                        Material.DIAMOND_AXE,
                         Settings::isDisableInteract,
                         (player, s) -> s.setDisableInteract(!s.isDisableInteract())));
         register(
@@ -106,11 +106,11 @@ public class SettingsMenu extends ButtonMenu {
                         "hide-players",
                         "settings_hideplayers_item",
                         "settings_hideplayers_lore",
-                        XMaterial.ENDER_EYE,
+                        Material.ENDER_EYE,
                         Settings::isHidePlayers,
                         (player, s) -> {
                             s.setHidePlayers(!s.isHidePlayers());
-                            toggles.toggleHidePlayers(player, s);
+                            toggles.toggleHidePlayers(player);
                         }));
         register(
                 15,
@@ -118,7 +118,7 @@ public class SettingsMenu extends ButtonMenu {
                         "instant-place-signs",
                         "settings_instantplacesigns_item",
                         "settings_instantplacesigns_lore",
-                        XMaterial.OAK_SIGN,
+                        Material.OAK_SIGN,
                         Settings::isInstantPlaceSigns,
                         (player, s) -> s.setInstantPlaceSigns(!s.isInstantPlaceSigns())));
         register(
@@ -127,7 +127,7 @@ public class SettingsMenu extends ButtonMenu {
                         "keep-navigator",
                         "settings_keep_navigator_item",
                         "settings_keep_navigator_lore",
-                        XMaterial.SLIME_BLOCK,
+                        Material.SLIME_BLOCK,
                         Settings::isKeepNavigator,
                         (player, s) -> s.setKeepNavigator(!s.isKeepNavigator())));
         register(
@@ -145,7 +145,7 @@ public class SettingsMenu extends ButtonMenu {
                         "night-vision",
                         "settings_nightvision_item",
                         "settings_nightvision_lore",
-                        XMaterial.GOLDEN_CARROT,
+                        Material.GOLDEN_CARROT,
                         Settings::isNightVision,
                         toggles::toggleNightVision));
         register(
@@ -154,7 +154,7 @@ public class SettingsMenu extends ButtonMenu {
                         "no-clip",
                         "settings_no_clip_item",
                         "settings_no_clip_lore",
-                        XMaterial.BRICKS,
+                        Material.BRICKS,
                         Settings::isNoClip,
                         toggles::toggleNoClip));
         register(
@@ -163,7 +163,7 @@ public class SettingsMenu extends ButtonMenu {
                         "open-trapdoors",
                         "settings_open_trapdoors_item",
                         "settings_open_trapdoors_lore",
-                        XMaterial.IRON_TRAPDOOR,
+                        Material.IRON_TRAPDOOR,
                         Settings::isOpenTrapDoors,
                         (player, s) -> s.setOpenTrapDoors(!s.isOpenTrapDoors())));
         register(
@@ -172,7 +172,7 @@ public class SettingsMenu extends ButtonMenu {
                         "place-plants",
                         "settings_placeplants_item",
                         "settings_placeplants_lore",
-                        XMaterial.FERN,
+                        Material.FERN,
                         Settings::isPlacePlants,
                         (player, s) -> s.setPlacePlants(!s.isPlacePlants())));
         register(30, scoreboardButton());
@@ -182,7 +182,7 @@ public class SettingsMenu extends ButtonMenu {
                         "slab-breaking",
                         "settings_slab_breaking_item",
                         "settings_slab_breaking_lore",
-                        XMaterial.SMOOTH_STONE_SLAB,
+                        Material.SMOOTH_STONE_SLAB,
                         Settings::isSlabBreaking,
                         (player, s) -> s.setSlabBreaking(!s.isSlabBreaking())));
         register(
@@ -191,7 +191,7 @@ public class SettingsMenu extends ButtonMenu {
                         "spawn-teleport",
                         "settings_spawnteleport_item",
                         "settings_spawnteleport_lore",
-                        XMaterial.MAGMA_CREAM,
+                        Material.MAGMA_CREAM,
                         Settings::isSpawnTeleport,
                         (player, s) -> s.setSpawnTeleport(!s.isSpawnTeleport())));
     }
@@ -200,7 +200,7 @@ public class SettingsMenu extends ButtonMenu {
             String node,
             String itemKey,
             String loreKey,
-            XMaterial material,
+            Material material,
             Predicate<Settings> enabled,
             BiConsumer<Player, Settings> flip) {
         return toggleButton(node, itemKey, loreKey, s -> material, enabled, flip);
@@ -215,7 +215,7 @@ public class SettingsMenu extends ButtonMenu {
             String node,
             String itemKey,
             String loreKey,
-            Function<Settings, XMaterial> material,
+            Function<Settings, Material> material,
             Predicate<Settings> enabled,
             BiConsumer<Player, Settings> flip) {
         return MenuButton.builder()
@@ -249,7 +249,7 @@ public class SettingsMenu extends ButtonMenu {
                             player,
                             inventory,
                             slot,
-                            XMaterial.PAPER,
+                            Material.PAPER,
                             settings.isScoreboard(),
                             scoreboardEnabled ? "settings_scoreboard_item" : "settings_scoreboard_disabled_item",
                             scoreboardEnabled ? "settings_scoreboard_lore" : "settings_scoreboard_disabled_lore");
@@ -272,11 +272,11 @@ public class SettingsMenu extends ButtonMenu {
      */
     private void handleToggle(Player player, BooleanSupplier onToggle) {
         if (!onToggle.getAsBoolean()) {
-            XSound.ENTITY_ITEM_BREAK.play(player);
+            player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
             return;
         }
 
-        XSound.ENTITY_ITEM_PICKUP.play(player);
+        player.playSound(player, Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
         menus.openSettings(player);
     }
 
@@ -287,7 +287,7 @@ public class SettingsMenu extends ButtonMenu {
     @Override
     protected void onPermissionDenied(Player player, InventoryClickEvent event) {
         messages.sendPermissionError(player);
-        XSound.ENTITY_ITEM_BREAK.play(player);
+        player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
     }
 
     @Override

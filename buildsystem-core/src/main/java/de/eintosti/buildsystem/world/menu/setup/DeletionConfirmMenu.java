@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
-import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
@@ -27,6 +25,8 @@ import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.List;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -69,7 +69,7 @@ public class DeletionConfirmMenu extends ButtonMenu {
                         .name(messages.getString(nameKey, player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                     action.run();
                 })
                 .build();
@@ -77,7 +77,7 @@ public class DeletionConfirmMenu extends ButtonMenu {
 
     private MenuButton createInfoButton(String infoName, List<String> infoLore) {
         return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.PAPER)
+                .render((player, inventory, slot) -> ItemBuilder.of(Material.PAPER)
                         .name(infoName)
                         .lore(infoLore)
                         .into(inventory, slot))

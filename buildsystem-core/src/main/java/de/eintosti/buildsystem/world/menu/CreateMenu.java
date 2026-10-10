@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
@@ -41,6 +39,7 @@ import java.util.Arrays;
 import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -144,7 +143,7 @@ public class CreateMenu extends PaginatedMenu {
                         .onClick((player, event) -> {
                             Visibility visibility = createPrivateWorld ? Visibility.ADDED_PLAYERS : Visibility.EVERYONE;
                             menus.openCreate(page, visibility, folder, player);
-                            XSound.ENTITY_CHICKEN_EGG.play(player);
+                            player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                         })
                         .build());
     }
@@ -177,7 +176,7 @@ public class CreateMenu extends PaginatedMenu {
                             null,
                             new WorldNameInputOptions(createPrivateWorld, event.isShiftClick()),
                             folder);
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                 })
                 .build();
     }
@@ -201,7 +200,7 @@ public class CreateMenu extends PaginatedMenu {
      */
     @Override
     protected void onPermissionDenied(Player player, InventoryClickEvent event) {
-        XSound.ENTITY_ITEM_BREAK.play(player);
+        player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
     }
 
     private void registerGenerator(Player player) {
@@ -223,7 +222,7 @@ public class CreateMenu extends PaginatedMenu {
                                     null,
                                     new WorldNameInputOptions(createPrivateWorld, false),
                                     folder);
-                            XSound.ENTITY_CHICKEN_EGG.play(p);
+                            p.playSound(p, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                         })
                         .build());
     }
@@ -241,7 +240,7 @@ public class CreateMenu extends PaginatedMenu {
         this.numTemplates = templateFiles != null ? templateFiles.length : 0;
 
         if (numTemplates == 0) {
-            ItemStack barrier = ItemBuilder.of(XMaterial.BARRIER)
+            ItemStack barrier = ItemBuilder.of(Material.BARRIER)
                     .name(messages.getString("create_no_templates", player))
                     .build();
             for (int i = FIRST_PREDEFINED_SLOT; i <= LAST_PREDEFINED_SLOT; i++) {
@@ -258,7 +257,7 @@ public class CreateMenu extends PaginatedMenu {
 
     private MenuButton templateButton(String rawTemplateName) {
         return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.FILLED_MAP)
+                .render((player, inventory, slot) -> ItemBuilder.of(Material.FILLED_MAP)
                         .name(messages.getString(
                                 "create_template", player, Placeholders.of("%template%", rawTemplateName)))
                         .into(inventory, slot))
