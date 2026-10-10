@@ -65,6 +65,9 @@ class StorageMigratorTest {
 
         @Override
         public Note deserialize(String key, ConfigurationSection section) {
+            if (key.equals("broken")) {
+                throw new IllegalArgumentException("cannot be parsed");
+            }
             return new Note(key, section.getLong("time"));
         }
     };
@@ -146,6 +149,18 @@ class StorageMigratorTest {
         assertEquals(List.of("Kept as it is."), config.getComments("storage.type"));
         assertEquals(target().key(), liveConfig.getString("storage.type"));
         assertFalse(migrator.running());
+    }
+
+    @Test
+    void skipped_countsTheStoredEntriesThatCouldNotLoad() {
+        current.get()
+                .collection(EntityKind.PLAYERS)
+                .upsert(Map.of("broken", Map.of("time", 1), "fine", Map.of("time", 2)));
+
+        notes.load();
+        runAll();
+
+        assertEquals(1, migrator.skipped());
     }
 
     @Test

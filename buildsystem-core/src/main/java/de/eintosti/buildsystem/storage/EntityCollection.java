@@ -52,6 +52,7 @@ public final class EntityCollection<T> {
     private @Nullable Codec<T> codec;
     private CompletableFuture<Void> lastWrite = CompletableFuture.completedFuture(null);
     private volatile boolean loaded;
+    private volatile int skipped;
 
     /**
      * @param label What one entity is called in log messages
@@ -145,6 +146,14 @@ public final class EntityCollection<T> {
         return loaded;
     }
 
+    /**
+     * {@return how many stored entries the last load skipped because they could not be parsed} They stay stored, but
+     * are not in memory.
+     */
+    int skipped() {
+        return skipped;
+    }
+
     private synchronized CompletableFuture<Void> write(Runnable io) {
         CompletableFuture<Void> next =
                 lastWrite.handle((ignored, throwable) -> null).thenRunAsync(io, background);
@@ -168,7 +177,8 @@ public final class EntityCollection<T> {
                         () -> {
                             MemoryConfiguration root = new MemoryConfiguration();
                             Map<String, T> loaded = new LinkedHashMap<>();
-                            store.loadAll().forEach((key, values) -> {
+                            Map<String, Map<String, Object>> stored = store.loadAll();
+                            stored.forEach((key, values) -> {
                                 try {
                                     // Throws for an empty key or field name, which only a database can hold.
                                     ConfigurationSection section = root.createSection(key, values);
@@ -183,6 +193,7 @@ public final class EntityCollection<T> {
                                             e);
                                 }
                             });
+                            skipped = stored.size() - loaded.size();
                             link.accept(loaded, root);
                             return loaded;
                         },

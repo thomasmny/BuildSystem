@@ -119,6 +119,14 @@ public final class StorageMigrator {
     }
 
     /**
+     * {@return how many stored entries could not be loaded} A migration does not copy them, since it copies what is in
+     * memory.
+     */
+    public int skipped() {
+        return parts.stream().mapToInt(part -> part.collection().skipped()).sum();
+    }
+
+    /**
      * Copies what is in memory to {@code type}, checks it by reading it back, writes {@code storage.type} and switches
      * to it. Call on the main thread, where the entities are owned.
      *

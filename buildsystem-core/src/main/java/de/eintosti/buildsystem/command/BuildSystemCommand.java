@@ -211,6 +211,19 @@ public class BuildSystemCommand extends CommandBase {
                                         "storage_migrate_target_has_data",
                                         Placeholders.of("%type%", type.displayName()));
                             }
+                            if (migrator.skipped() > 0) {
+                                messages.sendMessage(
+                                        sender,
+                                        "storage_migrate_skipped",
+                                        Placeholders.of()
+                                                .add("%skipped%", String.valueOf(migrator.skipped()))
+                                                .add(
+                                                        "%from%",
+                                                        services.storage()
+                                                                .type()
+                                                                .displayName())
+                                                .build());
+                            }
                             messages.sendMessage(
                                     sender,
                                     "storage_migrate_confirm",
