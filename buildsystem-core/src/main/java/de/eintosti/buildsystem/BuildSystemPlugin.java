@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.listener.ListenerRegistrar;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.util.Permissions;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.WorldNames;
 import java.io.File;
@@ -40,6 +41,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.jspecify.annotations.Nullable;
 
 public class BuildSystemPlugin extends JavaPlugin {
 
@@ -50,10 +52,11 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     private ConfigService configService;
     private Messages messages;
-    private Services services;
+    private @Nullable TaskScheduler scheduler;
+    private @Nullable Services services;
     private UpdateChecker updateChecker;
-    private Integrations integrations;
-    private BuildSystemApi api;
+    private @Nullable Integrations integrations;
+    private @Nullable BuildSystemApi api;
     private BukkitTask configSaveTask;
 
     @Override
@@ -70,7 +73,8 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        this.services = new Services(this, configService, messages);
+        this.scheduler = new TaskScheduler(this);
+        this.services = new Services(this, scheduler, configService, messages);
         this.services.loadWorlds();
         this.updateChecker = new UpdateChecker(this, services.scheduler().background());
         performUpdateCheck();
@@ -110,6 +114,14 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (services == null) {
+            // onEnable failed before the services existed, so nothing was loaded that could be saved.
+            if (scheduler != null) {
+                scheduler.shutdown();
+            }
+            return;
+        }
+
         Bukkit.getOnlinePlayers().forEach(pl -> {
             BuildPlayerImpl buildPlayer =
                     BuildPlayerImpl.of(services.player().getPlayerStorage().getBuildPlayer(pl));
@@ -145,8 +157,13 @@ public class BuildSystemPlugin extends JavaPlugin {
         // Shut the shared background pool down only after the final saves above have completed.
         services.scheduler().shutdown();
 
-        this.integrations.deactivate();
-        getServer().getServicesManager().unregister(BuildSystem.class, api);
+        // onEnable may have failed after the services were built, before these existed.
+        if (this.integrations != null) {
+            this.integrations.deactivate();
+        }
+        if (api != null) {
+            getServer().getServicesManager().unregister(BuildSystem.class, api);
+        }
 
         Bukkit.getConsoleSender()
                 .sendMessage("%sBuildSystem » Plugin %sdisabled%s!"

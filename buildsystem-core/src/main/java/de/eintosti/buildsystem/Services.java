@@ -89,8 +89,8 @@ public final class Services {
      * Constructs every service. Called during {@code onEnable}, with the configuration and messages loaded in
      * {@code onLoad}. The stored worlds and folders are loaded separately, by {@link #loadWorlds()}.
      */
-    Services(BuildSystemPlugin plugin, ConfigService configService, Messages messages) {
-        this.taskScheduler = new TaskScheduler(plugin);
+    Services(BuildSystemPlugin plugin, TaskScheduler taskScheduler, ConfigService configService, Messages messages) {
+        this.taskScheduler = taskScheduler;
         this.configService = configService;
         this.messages = messages;
 
