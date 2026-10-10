@@ -91,7 +91,7 @@ public class BuildSystemPlugin extends JavaPlugin {
             return;
         }
         this.scheduler = new TaskScheduler(this);
-        this.services = new Services(this, scheduler, configService, messages);
+        this.services = Services.create(this, scheduler, configService, messages);
         this.services.loadWorlds();
         this.updateChecker = new UpdateChecker(this, services.scheduler().background());
         performUpdateCheck();

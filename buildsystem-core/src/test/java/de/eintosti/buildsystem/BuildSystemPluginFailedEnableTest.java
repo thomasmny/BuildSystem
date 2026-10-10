@@ -19,9 +19,13 @@ package de.eintosti.buildsystem;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 
+import de.eintosti.buildsystem.storage.StorageBackend;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import org.bukkit.plugin.Plugin;
 import org.junit.jupiter.api.AfterEach;
@@ -30,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
 
 class BuildSystemPluginFailedEnableTest {
 
@@ -57,6 +62,22 @@ class BuildSystemPluginFailedEnableTest {
             assertDoesNotThrow(() -> server.getPluginManager().disablePlugin(plugin));
 
             verify(schedulers.constructed().getFirst()).shutdown();
+        }
+    }
+
+    @Test
+    void enableFailingAfterTheStorageConnected_closesTheConnection() {
+        StorageBackend backend = mock(StorageBackend.class);
+        try (MockedStatic<StorageBackend> connect = mockStatic(StorageBackend.class);
+                MockedConstruction<Services> ignored = mockConstruction(Services.class, (services, context) -> {
+                    throw new IllegalStateException("services failed");
+                })) {
+            connect.when(() -> StorageBackend.connect(any(), any(), any(), any()))
+                    .thenReturn(backend);
+
+            assertThrows(RuntimeException.class, () -> MockBukkit.load(BuildSystemPlugin.class));
+
+            verify(backend).close();
         }
     }
 }

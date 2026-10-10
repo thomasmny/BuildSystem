@@ -98,18 +98,35 @@ public final class Services {
      * Constructs every service. Called during {@code onEnable}, with the configuration and messages loaded in
      * {@code onLoad}. The stored worlds and folders are loaded separately, by {@link #loadWorlds()}.
      */
-    Services(BuildSystemPlugin plugin, TaskScheduler taskScheduler, ConfigService configService, Messages messages) {
+    static Services create(
+            BuildSystemPlugin plugin, TaskScheduler taskScheduler, ConfigService configService, Messages messages) {
+        PluginConfig.Storage.Database database =
+                configService.current().storage().database();
+        StorageBackend storageBackend =
+                StorageBackend.connect(database.type(), database, plugin.getDataFolder(), plugin.getLogger());
+        try {
+            return new Services(plugin, taskScheduler, configService, messages, storageBackend);
+        } catch (RuntimeException | Error e) {
+            // onDisable only closes the connection of services that were built.
+            storageBackend.close();
+            throw e;
+        }
+    }
+
+    private Services(
+            BuildSystemPlugin plugin,
+            TaskScheduler taskScheduler,
+            ConfigService configService,
+            Messages messages,
+            StorageBackend storageBackend) {
         this.taskScheduler = taskScheduler;
         this.configService = configService;
         this.messages = messages;
 
         this.playerLookupService =
                 new PlayerLookupService(plugin, taskScheduler.background(), taskScheduler.mainThread());
-        PluginConfig.Storage.Database database =
-                configService.current().storage().database();
-        this.storageBackend =
-                StorageBackend.connect(database.type(), database, plugin.getDataFolder(), plugin.getLogger());
-        if (database.type() == StorageType.YAML
+        this.storageBackend = storageBackend;
+        if (storageBackend.type() == StorageType.YAML
                 && new File(plugin.getDataFolder(), StorageBackend.SQLITE_FILE).exists()) {
             plugin.getLogger()
                     .warning(StorageBackend.SQLITE_FILE + " exists, but storage.type is yaml, so worlds, folders and"
