@@ -66,7 +66,8 @@ class YamlFolderStorageRoundTripTest {
     }
 
     private FolderStorageImpl newStorage() {
-        return new FolderStorageImpl(plugin, worldStorage, services);
+        return new FolderStorageImpl(
+                plugin, worldStorage, services, YamlEntityStore.folders(plugin.getDataFolder(), plugin.getLogger()));
     }
 
     private FolderImpl folder(String name, NavigatorCategory category, List<UUID> worlds) {
@@ -128,10 +129,15 @@ class YamlFolderStorageRoundTripTest {
         FolderImpl removed = folder("Removed", TestData.PUBLIC, List.of());
         newStorage().save(List.of(kept, removed)).join();
 
-        FolderStorageImpl storage = new FolderStorageImpl(plugin, worldStorage, services) {
-            @Override
-            protected void fireEvent(Event event) {}
-        };
+        FolderStorageImpl storage =
+                new FolderStorageImpl(
+                        plugin,
+                        worldStorage,
+                        services,
+                        YamlEntityStore.folders(plugin.getDataFolder(), plugin.getLogger())) {
+                    @Override
+                    protected void fireEvent(Event event) {}
+                };
         storage.loadFolders();
         storage.removeFolder("Removed");
         // Queued behind the delete, so joining it means the delete has been written too.

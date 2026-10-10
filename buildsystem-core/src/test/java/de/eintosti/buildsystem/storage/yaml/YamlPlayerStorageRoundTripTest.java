@@ -51,7 +51,8 @@ class YamlPlayerStorageRoundTripTest {
     }
 
     private PlayerStorageImpl newStorage() {
-        return new PlayerStorageImpl(plugin, scheduler);
+        return new PlayerStorageImpl(
+                plugin, scheduler, YamlEntityStore.players(plugin.getDataFolder(), plugin.getLogger()));
     }
 
     private BuildPlayerImpl samplePlayer(UUID uuid) {

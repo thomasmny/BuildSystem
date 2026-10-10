@@ -33,9 +33,10 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.storage.EntityCollection;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.storage.yaml.YamlEntityFile;
+import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
@@ -169,13 +170,13 @@ public final class TestData {
     }
 
     /**
-     * {@return a storage file that writes nothing} Every write completes at once and a load finds nothing, for tests of
+     * {@return a collection that stores nothing} Every write completes at once and a load finds nothing, for tests of
      * the in-memory side of a storage.
      */
     @SuppressWarnings("unchecked")
-    public static <T> YamlEntityFile<T> noopEntityFile() {
+    public static <T> EntityCollection<T> noopEntityCollection() {
         return mock(
-                YamlEntityFile.class,
+                EntityCollection.class,
                 invocation -> CompletableFuture.completedFuture(
                         invocation.getMethod().getName().equals("load") ? new LinkedHashMap<>() : null));
     }
@@ -244,9 +245,17 @@ public final class TestData {
      * {@return a world service with real storages, wired to the collaborators of {@code services}}
      */
     public static WorldServiceImpl worldService(BuildSystemPlugin plugin, Services services) {
-        WorldStorageImpl worldStorage = new WorldStorageImpl(plugin, services);
+        WorldStorageImpl worldStorage = new WorldStorageImpl(
+                plugin, services, YamlEntityStore.worlds(plugin.getDataFolder(), plugin.getLogger()));
         return new WorldServiceImpl(
-                plugin, services, worldStorage, new FolderStorageImpl(plugin, worldStorage, services));
+                plugin,
+                services,
+                worldStorage,
+                new FolderStorageImpl(
+                        plugin,
+                        worldStorage,
+                        services,
+                        YamlEntityStore.folders(plugin.getDataFolder(), plugin.getLogger())));
     }
 
     private static Optional<BuildWorldStatus> byId(String id) {

@@ -32,7 +32,6 @@ import de.eintosti.buildsystem.api.event.folder.FolderDeletedEvent;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.storage.yaml.YamlEntityFile;
 import de.eintosti.buildsystem.test.TestData;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +58,7 @@ class FolderStorageImplTest {
         WorldStorage worldStorage = Mockito.mock(WorldStorage.class);
         creator = Builder.of(UUID.randomUUID(), "TestPlayer");
 
-        YamlEntityFile<Folder> file = TestData.noopEntityFile();
+        EntityCollection<Folder> file = TestData.noopEntityCollection();
         doAnswer(invocation -> {
                     deletedFromStorage.add(invocation.getArgument(0));
                     return CompletableFuture.completedFuture(null);

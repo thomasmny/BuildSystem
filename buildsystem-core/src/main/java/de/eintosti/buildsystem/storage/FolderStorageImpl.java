@@ -27,9 +27,6 @@ import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.storage.codec.FolderCodec;
-import de.eintosti.buildsystem.storage.migration.StorageMigration;
-import de.eintosti.buildsystem.storage.yaml.YamlEntityFile;
-import de.eintosti.buildsystem.storage.yaml.YamlStore;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.ArrayList;
@@ -63,26 +60,25 @@ public class FolderStorageImpl implements FolderStorage {
      */
     private final ConcurrentHashMap<UUID, Folder> folders;
 
-    private final YamlEntityFile<Folder> file;
+    private final EntityCollection<Folder> file;
     private final Supplier<WorldContext> context;
 
-    public FolderStorageImpl(BuildSystemPlugin plugin, WorldStorage worldStorage, Services services) {
+    public FolderStorageImpl(
+            BuildSystemPlugin plugin, WorldStorage worldStorage, Services services, EntityStore store) {
         this(
                 plugin.getLogger(),
                 worldStorage,
                 services::worldContext,
-                new YamlEntityFile<>(
-                        new YamlStore(plugin.getDataFolder(), "folders.yml", plugin.getLogger()),
-                        "folders",
+                new EntityCollection<>(
+                        store,
                         "folder",
                         () -> new FolderCodec(services.worldContext(), services.navigatorCategoryRegistry()),
                         services.scheduler().background(),
-                        plugin.getLogger(),
-                        StorageMigration::migrateFolders));
+                        plugin.getLogger()));
     }
 
     FolderStorageImpl(
-            Logger logger, WorldStorage worldStorage, Supplier<WorldContext> context, YamlEntityFile<Folder> file) {
+            Logger logger, WorldStorage worldStorage, Supplier<WorldContext> context, EntityCollection<Folder> file) {
         this.logger = logger;
         this.worldStorage = worldStorage;
         this.folders = new ConcurrentHashMap<>();

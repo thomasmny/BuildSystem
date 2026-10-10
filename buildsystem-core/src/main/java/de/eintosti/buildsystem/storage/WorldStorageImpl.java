@@ -25,9 +25,6 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.storage.codec.WorldCodec;
-import de.eintosti.buildsystem.storage.migration.StorageMigration;
-import de.eintosti.buildsystem.storage.yaml.YamlEntityFile;
-import de.eintosti.buildsystem.storage.yaml.YamlStore;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.WorldNames;
 import java.util.ArrayList;
@@ -67,26 +64,24 @@ public class WorldStorageImpl implements WorldStorage {
     private final ConcurrentHashMap<UUID, BuildWorld> buildWorldsByUuid;
     private final ConcurrentHashMap<String, UUID> uuidByName;
     private final Supplier<String> defaultNamespace;
-    private final YamlEntityFile<BuildWorld> file;
+    private final EntityCollection<BuildWorld> file;
 
-    public WorldStorageImpl(BuildSystemPlugin plugin, Services services) {
+    public WorldStorageImpl(BuildSystemPlugin plugin, Services services, EntityStore store) {
         this(
                 plugin.getLogger(),
                 () -> services.config().current().world().defaultNamespace(),
-                new YamlEntityFile<>(
-                        new YamlStore(plugin.getDataFolder(), "worlds.yml", plugin.getLogger()),
-                        "worlds",
+                new EntityCollection<>(
+                        store,
                         "world",
                         () -> new WorldCodec(services.worldContext(), services.playerLookup()),
                         services.scheduler().background(),
-                        plugin.getLogger(),
-                        StorageMigration::migrateWorlds));
+                        plugin.getLogger()));
     }
 
     /**
      * @param defaultNamespace Supplies {@code world.default-namespace}, read on every use so a config reload applies
      */
-    WorldStorageImpl(Logger logger, Supplier<String> defaultNamespace, YamlEntityFile<BuildWorld> file) {
+    WorldStorageImpl(Logger logger, Supplier<String> defaultNamespace, EntityCollection<BuildWorld> file) {
         this.logger = logger;
         this.defaultNamespace = defaultNamespace;
         this.buildWorldsByUuid = new ConcurrentHashMap<>();
