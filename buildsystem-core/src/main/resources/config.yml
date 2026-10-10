@@ -32,6 +32,8 @@ world:
   default-namespace: minecraft
   invalid-characters: "^\\b$"
   import-all-delay: 30
+  # World lists like this one and unload.blacklisted-worlds ignore case. An entry without a namespace is in
+  # minecraft, whatever default-namespace is set to. Write "maps:lobby" for a world in another namespace.
   deletion-blacklist:
     - world
     - world_nether
