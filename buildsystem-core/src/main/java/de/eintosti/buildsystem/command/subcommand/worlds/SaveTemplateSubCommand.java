@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.io.IOException;
@@ -68,7 +69,8 @@ public class SaveTemplateSubCommand extends AbstractSubCommand {
             return;
         }
 
-        String templateName = args.length == 3 ? args[2] : buildWorld.getName();
+        // A namespace is left out: the colon is not allowed in a template name, and cannot be in a folder on Windows.
+        String templateName = args.length == 3 ? args[2] : WorldNames.path(buildWorld.getName());
 
         String invalidCharacters = configService.current().world().invalidCharacters();
         if (StringCleaner.firstInvalidChar(templateName, invalidCharacters) != null) {
