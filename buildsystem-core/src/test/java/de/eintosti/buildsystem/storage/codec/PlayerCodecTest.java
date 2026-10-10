@@ -29,7 +29,9 @@ import de.eintosti.buildsystem.api.world.display.WorldFilter;
 import de.eintosti.buildsystem.api.world.display.WorldSort;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocation;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Logger;
 import org.bukkit.configuration.ConfigurationSection;
@@ -44,6 +46,17 @@ import org.junit.jupiter.api.Test;
 class PlayerCodecTest {
 
     private final PlayerCodec codec = new PlayerCodec(Logger.getLogger("PlayerCodecTest"));
+
+    @Test
+    void writtenPlayers_keepTheirKeysInDeclarationOrder() {
+        BuildPlayerImpl full = CodecSamples.fullPlayer();
+        BuildPlayerImpl minimal = CodecSamples.minimalPlayer();
+        Map<String, Map<String, Object>> entries = new LinkedHashMap<>();
+        entries.put(codec.key(full), codec.serialize(full));
+        entries.put(codec.key(minimal), codec.serialize(minimal));
+
+        assertEquals(CodecSamples.resource("players-written.yml"), CodecSamples.toYaml(entries));
+    }
 
     @Test
     void fileWrittenBy40_writesBackTheSameValues() {
@@ -61,8 +74,11 @@ class PlayerCodecTest {
     void fileWrittenBy40_loadsEveryField() {
         String key = CodecSamples.PLAYER_ID.toString();
 
-        BuildPlayerImpl player =
-                codec.deserialize(key, CodecSamples.section(CodecSamples.resource("players-4.0.yml"), key));
+        String yaml = CodecSamples.resource("players-4.0.yml");
+        BuildPlayerImpl player = codec.deserialize(key, CodecSamples.section(yaml, key));
+        // Settings are read into each player's own objects, so a later player cannot change this one's.
+        String minimalKey = CodecSamples.MINIMAL_PLAYER_ID.toString();
+        codec.deserialize(minimalKey, CodecSamples.section(yaml, minimalKey));
 
         Settings settings = player.getSettings();
         assertEquals(CodecSamples.PLAYER_ID, player.getUniqueId());

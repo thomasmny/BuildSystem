@@ -21,58 +21,94 @@ import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import de.eintosti.buildsystem.api.world.display.WorldDisplay;
 import de.eintosti.buildsystem.api.world.display.WorldFilter;
 import de.eintosti.buildsystem.api.world.display.WorldSort;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
-import de.eintosti.buildsystem.world.display.WorldDisplayImpl;
-import de.eintosti.buildsystem.world.display.WorldFilterImpl;
-import java.util.HashMap;
+import de.eintosti.buildsystem.storage.codec.FieldCodec.Field;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.logging.Logger;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
- * {@link Codec} for {@link BuildPlayer}s, mapping a player's persistent settings and last logout location to and from
- * the {@code players.<uuid>} section. The leaf key strings are declared once and shared between serialization and
- * deserialization so the two paths cannot drift apart.
+ * {@link Codec} for {@link BuildPlayer}s, mapping a player's settings and last logout location to and from the
+ * {@code players.<uuid>} section. The settings are applied straight to the player's own {@link Settings}.
  */
 @NullMarked
 public final class PlayerCodec implements Codec<BuildPlayer> {
 
-    private static final String SETTINGS = "settings";
-    private static final String LOGOUT_LOCATION = "logout-location";
-
-    private static final String NAVIGATOR_TYPE = "type";
-    private static final String DESIGN_COLOR = "glass";
-    private static final String WORLD_DISPLAY = "world-display";
-    private static final String SLAB_BREAKING = "slab-breaking";
-    private static final String NO_CLIP = "no-clip";
-    private static final String TRAPDOOR = "trapdoor";
-    private static final String NIGHT_VISION = "nightvision";
-    private static final String SCOREBOARD = "scoreboard";
-    private static final String KEEP_NAVIGATOR = "keep-navigator";
-    private static final String DISABLE_INTERACT = "disable-interact";
-    private static final String SPAWN_TELEPORT = "spawn-teleport";
-    private static final String CLEAR_INVENTORY = "clear-inventory";
-    private static final String INSTANT_PLACE_SIGNS = "instant-place-signs";
-    private static final String HIDE_PLAYERS = "hide-players";
-    private static final String PLACE_PLANTS = "place-plants";
-
-    private static final String DISPLAY_SORT = "sort";
-    private static final String DISPLAY_FILTER = "filter";
-    private static final String FILTER_MODE = "mode";
-    private static final String FILTER_TEXT = "text";
-
     private final Logger logger;
+    private final FieldCodec<BuildPlayerImpl, BuildPlayerImpl> fields = new FieldCodec<>(
+            new Field<>(
+                    "settings.type",
+                    player -> settings(player).getNavigatorType().toString(),
+                    this::readNavigatorType,
+                    (player, type) -> settings(player).setNavigatorType(type)),
+            new Field<>(
+                    "settings.glass",
+                    player -> settings(player).getDesignColor().toString(),
+                    (section, key) -> DesignColor.matchColor(section.getString(key)),
+                    (player, color) -> settings(player).setDesignColor(color)),
+            new Field<>(
+                    "settings.world-display.sort",
+                    player -> settings(player).getWorldDisplay().getWorldSort().toString(),
+                    (section, key) -> WorldSort.matchWorldSort(section.getString(key, WorldSort.NEWEST_FIRST.name())),
+                    (player, sort) -> settings(player).getWorldDisplay().setWorldSort(sort)),
+            new Field<>(
+                    "settings.world-display.filter.mode",
+                    player -> filter(player).getMode().toString(),
+                    (section, key) -> WorldFilter.Mode.valueOf(section.getString(key, WorldFilter.Mode.NONE.name())),
+                    (player, mode) -> filter(player).setMode(mode)),
+            FieldCodec.string(
+                    "settings.world-display.filter.text",
+                    "",
+                    player -> filter(player).getText(),
+                    (player, text) -> filter(player).setText(text)),
+            setting("slab-breaking", false, Settings::isSlabBreaking, Settings::setSlabBreaking),
+            setting("no-clip", false, Settings::isNoClip, Settings::setNoClip),
+            setting("trapdoor", false, Settings::isOpenTrapDoors, Settings::setOpenTrapDoors),
+            setting("nightvision", false, Settings::isNightVision, Settings::setNightVision),
+            setting("scoreboard", true, Settings::isScoreboard, Settings::setScoreboard),
+            setting("keep-navigator", false, Settings::isKeepNavigator, Settings::setKeepNavigator),
+            setting("disable-interact", false, Settings::isDisableInteract, Settings::setDisableInteract),
+            setting("spawn-teleport", true, Settings::isSpawnTeleport, Settings::setSpawnTeleport),
+            setting("clear-inventory", false, Settings::isClearInventory, Settings::setClearInventory),
+            setting("instant-place-signs", false, Settings::isInstantPlaceSigns, Settings::setInstantPlaceSigns),
+            setting("hide-players", false, Settings::isHidePlayers, Settings::setHidePlayers),
+            setting("place-plants", false, Settings::isPlacePlants, Settings::setPlacePlants),
+            new Field<>(
+                    "logout-location",
+                    player -> {
+                        LogoutLocation location = player.getLogoutLocation();
+                        return location == null ? null : LogoutLocationCodec.format(location);
+                    },
+                    (section, key) -> LogoutLocationCodec.parse(section.getString(key)),
+                    BuildPlayerImpl::setLogoutLocation));
 
     public PlayerCodec(Logger logger) {
         this.logger = logger;
+    }
+
+    private static Settings settings(BuildPlayerImpl player) {
+        return player.getSettings();
+    }
+
+    private static WorldFilter filter(BuildPlayerImpl player) {
+        return player.getSettings().getWorldDisplay().getWorldFilter();
+    }
+
+    private static Field<BuildPlayerImpl, BuildPlayerImpl, Boolean> setting(
+            String key, boolean fallback, Function<Settings, Boolean> getter, BiConsumer<Settings, Boolean> setter) {
+        return FieldCodec.bool(
+                "settings." + key,
+                fallback,
+                player -> getter.apply(settings(player)),
+                (player, value) -> setter.accept(settings(player), value));
     }
 
     @Override
@@ -82,94 +118,18 @@ public final class PlayerCodec implements Codec<BuildPlayer> {
 
     @Override
     public Map<String, Object> serialize(BuildPlayer value) {
-        BuildPlayerImpl player = BuildPlayerImpl.of(value);
-        Map<String, Object> serialized = new HashMap<>();
-
-        serialized.put(SETTINGS, serializeSettings(player.getSettings()));
-        LogoutLocation logoutLocation = player.getLogoutLocation();
-        Codec.putIfPresent(
-                serialized,
-                LOGOUT_LOCATION,
-                logoutLocation == null ? null : LogoutLocationCodec.format(logoutLocation));
-
-        return serialized;
-    }
-
-    private Map<String, Object> serializeSettings(Settings settings) {
-        Map<String, Object> serialized = new HashMap<>();
-
-        serialized.put(NAVIGATOR_TYPE, settings.getNavigatorType().toString());
-        serialized.put(DESIGN_COLOR, settings.getDesignColor().toString());
-        serialized.put(WORLD_DISPLAY, serializeWorldDisplay(settings.getWorldDisplay()));
-        serialized.put(SLAB_BREAKING, settings.isSlabBreaking());
-        serialized.put(NO_CLIP, settings.isNoClip());
-        serialized.put(TRAPDOOR, settings.isOpenTrapDoors());
-        serialized.put(NIGHT_VISION, settings.isNightVision());
-        serialized.put(SCOREBOARD, settings.isScoreboard());
-        serialized.put(KEEP_NAVIGATOR, settings.isKeepNavigator());
-        serialized.put(DISABLE_INTERACT, settings.isDisableInteract());
-        serialized.put(SPAWN_TELEPORT, settings.isSpawnTeleport());
-        serialized.put(CLEAR_INVENTORY, settings.isClearInventory());
-        serialized.put(INSTANT_PLACE_SIGNS, settings.isInstantPlaceSigns());
-        serialized.put(HIDE_PLAYERS, settings.isHidePlayers());
-        serialized.put(PLACE_PLANTS, settings.isPlacePlants());
-
-        return serialized;
-    }
-
-    private Map<String, Object> serializeWorldDisplay(WorldDisplay worldDisplay) {
-        Map<String, Object> serialized = new HashMap<>();
-        serialized.put(DISPLAY_SORT, worldDisplay.getWorldSort().toString());
-        serialized.put(DISPLAY_FILTER, serializeFilter(worldDisplay.getWorldFilter()));
-        return serialized;
-    }
-
-    private Map<String, Object> serializeFilter(WorldFilter filter) {
-        Map<String, Object> serialized = new HashMap<>();
-        serialized.put(FILTER_MODE, filter.getMode().toString());
-        serialized.put(FILTER_TEXT, filter.getText());
-        return serialized;
+        return fields.serialize(BuildPlayerImpl.of(value));
     }
 
     @Override
     public BuildPlayerImpl deserialize(String key, ConfigurationSection section) {
-        UUID uuid = UUID.fromString(key);
-        BuildPlayerImpl buildPlayer = new BuildPlayerImpl(uuid, loadSettings(section));
-        buildPlayer.setLogoutLocation(LogoutLocationCodec.parse(section.getString(LOGOUT_LOCATION)));
-        return buildPlayer;
+        BuildPlayerImpl player = new BuildPlayerImpl(UUID.fromString(key), new SettingsImpl());
+        fields.read(section, player);
+        return player;
     }
 
-    private SettingsImpl loadSettings(ConfigurationSection section) {
-        return SettingsImpl.builder()
-                .navigatorType(parseNavigatorType(section.getString(SETTINGS + "." + NAVIGATOR_TYPE)))
-                .designColor(DesignColor.matchColor(section.getString(SETTINGS + "." + DESIGN_COLOR)))
-                .worldDisplay(loadWorldDisplay(section))
-                .clearInventory(section.getBoolean(SETTINGS + "." + CLEAR_INVENTORY, false))
-                .disableInteract(section.getBoolean(SETTINGS + "." + DISABLE_INTERACT, false))
-                .hidePlayers(section.getBoolean(SETTINGS + "." + HIDE_PLAYERS, false))
-                .instantPlaceSigns(section.getBoolean(SETTINGS + "." + INSTANT_PLACE_SIGNS, false))
-                .keepNavigator(section.getBoolean(SETTINGS + "." + KEEP_NAVIGATOR, false))
-                .nightVision(section.getBoolean(SETTINGS + "." + NIGHT_VISION, false))
-                .noClip(section.getBoolean(SETTINGS + "." + NO_CLIP, false))
-                .placePlants(section.getBoolean(SETTINGS + "." + PLACE_PLANTS, false))
-                .scoreboard(section.getBoolean(SETTINGS + "." + SCOREBOARD, true))
-                .slabBreaking(section.getBoolean(SETTINGS + "." + SLAB_BREAKING, false))
-                .spawnTeleport(section.getBoolean(SETTINGS + "." + SPAWN_TELEPORT, true))
-                .openTrapDoors(section.getBoolean(SETTINGS + "." + TRAPDOOR, false))
-                .build();
-    }
-
-    private WorldDisplay loadWorldDisplay(ConfigurationSection section) {
-        final String prefix = SETTINGS + "." + WORLD_DISPLAY + ".";
-        WorldSort worldSort =
-                WorldSort.matchWorldSort(section.getString(prefix + DISPLAY_SORT, WorldSort.NEWEST_FIRST.name()));
-        WorldFilter.Mode filterMode = WorldFilterImpl.Mode.valueOf(
-                section.getString(prefix + DISPLAY_FILTER + "." + FILTER_MODE, WorldFilter.Mode.NONE.name()));
-        String filterText = section.getString(prefix + DISPLAY_FILTER + "." + FILTER_TEXT, "");
-        return new WorldDisplayImpl(worldSort, new WorldFilterImpl(filterMode, filterText));
-    }
-
-    private NavigatorType parseNavigatorType(@Nullable String raw) {
+    private NavigatorType readNavigatorType(ConfigurationSection section, String key) {
+        String raw = section.getString(key);
         if (raw == null) {
             return NavigatorType.OLD;
         }
