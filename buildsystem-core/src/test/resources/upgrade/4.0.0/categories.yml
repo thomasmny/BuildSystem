@@ -1,0 +1,57 @@
+categories:
+  public:
+    display-name: Worlds
+    color: '&b'
+    icon: PLAYER_HEAD
+    icon-skull-texture: d5c6dc2bbf51c36cfc7714585a6a5683ef2b14d47d8ff714654a893f5da622
+    visibilities:
+    - EVERYONE
+    shown-in-navigator: true
+    navigator-slot: 11
+    built-in: true
+    statuses:
+    - not_started
+    - in_progress
+    - almost_finished
+    - finished
+    - review
+  archive:
+    display-name: Archive
+    color: '&3'
+    icon: PLAYER_HEAD
+    icon-skull-texture: 7f6bf958abd78295eed6ffc293b1aa59526e80f54976829ea068337c2f5e8
+    visibilities:
+    - EVERYONE
+    - ADDED_PLAYERS
+    shown-in-navigator: true
+    navigator-slot: 12
+    built-in: true
+    statuses:
+    - archive
+  private:
+    display-name: Private
+    color: '&a'
+    icon: PLAYER_HEAD
+    icon-skull-texture: '%viewer%'
+    visibilities:
+    - ADDED_PLAYERS
+    shown-in-navigator: true
+    navigator-slot: 13
+    built-in: true
+    statuses:
+    - not_started
+    - in_progress
+    - almost_finished
+    - finished
+  events:
+    display-name: Events
+    color: '&e'
+    icon: FIREWORK_ROCKET
+    visibilities:
+    - EVERYONE
+    shown-in-navigator: true
+    navigator-slot: 14
+    built-in: false
+    statuses:
+    - review
+    - finished

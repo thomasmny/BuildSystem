@@ -24,15 +24,15 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.storage.yaml.YamlFolderStorage;
 import de.eintosti.buildsystem.storage.yaml.YamlWorldStorage;
 import de.eintosti.buildsystem.test.TestData;
 import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -75,31 +75,25 @@ class StorageMigrationTest {
 
     @Test
     void worlds_v3NameKeyed_migratedToUuidKeyedOnLoad() throws Exception {
-        UUID uuid = UUID.randomUUID();
-        YamlConfiguration yaml = new YamlConfiguration();
-        yaml.set("worlds.MyWorld.uuid", uuid.toString());
-        yaml.set("worlds.MyWorld.type", "NORMAL");
-        yaml.set("worlds.MyWorld.date", 1_700_000_000_000L);
-        yaml.set("worlds.MyWorld.data.status", "finished");
-        yaml.set("worlds.MyWorld.data.permission", "build.test");
-        writeV3Worlds(yaml);
+        copyFixture("worlds.yml");
+        UUID lobby = UUID.fromString("0e7a1aca-d915-4fb9-84b1-30f8b95cc373");
 
         Collection<BuildWorld> loaded =
                 new YamlWorldStorage(plugin, services).load().join();
 
-        assertEquals(1, loaded.size());
-        BuildWorld world = loaded.iterator().next();
-        assertEquals("MyWorld", world.getName());
-        assertEquals(uuid, world.getUniqueId());
-        assertEquals("build.test", world.getData().get(WorldDataKey.PERMISSION));
+        BuildWorld world = loaded.stream()
+                .filter(w -> w.getUniqueId().equals(lobby))
+                .findFirst()
+                .orElseThrow();
+        assertEquals("lobby", world.getName());
+        assertEquals("Hub", world.getData().get(WorldDataKey.PROJECT));
 
         YamlConfiguration onDisk = readFile("worlds.yml");
         assertEquals(StorageMigration.CURRENT_VERSION, onDisk.getInt("version"));
-        assertEquals(
-                Set.of(uuid.toString()),
-                onDisk.getConfigurationSection("worlds").getKeys(false));
-        assertEquals("MyWorld", onDisk.getString("worlds." + uuid + ".name"));
-        assertFalse(onDisk.contains("worlds.MyWorld"));
+        // Every entry is re-keyed, including Old_Map-2019, whose generator cannot load without a running server.
+        assertEquals(7, onDisk.getConfigurationSection("worlds").getKeys(false).size());
+        assertEquals("lobby", onDisk.getString("worlds." + lobby + ".name"));
+        assertFalse(onDisk.contains("worlds.lobby"));
         assertTrue(new File(dataFolder, "worlds.yml.v3.bak").exists());
     }
 
@@ -198,46 +192,39 @@ class StorageMigrationTest {
 
     @Test
     void folders_v3ParentByName_isRewrittenToUuidAndLinksResolve() throws Exception {
-        UUID parentUuid = UUID.randomUUID();
-        UUID childUuid = UUID.randomUUID();
-        Builder creator = Builder.of(UUID.randomUUID(), "FC");
-        YamlConfiguration yaml = new YamlConfiguration();
-        writeV3Folder(yaml, "Parent", parentUuid, creator, null);
-        writeV3Folder(yaml, "Child", childUuid, creator, "Parent");
-        yaml.save(new File(dataFolder, "folders.yml"));
+        copyFixture("folders.yml");
 
         Collection<Folder> loaded =
                 new YamlFolderStorage(plugin, worldStorage, services).load().join();
 
-        Folder child = loaded.stream()
-                .filter(f -> f.getName().equals("Child"))
+        assertEquals(4, loaded.size());
+        Folder archive = loaded.stream()
+                .filter(f -> f.getName().equals("Archive"))
                 .findFirst()
                 .orElseThrow();
-        assertNotNull(child.getParent());
-        assertEquals("Parent", child.getParent().getName());
+        assertNotNull(archive.getParent());
+        assertEquals("Lobbies", archive.getParent().getName());
+        assertEquals("Projects", archive.getParent().getParent().getName());
 
         YamlConfiguration onDisk = readFile("folders.yml");
         assertEquals(StorageMigration.CURRENT_VERSION, onDisk.getInt("version"));
-        assertEquals(
-                Set.of(parentUuid.toString(), childUuid.toString()),
-                onDisk.getConfigurationSection("folders").getKeys(false));
-        assertEquals("Child", onDisk.getString("folders." + childUuid + ".name"));
-        assertEquals(parentUuid.toString(), onDisk.getString("folders." + childUuid + ".parent"));
+        String archiveKey = archive.getUniqueId().toString();
+        String lobbiesKey = archive.getParent().getUniqueId().toString();
+        assertTrue(
+                onDisk.getConfigurationSection("folders").getKeys(false).containsAll(Set.of(archiveKey, lobbiesKey)));
+        assertEquals("Archive", onDisk.getString("folders." + archiveKey + ".name"));
+        assertEquals(lobbiesKey, onDisk.getString("folders." + archiveKey + ".parent"));
         assertTrue(new File(dataFolder, "folders.yml.v3.bak").exists());
     }
 
-    private void writeV3Folder(YamlConfiguration yaml, String name, UUID uuid, Builder creator, String parentName) {
-        String path = "folders." + name;
-        yaml.set(path + ".uuid", uuid.toString());
-        yaml.set(path + ".creator", creator.toString());
-        yaml.set(path + ".creation", 1_700_000_000_000L);
-        yaml.set(path + ".category", TestData.PUBLIC.getId());
-        yaml.set(path + ".material", "CHEST");
-        yaml.set(path + ".permission", "-");
-        yaml.set(path + ".project", "-");
-        yaml.set(path + ".worlds", List.of());
-        if (parentName != null) {
-            yaml.set(path + ".parent", parentName);
+    /**
+     *
+     * Copies a file BuildSystem 3.0.2 wrote (see {@code upgrade/README.md}) into the data folder.
+     *
+     */
+    private void copyFixture(String fileName) throws Exception {
+        try (InputStream in = getClass().getResourceAsStream("/upgrade/3.0.2/" + fileName)) {
+            Files.copy(in, new File(dataFolder, fileName).toPath());
         }
     }
 }

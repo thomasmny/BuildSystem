@@ -36,7 +36,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class ConfigMigrationManager {
 
-    public static final int LATEST_VERSION = 5;
+    public static final int LATEST_VERSION = 6;
 
     private final BuildSystemPlugin plugin;
     private final Map<Integer, Migration> migrations;
@@ -54,6 +54,7 @@ public class ConfigMigrationManager {
         registerMigration(2, new MigrationV2ToV3());
         registerMigration(3, new MigrationV3ToV4());
         registerMigration(4, new MigrationV4ToV5());
+        registerMigration(5, new MigrationV5ToV6());
     }
 
     /**

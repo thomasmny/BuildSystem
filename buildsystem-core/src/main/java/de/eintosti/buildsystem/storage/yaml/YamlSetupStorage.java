@@ -49,6 +49,27 @@ public class YamlSetupStorage extends AbstractYamlStorage {
         saveFile();
     }
 
+    /**
+     * Reads the status icons a pre-4.0 server kept under {@code setup.status}, keyed by status id. Since 4.0 the icons
+     * live in {@code statuses.yml}; this section is only read to carry an upgraded server's choices over.
+     *
+     * @return The legacy icons by status id, empty when the file has none
+     */
+    public Map<String, Material> loadLegacyStatusIcons() {
+        Map<String, Material> icons = new HashMap<>();
+        ConfigurationSection section = getFile().getConfigurationSection("setup.status");
+        if (section == null) {
+            return icons;
+        }
+        for (String id : section.getKeys(false)) {
+            Material material = MaterialUtils.match(section.getString(id));
+            if (material != null) {
+                icons.put(id, material);
+            }
+        }
+        return icons;
+    }
+
     public <T> @Nullable Map<T, Material> loadIcons(IconType iconType, Function<String, T> mapper) {
         FileConfiguration configuration = getFile();
         if (configuration == null) {

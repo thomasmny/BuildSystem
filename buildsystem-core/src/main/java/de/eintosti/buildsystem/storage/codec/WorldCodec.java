@@ -138,7 +138,7 @@ public final class WorldCodec implements Codec<BuildWorld> {
         List<Builder> builders = BuilderListCodec.parse(section.getString(BUILDERS));
         String generatorName = section.getString(CHUNK_GENERATOR);
         CustomGeneratorImpl customGenerator =
-                generatorName != null ? CustomGeneratorImpl.of(generatorName, name) : null;
+                generatorName != null ? CustomGeneratorImpl.stored(generatorName, name) : null;
 
         return new BuildWorldImpl(
                 context,

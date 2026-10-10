@@ -1,0 +1,41 @@
+folders:
+  Projects:
+    parent: null
+    creator: 11111111-1111-1111-1111-111111111111,Alice
+    worlds:
+    - 0e7a1aca-d915-4fb9-84b1-30f8b95cc373
+    material: CHEST
+    project: '-'
+    permission: '-'
+    category: PUBLIC
+    creation: 1791634955051
+  Hidden:
+    parent: null
+    creator: 11111111-1111-1111-1111-111111111111,Alice
+    worlds:
+    - c0fdcd74-7e86-402b-86a2-86e882e54b35
+    material: ENDER_CHEST
+    project: Hidden Project
+    permission: build.hidden
+    category: PRIVATE
+    creation: 1791634955052
+  Lobbies:
+    parent: Projects
+    creator: 11111111-1111-1111-1111-111111111111,Alice
+    worlds:
+    - 22b87873-4980-47ca-9423-dfd9def7580b
+    material: CHEST
+    project: '-'
+    permission: '-'
+    category: PUBLIC
+    creation: 1791634955051
+  Archive:
+    parent: Lobbies
+    creator: 22222222-2222-2222-2222-222222222222,Bob
+    worlds:
+    - 7c4f90af-19fe-4b21-8428-31a8798c3e50
+    material: CHEST
+    project: '-'
+    permission: '-'
+    category: PUBLIC
+    creation: 1791634955051

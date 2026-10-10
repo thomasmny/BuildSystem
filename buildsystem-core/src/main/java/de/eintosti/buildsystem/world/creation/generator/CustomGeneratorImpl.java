@@ -82,6 +82,25 @@ public record CustomGeneratorImpl(
                 pluginName, chunkGeneratorName, plugin.getDefaultWorldGenerator(worldName, chunkGeneratorName));
     }
 
+    /**
+     * Like {@link #of(String, String)}, but keeps the identifier without a chunk generator when its plugin is not
+     * installed. Used for worlds read from storage, so a generator whose plugin is missing for one start is not dropped
+     * from the world on the next save.
+     *
+     * @param identifier The stored identifier, {@code "pluginName:chunkGeneratorName"} or {@code "pluginName"}
+     * @param worldName The name of the world the generator belongs to
+     * @return The generator, with a {@code null} chunk generator if its plugin is not installed
+     */
+    public static CustomGeneratorImpl stored(String identifier, String worldName) {
+        CustomGeneratorImpl generator = of(identifier, worldName);
+        if (generator != null) {
+            return generator;
+        }
+        String[] generatorInfo = identifier.split(":");
+        return new CustomGeneratorImpl(
+                generatorInfo[0], generatorInfo.length == 1 ? generatorInfo[0] : generatorInfo[1], null);
+    }
+
     @Override
     public String toString() {
         return "%s:%s".formatted(pluginName(), chunkGeneratorName());

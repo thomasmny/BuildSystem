@@ -1,0 +1,176 @@
+worlds:
+  Old_Map-2019:
+    date: 1735689606000
+    builders: ''
+    data:
+      private: false
+      block-interactions: true
+      time-since-backup: 0
+      project: '-'
+      permission: '-'
+      difficulty: EASY
+      spawn: ''
+      material: FURNACE
+      block-placement: true
+      physics: true
+      block-breaking: true
+      last-unloaded: 1735689800006
+      last-edited: 1735689900006
+      explosions: false
+      mob-ai: true
+      builders-enabled: true
+      status: NOT_STARTED
+      last-loaded: 1735689700006
+    chunk-generator: BuildSystem:VOID
+    type: IMPORTED
+    uuid: bc251dc5-6be3-4cb7-8fca-a093c02adc45
+  void_arena:
+    date: 1735689604000
+    creator: 11111111-1111-1111-1111-111111111111,Alice
+    builders: ''
+    data:
+      private: false
+      block-interactions: true
+      time-since-backup: 0
+      project: '-'
+      permission: '-'
+      difficulty: EASY
+      spawn: ''
+      material: GLASS
+      block-placement: true
+      physics: true
+      block-breaking: true
+      last-unloaded: 1735689800004
+      last-edited: 1735689900004
+      explosions: false
+      mob-ai: true
+      builders-enabled: true
+      status: HIDDEN
+      last-loaded: 1735689700004
+    type: VOID
+    uuid: 7c4f90af-19fe-4b21-8428-31a8798c3e50
+  flatland:
+    date: 1735689601000
+    creator: 22222222-2222-2222-2222-222222222222,Bob
+    builders: ''
+    data:
+      private: false
+      block-interactions: true
+      time-since-backup: 0
+      project: '-'
+      permission: '-'
+      difficulty: EASY
+      spawn: ''
+      material: GRASS_BLOCK
+      block-placement: false
+      physics: true
+      block-breaking: false
+      last-unloaded: 1735689800001
+      last-edited: 1735689900001
+      explosions: false
+      mob-ai: true
+      builders-enabled: true
+      status: IN_PROGRESS
+      last-loaded: 1735689700001
+    type: FLAT
+    uuid: 22b87873-4980-47ca-9423-dfd9def7580b
+  nether_build:
+    date: 1735689602000
+    creator: 11111111-1111-1111-1111-111111111111,Alice
+    builders: ''
+    data:
+      private: false
+      block-interactions: true
+      time-since-backup: 0
+      project: '-'
+      permission: '-'
+      difficulty: HARD
+      spawn: ''
+      material: NETHERRACK
+      block-placement: true
+      physics: true
+      block-breaking: true
+      last-unloaded: 1735689800002
+      last-edited: 1735689900002
+      explosions: false
+      mob-ai: true
+      builders-enabled: true
+      status: ALMOST_FINISHED
+      last-loaded: 1735689700002
+    type: NETHER
+    uuid: 39f399fb-a94a-4df6-86bf-89e37078f727
+  end_build:
+    date: 1735689603000
+    creator: 22222222-2222-2222-2222-222222222222,Bob
+    builders: ''
+    data:
+      private: false
+      block-interactions: true
+      time-since-backup: 0
+      project: '-'
+      permission: '-'
+      difficulty: EASY
+      spawn: ''
+      material: END_STONE
+      block-placement: true
+      physics: true
+      block-breaking: true
+      last-unloaded: 1735689800003
+      last-edited: 1735689900003
+      explosions: false
+      mob-ai: true
+      builders-enabled: true
+      status: ARCHIVE
+      last-loaded: 1735689700003
+    type: END
+    uuid: b5104aed-5a73-4988-a749-427d4e3bed70
+  lobby:
+    date: 1735689600000
+    creator: 11111111-1111-1111-1111-111111111111,Alice
+    builders: 22222222-2222-2222-2222-222222222222,Bob
+    data:
+      private: false
+      block-interactions: false
+      time-since-backup: 420
+      project: Hub
+      permission: '-'
+      difficulty: EASY
+      spawn: 12.5;66.0;-7.5;180.0;15.0
+      material: GRASS_BLOCK
+      block-placement: true
+      physics: false
+      block-breaking: true
+      last-unloaded: 1735689800000
+      last-edited: 1735689900000
+      explosions: false
+      mob-ai: false
+      builders-enabled: true
+      status: FINISHED
+      last-loaded: 1735689700000
+    type: NORMAL
+    uuid: 0e7a1aca-d915-4fb9-84b1-30f8b95cc373
+  secret:
+    date: 1735689605000
+    creator: 11111111-1111-1111-1111-111111111111,Alice
+    builders: 22222222-2222-2222-2222-222222222222,Bob
+    data:
+      private: true
+      block-interactions: true
+      time-since-backup: 0
+      project: Secret Project
+      permission: build.secret
+      difficulty: EASY
+      spawn: ''
+      material: PLAYER_HEAD
+      block-placement: true
+      physics: true
+      block-breaking: true
+      last-unloaded: 1735689800005
+      last-edited: 1735689900005
+      explosions: false
+      mob-ai: true
+      builders-enabled: true
+      status: IN_PROGRESS
+      last-loaded: 1735689700005
+    type: NORMAL
+    uuid: c0fdcd74-7e86-402b-86a2-86e882e54b35

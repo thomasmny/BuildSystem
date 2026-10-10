@@ -19,6 +19,48 @@ java {
     withJavadocJar()
 }
 
+// The last released API jar, and japicmp to compare against it. Detached configurations, because in a normal one
+// Gradle resolves this project's own coordinates to the project itself.
+val baselineApi: Configuration = configurations.detachedConfiguration(
+    dependencies.create("de.eintosti:buildsystem-api:4.0.0")
+).apply {
+    isTransitive = false
+}
+val japicmpTool: Configuration = configurations.detachedConfiguration(
+    dependencies.create("com.github.siom79.japicmp:japicmp:0.26.3:jar-with-dependencies")
+).apply {
+    isTransitive = false
+}
+
+// Fails when the API is not binary or source compatible with 4.0.0. Plugins compiled against any 4.x API must keep
+// loading and compiling until 5.0.
+val japicmp = tasks.register<JavaExec>("japicmp") {
+    group = "verification"
+    description = "Checks binary and source compatibility with the 4.0.0 API."
+    // Plain file collections and providers only, so the configuration cache can store the task.
+    val oldJar = files(baselineApi)
+    val newJar = tasks.jar.flatMap { it.archiveFile }
+    val apiClasspath = files(configurations.compileClasspath)
+    inputs.files(oldJar, newJar, apiClasspath)
+    classpath = files(japicmpTool)
+    mainClass = "japicmp.JApiCmp"
+    argumentProviders.add(CommandLineArgumentProvider {
+        listOf(
+            "--old", oldJar.singleFile.absolutePath,
+            "--new", newJar.get().asFile.absolutePath,
+            "--old-classpath", apiClasspath.asPath,
+            "--new-classpath", apiClasspath.asPath,
+            "--only-modified",
+            "--error-on-binary-incompatibility",
+            "--error-on-source-incompatibility",
+        )
+    })
+}
+
+tasks.named("check") {
+    dependsOn(japicmp)
+}
+
 tasks.withType<Javadoc> {
     title = "BuildSystem API (v" + project.version + ")"
     val opt = options as StandardJavadocDocletOptions
