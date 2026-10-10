@@ -25,10 +25,8 @@ import de.eintosti.buildsystem.api.world.lifecycle.WorldUnloader;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.WorldNames;
-import java.util.Arrays;
 import java.util.Optional;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Contract;
@@ -177,19 +175,12 @@ public class WorldUnloaderImpl implements WorldUnloader {
         }
         World bukkitWorld = optionalWorld.get();
 
-        if (save) {
-            Arrays.stream(bukkitWorld.getLoadedChunks()).forEach(Chunk::unload);
-            bukkitWorld.save();
-        }
-
         if (!Bukkit.unloadWorld(bukkitWorld, save)) {
             context.logger()
                     .warning("Failed to unload world \"" + this.buildWorld.getName()
                             + "\". It may still be loaded in memory.");
             return;
         }
-
-        Bukkit.getWorlds().remove(bukkitWorld);
 
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostUnloadEvent(this.buildWorld));
         context.logger().info("*** Unloaded world \"" + this.buildWorld.getName() + "\" ***");

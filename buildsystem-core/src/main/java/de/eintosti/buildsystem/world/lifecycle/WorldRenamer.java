@@ -41,7 +41,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -137,9 +136,6 @@ public class WorldRenamer {
             Player player, BuildWorld buildWorld, String oldName, String sanitizedNewName, World oldWorld) {
         List<@Nullable Player> removedPlayers =
                 worldService.removePlayersFromWorld(oldName, "worlds_rename_players_world");
-        for (Chunk chunk : oldWorld.getLoadedChunks()) {
-            chunk.unload(true);
-        }
         Location oldSpawnLocation = oldWorld.getSpawnLocation();
         Bukkit.unloadWorld(oldWorld, true);
 
