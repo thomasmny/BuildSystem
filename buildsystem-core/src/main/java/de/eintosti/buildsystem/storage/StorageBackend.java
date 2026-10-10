@@ -157,41 +157,48 @@ public final class StorageBackend implements AutoCloseable {
     }
 
     /**
-     * {@return where entries of {@code kind} are kept} For a database, an empty collection is first filled from the
-     * YAML file, read through the same path as a YAML load so a legacy file is migrated first. The file is left as it
+     * {@return where entries of {@code kind} are kept} For a database, a table or collection created by this call is
+     * first filled from the YAML file, read through the same path as a YAML load so a legacy file is migrated first. The file is left as it
      * is.
      */
     public EntityStore store(EntityKind kind) {
         YamlEntityStore yaml = kind.yaml(dataFolder, logger);
+        Database database = this.database;
         if (database == null) {
             return yaml;
         }
+        // Only a new table: an empty one may be empty because everything in it was deleted, and the old file would
+        // bring
+        // it all back.
+        boolean existed = database.exists(kind);
         EntityStore store = collection(kind);
-        if (store.isEmpty()) {
-            importEntries(yaml, store);
+        if (!existed) {
+            importEntries(database, kind, yaml, store);
         }
         return store;
     }
 
-    private void importEntries(YamlEntityStore yaml, EntityStore store) {
+    private void importEntries(Database database, EntityKind kind, YamlEntityStore yaml, EntityStore store) {
         if (!yaml.exists()) {
             // Loading would create an empty file.
             return;
         }
-        Map<String, Map<String, Object>> entries = yaml.loadAll();
-        if (entries.isEmpty()) {
-            return;
-        }
+        Map<String, Map<String, Object>> entries;
         try {
+            entries = yaml.loadAll();
             store.upsert(entries);
         } catch (RuntimeException e) {
-            // MongoDB keeps what it wrote before the failure, and a non-empty collection is never imported again.
+            // Only a new table is imported into, so it goes again for the next start to retry. MongoDB would also keep
+            // what it wrote before the failure.
             try {
-                entries.keySet().forEach(store::delete);
+                database.drop(kind);
             } catch (RuntimeException cleanup) {
                 e.addSuppressed(cleanup);
             }
             throw e;
+        }
+        if (entries.isEmpty()) {
+            return;
         }
         logger.info("Imported " + entries.size() + " " + yaml.name() + " from " + yaml.fileName() + " into "
                 + type.displayName() + ". " + yaml.fileName() + " is no longer updated.");

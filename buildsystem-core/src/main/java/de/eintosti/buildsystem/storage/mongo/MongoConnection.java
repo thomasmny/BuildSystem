@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.storage.Database;
 import de.eintosti.buildsystem.storage.EntityKind;
 import de.eintosti.buildsystem.storage.EntityStore;
 import de.eintosti.buildsystem.storage.StorageException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -88,7 +89,41 @@ public final class MongoConnection implements Database {
     }
 
     @Override
+    public boolean exists(EntityKind kind) {
+        try {
+            return database.listCollectionNames().into(new ArrayList<>()).contains(collectionPrefix + kind.id());
+        } catch (MongoException e) {
+            throw new StorageException(
+                    "Could not list the collections: " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void drop(EntityKind kind) {
+        try {
+            database.getCollection(collectionPrefix + kind.id()).drop();
+        } catch (MongoException e) {
+            throw new StorageException(
+                    "Could not drop " + collectionPrefix + kind.id() + ": "
+                            + e.getClass().getSimpleName() + ": " + e.getMessage(),
+                    e);
+        }
+    }
+
+    @Override
     public EntityStore collection(EntityKind kind) {
+        // MongoDB only creates a collection on the first write. Created now, so that it exists from here on like a
+        // table does, and an emptied collection is not taken for a new one.
+        if (!exists(kind)) {
+            try {
+                database.createCollection(collectionPrefix + kind.id());
+            } catch (MongoException e) {
+                throw new StorageException(
+                        "Could not create " + collectionPrefix + kind.id() + ": "
+                                + e.getClass().getSimpleName() + ": " + e.getMessage(),
+                        e);
+            }
+        }
         return new MongoEntityStore(database.getCollection(collectionPrefix + kind.id()), logger);
     }
 

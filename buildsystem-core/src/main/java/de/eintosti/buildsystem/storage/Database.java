@@ -30,6 +30,16 @@ public interface Database extends AutoCloseable {
      */
     EntityStore collection(EntityKind kind);
 
+    /**
+     * {@return whether the table or collection for {@code kind} exists, which it does once it was opened}
+     */
+    boolean exists(EntityKind kind);
+
+    /**
+     * Removes the table or collection for {@code kind} with everything in it.
+     */
+    void drop(EntityKind kind);
+
     @Override
     void close();
 }

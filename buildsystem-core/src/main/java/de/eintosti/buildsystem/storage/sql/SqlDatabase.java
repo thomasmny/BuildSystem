@@ -23,7 +23,9 @@ import de.eintosti.buildsystem.storage.EntityStore;
 import de.eintosti.buildsystem.storage.StorageException;
 import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Properties;
 import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
@@ -95,6 +97,35 @@ public final class SqlDatabase implements Database {
     /**
      * @param action What the work does, for the error, such as {@code "load buildsystem_worlds"}
      */
+    @Override
+    public boolean exists(EntityKind kind) {
+        String table = tablePrefix + kind.id();
+        return run("look for " + table, connection -> {
+            // The name is a LIKE pattern, where _ matches any character, so only an exact match counts.
+            try (ResultSet tables = connection
+                    .getMetaData()
+                    .getTables(connection.getCatalog(), connection.getSchema(), table, new String[] {"TABLE"})) {
+                while (tables.next()) {
+                    if (tables.getString("TABLE_NAME").equalsIgnoreCase(table)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+    }
+
+    @Override
+    public void drop(EntityKind kind) {
+        String table = tablePrefix + kind.id();
+        run("drop " + table, connection -> {
+            try (Statement statement = connection.createStatement()) {
+                statement.execute("DROP TABLE " + table);
+            }
+            return null;
+        });
+    }
+
     synchronized <R> R run(String action, SqlWork<R> work) {
         try {
             return work.apply(connection());

@@ -50,6 +50,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -273,9 +274,30 @@ public abstract class EntityStoreContractTest {
         assertThrows(
                 StorageException.class, () -> backend.store(EntityKind.PLAYERS).loadAll());
 
-        if (settings().type() != StorageType.YAML) {
-            assertTrue(backend.collection(EntityKind.PLAYERS).isEmpty());
+        // Once the file is fixed, the next start imports it.
+        Files.writeString(
+                new File(dataFolder, "players.yml").toPath(), "players:\n  fixed:\n    settings:\n      type: OLD\n");
+        restart();
+        assertEquals(
+                Set.of("fixed"), backend.store(EntityKind.PLAYERS).loadAll().keySet());
+    }
+
+    @Test
+    void deletingEverything_andRestarting_bringsNothingBack() throws IOException {
+        try (InputStream in = getClass().getResourceAsStream("/upgrade/3.0.2/worlds.yml")) {
+            Files.copy(in, new File(dataFolder, "worlds.yml").toPath());
         }
+        EntityStore worlds = backend.store(EntityKind.WORLDS);
+        worlds.loadAll().keySet().forEach(worlds::delete);
+
+        restart();
+
+        assertEquals(Map.of(), backend.store(EntityKind.WORLDS).loadAll());
+    }
+
+    private void restart() {
+        backend.close();
+        backend = StorageBackend.connect(settings().type(), settings(), dataFolder, LOGGER);
     }
 
     @Test
