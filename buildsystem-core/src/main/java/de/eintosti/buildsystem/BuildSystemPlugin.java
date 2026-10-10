@@ -139,6 +139,8 @@ public class BuildSystemPlugin extends JavaPlugin {
             return;
         }
 
+        // First, as on quit: otherwise the editor's copy would overwrite the inventory the snapshots below hand back.
+        services.navigatorEditor().restoreAll();
         Bukkit.getOnlinePlayers().forEach(pl -> {
             BuildPlayerImpl buildPlayer =
                     BuildPlayerImpl.of(services.player().getPlayerStorage().getBuildPlayer(pl));
@@ -152,7 +154,6 @@ public class BuildSystemPlugin extends JavaPlugin {
             services.navigator().closeNewNavigator(pl);
         });
         services.settings().showAllPlayers();
-        services.navigatorEditor().restoreAll();
 
         services.worldDownload().stop();
         services.backup().close();

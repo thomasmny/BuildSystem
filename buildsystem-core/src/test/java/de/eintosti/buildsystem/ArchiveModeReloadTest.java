@@ -19,21 +19,29 @@ package de.eintosti.buildsystem;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.mockStatic;
 
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.BuildSystem;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
 import de.eintosti.buildsystem.test.TestData;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.data.WorldDataSchema;
+import de.eintosti.buildsystem.world.menu.setup.LayoutEditorMenu;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
@@ -44,6 +52,10 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
@@ -58,6 +70,7 @@ import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import org.mockbukkit.mockbukkit.world.WorldMock;
 import org.mockito.MockedConstruction;
+import org.mockito.MockedStatic;
 
 /**
  * Drives the real plugin through a reload, and through a crash, with a player standing in an archive world.
@@ -110,9 +123,8 @@ class ArchiveModeReloadTest {
 
         bystander = SoundlessPlayer.join(server, "Bystander");
         archived = SoundlessPlayer.join(server, "Archived");
-        // MockBukkit writes the navigator's item flags as Java objects, which YAML refuses to read back. A server
-        // writes
-        // them as text.
+        // MockBukkit writes the navigator's item flags as Java objects, which YAML refuses to read back.
+        // A server writes them as text.
         archived.getInventory().clear();
         archived.getInventory().setItem(0, new ItemStack(Material.DIAMOND, 5));
         archived.getInventory().setHelmet(new ItemStack(Material.DIAMOND_HELMET));
@@ -254,6 +266,33 @@ class ArchiveModeReloadTest {
         server.getPluginManager().disablePlugin(plugin);
 
         assertFalse(snapshotStored());
+    }
+
+    @Test
+    void disabling_withTheLayoutEditorOpen_handsTheRealInventoryBack() {
+        archived.addAttachment(plugin, Permissions.SETUP, true);
+        archived.performCommand("setup");
+        // XSkull needs authlib, which only the server provides; plain heads are enough for the editor's controls.
+        try (MockedStatic<ItemBuilder> itemBuilder = mockStatic(ItemBuilder.class, CALLS_REAL_METHODS)) {
+            itemBuilder
+                    .when(() -> ItemBuilder.skull(any(Profileable.class)))
+                    .thenAnswer(invocation -> ItemBuilder.of(Material.PLAYER_HEAD));
+            // The statuses button in the setup hub.
+            server.getPluginManager()
+                    .callEvent(new InventoryClickEvent(
+                            archived.getOpenInventory(),
+                            SlotType.CONTAINER,
+                            13,
+                            ClickType.LEFT,
+                            InventoryAction.PICKUP_ALL));
+        }
+        assertInstanceOf(
+                LayoutEditorMenu.class,
+                archived.getOpenInventory().getTopInventory().getHolder());
+
+        server.getPluginManager().disablePlugin(plugin);
+
+        assertOutOfArchiveMode();
     }
 
     private void assertInArchiveMode() {
