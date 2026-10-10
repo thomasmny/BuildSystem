@@ -25,10 +25,9 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import java.io.File;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -126,7 +125,7 @@ public class WorldImportCoordinator {
             return CompletableFuture.failedFuture(new IllegalStateException("A bulk import is already in progress"));
         }
 
-        String[] directories = scanImportableDirectories();
+        String[] directories = worldStorage.unimportedWorldNames().toArray(String[]::new);
         if (directories.length == 0) {
             importingAllWorlds.set(false);
             return CompletableFuture.completedFuture(0);
@@ -210,7 +209,7 @@ public class WorldImportCoordinator {
                     return;
                 }
 
-                String invalidChar = StringCleaner.firstInvalidChar(worldName, invalidCharacters);
+                String invalidChar = StringCleaner.firstInvalidChar(WorldNames.path(worldName), invalidCharacters);
                 if (invalidChar != null) {
                     listener.invalidName(worldName, invalidChar);
                     return;
@@ -232,12 +231,5 @@ public class WorldImportCoordinator {
         }.runTaskTimer(plugin, 0, 20L * delay);
 
         return result;
-    }
-
-    private String[] scanImportableDirectories() {
-        String[] directories = FileUtils.worldDimensionsRoot()
-                .list((dir, name) ->
-                        FileUtils.isWorldDirectory(new File(dir, name)) && !worldStorage.worldExists(name));
-        return directories != null ? directories : new String[0];
     }
 }

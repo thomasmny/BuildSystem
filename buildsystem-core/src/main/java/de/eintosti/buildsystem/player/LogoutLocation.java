@@ -17,7 +17,7 @@
  */
 package de.eintosti.buildsystem.player;
 
-import org.bukkit.Bukkit;
+import de.eintosti.buildsystem.world.WorldNames;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.jspecify.annotations.NullMarked;
@@ -57,7 +57,7 @@ public class LogoutLocation {
     }
 
     public @Nullable Location location() {
-        World world = Bukkit.getWorld(worldName);
+        World world = WorldNames.bukkitWorld(worldName);
         if (world == null) {
             return null;
         }

@@ -19,12 +19,14 @@ package de.eintosti.buildsystem.util;
 
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.world.WorldNames;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -37,6 +39,7 @@ import net.lingala.zip4j.io.outputstream.ZipOutputStream;
 import net.lingala.zip4j.model.ExcludeFileFilter;
 import net.lingala.zip4j.model.ZipParameters;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -53,48 +56,105 @@ public final class FileUtils {
     /**
      * Resolves a world's on-disk folder.
      *
-     * <p>Since Paper 26.1 every Bukkit world is stored as a dimension under the main world, keyed by the lowercased
-     * world name ({@code <level-name>/dimensions/minecraft/<name>}). A loaded world reports its real folder directly,
-     * which stays correct even if Paper's key derivation ever changes; an unloaded or not-yet-created world is resolved
-     * from that layout, falling back to the pre-26.1 flat location for a world not yet migrated.
+     * <p>Since Paper 26.1 every Bukkit world is stored as a dimension under the main world, keyed by its namespace and
+     * lowercased name ({@code <level-name>/dimensions/<namespace>/<name>}). A loaded world reports its real folder
+     * directly, which stays correct even if Paper's key derivation ever changes; an unloaded or not-yet-created world
+     * is resolved from that layout, falling back to the pre-26.1 flat location for a world not yet migrated.
+     * Namespaced worlds never existed before 26.1, so they have no flat location.
      */
     public static File worldFolder(String worldName) {
-        World loaded = Bukkit.getWorld(worldName);
+        World loaded = WorldNames.bukkitWorld(worldName);
         if (loaded != null) {
             return loaded.getWorldFolder();
         }
-        File dimension = new File(worldDimensionsRoot(), worldName.toLowerCase(Locale.ROOT));
-        if (dimension.isDirectory()) {
+        String path = WorldNames.path(worldName);
+        File dimension = new File(worldDimensionsRoot(WorldNames.namespace(worldName)), path.toLowerCase(Locale.ROOT));
+        if (dimension.isDirectory() || WorldNames.isNamespaced(worldName)) {
             return dimension;
         }
-        File legacy = new File(Bukkit.getWorldContainer(), worldName);
+        File legacy = new File(Bukkit.getWorldContainer(), path);
         return legacy.isDirectory() ? legacy : dimension;
     }
 
     /**
-     * The {@code <level-name>/dimensions/minecraft} directory under which Paper 26.1+ stores every world as a dimension.
-     * Resolved live from the running server, so it tracks the world container even after the server is moved or copied.
+     * {@return whether a world without a namespace has a folder of its own, flat or under
+     * {@code dimensions/minecraft}} A namespaced world imported before namespaces existed is stored under its Bukkit
+     * name ({@code maps_lobby}) but lives in its namespace's folder, so this tells it apart from a world really named
+     * {@code maps_lobby}.
      */
-    public static File worldDimensionsRoot() {
-        List<World> worlds = Bukkit.getWorlds();
-        if (worlds == null || worlds.isEmpty()) {
-            // No main world yet (very early startup) — callers fall back to the flat container layout.
-            return Bukkit.getWorldContainer();
-        }
-        String levelName = worlds.getFirst().getName();
-        return new File(
-                Bukkit.getWorldContainer(), levelName + File.separator + "dimensions" + File.separator + "minecraft");
+    public static boolean hasPlainWorldFolder(String worldName) {
+        String path = WorldNames.path(worldName);
+        return new File(worldDimensionsRoot(NamespacedKey.MINECRAFT), path.toLowerCase(Locale.ROOT)).isDirectory()
+                || new File(Bukkit.getWorldContainer(), path).isDirectory();
     }
 
     /**
-     * Whether {@code folder} is an importable world directory: a non-vanilla dimension folder that holds world data.
+     * The {@code <level-name>/dimensions/<namespace>} directory under which Paper 26.1+ stores the worlds of a
+     * namespace. Resolved live from the running server, so it tracks the world container even after the server is
+     * moved or copied.
+     */
+    private static File worldDimensionsRoot(String namespace) {
+        File dimensionsRoot = dimensionsRoot();
+        return dimensionsRoot == null ? Bukkit.getWorldContainer() : new File(dimensionsRoot, namespace);
+    }
+
+    /**
+     * {@return the main level's {@code dimensions} directory, or {@code null} very early in startup when there is no
+     * main world yet} Callers then fall back to the flat container layout.
+     */
+    private static @Nullable File dimensionsRoot() {
+        List<World> worlds = Bukkit.getWorlds();
+        if (worlds == null || worlds.isEmpty()) {
+            return null;
+        }
+        String levelName = worlds.getFirst().getName();
+        return new File(Bukkit.getWorldContainer(), levelName + File.separator + "dimensions");
+    }
+
+    /**
+     * {@return the names of every world folder under the main level's dimensions} Namespaces other than
+     * {@code minecraft} are only listed when the server can load them.
+     */
+    public static List<String> dimensionWorldNames() {
+        File dimensionsRoot = dimensionsRoot();
+        File[] namespaces = dimensionsRoot == null ? null : dimensionsRoot.listFiles(File::isDirectory);
+        if (namespaces == null) {
+            return List.of();
+        }
+
+        List<String> worldNames = new ArrayList<>();
+        for (File namespaceFolder : namespaces) {
+            String namespace = namespaceFolder.getName();
+            if (!WorldNames.isValidNamespace(namespace)
+                    || (!namespace.equals(NamespacedKey.MINECRAFT) && !WorldNames.namespacesSupported())) {
+                continue;
+            }
+            File[] worldFolders = namespaceFolder.listFiles(FileUtils::isWorldDirectory);
+            if (worldFolders != null) {
+                for (File worldFolder : worldFolders) {
+                    worldNames.add(WorldNames.of(namespace, worldFolder.getName()));
+                }
+            }
+        }
+        return worldNames;
+    }
+
+    /**
+     * Whether {@code folder} is an importable world directory: a folder that holds world data and is not one of the
+     * vanilla dimensions of the main level.
      */
     public static boolean isWorldDirectory(File folder) {
-        if (!folder.isDirectory()
-                || VANILLA_DIMENSIONS.contains(folder.getName().toLowerCase(Locale.ROOT))) {
+        if (!folder.isDirectory() || isVanillaDimension(folder)) {
             return false;
         }
         return new File(folder, "region").isDirectory() || new File(folder, "level.dat").isFile();
+    }
+
+    private static boolean isVanillaDimension(File folder) {
+        File parent = folder.getParentFile();
+        return parent != null
+                && parent.getName().equals(NamespacedKey.MINECRAFT)
+                && VANILLA_DIMENSIONS.contains(folder.getName().toLowerCase(Locale.ROOT));
     }
 
     public static Path resolve(File file, final String child) {
@@ -257,7 +317,7 @@ public final class FileUtils {
      * this is not the default world}
      *
      * <p>Only the server's default world has one: since Paper 26.1 every other world lives under its
-     * {@code dimensions/minecraft} directory. Archiving it would fold the entire server into one world's backup, so
+     * {@code dimensions} directory. Archiving it would fold the entire server into one world's backup, so
      * it is excluded and the default world is backed up alone.
      *
      * @param worldContainer The world folder being archived

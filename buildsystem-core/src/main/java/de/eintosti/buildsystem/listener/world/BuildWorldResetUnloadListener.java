@@ -51,7 +51,7 @@ public class BuildWorldResetUnloadListener implements Listener {
      * @param world The world for which the unload task should be reset
      */
     private void resetUnloadTask(World world) {
-        BuildWorld buildWorld = worldStorage.getBuildWorld(world.getName());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(world);
         if (buildWorld != null) {
             buildWorld.getUnloader().resetUnloadTask();
         }

@@ -24,12 +24,13 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.Permissions;
+import de.eintosti.buildsystem.world.WorldNames;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.ToIntFunction;
 import java.util.logging.Logger;
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -39,12 +40,14 @@ import org.jspecify.annotations.Nullable;
 public class TimeCommand extends CommandBase {
 
     private final ConfigService configService;
+    private final WorldServiceImpl worldService;
     private final WorldStorageImpl worldStorage;
 
-    public TimeCommand(Messages messages, Logger logger, ConfigService configService, WorldStorageImpl worldStorage) {
+    public TimeCommand(Messages messages, Logger logger, ConfigService configService, WorldServiceImpl worldService) {
         super(messages, logger, true);
         this.configService = configService;
-        this.worldStorage = worldStorage;
+        this.worldService = worldService;
+        this.worldStorage = worldService.getWorldStorage();
     }
 
     /**
@@ -86,8 +89,11 @@ public class TimeCommand extends CommandBase {
             return;
         }
 
-        String worldName = worldNameFromArgs(player, args, 0);
-        World world = Bukkit.getWorld(worldName);
+        String worldName = worldNameFromArgs(player, args, 0, worldService, variant.permission);
+        if (worldName == null) {
+            return;
+        }
+        World world = WorldNames.bukkitWorld(worldName);
         if (world == null) {
             messages.sendMessage(player, variant.label + "_unknown_world");
             return;
@@ -106,7 +112,7 @@ public class TimeCommand extends CommandBase {
 
         Time time = configService.current().world().defaults().time();
         world.setTime(variant.tick.applyAsInt(time));
-        messages.sendMessage(player, variant.label + "_set", Placeholders.of("%world%", world.getName()));
+        messages.sendMessage(player, variant.label + "_set", Placeholders.of("%world%", WorldNames.of(world)));
     }
 
     @Override
@@ -116,9 +122,7 @@ public class TimeCommand extends CommandBase {
         switch (lc) {
             case "day":
             case "night":
-                worldStorage.getBuildWorlds().stream()
-                        .filter(world -> world.getPermissions().canPerformCommand(player, Permissions.command(lc)))
-                        .forEach(world -> addArgument(args[0], world.getName(), list));
+                addWorldArguments(player, args[0], worldStorage, Permissions.command(lc), list);
                 break;
         }
         return list;

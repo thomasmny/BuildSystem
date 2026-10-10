@@ -93,7 +93,7 @@ public class DisabledInteractionsListener implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld().getName());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         if (buildWorld != null && policy.mayModify(player, buildWorld, WorldSetting.BLOCK_PLACEMENT) != Denial.NONE) {
             return;
         }

@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.command.subcommand.SubCommand;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.world.WorldNames;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -32,7 +33,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Generic dispatcher for slash-command subcommands. The command name is matched case-insensitively; worldName is
- * resolved as {@code args[1]} when present, otherwise the player's current world name.
+ * {@code args[1]} when present, otherwise the player's current world, in the form a player would type it.
  */
 @NullMarked
 public final class SubCommandDispatcher {
@@ -69,8 +70,8 @@ public final class SubCommandDispatcher {
             return false;
         }
 
-        // Convention: /worlds <sub> <world> — args[1] is the world name when present
-        String worldName = args.length >= 2 ? args[1] : player.getWorld().getName();
+        // Convention: /worlds <sub> <world> — args[1] is the world name as typed when present
+        String worldName = args.length >= 2 ? args[1] : WorldNames.qualified(WorldNames.of(player.getWorld()));
         subCommand.execute(player, worldName, args);
         return true;
     }

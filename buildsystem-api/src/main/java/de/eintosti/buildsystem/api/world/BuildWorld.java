@@ -38,6 +38,10 @@ import org.jspecify.annotations.Nullable;
  * Represents a world managed by the BuildSystem plugin, extending the {@link Displayable} interface. This interface
  * provides comprehensive access to world-specific properties, data, and utility methods.
  *
+ * <p>A world outside the {@code minecraft} namespace is named {@code namespace:name}, for example {@code maps:lobby}.
+ * That is not the name of its Bukkit world, so use {@link #getWorld()} rather than looking the world up by
+ * {@link #getName()}.
+ *
  * @since 3.0.0
  */
 @NullMarked

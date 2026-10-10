@@ -28,11 +28,13 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
+import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.ArrayList;
@@ -49,6 +51,7 @@ import org.jspecify.annotations.Nullable;
 public class ImportSubCommand extends AbstractSubCommand {
 
     private final ConfigService configService;
+    private final Prompts prompts;
     private final PlayerLookupService playerLookupService;
     private final TaskScheduler scheduler;
 
@@ -56,16 +59,18 @@ public class ImportSubCommand extends AbstractSubCommand {
             Messages messages,
             WorldServiceImpl worldService,
             ConfigService configService,
+            Prompts prompts,
             PlayerLookupService playerLookupService,
             TaskScheduler scheduler) {
         super(messages, worldService);
         this.configService = configService;
+        this.prompts = prompts;
         this.playerLookupService = playerLookupService;
         this.scheduler = scheduler;
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
+    public void execute(Player player, String input, String[] args) {
         if (!hasPermission(player)) {
             messages.sendPermissionError(player);
             return;
@@ -76,14 +81,19 @@ public class ImportSubCommand extends AbstractSubCommand {
             return;
         }
 
+        String worldName = worldService.getWorldStorage().newWorldName(input);
         if (worldService.getWorldStorage().worldExists(worldName)) {
             messages.sendMessage(player, "worlds_import_world_is_imported");
             return;
         }
 
         // Validate the name before touching the filesystem so invalid input cannot probe directory existence
+        if (!prompts.checkNamespace(player, worldName)) {
+            return;
+        }
+
         String invalidChar = StringCleaner.firstInvalidChar(
-                worldName, configService.current().world().invalidCharacters());
+                WorldNames.path(worldName), configService.current().world().invalidCharacters());
         if (invalidChar != null) {
             messages.sendMessage(
                     player,
@@ -216,21 +226,14 @@ public class ImportSubCommand extends AbstractSubCommand {
     public List<String> complete(Player player, String[] args) {
         List<String> result = new ArrayList<>();
         if (args.length == 2) {
-            String[] directories = FileUtils.worldDimensionsRoot().list((dir, name) -> {
-                if (StringCleaner.hasInvalidNameCharacters(
-                        name, configService.current().world().invalidCharacters())) {
-                    return false;
+            String invalidCharacters = configService.current().world().invalidCharacters();
+            for (String worldName : worldService.getWorldStorage().unimportedWorldNames()) {
+                if (StringCleaner.hasInvalidNameCharacters(WorldNames.path(worldName), invalidCharacters)) {
+                    continue;
                 }
-                return FileUtils.isWorldDirectory(new File(dir, name))
-                        && !worldService.getWorldStorage().worldExists(name);
-            });
-
-            if (directories != null) {
-                for (String dir : directories) {
-                    WorldsCompletions.addIfStartsWith(args[1], dir, result);
-                }
+                WorldsCompletions.addIfStartsWith(
+                        args[1], worldService.getWorldStorage().typedNewName(worldName), result);
             }
-
             return result;
         }
 

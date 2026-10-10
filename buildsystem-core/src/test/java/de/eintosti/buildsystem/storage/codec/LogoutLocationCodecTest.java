@@ -42,6 +42,22 @@ class LogoutLocationCodecTest {
     }
 
     @Test
+    void roundTrip_namespacedWorld_keepsTheNamespace() {
+        LogoutLocation original = new LogoutLocation("maps:lobby", 1.0, 2.0, 3.0, 4.0f, 5.0f);
+
+        LogoutLocation parsed = LogoutLocationCodec.parse(LogoutLocationCodec.format(original));
+
+        assertNotNull(parsed);
+        assertEquals("maps:lobby", parsed.worldName());
+        assertEquals(original.toString(), parsed.toString());
+    }
+
+    @Test
+    void parse_tooManyParts_returnsNull() {
+        assertNull(LogoutLocationCodec.parse("a:b:c:1.0:2.0:3.0:0.0:0.0"));
+    }
+
+    @Test
     void parse_null_returnsNull() {
         assertNull(LogoutLocationCodec.parse(null));
     }

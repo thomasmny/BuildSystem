@@ -156,8 +156,14 @@ public record PluginConfig(Settings settings, Storage storage, World world, Fold
         public record Navigator(XMaterial item, boolean giveItemOnJoin) {}
     }
 
+    /**
+     * @param defaultNamespace The namespace a new world's name typed without one is placed in, and the preferred one when
+     *     a typed name matches several existing worlds. Always valid, and always {@code minecraft} on a server that
+     *     cannot create namespaced worlds.
+     */
     public record World(
             boolean lockWeather,
+            String defaultNamespace,
             String invalidCharacters,
             int importAllDelay,
             Set<String> deletionBlacklist,

@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.creation.GenerationDataStore.WorldGenerationData;
 import de.eintosti.buildsystem.world.creation.generator.VoidGenerator;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
@@ -110,8 +111,15 @@ public class BukkitWorldFactory {
             return null;
         }
 
-        WorldCreator worldCreator = createWorldCreator();
-        World bukkitWorld = Bukkit.createWorld(worldCreator);
+        World bukkitWorld;
+        try {
+            bukkitWorld = Bukkit.createWorld(configure(WorldNames.creator(worldName)));
+        } catch (IllegalArgumentException | UnsupportedOperationException e) {
+            // A namespaced world on Spigot, a stored name that is not a valid key, or a name Paper refuses because a
+            // world with another key already has it: skip this world, not the rest of the load.
+            logger.warning("\"%s\" cannot be loaded: %s. Skipping...".formatted(worldName, e.getMessage()));
+            return null;
+        }
 
         if (bukkitWorld != null) {
             applyDefaultWorldSettings(bukkitWorld);
@@ -123,8 +131,7 @@ public class BukkitWorldFactory {
         return bukkitWorld;
     }
 
-    private WorldCreator createWorldCreator() {
-        WorldCreator worldCreator = new WorldCreator(worldName);
+    private WorldCreator configure(WorldCreator worldCreator) {
         if (seed != null) {
             worldCreator.seed(seed);
         }

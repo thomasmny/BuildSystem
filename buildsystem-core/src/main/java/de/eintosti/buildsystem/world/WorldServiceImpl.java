@@ -115,31 +115,89 @@ public class WorldServiceImpl implements WorldService {
     @Override
     @Contract("_ -> new")
     public WorldBuilder newWorld(String name) {
-        validateWorldName(name);
-        return new WorldBuilderImpl(services.worldContext(), worldStorage, plugin.getDataFolder(), name);
+        String worldName = validateWorldName(name);
+        return new WorldBuilderImpl(services.worldContext(), worldStorage, plugin.getDataFolder(), worldName);
     }
 
     @Override
     @Contract("_ -> new")
     public WorldImporter importWorld(String name) {
-        validateWorldName(name);
-        return new WorldImporterImpl(services.worldContext(), worldStorage, name);
+        String worldName = validateWorldName(name);
+        return new WorldImporterImpl(services.worldContext(), worldStorage, worldName);
     }
 
     /**
-     * Rejects a world name that is reserved or would resolve outside the world container. Defense-in-depth: the
-     * menus sanitize names before they reach here, but both {@link #newWorld} and {@link #importWorld(String)} are
-     * public API, so a caller must not be able to create or import into a directory outside the world container
-     * (e.g. {@code plugins/}) by passing a crafted name.
+     * Rejects a world name that is reserved, lies in a namespace the server cannot use, or would resolve outside the
+     * world container. Defense-in-depth: the menus sanitize names before they reach here, but both {@link #newWorld}
+     * and {@link #importWorld(String)} are public API, so a caller must not be able to create or import into a
+     * directory outside the world container (e.g. {@code plugins/}) by passing a crafted name.
+     *
+     * @return The {@link WorldNames#normalize normalized} name
      */
-    private static void validateWorldName(String name) {
-        if (StringCleaner.isReservedName(name)) {
+    private String validateWorldName(String name) {
+        String path = WorldNames.path(name);
+        if (StringCleaner.isReservedName(path)) {
             throw new IllegalArgumentException("World name '%s' is reserved and cannot be used".formatted(name));
         }
-        File worldDirectory = new File(Bukkit.getWorldContainer(), name);
+        String namespace = WorldNames.namespace(name);
+        if (!WorldNames.isValidNamespace(namespace)) {
+            throw new IllegalArgumentException("World name '%s' has an invalid namespace".formatted(name));
+        }
+        if (!WorldNames.isValidName(name)) {
+            throw new IllegalArgumentException("World name '%s' is not a valid world id".formatted(name));
+        }
+        if (WorldNames.isNamespaced(name) && !WorldNames.namespacesSupported()) {
+            throw new UnsupportedOperationException("World namespaces require Paper: '%s'".formatted(name));
+        }
+        File worldDirectory = new File(Bukkit.getWorldContainer(), path);
         if (StringCleaner.isPathEscape(Bukkit.getWorldContainer(), worldDirectory)) {
             throw new IllegalArgumentException("World name '%s' resolves outside the world container".formatted(name));
         }
+        String worldName = WorldNames.normalize(name);
+        String clash = worldStorage.bukkitNameClash(worldName);
+        if (clash != null) {
+            throw new IllegalArgumentException(
+                    "World name '%s' clashes with the existing world '%s'".formatted(name, clash));
+        }
+        return worldName;
+    }
+
+    /**
+     * Resolves what a player typed to the name of an existing world, as {@link WorldStorageImpl#matchWorlds} does.
+     * When the name is ambiguous the player is told which names to type instead, limited to the worlds they may run
+     * {@code permission} in so the reply does not reveal the others.
+     *
+     * @param player The player who typed the name
+     * @param input What they typed
+     * @param permission The command permission the world is checked against, or {@code null} for none
+     * @return The world's name; {@code input} itself when no stored world matches, so a world BuildSystem does not
+     *     manage can still be named; or {@code null} when the name is ambiguous (a message has already been sent)
+     */
+    public @Nullable String resolveWorldName(Player player, String input, @Nullable String permission) {
+        List<BuildWorld> matches = worldStorage.matchWorlds(input);
+        if (matches.isEmpty()) {
+            return WorldNames.normalize(input);
+        }
+        if (matches.size() == 1) {
+            return matches.getFirst().getName();
+        }
+
+        List<String> permitted = matches.stream()
+                .filter(buildWorld -> buildWorld.getPermissions().canPerformCommand(player, permission))
+                .map(buildWorld -> WorldNames.qualified(buildWorld.getName()))
+                .toList();
+        if (permitted.isEmpty()) {
+            messages.sendPermissionError(player);
+        } else {
+            messages.sendMessage(
+                    player,
+                    "worlds_world_ambiguous",
+                    Placeholders.of()
+                            .add("%world%", input)
+                            .add("%worlds%", String.join(", ", permitted))
+                            .build());
+        }
+        return null;
     }
 
     public void startWorldNameInput(
@@ -166,6 +224,18 @@ public class WorldServiceImpl implements WorldService {
             Generator generator,
             String generatorData,
             boolean single) {
+        String clash = worldStorage.bukkitNameClash(worldName);
+        if (clash != null) {
+            messages.sendMessage(
+                    player,
+                    "worlds_world_name_clash",
+                    Placeholders.of()
+                            .add("%world%", worldName)
+                            .add("%other%", clash)
+                            .build());
+            return false;
+        }
+
         CustomGenerator customGenerator = null;
         if (generator == Generator.CUSTOM) {
             customGenerator = CustomGeneratorImpl.of(generatorData, worldName);
@@ -331,7 +401,7 @@ public class WorldServiceImpl implements WorldService {
      *
      * @param player The player who issued the world renaming
      * @param buildWorld The build world object
-     * @param newName The name the world should be renamed to
+     * @param newName The name the world should be renamed to, as the player typed it
      */
     public void renameWorld(Player player, BuildWorld buildWorld, String newName) {
         new WorldRenamer(
@@ -340,13 +410,14 @@ public class WorldServiceImpl implements WorldService {
                         worldStorage,
                         services.config(),
                         services.messages(),
+                        services.prompts(),
                         services.spawn(),
                         services.scheduler())
                 .rename(player, buildWorld, newName);
     }
 
     public List<Player> removePlayersFromWorld(String worldName, String messageKey) {
-        World worldToRemove = Bukkit.getWorld(worldName);
+        World worldToRemove = WorldNames.bukkitWorld(worldName);
         if (worldToRemove == null) {
             return List.of();
         }

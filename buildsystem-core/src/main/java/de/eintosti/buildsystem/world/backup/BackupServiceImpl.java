@@ -246,8 +246,7 @@ public class BackupServiceImpl implements BackupService {
         Set<BuildWorld> worlds = new HashSet<>();
         if (autoBackup.onlyActiveWorlds()) {
             for (Player player : Bukkit.getOnlinePlayers()) {
-                BuildWorld buildWorld =
-                        worldStorage.getBuildWorld(player.getWorld().getName());
+                BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
                 if (buildWorld != null && buildWorld.getPermissions().canModify(player)) {
                     worlds.add(buildWorld);
                 }

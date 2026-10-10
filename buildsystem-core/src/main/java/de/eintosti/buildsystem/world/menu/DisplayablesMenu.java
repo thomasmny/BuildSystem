@@ -34,6 +34,7 @@ import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.display.DisplayOrdering;
 import de.eintosti.buildsystem.world.menu.CreateMenu.Page;
@@ -41,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -276,7 +276,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         if (!buildWorld.getPermissions().canEnter(this.player)) {
             return false;
         }
-        return Bukkit.getWorld(buildWorld.getName()) != null || !buildWorld.isLoaded();
+        return WorldNames.bukkitWorld(buildWorld.getName()) != null || !buildWorld.isLoaded();
     }
 
     @Override

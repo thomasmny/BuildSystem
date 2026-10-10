@@ -80,7 +80,8 @@ public class WorldsCommand extends CommandBase {
                         new FolderSubCommand(messages, worldService, navigatorCategoryRegistry, prompts),
                         new HelpSubCommand(messages, logger),
                         new ImportAllSubCommand(messages, worldService, playerLookupService, scheduler),
-                        new ImportSubCommand(messages, worldService, configService, playerLookupService, scheduler),
+                        new ImportSubCommand(
+                                messages, worldService, configService, prompts, playerLookupService, scheduler),
                         new InfoSubCommand(messages, worldService),
                         new ItemSubCommand(messages, worldService, navigatorItems),
                         new RemoveBuilderSubCommand(messages, worldService, playerLookupService, prompts, scheduler),

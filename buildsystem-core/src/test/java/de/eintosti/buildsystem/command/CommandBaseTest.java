@@ -21,9 +21,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -98,20 +100,25 @@ class CommandBaseTest {
         org.bukkit.World world = mock(org.bukkit.World.class);
         when(player.getWorld()).thenReturn(world);
         when(world.getName()).thenReturn("world");
+        when(world.getKey()).thenReturn(NamespacedKey.minecraft("overworld"));
+        WorldServiceImpl worldService = mock(WorldServiceImpl.class);
 
-        String result = cmd.worldNameFromArgs(player, NO_ARGS, 0);
+        String result = cmd.worldNameFromArgs(player, NO_ARGS, 0, worldService, null);
 
         assertEquals("world", result);
+        verifyNoInteractions(worldService);
     }
 
     @Test
-    void worldNameFromArgs_argsPresent_returnsArgAtIndex() {
+    void worldNameFromArgs_argsPresent_resolvesTheTypedName() {
         TestCommand cmd = new TestCommand(true);
         Player player = mock(Player.class);
+        WorldServiceImpl worldService = mock(WorldServiceImpl.class);
+        when(worldService.resolveWorldName(player, "lobby", "perm")).thenReturn("maps:lobby");
 
-        String result = cmd.worldNameFromArgs(player, new String[] {"myWorld"}, 0);
+        String result = cmd.worldNameFromArgs(player, new String[] {"lobby"}, 0, worldService, "perm");
 
-        assertEquals("myWorld", result);
+        assertEquals("maps:lobby", result);
     }
 
     @Test

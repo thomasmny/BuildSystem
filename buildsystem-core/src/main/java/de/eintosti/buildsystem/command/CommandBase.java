@@ -18,6 +18,9 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.world.WorldNames;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
@@ -27,6 +30,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public abstract class CommandBase implements CommandExecutor, TabCompleter {
@@ -76,8 +80,26 @@ public abstract class CommandBase implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    protected String worldNameFromArgs(Player player, String[] args, int index) {
-        return args.length <= index ? player.getWorld().getName() : args[index];
+    /**
+     * {@return the name of the world at {@code args[index]}, or of the player's current world when it is missing} A
+     * typed name is resolved as {@link WorldServiceImpl#resolveWorldName} describes; {@code null} means it was
+     * ambiguous and the player has been told.
+     */
+    protected @Nullable String worldNameFromArgs(
+            Player player, String[] args, int index, WorldServiceImpl worldService, @Nullable String permission) {
+        return args.length <= index
+                ? WorldNames.of(player.getWorld())
+                : worldService.resolveWorldName(player, args[index], permission);
+    }
+
+    /**
+     * Adds the worlds {@code player} may run the command in to {@code list}, named the way the player would type them.
+     */
+    protected static void addWorldArguments(
+            Player player, String input, WorldStorageImpl worldStorage, String permission, List<String> list) {
+        worldStorage.getBuildWorlds().stream()
+                .filter(world -> world.getPermissions().canPerformCommand(player, permission))
+                .forEach(world -> addArgument(input, worldStorage.typedName(world.getName()), list));
     }
 
     protected static void addArgument(String input, String argument, List<String> list) {

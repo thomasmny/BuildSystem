@@ -19,9 +19,11 @@ package de.eintosti.buildsystem.menu;
 
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.PlayerChatInput.InputRunnable;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.WorldNames;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -94,6 +96,48 @@ public final class Prompts {
             return null;
         }
         return sanitized;
+    }
+
+    /**
+     * Sanitizes the name of a new world like {@link #sanitizeName}, keeping its namespace.
+     *
+     * @param player The player who typed the name
+     * @param worldName The name, already placed in a namespace (see {@link
+     *     de.eintosti.buildsystem.storage.WorldStorageImpl#newWorldName} and {@link
+     *     de.eintosti.buildsystem.storage.WorldStorageImpl#renamedWorldName})
+     * @return The world name, or {@code null} if it cannot be used (a message has already been sent)
+     */
+    public @Nullable String sanitizeWorldName(Player player, String worldName) {
+        if (!checkNamespace(player, worldName)) {
+            return null;
+        }
+
+        String path = sanitizeName(
+                player,
+                WorldNames.path(worldName),
+                "worlds_world_creation_invalid_characters",
+                "worlds_world_creation_name_bank");
+        return path == null ? null : WorldNames.of(WorldNames.namespace(worldName), path);
+    }
+
+    /**
+     * Checks that the server can hold worlds in {@code worldName}'s namespace, telling the player why not.
+     *
+     * @param player The player who typed the name
+     * @param worldName The world name, already resolved from what the player typed
+     * @return Whether the namespace can be used
+     */
+    public boolean checkNamespace(Player player, String worldName) {
+        String namespace = WorldNames.namespace(worldName);
+        if (!WorldNames.isValidNamespace(namespace)) {
+            messages.sendMessage(player, "worlds_world_namespace_invalid", Placeholders.of("%namespace%", namespace));
+            return false;
+        }
+        if (WorldNames.isNamespaced(worldName) && !WorldNames.namespacesSupported()) {
+            messages.sendMessage(player, "worlds_world_namespace_unsupported");
+            return false;
+        }
+        return true;
     }
 
     /**

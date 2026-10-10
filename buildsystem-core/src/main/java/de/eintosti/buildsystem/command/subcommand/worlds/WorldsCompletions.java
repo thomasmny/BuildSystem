@@ -17,10 +17,12 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.Permissions;
+import de.eintosti.buildsystem.world.WorldNames;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -39,13 +41,14 @@ final class WorldsCompletions {
      * (e.g. Permissions.EDIT).
      */
     static List<String> permittedWorldNames(
-            Player player, WorldStorage worldStorage, @Nullable String commandPermission, String input) {
+            Player player, WorldServiceImpl worldService, @Nullable String commandPermission, String input) {
         List<String> result = new ArrayList<>();
+        WorldStorageImpl worldStorage = worldService.getWorldStorage();
         for (BuildWorld world : worldStorage.getBuildWorlds()) {
             String worldPerm = world.getData().get(WorldDataKey.PERMISSION);
             if ((player.hasPermission(worldPerm) || worldPerm.equalsIgnoreCase("-"))
                     && world.getPermissions().canPerformCommand(player, commandPermission)) {
-                addIfStartsWith(input, world.getName(), result);
+                addIfStartsWith(input, worldStorage.typedName(world.getName()), result);
             }
         }
         return result;
@@ -57,14 +60,15 @@ final class WorldsCompletions {
      * the command would refuse.
      */
     static List<String> deletableWorldNames(
-            Player player, WorldStorage worldStorage, Set<String> deletionBlacklist, String input) {
+            Player player, WorldServiceImpl worldService, Set<String> deletionBlacklist, String input) {
         List<String> result = new ArrayList<>();
+        WorldStorageImpl worldStorage = worldService.getWorldStorage();
         for (BuildWorld world : worldStorage.getBuildWorlds()) {
-            if (deletionBlacklist.contains(world.getName().toLowerCase(Locale.ROOT))) {
+            if (deletionBlacklist.contains(WorldNames.id(world.getName()))) {
                 continue;
             }
             if (world.getPermissions().canPerformCommand(player, Permissions.DELETE)) {
-                addIfStartsWith(input, world.getName(), result);
+                addIfStartsWith(input, worldStorage.typedName(world.getName()), result);
             }
         }
         return result;

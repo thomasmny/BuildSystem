@@ -56,8 +56,7 @@ public class RemoveBuilderSubCommand extends AbstractSubCommand {
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld =
-                worldService.getWorldStorage().getBuildWorld(player.getWorld().getName());
+        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(player.getWorld());
         if (buildWorld != null
                 && !buildWorld
                         .getPermissions()
@@ -131,8 +130,7 @@ public class RemoveBuilderSubCommand extends AbstractSubCommand {
             return List.of();
         }
 
-        BuildWorld buildWorld =
-                worldService.getWorldStorage().getBuildWorld(player.getWorld().getName());
+        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(player.getWorld());
         if (buildWorld == null) {
             return List.of();
         }

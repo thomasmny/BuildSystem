@@ -117,7 +117,13 @@ public class FolderSubCommand extends AbstractSubCommand {
     }
 
     private void handleWorldFolderOperation(Player player, Folder folder, String operation, String worldName) {
-        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
+        String resolvedName =
+                worldService.resolveWorldName(player, worldName, getArgument().getPermission());
+        if (resolvedName == null) {
+            return;
+        }
+
+        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(resolvedName);
         if (buildWorld == null) {
             messages.sendMessage(player, "worlds_folder_unknown_world");
             return;
@@ -291,7 +297,8 @@ public class FolderSubCommand extends AbstractSubCommand {
                                     bw.getData().get(WorldDataKey.VISIBILITY),
                                     bw.getData().get(WorldDataKey.STATUS).getId()))
                     .filter(bw -> op.equals("add") ? !bw.isAssignedToFolder() : folder.containsWorld(bw))
-                    .forEach(bw -> WorldsCompletions.addIfStartsWith(args[3], bw.getName(), result));
+                    .forEach(bw -> WorldsCompletions.addIfStartsWith(
+                            args[3], worldService.getWorldStorage().typedName(bw.getName()), result));
             return result;
         }
 

@@ -31,6 +31,8 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import java.util.Locale;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -64,6 +66,7 @@ class PlaceholderApiExpansionTest {
 
         when(player.getWorld()).thenReturn(world);
         when(world.getName()).thenReturn(WORLD_NAME);
+        when(world.getKey()).thenReturn(NamespacedKey.minecraft(WORLD_NAME.toLowerCase(Locale.ROOT)));
         when(settingsService.getSettings(player)).thenReturn(settings);
         when(worldStorage.getBuildWorld(WORLD_NAME)).thenReturn(buildWorld);
         when(buildWorld.getData()).thenReturn(worldData);

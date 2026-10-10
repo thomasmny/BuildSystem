@@ -18,10 +18,15 @@
 package de.eintosti.buildsystem.storage;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -30,18 +35,27 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
+import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedStatic;
 
 @NullMarked
 class WorldStorageImplTest {
 
+    @TempDir
+    Path tempDir;
+
+    private String defaultNamespace = NamespacedKey.MINECRAFT;
     private WorldStorageImpl storage;
 
     @BeforeEach
     void setUp() {
-        storage = new WorldStorageImpl(Logger.getLogger("test")) {
+        storage = new WorldStorageImpl(Logger.getLogger("test"), () -> defaultNamespace) {
             @Override
             public CompletableFuture<Void> save(BuildWorld object) {
                 return CompletableFuture.completedFuture(null);
@@ -184,6 +198,184 @@ class WorldStorageImplTest {
 
         assertSame(w, storage.getBuildWorld("india"));
         assertSame(w, storage.getBuildWorld("INDIA"));
+    }
+
+    @Test
+    void sameNameInDifferentNamespaces_areDistinctWorlds() {
+        BuildWorld plain = world("Lobby");
+        BuildWorld namespaced = world("maps:Lobby");
+        storage.addBuildWorld(plain);
+        storage.addBuildWorld(namespaced);
+
+        assertSame(plain, storage.getBuildWorld("lobby"));
+        assertSame(plain, storage.getBuildWorld("minecraft:LOBBY"));
+        assertSame(namespaced, storage.getBuildWorld("MAPS:lobby"));
+        assertNull(storage.getBuildWorld("other:lobby"));
+    }
+
+    @Test
+    void lookupByBukkitWorld_usesTheKeyOutsideMinecraft() {
+        BuildWorld plain = world("maps_lobby");
+        BuildWorld namespaced = world("maps:lobby");
+        storage.addBuildWorld(plain);
+        storage.addBuildWorld(namespaced);
+
+        // Paper names the world maps:lobby "maps_lobby", which must not resolve to the plain world of that name.
+        World keyed = mock(World.class);
+        when(keyed.getName()).thenReturn("maps_lobby");
+        when(keyed.getKey()).thenReturn(new NamespacedKey("maps", "lobby"));
+        assertSame(namespaced, storage.getBuildWorld(keyed));
+
+        World main = mock(World.class);
+        when(main.getName()).thenReturn("maps_lobby");
+        when(main.getKey()).thenReturn(NamespacedKey.minecraft("maps_lobby"));
+        assertSame(plain, storage.getBuildWorld(main));
+    }
+
+    @Test
+    void worldImportedUnderItsBukkitName_isFoundByItsKey() {
+        // Imported before namespaces existed: the world maps:lobby was stored under Paper's Bukkit name for it, and
+        // its data lives in dimensions/maps/lobby, not in a folder of its own.
+        BuildWorld legacy = world("maps_lobby");
+        storage.addBuildWorld(legacy);
+
+        try (MockedStatic<Bukkit> bukkit = mockServer()) {
+            assertSame(legacy, storage.getBuildWorld(keyedWorld("maps_lobby", new NamespacedKey("maps", "lobby"))));
+            assertSame(legacy, storage.getBuildWorld("maps:lobby"));
+            assertSame(legacy, storage.getBuildWorld("maps_lobby"));
+            assertNull(storage.getBuildWorld("other:lobby"));
+        }
+    }
+
+    @Test
+    void worldReallyNamedLikeABukkitName_isNotFoundByTheNamespacedName() throws IOException {
+        BuildWorld plain = world("maps_lobby");
+        storage.addBuildWorld(plain);
+        Files.createDirectories(tempDir.resolve("world/dimensions/minecraft/maps_lobby"));
+
+        try (MockedStatic<Bukkit> bukkit = mockServer()) {
+            assertNull(storage.getBuildWorld("maps:lobby"));
+            assertNull(storage.getBuildWorld(keyedWorld("maps_lobby", new NamespacedKey("maps", "lobby"))));
+            assertSame(plain, storage.getBuildWorld("maps_lobby"));
+        }
+    }
+
+    @Test
+    void bukkitNameClash_worksBothWaysAgainstStoredWorlds() {
+        storage.addBuildWorld(world("maps_lobby"));
+        storage.addBuildWorld(world("events:Arena"));
+
+        try (MockedStatic<Bukkit> bukkit = mockServer()) {
+            assertEquals("maps_lobby", storage.bukkitNameClash("maps:Lobby"));
+            assertEquals("events:Arena", storage.bukkitNameClash("Events_arena"));
+            assertNull(storage.bukkitNameClash("maps_lobby"));
+            assertNull(storage.bukkitNameClash("events:arena"));
+            assertNull(storage.bukkitNameClash("maps:arena"));
+        }
+    }
+
+    @Test
+    void bukkitNameClash_countsALoadedWorldUnlessItIsTheSameWorld() {
+        try (MockedStatic<Bukkit> bukkit = mockServer()) {
+            World plain = keyedWorld("maps_lobby", NamespacedKey.minecraft("maps_lobby"));
+            bukkit.when(() -> Bukkit.getWorld("maps_lobby")).thenReturn(plain);
+            assertEquals("maps_lobby", storage.bukkitNameClash("maps:lobby"));
+
+            // Importing a world another plugin already loaded at that key is not a clash.
+            World keyed = keyedWorld("maps_lobby", new NamespacedKey("maps", "lobby"));
+            bukkit.when(() -> Bukkit.getWorld("maps_lobby")).thenReturn(keyed);
+            assertNull(storage.bukkitNameClash("maps:lobby"));
+            assertEquals("maps:lobby", storage.bukkitNameClash("maps_lobby"));
+        }
+    }
+
+    private static World keyedWorld(String name, NamespacedKey key) {
+        World world = mock(World.class);
+        when(world.getName()).thenReturn(name);
+        when(world.getKey()).thenReturn(key);
+        return world;
+    }
+
+    /** A running server with {@code level-name=world} whose container is the temp dir. */
+    private MockedStatic<Bukkit> mockServer() {
+        MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class);
+        bukkit.when(Bukkit::getWorldContainer).thenReturn(tempDir.toFile());
+        World main = keyedWorld("world", NamespacedKey.minecraft("overworld"));
+        bukkit.when(Bukkit::getWorlds).thenReturn(List.of(main));
+        bukkit.when(() -> Bukkit.getWorld(anyString())).thenReturn(null);
+        return bukkit;
+    }
+
+    @Test
+    void matchWorlds_bareName_findsAUniqueWorldInAnyNamespace() {
+        BuildWorld arena = world("events:Arena");
+        storage.addBuildWorld(arena);
+
+        assertEquals(List.of(arena), storage.matchWorlds("arena"));
+        assertEquals(List.of(arena), storage.matchWorlds("EVENTS:arena"));
+        assertEquals(List.of(), storage.matchWorlds("minecraft:arena"));
+        assertEquals(List.of(), storage.matchWorlds("lobby"));
+    }
+
+    @Test
+    void matchWorlds_bareName_prefersTheDefaultNamespaceThenMinecraft() {
+        BuildWorld plain = world("Lobby");
+        BuildWorld maps = world("maps:Lobby");
+        storage.addBuildWorld(plain);
+        storage.addBuildWorld(maps);
+        storage.addBuildWorld(world("events:Lobby"));
+
+        defaultNamespace = "maps";
+        assertEquals(List.of(maps), storage.matchWorlds("lobby"));
+        defaultNamespace = "other";
+        assertEquals(List.of(plain), storage.matchWorlds("lobby"));
+    }
+
+    @Test
+    void matchWorlds_bareName_isAmbiguousWithoutAPreferredWorld() {
+        BuildWorld events = world("events:Lobby");
+        BuildWorld games = world("games:Lobby");
+        storage.addBuildWorld(events);
+        storage.addBuildWorld(games);
+
+        assertEquals(2, storage.matchWorlds("lobby").size());
+        assertEquals(List.of(games), storage.matchWorlds("games:lobby"));
+    }
+
+    @Test
+    void typedName_isTheBarePathOnlyWhenNoOtherWorldSharesIt() {
+        storage.addBuildWorld(world("events:Arena"));
+        storage.addBuildWorld(world("Lobby"));
+        storage.addBuildWorld(world("maps:Lobby"));
+
+        assertEquals("Arena", storage.typedName("events:Arena"));
+        assertEquals("minecraft:Lobby", storage.typedName("Lobby"));
+        assertEquals("maps:Lobby", storage.typedName("maps:Lobby"));
+    }
+
+    @Test
+    void newWorldName_placesBareNamesInTheDefaultNamespace() {
+        defaultNamespace = "maps";
+
+        assertEquals("maps:lobby", storage.newWorldName("lobby"));
+        assertEquals("Lobby", storage.newWorldName("minecraft:Lobby"));
+        assertEquals("events:lobby", storage.newWorldName("Events:lobby"));
+        for (String worldName : List.of("Lobby", "maps:Lobby", "events:Arena")) {
+            String typed = storage.typedNewName(worldName);
+            assertEquals(worldName, storage.newWorldName(typed), typed);
+        }
+        assertEquals("Lobby", storage.typedNewName("maps:Lobby"));
+        assertEquals("minecraft:Lobby", storage.typedNewName("Lobby"));
+    }
+
+    @Test
+    void renamedWorldName_keepsTheWorldsNamespaceForBareNames() {
+        defaultNamespace = "events";
+
+        assertEquals("maps:arena", storage.renamedWorldName("maps:lobby", "arena"));
+        assertEquals("arena", storage.renamedWorldName("Lobby", "arena"));
+        assertEquals("events:arena", storage.renamedWorldName("maps:lobby", "events:arena"));
+        assertEquals("arena", storage.renamedWorldName("maps:lobby", "minecraft:arena"));
     }
 
     @Test

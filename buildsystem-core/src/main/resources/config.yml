@@ -27,8 +27,16 @@ settings:
 
 world:
   lock-weather: true
+  # The namespace a new world goes into when its name is typed without one, e.g. "lobby" instead of "maps:lobby".
+  # This applies to creating and importing. Renaming keeps a world's namespace unless the new name has one.
+  # An existing world is found by its name in any namespace; when several share a name, the one in this namespace
+  # wins, then the one in minecraft.
+  # Namespaces other than minecraft require Paper.
+  default-namespace: minecraft
   invalid-characters: "^\\b$"
   import-all-delay: 30
+  # World lists like this one and unload.blacklisted-worlds ignore case. An entry without a namespace is in
+  # minecraft, whatever default-namespace is set to. Write "maps:lobby" for a world in another namespace.
   deletion-blacklist:
     - world
     - world_nether

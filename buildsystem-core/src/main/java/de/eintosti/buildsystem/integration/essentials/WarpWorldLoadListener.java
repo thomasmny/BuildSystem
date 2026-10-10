@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.integration.essentials;
 import com.earth2me.essentials.utils.StringUtil;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.world.WorldNames;
 import java.io.File;
 import java.util.logging.Logger;
 import net.ess3.api.events.UserWarpEvent;
@@ -68,13 +69,29 @@ public class WarpWorldLoadListener implements Listener {
             return;
         }
 
-        BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
+        BuildWorld buildWorld = findBuildWorld(worldName);
         if (buildWorld == null || buildWorld.isLoaded()) {
             return;
         }
 
         // Blocking on purpose: EssentialsX resolves the location as soon as this returns.
         buildWorld.getLoader().load();
+    }
+
+    /**
+     * Finds the world a warp names. EssentialsX stores the Bukkit name, which for a namespaced world is not the
+     * BuildSystem name ({@code maps_lobby} rather than {@code maps:lobby}).
+     */
+    private @Nullable BuildWorld findBuildWorld(String bukkitName) {
+        BuildWorld buildWorld = worldStorage.getBuildWorld(bukkitName);
+        if (buildWorld != null) {
+            return buildWorld;
+        }
+        return worldStorage.getBuildWorlds().stream()
+                .filter(world -> WorldNames.isNamespaced(world.getName())
+                        && WorldNames.bukkitName(world.getName()).equalsIgnoreCase(bukkitName))
+                .findFirst()
+                .orElse(null);
     }
 
     /**

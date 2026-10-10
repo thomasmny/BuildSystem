@@ -24,10 +24,11 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
+import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
-import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
@@ -59,6 +60,7 @@ public class WorldRenamer {
     private final WorldStorageImpl worldStorage;
     private final ConfigService configService;
     private final Messages messages;
+    private final Prompts prompts;
     private final SpawnService spawnService;
     private final TaskScheduler scheduler;
 
@@ -68,6 +70,7 @@ public class WorldRenamer {
             WorldStorageImpl worldStorage,
             ConfigService configService,
             Messages messages,
+            Prompts prompts,
             SpawnService spawnService,
             TaskScheduler scheduler) {
         this.plugin = plugin;
@@ -75,41 +78,53 @@ public class WorldRenamer {
         this.worldStorage = worldStorage;
         this.configService = configService;
         this.messages = messages;
+        this.prompts = prompts;
         this.spawnService = spawnService;
         this.scheduler = scheduler;
     }
 
-    public void rename(Player player, BuildWorld buildWorld, String newName) {
+    /**
+     * Renames a world to what the player typed. A name typed without a namespace keeps the world's current namespace;
+     * typing another namespace moves the world's folder there.
+     */
+    public void rename(Player player, BuildWorld buildWorld, String input) {
         player.closeInventory();
 
-        if (worldStorage.worldAndFolderExist(newName)) {
+        String oldName = buildWorld.getName();
+        String sanitizedNewName = prompts.sanitizeWorldName(player, worldStorage.renamedWorldName(oldName, input));
+        if (sanitizedNewName == null) {
+            return;
+        }
+
+        if (WorldNames.id(oldName).equals(WorldNames.id(sanitizedNewName))) {
+            messages.sendMessage(player, "worlds_rename_same_name");
+            return;
+        }
+
+        if (worldStorage.worldAndFolderExist(sanitizedNewName)) {
             messages.sendMessage(player, "worlds_world_exists");
             XSound.ENTITY_ITEM_BREAK.play(player);
             return;
         }
 
-        String oldName = buildWorld.getName();
-        if (oldName.equalsIgnoreCase(newName)) {
-            messages.sendMessage(player, "worlds_rename_same_name");
+        String clash = worldStorage.bukkitNameClash(sanitizedNewName);
+        if (clash != null) {
+            messages.sendMessage(
+                    player,
+                    "worlds_world_name_clash",
+                    Placeholders.of()
+                            .add("%world%", sanitizedNewName)
+                            .add("%other%", clash)
+                            .build());
+            XSound.ENTITY_ITEM_BREAK.play(player);
             return;
         }
 
-        if (StringCleaner.hasInvalidNameCharacters(
-                newName, configService.current().world().invalidCharacters())) {
-            messages.sendMessage(player, "worlds_world_creation_invalid_characters");
-        }
-        String sanitizedNewName =
-                StringCleaner.sanitize(newName, configService.current().world().invalidCharacters());
-        if (sanitizedNewName.isEmpty()) {
-            messages.sendMessage(player, "worlds_world_creation_name_bank");
-            return;
-        }
-
-        if (Bukkit.getWorld(oldName) == null && !buildWorld.isLoaded()) {
+        if (WorldNames.bukkitWorld(oldName) == null && !buildWorld.isLoaded()) {
             buildWorld.getLoader().load();
         }
 
-        World oldWorld = Bukkit.getWorld(oldName);
+        World oldWorld = WorldNames.bukkitWorld(oldName);
         if (oldWorld == null) {
             messages.sendMessage(player, "worlds_rename_unknown_world");
             return;

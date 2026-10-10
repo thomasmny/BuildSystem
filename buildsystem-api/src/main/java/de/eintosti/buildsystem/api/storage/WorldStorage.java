@@ -37,7 +37,8 @@ import org.jspecify.annotations.Nullable;
 public interface WorldStorage extends Storage<BuildWorld> {
 
     /**
-     * Gets the {@link BuildWorld} by the given name.
+     * Gets the {@link BuildWorld} by the given name, ignoring case. A world outside the {@code minecraft} namespace is
+     * named {@code namespace:name}; a name without a namespace is in {@code minecraft}.
      *
      * @param name The name of the world
      * @return The world object if one was found, {@code null} otherwise

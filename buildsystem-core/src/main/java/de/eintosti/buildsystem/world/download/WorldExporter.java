@@ -44,10 +44,10 @@ import org.jspecify.annotations.Nullable;
 /**
  * Packs a server-side world into an archive that can be dropped into a client's {@code saves} directory.
  *
- * <p>Since Paper 26.1 a server world is a dimension of the main level ({@code <level>/dimensions/minecraft/<name>}) and
- * has no {@code level.dat} of its own, so its folder alone is not a save the client can open. The export rebuilds the
- * missing scaffolding: the dimension becomes the save's overworld and the main level's {@code level.dat} is copied in
- * under the exported world's name. Worlds still stored in the pre-26.1 flat layout already are a save and are packed
+ * <p>Since Paper 26.1 a server world is a dimension of the main level ({@code <level>/dimensions/<namespace>/<name>})
+ * and has no {@code level.dat} of its own, so its folder alone is not a save the client can open. The export rebuilds
+ * the missing scaffolding: the dimension becomes the save's overworld and the main level's {@code level.dat} is copied
+ * in under the exported world's name. Worlds still stored in the pre-26.1 flat layout already are a save and are packed
  * as they are.
  */
 @NullMarked
@@ -63,7 +63,7 @@ public final class WorldExporter {
     private static final Set<String> VANILLA_DIMENSIONS = Set.of("overworld", "the_nether", "the_end");
 
     /**
-     * How far below the level root a dimension folder sits: {@code dimensions/minecraft/<name>}.
+     * How far below the level root a dimension folder sits: {@code dimensions/<namespace>/<name>}.
      */
     private static final int DIMENSION_FOLDER_DEPTH = 3;
 
@@ -256,8 +256,9 @@ public final class WorldExporter {
         }
         return relative.getNameCount() > 2
                 && first.equals("dimensions")
-                && relative.getName(1).toString().equals("minecraft")
-                && !VANILLA_DIMENSIONS.contains(relative.getName(2).toString().toLowerCase(Locale.ROOT));
+                && !(relative.getName(1).toString().equals("minecraft")
+                        && VANILLA_DIMENSIONS.contains(
+                                relative.getName(2).toString().toLowerCase(Locale.ROOT)));
     }
 
     private static void writeEntry(ZipOutputStream zip, String entryName, byte[] content) throws IOException {

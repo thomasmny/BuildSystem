@@ -47,8 +47,7 @@ public class BackupsSubCommand extends AbstractSubCommand {
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld =
-                worldService.getWorldStorage().getBuildWorld(player.getWorld().getName());
+        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(player.getWorld());
         if (buildWorld != null
                 && !buildWorld
                         .getPermissions()

@@ -68,8 +68,6 @@ public class PlayerChangedWorldListener implements Listener {
     @EventHandler
     public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
         Player player = event.getPlayer();
-        String worldName = player.getWorld().getName();
-
         event.getPlayer().setAllowFlight(true);
 
         BuildWorld oldWorld = worldStorage.getBuildWorld(event.getFrom());
@@ -77,7 +75,7 @@ public class PlayerChangedWorldListener implements Listener {
             oldWorld.getUnloader().resetUnloadTask();
         }
 
-        BuildWorld newWorld = worldStorage.getBuildWorld(worldName);
+        BuildWorld newWorld = worldStorage.getBuildWorld(player.getWorld());
         if (newWorld != null
                 && !newWorld.getData().get(WorldDataKey.PHYSICS)
                 && player.hasPermission(Permissions.PHYSICS_MESSAGE)) {

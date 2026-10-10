@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -77,14 +78,24 @@ public class WorldCreationPrompts {
     }
 
     private boolean nameStep(Prompts promptsInstance, Player player, Selection selection, String input) {
-        String name = promptsInstance.sanitizeName(
-                player, input, "worlds_world_creation_invalid_characters", "worlds_world_creation_name_bank");
+        String name = promptsInstance.sanitizeWorldName(
+                player, worldService.getWorldStorage().newWorldName(input.trim()));
         if (name == null) {
             return false;
         }
 
         if (worldService.getWorldStorage().worldAndFolderExist(name)) {
             messages.sendMessage(player, "worlds_world_exists");
+            XSound.ENTITY_ITEM_BREAK.play(player);
+            return false;
+        }
+
+        String clash = worldService.getWorldStorage().bukkitNameClash(name);
+        if (clash != null) {
+            messages.sendMessage(
+                    player,
+                    "worlds_world_name_clash",
+                    Placeholders.of().add("%world%", name).add("%other%", clash).build());
             XSound.ENTITY_ITEM_BREAK.play(player);
             return false;
         }

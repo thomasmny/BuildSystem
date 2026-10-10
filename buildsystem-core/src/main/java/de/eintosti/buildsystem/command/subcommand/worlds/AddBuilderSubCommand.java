@@ -61,8 +61,7 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld =
-                worldService.getWorldStorage().getBuildWorld(player.getWorld().getName());
+        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(player.getWorld());
         if (buildWorld == null) {
             messages.sendMessage(player, "worlds_addbuilder_unknown_world");
             return;
@@ -170,8 +169,7 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
             return List.of();
         }
 
-        BuildWorld buildWorld =
-                worldService.getWorldStorage().getBuildWorld(player.getWorld().getName());
+        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(player.getWorld());
         if (buildWorld == null) {
             return List.of();
         }

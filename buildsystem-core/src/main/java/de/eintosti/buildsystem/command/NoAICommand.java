@@ -24,10 +24,11 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.Permissions;
+import de.eintosti.buildsystem.world.WorldNames;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -36,16 +37,21 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class NoAICommand extends CommandBase {
 
+    private final WorldServiceImpl worldService;
     private final WorldStorageImpl worldStorage;
 
-    public NoAICommand(Messages messages, Logger logger, WorldStorageImpl worldStorage) {
+    public NoAICommand(Messages messages, Logger logger, WorldServiceImpl worldService) {
         super(messages, logger, true);
-        this.worldStorage = worldStorage;
+        this.worldService = worldService;
+        this.worldStorage = worldService.getWorldStorage();
     }
 
     @Override
     protected void run(Player player, String label, String[] args) {
-        String worldName = worldNameFromArgs(player, args, 0);
+        String worldName = worldNameFromArgs(player, args, 0, worldService, Permissions.NOAI);
+        if (worldName == null) {
+            return;
+        }
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld != null && !buildWorld.getPermissions().canPerformCommand(player, Permissions.NOAI)) {
             messages.sendPermissionError(player);
@@ -54,7 +60,7 @@ public class NoAICommand extends CommandBase {
 
         switch (args.length) {
             case 0 -> toggleAI(player, player.getWorld());
-            case 1 -> toggleAI(player, Bukkit.getWorld(args[0]));
+            case 1 -> toggleAI(player, WorldNames.bukkitWorld(worldName));
             default -> messages.sendMessage(player, "noai_usage");
         }
     }
@@ -63,9 +69,7 @@ public class NoAICommand extends CommandBase {
     protected List<String> complete(Player player, String label, String[] args) {
         List<String> list = new ArrayList<>();
         if (args.length == 1) {
-            worldStorage.getBuildWorlds().stream()
-                    .filter(world -> world.getPermissions().canPerformCommand(player, Permissions.NOAI))
-                    .forEach(world -> addArgument(args[0], world.getName(), list));
+            addWorldArguments(player, args[0], worldStorage, Permissions.NOAI, list);
         }
         return list;
     }

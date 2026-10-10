@@ -21,16 +21,16 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.player.LogoutLocation;
+import de.eintosti.buildsystem.storage.codec.LogoutLocationCodec;
 import de.eintosti.buildsystem.storage.yaml.YamlSpawnStorage;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import io.papermc.lib.PaperLib;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -106,24 +106,13 @@ public class SpawnService {
     }
 
     private void load() {
-        FileConfiguration configuration = spawnStorage.getFile();
-        String string = configuration.getString("spawn");
-        if (string == null || string.trim().isEmpty()) {
+        // Same world:x:y:z:yaw:pitch format as a logout location, so the namespaced-name handling is shared.
+        LogoutLocation stored = LogoutLocationCodec.parse(spawnStorage.getFile().getString("spawn"));
+        if (stored == null) {
             return;
         }
 
-        String[] parts = string.split(":");
-        if (parts.length != 6) {
-            return;
-        }
-
-        String worldName = parts[0];
-        double x = Double.parseDouble(parts[1]);
-        double y = Double.parseDouble(parts[2]);
-        double z = Double.parseDouble(parts[3]);
-        float yaw = Float.parseFloat(parts[4]);
-        float pitch = Float.parseFloat(parts[5]);
-
+        String worldName = stored.worldName();
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld == null) {
             plugin.getLogger()
@@ -133,6 +122,6 @@ public class SpawnService {
 
         buildWorld.getLoader().load();
         this.spawnName = worldName;
-        this.spawn = new Location(Bukkit.getWorld(worldName), x, y, z, yaw, pitch);
+        this.spawn = stored.location();
     }
 }
