@@ -39,3 +39,20 @@ jobs:
           jar="build/libs/BuildSystem-${TAG#v}.jar"
           [ -f "$jar" ] || { echo "Expected $jar; is the version in gradle.properties bumped?"; ls build/libs; exit 1; }
           gh release upload "$TAG" "$jar" --clobber --repo "$GITHUB_REPOSITORY"
+
+      # Needs the MODRINTH_TOKEN secret and the MODRINTH_PROJECT_ID variable or secret; see the README.
+      - name: Publish to Modrinth
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          MODRINTH_PROJECT_ID: ${{ vars.MODRINTH_PROJECT_ID || secrets.MODRINTH_PROJECT_ID }}
+          MODRINTH_CHANGELOG: ${{ github.event.release.body }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          if [ -z "$MODRINTH_TOKEN" ] || [ -z "$MODRINTH_PROJECT_ID" ]; then
+            echo "::notice::MODRINTH_TOKEN or MODRINTH_PROJECT_ID is not set, so the release was not published to Modrinth."
+            exit 0
+          fi
+          case "$TAG" in
+            *-SNAPSHOT) echo "::error::Refusing to publish the SNAPSHOT version $TAG to Modrinth."; exit 1 ;;
+          esac
+          ./gradlew modrinth
