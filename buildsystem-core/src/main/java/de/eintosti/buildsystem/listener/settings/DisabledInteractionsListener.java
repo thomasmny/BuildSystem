@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.listener.settings;
 
-import com.cryptomorin.xseries.XBlock;
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XTag;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
@@ -28,21 +27,17 @@ import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import de.eintosti.buildsystem.util.DirectionUtil;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 import org.bukkit.Bukkit;
-import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -55,7 +50,6 @@ public class DisabledInteractionsListener implements Listener {
     private final WorldStorage worldStorage;
     private final ConfigService configService;
     private final WorldProtectionPolicy policy;
-    private final Set<UUID> cachePlayers;
 
     public DisabledInteractionsListener(
             SettingsService settingsManager, WorldStorage worldStorage, ConfigService configService) {
@@ -63,7 +57,6 @@ public class DisabledInteractionsListener implements Listener {
         this.worldStorage = worldStorage;
         this.configService = configService;
         this.policy = new WorldProtectionPolicy();
-        this.cachePlayers = new HashSet<>();
     }
 
     @EventHandler
@@ -98,24 +91,21 @@ public class DisabledInteractionsListener implements Listener {
             return;
         }
 
-        cachePlayers.add(player.getUniqueId());
+        // Denying the interacted block is what keeps a container from opening.
         event.setCancelled(true);
         event.setUseItemInHand(Event.Result.DENY);
         event.setUseInteractedBlock(Event.Result.DENY);
 
-        if (XTag.SIGNS.isTagged(xMaterial) && event.getBlockFace() != BlockFace.UP) {
-            String[] splitMaterial = material.toString().split("_");
-            material = Material.valueOf(splitMaterial[0] + "_WALL_SIGN");
-        }
-
-        if (!material.isBlock()) {
+        Material placed = XTag.SIGNS.isTagged(xMaterial) && event.getBlockFace() != BlockFace.UP
+                ? InstantSignPlacementListener.wallSign(material)
+                : material;
+        if (placed == null || !placed.isBlock()) {
             return;
         }
 
         Block adjacent = block.getRelative(event.getBlockFace());
-        adjacent.setType(material);
-        XBlock.setColor(adjacent, DyeColor.getByWoolData((byte) itemStack.getDurability()));
-
+        BlockState replaced = adjacent.getState();
+        adjacent.setType(placed);
         DirectionUtil.rotateBlock(adjacent, DirectionUtil.getBlockDirection(player, false));
 
         EquipmentSlot hand = event.getHand();
@@ -123,15 +113,10 @@ public class DisabledInteractionsListener implements Listener {
             hand = EquipmentSlot.HAND;
         }
 
-        Bukkit.getServer()
-                .getPluginManager()
-                .callEvent(new BlockPlaceEvent(adjacent, adjacent.getState(), block, itemStack, player, true, hand));
-    }
-
-    @EventHandler
-    public void onInventoryOpen(InventoryOpenEvent event) {
-        if (cachePlayers.remove(event.getPlayer().getUniqueId())) {
-            event.setCancelled(true);
+        BlockPlaceEvent placeEvent = new BlockPlaceEvent(adjacent, replaced, block, itemStack, player, true, hand);
+        Bukkit.getServer().getPluginManager().callEvent(placeEvent);
+        if (placeEvent.isCancelled()) {
+            replaced.update(true, false);
         }
     }
 }
