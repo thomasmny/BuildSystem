@@ -121,7 +121,7 @@ abstract class AbstractWorldCreator {
             return null;
         }
 
-        new WorldDefaults(context.configService(), difficulty, time, worldBorderSize)
+        new WorldDefaults(context.logger(), context.configService(), difficulty, time, worldBorderSize)
                 .apply(world, factory.generatedType(), !isImport());
         newBuildWorld.getUnloader().manageUnload();
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostCreateEvent(newBuildWorld, isImport()));

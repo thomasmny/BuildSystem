@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
 import java.util.List;
+import java.util.logging.Logger;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
@@ -44,6 +45,8 @@ import org.mockbukkit.mockbukkit.world.WorldMock;
 @NullMarked
 class WorldDefaultsTest {
 
+    private static final Logger LOGGER = Logger.getLogger(WorldDefaultsTest.class.getName());
+
     private ServerMock server;
     private ConfigService configService;
 
@@ -60,7 +63,7 @@ class WorldDefaultsTest {
 
     private WorldDefaults defaults(PluginConfig.World.VoidBlock voidBlock) {
         lenient().when(configService.current().world().voidBlock()).thenReturn(voidBlock);
-        return new WorldDefaults(configService, null, null, null);
+        return new WorldDefaults(LOGGER, configService, null, null, null);
     }
 
     @Test
@@ -73,10 +76,29 @@ class WorldDefaultsTest {
         };
         lenient().when(configService.current().world().defaults().gameRules()).thenReturn(List.of());
 
-        new WorldDefaults(configService, Difficulty.HARD, 6000, 500).apply(nether, BuildWorldType.NETHER, true);
+        new WorldDefaults(LOGGER, configService, Difficulty.HARD, 6000, 500).apply(nether, BuildWorldType.NETHER, true);
 
         assertEquals(Difficulty.HARD, nether.getDifficulty());
         assertEquals(500, nether.getWorldBorder().getSize());
+    }
+
+    @Test
+    void failingDefault_leavesTheOthersApplied() {
+        WorldMock world = new WorldMock() {
+            @Override
+            public void setDifficulty(Difficulty difficulty) {
+                throw new IllegalStateException("refused");
+            }
+        };
+        lenient().when(configService.current().world().defaults().gameRules()).thenReturn(List.of());
+        lenient()
+                .when(configService.current().world().voidBlock())
+                .thenReturn(new PluginConfig.World.VoidBlock(false, Material.STONE));
+
+        new WorldDefaults(LOGGER, configService, Difficulty.HARD, null, 500).apply(world, BuildWorldType.VOID, true);
+
+        assertEquals(500, world.getWorldBorder().getSize());
+        assertEquals(65, world.getSpawnLocation().getBlockY());
     }
 
     @Test
@@ -129,7 +151,7 @@ class WorldDefaultsTest {
         WorldMock world = server.addSimpleWorld("bordered");
         lenient().when(configService.current().world().defaults().gameRules()).thenReturn(List.of());
 
-        new WorldDefaults(configService, null, null, 500).apply(world, BuildWorldType.NORMAL, true);
+        new WorldDefaults(LOGGER, configService, null, null, 500).apply(world, BuildWorldType.NORMAL, true);
 
         assertEquals(500, world.getWorldBorder().getSize());
     }

@@ -22,6 +22,8 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.world.WorldClock;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bukkit.Difficulty;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -38,16 +40,19 @@ final class WorldDefaults {
 
     private static final int VOID_BLOCK_Y = 64;
 
+    private final Logger logger;
     private final ConfigService configService;
     private final @Nullable Difficulty difficulty;
     private final @Nullable Integer time;
     private final @Nullable Integer worldBorderSize;
 
     WorldDefaults(
+            Logger logger,
             ConfigService configService,
             @Nullable Difficulty difficulty,
             @Nullable Integer time,
             @Nullable Integer worldBorderSize) {
+        this.logger = logger;
         this.configService = configService;
         this.difficulty = difficulty;
         this.time = time;
@@ -55,7 +60,8 @@ final class WorldDefaults {
     }
 
     /**
-     * Applies the defaults to a world that was just generated.
+     * Applies the defaults to a world that was just generated. A default that fails is logged and the rest still apply,
+     * since the world is already registered and loaded by now.
      *
      * @param generatedType The type the world was generated as
      * @param newlyGenerated Whether the world was generated from scratch rather than imported. Only then is the
@@ -63,16 +69,27 @@ final class WorldDefaults {
      */
     void apply(World world, BuildWorldType generatedType, boolean newlyGenerated) {
         if (difficulty != null) {
-            world.setDifficulty(difficulty);
+            attempt(world, "difficulty", () -> world.setDifficulty(difficulty));
         }
         if (time != null) {
-            WorldClock.trySetTime(world, time);
+            attempt(world, "time", () -> WorldClock.trySetTime(world, time));
         }
         if (worldBorderSize != null) {
-            world.getWorldBorder().setSize(worldBorderSize);
+            attempt(world, "world border", () -> world.getWorldBorder().setSize(worldBorderSize));
         }
-        configService.current().world().defaults().gameRules().forEach(gameRule -> applyGameRule(world, gameRule));
-        applySpawn(world, generatedType, newlyGenerated);
+        for (GameRuleEntry<?> gameRule :
+                configService.current().world().defaults().gameRules()) {
+            attempt(world, "game rule " + gameRule.rule(), () -> applyGameRule(world, gameRule));
+        }
+        attempt(world, "spawn", () -> applySpawn(world, generatedType, newlyGenerated));
+    }
+
+    private void attempt(World world, String setting, Runnable step) {
+        try {
+            step.run();
+        } catch (RuntimeException e) {
+            logger.log(Level.WARNING, "Could not apply the default " + setting + " to world " + world.getName(), e);
+        }
     }
 
     private static <T> void applyGameRule(World world, GameRuleEntry<T> entry) {
