@@ -18,129 +18,35 @@
 package de.eintosti.buildsystem;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import java.io.DataInputStream;
-import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import org.jspecify.annotations.NullMarked;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
- * Bytecode-level guard against reintroducing a static singleton accessor on {@code BuildSystemPlugin}: it parses the
- * compiled class file and asserts there is no static field of type {@code BuildSystemPlugin} and no static
- * {@code get()} method returning one. This is a compile-time guard only — it never loads or instantiates the plugin,
- * so it does not exercise (and cannot verify) any runtime double-enable protection.
+ * Guards against bringing back a static singleton on {@link BuildSystemPlugin}: services get the plugin passed in, so
+ * no static field may hold it and no static method may hand it out.
  */
 @NullMarked
 class BuildSystemPluginNoStaticSelfReferenceTest {
 
-    private static final String CLASS_RESOURCE = "de/eintosti/buildsystem/BuildSystemPlugin.class";
-    private static final String SELF_DESCRIPTOR = "Lde/eintosti/buildsystem/BuildSystemPlugin;";
-    private static final String GET_METHOD_DESCRIPTOR = "()Lde/eintosti/buildsystem/BuildSystemPlugin;";
-
-    private static String[] constantPool = new String[0];
-    // Each entry: [accessFlags, nameIndex, descriptorIndex]
-    private static int[][] fields = new int[0][];
-    private static int[][] methods = new int[0][];
-
-    @BeforeAll
-    static void loadClassFile() throws Exception {
-        InputStream is = BuildSystemPluginNoStaticSelfReferenceTest.class
-                .getClassLoader()
-                .getResourceAsStream(CLASS_RESOURCE);
-        assumeTrue(is != null, "BuildSystemPlugin.class not found on classpath — skipping guard");
-
-        try (DataInputStream dis = new DataInputStream(is)) {
-            dis.readInt(); // magic 0xCAFEBABE
-            dis.readShort(); // minor version
-            dis.readShort(); // major version
-
-            int cpCount = dis.readUnsignedShort();
-            String[] pool = new String[cpCount];
-
-            for (int i = 1; i < cpCount; i++) {
-                int tag = dis.readUnsignedByte();
-                switch (tag) {
-                    case 1 -> { // CONSTANT_Utf8
-                        int len = dis.readUnsignedShort();
-                        byte[] bytes = new byte[len];
-                        dis.readFully(bytes);
-                        pool[i] = new String(bytes, StandardCharsets.UTF_8);
-                    }
-                    case 3, 4, 17, 18, 9, 10, 11, 12 -> dis.readInt();
-                    case 5, 6 -> {
-                        dis.readLong();
-                        i++;
-                    } // long/double occupy two slots
-                    case 7, 8, 16, 19, 20 -> dis.readUnsignedShort();
-                    case 15 -> {
-                        dis.readUnsignedByte();
-                        dis.readUnsignedShort();
-                    }
-                    default -> throw new IllegalStateException("Unknown constant pool tag: " + tag + " at index " + i);
-                }
-            }
-            constantPool = pool;
-
-            dis.readUnsignedShort(); // access flags
-            dis.readUnsignedShort(); // this class
-            dis.readUnsignedShort(); // super class
-            int interfaceCount = dis.readUnsignedShort();
-            for (int i = 0; i < interfaceCount; i++) dis.readUnsignedShort();
-
-            fields = readMemberTable(dis);
-            methods = readMemberTable(dis);
-        }
-    }
-
-    private static int[][] readMemberTable(DataInputStream dis) throws Exception {
-        int count = dis.readUnsignedShort();
-        List<int[]> members = new ArrayList<>(count);
-        for (int i = 0; i < count; i++) {
-            int accessFlags = dis.readUnsignedShort();
-            int nameIndex = dis.readUnsignedShort();
-            int descriptorIndex = dis.readUnsignedShort();
-            members.add(new int[] {accessFlags, nameIndex, descriptorIndex});
-            int attrCount = dis.readUnsignedShort();
-            for (int j = 0; j < attrCount; j++) {
-                dis.readUnsignedShort(); // attribute name index
-                int attrLen = dis.readInt();
-                dis.skipBytes(attrLen);
-            }
-        }
-        return members.toArray(new int[0][]);
-    }
-
     @Test
-    void noStaticSelfReferenceField() {
-        for (int[] field : fields) {
-            int accessFlags = field[0];
-            if ((accessFlags & Modifier.STATIC) == 0) continue;
-            String descriptor = constantPool[field[2]];
-            assertNotEquals(
-                    SELF_DESCRIPTOR,
-                    descriptor,
-                    "BuildSystemPlugin has a static field of type BuildSystemPlugin — singleton was re-added (field name: "
-                            + constantPool[field[1]] + ")");
-        }
-    }
-
-    @Test
-    void noStaticGetMethod() {
-        for (int[] method : methods) {
-            int accessFlags = method[0];
-            if ((accessFlags & Modifier.STATIC) == 0) continue;
-            String name = constantPool[method[1]];
-            String descriptor = constantPool[method[2]];
+    void noStaticFieldHoldsThePlugin() {
+        for (Field field : BuildSystemPlugin.class.getDeclaredFields()) {
             assertFalse(
-                    "get".equals(name) && GET_METHOD_DESCRIPTOR.equals(descriptor),
-                    "BuildSystemPlugin has a static get() method returning itself — singleton was re-added");
+                    Modifier.isStatic(field.getModifiers()) && field.getType() == BuildSystemPlugin.class,
+                    field.toString());
+        }
+    }
+
+    @Test
+    void noStaticMethodReturnsThePlugin() {
+        for (Method method : BuildSystemPlugin.class.getDeclaredMethods()) {
+            assertFalse(
+                    Modifier.isStatic(method.getModifiers()) && method.getReturnType() == BuildSystemPlugin.class,
+                    method.toString());
         }
     }
 }

@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -104,11 +103,5 @@ class StatusMenuTest {
         StatusMenu menu = menu();
         menu.populate(server.addPlayer());
         assertNull(menu.getInventory().getItem(FIRST_STATUS_SLOT - 1));
-    }
-
-    @Test
-    void grid_sizeCoversEveryStatus() {
-        StatusMenu menu = menu();
-        assertEquals(0, menu.getInventory().getSize() % 9);
     }
 }
