@@ -29,10 +29,10 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -49,6 +49,7 @@ public final class UpdateChecker {
     private static final String UPDATE_URL = "https://api.spigotmc.org/simple/0.1/index.php?action=getResource&id=%d";
     private static final Pattern DECIMAL_SCHEME_PATTERN = Pattern.compile("\\d+(?:\\.\\d+)*");
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration CACHE_FOR = Duration.ofHours(1);
 
     /**
      * The default version scheme for this update checker
@@ -76,17 +77,21 @@ public final class UpdateChecker {
     private final int pluginID;
     private final VersionScheme versionScheme;
     private final HttpClient httpClient;
+    private final Executor executor;
 
-    public UpdateChecker(JavaPlugin plugin, int pluginID) {
-        this(plugin, pluginID, VERSION_SCHEME_DECIMAL);
-    }
+    private @Nullable CompletableFuture<UpdateResult> lastCheck;
+    private long lastCheckAt;
 
-    public UpdateChecker(JavaPlugin plugin, int pluginID, VersionScheme versionScheme) {
+    /**
+     * @param executor Runs the HTTP request; in production this is {@link TaskScheduler#background()}
+     */
+    public UpdateChecker(JavaPlugin plugin, int pluginID, Executor executor) {
         Preconditions.checkArgument(pluginID > 0, "Plugin ID must be greater than 0");
         this.plugin = plugin;
         this.pluginID = pluginID;
-        this.versionScheme = versionScheme;
+        this.versionScheme = VERSION_SCHEME_DECIMAL;
         this.httpClient = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
+        this.executor = executor;
     }
 
     /**
@@ -104,57 +109,64 @@ public final class UpdateChecker {
 
     /**
      * Request an update check to Spigot. This request is asynchronous and may not complete immediately as an HTTP GET
-     * request is published to the Spigot API.
+     * request is published to the Spigot API. The result is reused for an hour, so a player joining does not cost a
+     * request each time.
      *
      * @return a future update result
      */
-    @Contract("-> new")
-    public CompletableFuture<UpdateResult> requestUpdateCheck() {
-        return CompletableFuture.supplyAsync(() -> {
-            int responseCode;
+    public synchronized CompletableFuture<UpdateResult> requestUpdateCheck() {
+        long now = System.nanoTime();
+        if (lastCheck == null || now - lastCheckAt > CACHE_FOR.toNanos()) {
+            lastCheck = CompletableFuture.supplyAsync(this::check, executor);
+            lastCheckAt = now;
+        }
+        return lastCheck;
+    }
 
-            try {
-                HttpRequest request = HttpRequest.newBuilder(URI.create(UPDATE_URL.formatted(pluginID)))
-                        .timeout(TIMEOUT)
-                        .header("User-Agent", USER_AGENT)
-                        .GET()
-                        .build();
-                HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-                responseCode = response.statusCode();
+    private UpdateResult check() {
+        int responseCode;
 
-                JsonElement json;
-                try (JsonReader reader = new JsonReader(new StringReader(response.body()))) {
-                    json = JsonParser.parseReader(reader);
-                }
+        try {
+            HttpRequest request = HttpRequest.newBuilder(URI.create(UPDATE_URL.formatted(pluginID)))
+                    .timeout(TIMEOUT)
+                    .header("User-Agent", USER_AGENT)
+                    .GET()
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            responseCode = response.statusCode();
 
-                if (!json.isJsonObject()) {
-                    return new UpdateResult(UpdateReason.INVALID_JSON);
-                }
-
-                String currentVersion =
-                        json.getAsJsonObject().get("current_version").getAsString();
-                String pluginVersion = plugin.getDescription().getVersion();
-                String latest = versionScheme.compareVersions(pluginVersion, currentVersion);
-
-                if (latest == null) {
-                    return new UpdateResult(UpdateReason.UNSUPPORTED_VERSION_SCHEME);
-                } else if (latest.equals(pluginVersion)) {
-                    return new UpdateResult(
-                            pluginVersion.equals(currentVersion)
-                                    ? UpdateReason.UP_TO_DATE
-                                    : UpdateReason.UNRELEASED_VERSION);
-                } else if (latest.equals(currentVersion)) {
-                    return new UpdateResult(UpdateReason.NEW_UPDATE, latest);
-                }
-            } catch (IOException e) {
-                return new UpdateResult(UpdateReason.COULD_NOT_CONNECT);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return new UpdateResult(UpdateReason.COULD_NOT_CONNECT);
+            JsonElement json;
+            try (JsonReader reader = new JsonReader(new StringReader(response.body()))) {
+                json = JsonParser.parseReader(reader);
             }
 
-            return new UpdateResult(responseCode == 401 ? UpdateReason.UNAUTHORIZED_QUERY : UpdateReason.UNKNOWN_ERROR);
-        });
+            if (!json.isJsonObject()) {
+                return new UpdateResult(UpdateReason.INVALID_JSON);
+            }
+
+            String currentVersion =
+                    json.getAsJsonObject().get("current_version").getAsString();
+            String pluginVersion = plugin.getDescription().getVersion();
+            String latest = versionScheme.compareVersions(pluginVersion, currentVersion);
+
+            if (latest == null) {
+                return new UpdateResult(UpdateReason.UNSUPPORTED_VERSION_SCHEME);
+            } else if (latest.equals(pluginVersion)) {
+                return new UpdateResult(
+                        pluginVersion.equals(currentVersion)
+                                ? UpdateReason.UP_TO_DATE
+                                : UpdateReason.UNRELEASED_VERSION);
+            } else if (latest.equals(currentVersion)) {
+                return new UpdateResult(UpdateReason.NEW_UPDATE, latest);
+            }
+        } catch (IOException e) {
+            return new UpdateResult(UpdateReason.COULD_NOT_CONNECT);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return new UpdateResult(UpdateReason.COULD_NOT_CONNECT);
+        }
+
+        return new UpdateResult(responseCode == 401 ? UpdateReason.UNAUTHORIZED_QUERY : UpdateReason.UNKNOWN_ERROR);
     }
 
     /**
