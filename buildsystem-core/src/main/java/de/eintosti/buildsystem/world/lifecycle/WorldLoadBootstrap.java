@@ -87,6 +87,9 @@ public class WorldLoadBootstrap {
                         }
                     });
                     notLoaded.forEach(worldStorage::removeBuildWorld);
+                    worldStorage
+                            .getBuildWorlds()
+                            .forEach(buildWorld -> buildWorld.getUnloader().manageUnload());
 
                     plugin.getLogger().info("Loaded " + worlds.size() + " worlds from storage");
                     afterLoad.run();

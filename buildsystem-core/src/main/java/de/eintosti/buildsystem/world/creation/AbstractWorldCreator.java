@@ -110,7 +110,7 @@ abstract class AbstractWorldCreator {
             throw new IllegalStateException("BuildWorld must be set before generating the Bukkit world.");
         }
 
-        return new BukkitWorldFactory(
+        World world = new BukkitWorldFactory(
                         context.configService(),
                         context.logger(),
                         worldName,
@@ -123,6 +123,10 @@ abstract class AbstractWorldCreator {
                         !isImport())
                 .generate(
                         checkVersion ? BukkitWorldFactory.VersionCheck.REQUIRED : BukkitWorldFactory.VersionCheck.SKIP);
+        if (world != null) {
+            buildWorld.getUnloader().manageUnload();
+        }
+        return world;
     }
 
     protected final void notifyAudience(String key) {

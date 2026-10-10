@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.world;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
@@ -71,6 +72,17 @@ class BuildWorldImplTest {
                 System.currentTimeMillis(),
                 null,
                 null);
+    }
+
+    @Test
+    void constructing_leavesTheUnloadTimerToTheCaller() {
+        // Worlds are built on the async storage thread, so the constructor must not reach the Bukkit scheduler (which
+        // this test has no server for) or decide the loaded state.
+        when(context.configService().current().world().unload().enabled()).thenReturn(true);
+
+        BuildWorldImpl world = world("Fresh", UUID.randomUUID());
+
+        assertFalse(world.isLoaded());
     }
 
     @Test
