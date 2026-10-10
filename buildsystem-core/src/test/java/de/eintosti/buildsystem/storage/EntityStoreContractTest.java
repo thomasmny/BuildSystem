@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
@@ -263,6 +264,18 @@ public abstract class EntityStoreContractTest {
 
         assertEquals(List.of("plain"), loaded.stream().map(BuildWorld::getName).toList());
         assertEquals(Map.of("name", "broken"), store("worlds").loadAll().get("not-a-uuid"));
+    }
+
+    @Test
+    void yamlFileThatCannotBeRead_failsTheLoadAndIsNotImported() throws IOException {
+        Files.writeString(new File(dataFolder, "players.yml").toPath(), "players: [unclosed\n");
+
+        assertThrows(
+                StorageException.class, () -> backend.store(EntityKind.PLAYERS).loadAll());
+
+        if (settings().type() != StorageType.YAML) {
+            assertTrue(backend.collection(EntityKind.PLAYERS).isEmpty());
+        }
     }
 
     @Test

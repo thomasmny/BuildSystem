@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.storage.yaml;
 
 import de.eintosti.buildsystem.storage.EntityStore;
+import de.eintosti.buildsystem.storage.StorageException;
 import de.eintosti.buildsystem.storage.migration.StorageMigration;
 import java.io.File;
 import java.util.LinkedHashMap;
@@ -97,6 +98,10 @@ public final class YamlEntityStore implements EntityStore {
             SequencedMap<String, Map<String, Object>> entries = new LinkedHashMap<>();
             if (!store.reload()) {
                 return entries;
+            }
+            if (store.loadFailed()) {
+                // Reading on would hand back whatever the file did not lose, as if it were all of it.
+                throw new StorageException("Could not read " + store.fileName() + ", see the error above", null);
             }
             migrateIfNeeded();
 

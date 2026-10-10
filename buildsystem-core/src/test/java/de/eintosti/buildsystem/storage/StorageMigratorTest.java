@@ -226,6 +226,32 @@ class StorageMigratorTest {
     }
 
     @Test
+    void migrate_fromAYamlFileThatCannotBeRead_isRefused() throws Exception {
+        EntityCollection<Note> unreadable = new EntityCollection<>(
+                current.get().store(EntityKind.PLAYERS), "note", () -> CODEC, background::push, LOGGER);
+        // Written after the store opened the file, which outside a server has no Bukkit logger to report it to.
+        Files.writeString(new File(dataFolder, "players.yml").toPath(), "players: [unclosed\n");
+        StorageMigrator migrator = new StorageMigrator(
+                List.of(new StorageMigrator.Part<>(EntityKind.PLAYERS, unreadable, () -> live)),
+                current::get,
+                current::set,
+                dataFolder,
+                () -> liveConfig,
+                background::push,
+                mainThread::push,
+                LOGGER);
+        CompletableFuture<Map<String, Note>> load = unreadable.load();
+        runAll();
+        assertThrows(CompletionException.class, load::join);
+
+        CompletableFuture<Map<EntityKind, Integer>> migration = migrator.migrate(target(), settings());
+        runAll();
+
+        assertTrue(migration.isCompletedExceptionally());
+        assertEquals(StorageType.YAML, current.get().type());
+    }
+
+    @Test
     void migrate_whileOneRuns_isRefused() {
         CompletableFuture<Map<EntityKind, Integer>> first = migrator.migrate(target(), settings());
 

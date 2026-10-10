@@ -48,6 +48,7 @@ public final class YamlStore {
     private final FileConfiguration configuration;
     private final Logger logger;
     private final Object ioLock = new Object();
+    private volatile boolean loadFailed;
 
     public YamlStore(File dataFolder, String fileName, Logger logger) {
         this.file = new File(dataFolder, fileName);
@@ -68,12 +69,20 @@ public final class YamlStore {
     }
 
     /**
+     * {@return whether the last {@link #reload} found the file but could not read it}
+     */
+    public boolean loadFailed() {
+        return loadFailed;
+    }
+
+    /**
      * Re-reads the backing file from disk, creating an empty one when it does not yet exist.
      *
      * @return {@code true} if the file existed and was read, {@code false} if it was just created
      */
     public boolean reload() {
         if (!file.exists()) {
+            loadFailed = false;
             configuration.options().copyDefaults(true);
             save();
             return false;
@@ -81,7 +90,9 @@ public final class YamlStore {
 
         try {
             configuration.load(file);
+            loadFailed = false;
         } catch (IOException | InvalidConfigurationException e) {
+            loadFailed = true;
             logger.log(Level.SEVERE, "Failed to load configuration file: " + file.getName(), e);
         }
         return true;
