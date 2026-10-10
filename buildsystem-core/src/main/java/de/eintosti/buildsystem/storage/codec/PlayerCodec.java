@@ -52,7 +52,7 @@ public final class PlayerCodec implements Codec<BuildPlayer> {
             new Field<>(
                     "settings.glass",
                     player -> settings(player).getDesignColor().toString(),
-                    (section, key) -> DesignColor.matchColor(section.getString(key)),
+                    (section, key) -> DesignColor.matchColor(section.getString(key, DesignColor.BLACK.name())),
                     (player, color) -> settings(player).setDesignColor(color)),
             new Field<>(
                     "settings.world-display.sort",

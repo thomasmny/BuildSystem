@@ -127,6 +127,17 @@ class PlayerCodecTest {
     }
 
     @Test
+    void playerWithoutGlass_getsBlack() {
+        BuildPlayerImpl player = load("""
+                settings:
+                  scoreboard: false
+                """);
+
+        assertEquals(DesignColor.BLACK, player.getSettings().getDesignColor());
+        assertFalse(player.getSettings().isScoreboard());
+    }
+
+    @Test
     void unknownValues_fallBackToDefaults() {
         BuildPlayerImpl player = load("""
                 settings:
