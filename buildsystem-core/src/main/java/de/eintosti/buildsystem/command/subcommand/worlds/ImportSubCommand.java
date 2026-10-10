@@ -227,9 +227,8 @@ public class ImportSubCommand extends AbstractSubCommand {
         List<String> result = new ArrayList<>();
         if (args.length == 2) {
             String invalidCharacters = configService.current().world().invalidCharacters();
-            for (String worldName : FileUtils.dimensionWorldNames()) {
-                if (StringCleaner.hasInvalidNameCharacters(WorldNames.path(worldName), invalidCharacters)
-                        || worldService.getWorldStorage().worldExists(worldName)) {
+            for (String worldName : worldService.getWorldStorage().unimportedWorldNames()) {
+                if (StringCleaner.hasInvalidNameCharacters(WorldNames.path(worldName), invalidCharacters)) {
                     continue;
                 }
                 WorldsCompletions.addIfStartsWith(

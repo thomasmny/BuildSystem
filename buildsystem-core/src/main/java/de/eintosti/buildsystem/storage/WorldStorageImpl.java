@@ -121,6 +121,15 @@ public abstract class WorldStorageImpl implements WorldStorage {
         return getBuildWorld(worldName) != null;
     }
 
+    /**
+     * {@return the names of the world folders under the main level's dimensions that are not imported yet}
+     */
+    public List<String> unimportedWorldNames() {
+        return FileUtils.dimensionWorldNames().stream()
+                .filter(name -> !worldExists(name))
+                .toList();
+    }
+
     @Override
     public boolean worldAndFolderExist(String worldName) {
         boolean worldExists = worldExists(worldName);

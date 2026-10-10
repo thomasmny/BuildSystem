@@ -25,7 +25,6 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -126,7 +125,7 @@ public class WorldImportCoordinator {
             return CompletableFuture.failedFuture(new IllegalStateException("A bulk import is already in progress"));
         }
 
-        String[] directories = scanImportableDirectories();
+        String[] directories = worldStorage.unimportedWorldNames().toArray(String[]::new);
         if (directories.length == 0) {
             importingAllWorlds.set(false);
             return CompletableFuture.completedFuture(0);
@@ -232,11 +231,5 @@ public class WorldImportCoordinator {
         }.runTaskTimer(plugin, 0, 20L * delay);
 
         return result;
-    }
-
-    private String[] scanImportableDirectories() {
-        return FileUtils.dimensionWorldNames().stream()
-                .filter(name -> !worldStorage.worldExists(name))
-                .toArray(String[]::new);
     }
 }
