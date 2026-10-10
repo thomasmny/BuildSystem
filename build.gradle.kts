@@ -1,6 +1,6 @@
 plugins {
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
-    id("com.diffplug.spotless") version "8.10.3" apply false
+    id("com.diffplug.spotless") version "8.10.4" apply false
 }
 
 nexusPublishing {
