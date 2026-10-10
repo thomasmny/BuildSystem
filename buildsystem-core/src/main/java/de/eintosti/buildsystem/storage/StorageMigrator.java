@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,15 +121,24 @@ public final class StorageMigrator {
     }
 
     /**
-     * {@return how many stored entries could not be loaded} A migration does not copy them, since it copies what is in
-     * memory.
+     * {@return how many stored entries are not in memory, read in the background} For example a world that failed to
+     * load, or an entry that could not be parsed. A migration copies them as they are stored. Call on the main thread.
      */
-    public int skipped() {
-        return parts.stream().mapToInt(part -> part.collection().skipped()).sum();
+    public CompletableFuture<Integer> notLoaded() {
+        Map<Part<?>, Set<String>> inMemory = new HashMap<>();
+        parts.forEach(part -> inMemory.put(part, part.snapshot().keySet()));
+        return CompletableFuture.supplyAsync(
+                () -> inMemory.entrySet().stream()
+                        .mapToInt(entry -> (int) entry.getKey().collection().store().loadAll().keySet().stream()
+                                .filter(key -> !entry.getValue().contains(key))
+                                .count())
+                        .sum(),
+                background);
     }
 
     /**
-     * Copies what is in memory to {@code type}, checks it by reading it back, writes {@code storage.type} and switches
+     * Copies what is in memory to {@code type}, along with the stored entries that are not, as they are stored. Checks
+     * it by reading it back, writes {@code storage.type} and switches
      * to it. Call on the main thread, where the entities are owned.
      *
      * @param settings The table prefix and connection blocks to use, as config.yml holds them now
@@ -259,7 +269,13 @@ public final class StorageMigrator {
             StorageType type,
             Map<EntityKind, EntityStore> stores,
             Map<EntityKind, Map<String, Map<String, Object>>> snapshots) {
-        snapshots.forEach((kind, entries) -> {
+        for (Part<?> part : parts) {
+            EntityKind kind = part.kind();
+            // The held writes are done, so the source holds everything in memory, and whatever else it holds was never
+            // loaded and would be lost otherwise.
+            Map<String, Map<String, Object>> entries = new LinkedHashMap<>(snapshots.get(kind));
+            part.collection().store().loadAll().forEach(entries::putIfAbsent);
+            snapshots.put(kind, entries);
             EntityStore store = stores.get(kind);
             store.replaceAll(entries);
             if (!normalize(store.loadAll()).equals(normalize(entries))) {
@@ -267,7 +283,7 @@ public final class StorageMigrator {
                         "The " + kind.id() + " read back from " + type.displayName() + " differ from those written",
                         null);
             }
-        });
+        }
         return stores;
     }
 

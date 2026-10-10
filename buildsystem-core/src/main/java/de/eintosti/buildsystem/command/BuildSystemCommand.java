@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -195,9 +196,11 @@ public class BuildSystemCommand extends CommandBase {
      */
     private void confirm(CommandSender sender, StorageType type, PluginConfig.Storage.Database settings) {
         StorageMigrator migrator = services.storageMigrator();
+        CompletableFuture<Integer> notLoaded = migrator.notLoaded();
         migrator.holdsData(type, settings)
+                .thenCombine(notLoaded, Map::entry)
                 .whenCompleteAsync(
-                        (holdsData, failure) -> {
+                        (preview, failure) -> {
                             if (failure != null) {
                                 failed(
                                         sender,
@@ -205,24 +208,17 @@ public class BuildSystemCommand extends CommandBase {
                                         failure instanceof CompletionException ? failure.getCause() : failure);
                                 return;
                             }
-                            if (holdsData) {
+                            if (preview.getKey()) {
                                 messages.sendMessage(
                                         sender,
                                         "storage_migrate_target_has_data",
                                         Placeholders.of("%type%", type.displayName()));
                             }
-                            if (migrator.skipped() > 0) {
+                            if (preview.getValue() > 0) {
                                 messages.sendMessage(
                                         sender,
-                                        "storage_migrate_skipped",
-                                        Placeholders.of()
-                                                .add("%skipped%", String.valueOf(migrator.skipped()))
-                                                .add(
-                                                        "%from%",
-                                                        services.storage()
-                                                                .type()
-                                                                .displayName())
-                                                .build());
+                                        "storage_migrate_not_loaded",
+                                        Placeholders.of("%entries%", String.valueOf(preview.getValue())));
                             }
                             messages.sendMessage(
                                     sender,

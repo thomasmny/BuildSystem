@@ -52,7 +52,6 @@ public final class EntityCollection<T> {
     private @Nullable Codec<T> codec;
     private CompletableFuture<Void> lastWrite = CompletableFuture.completedFuture(null);
     private volatile boolean loaded;
-    private volatile int skipped;
 
     /**
      * @param label What one entity is called in log messages
@@ -147,11 +146,10 @@ public final class EntityCollection<T> {
     }
 
     /**
-     * {@return how many stored entries the last load skipped because they could not be parsed} They stay stored, but
-     * are not in memory.
+     * {@return where the entries are stored now}
      */
-    int skipped() {
-        return skipped;
+    EntityStore store() {
+        return store;
     }
 
     private synchronized CompletableFuture<Void> write(Runnable io) {
@@ -193,7 +191,6 @@ public final class EntityCollection<T> {
                                             e);
                                 }
                             });
-                            skipped = stored.size() - loaded.size();
                             link.accept(loaded, root);
                             return loaded;
                         },

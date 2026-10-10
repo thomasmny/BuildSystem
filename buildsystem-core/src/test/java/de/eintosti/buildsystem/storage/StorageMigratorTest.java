@@ -66,9 +66,6 @@ class StorageMigratorTest {
 
         @Override
         public Note deserialize(String key, ConfigurationSection section) {
-            if (key.equals("broken")) {
-                throw new IllegalArgumentException("cannot be parsed");
-            }
             return new Note(key, section.getLong("time"));
         }
     };
@@ -155,23 +152,54 @@ class StorageMigratorTest {
     }
 
     @Test
-    void skipped_countsTheStoredEntriesThatCouldNotLoad() {
-        current.get()
-                .collection(EntityKind.PLAYERS)
-                .upsert(Map.of("broken", Map.of("time", 1), "fine", Map.of("time", 2)));
+    void migrate_alsoCopiesTheStoredEntriesThatAreNotInMemory_asTheyAreStored() {
+        live.add(new Note("a", 1));
+        notes.save(live);
+        runAll();
+        // Like a world that failed to load, or an entry that could not be parsed.
+        current.get().collection(EntityKind.PLAYERS).upsert(Map.of("unloaded", Map.of("time", 2, "kept", "as is")));
 
-        notes.load();
+        CompletableFuture<Integer> notLoaded = migrator.notLoaded();
+        runAll();
+        assertEquals(1, notLoaded.join());
+
+        CompletableFuture<Map<EntityKind, Integer>> migration = migrator.migrate(target(), settings());
         runAll();
 
-        assertEquals(1, migrator.skipped());
+        assertEquals(Map.of(EntityKind.PLAYERS, 2), migration.join());
+        Map<String, Map<String, Object>> copied =
+                current.get().collection(EntityKind.PLAYERS).loadAll();
+        assertEquals(List.of("a", "unloaded"), List.copyOf(copied.keySet()));
+        assertEquals("as is", copied.get("unloaded").get("kept"));
+    }
+
+    @Test
+    void migrate_rightAfterADelete_doesNotBringTheEntryBack() {
+        Note deleted = new Note("deleted", 2);
+        live.addAll(List.of(new Note("a", 1), deleted));
+        notes.save(live);
+        runAll();
+
+        live.remove(deleted);
+        notes.delete(deleted);
+        CompletableFuture<Map<EntityKind, Integer>> migration = migrator.migrate(target(), settings());
+        runAll();
+
+        assertEquals(Map.of(EntityKind.PLAYERS, 1), migration.join());
+        assertEquals(
+                List.of("a"),
+                List.copyOf(
+                        current.get().collection(EntityKind.PLAYERS).loadAll().keySet()));
     }
 
     @Test
     void migrate_replacesWhatTheTargetHeldBefore() {
-        live.add(new Note("old", 1));
+        Note old = new Note("old", 1);
+        live.add(old);
         migrator.migrate(target(), settings());
         runAll();
         live.clear();
+        notes.delete(old);
         live.add(new Note("new", 2));
 
         migrator.migrate(StorageType.YAML, settings());
