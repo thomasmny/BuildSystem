@@ -40,7 +40,6 @@ class ArgumentParserTest {
 
     @Test
     void isArgument_caseInsensitive() {
-        // isArgument strips dashes and uses equalsIgnoreCase
         ArgumentParser parser = new ArgumentParser(new String[] {"-Name", "World"});
         assertTrue(parser.isArgument("name"));
         assertTrue(parser.isArgument("NAME"));
@@ -62,6 +61,39 @@ class ArgumentParserTest {
     void getValue_absentArg_returnsNull() {
         ArgumentParser parser = new ArgumentParser(new String[] {"-g", "Generator"});
         assertNull(parser.getValue("x"));
+    }
+
+    @Test
+    void flagNamesIgnoreCase() {
+        ArgumentParser parser = new ArgumentParser(new String[] {"import", "world", "-G", "VOID"});
+        assertTrue(parser.isArgument("g"));
+        assertEquals("VOID", parser.getValue("g"));
+    }
+
+    @Test
+    void worldNamedLikeAFlag_isNotAFlag() {
+        ArgumentParser parser = new ArgumentParser(new String[] {"import", "c", "-g", "VOID"});
+        assertFalse(parser.isArgument("c"));
+        assertEquals("VOID", parser.getValue("g"));
+
+        parser = new ArgumentParser(new String[] {"import", "g", "-c", "Bob"});
+        assertFalse(parser.isArgument("g"));
+        assertEquals("Bob", parser.getValue("c"));
+    }
+
+    @Test
+    void flagValueNamedLikeAFlag_isNotAFlag() {
+        ArgumentParser parser = new ArgumentParser(new String[] {"import", "world", "-c", "t"});
+        assertFalse(parser.isArgument("t"));
+        assertEquals("t", parser.getValue("c"));
+    }
+
+    @Test
+    void multiWordValueAmongFlags_isJoined() {
+        ArgumentParser parser =
+                new ArgumentParser(new String[] {"import", "world", "-c", "Bob", "Smith", "-g", "VOID"});
+        assertEquals("Bob Smith", parser.getValue("c"));
+        assertEquals("VOID", parser.getValue("g"));
     }
 
     @Test

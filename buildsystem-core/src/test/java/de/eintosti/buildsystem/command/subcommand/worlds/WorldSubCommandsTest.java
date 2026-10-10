@@ -262,7 +262,8 @@ class WorldSubCommandsTest {
                 Arguments.of(new String[] {"importAll", "-g", "flat"}, Generator.FLAT, null),
                 Arguments.of(new String[] {"importAll", "-c", "Notch"}, Generator.VOID, NOTCH),
                 Arguments.of(new String[] {"importAll", "-g", "normal", "-c", "Notch"}, Generator.NORMAL, NOTCH),
-                Arguments.of(new String[] {"importAll", "-c", "Notch", "-g", "flat"}, Generator.FLAT, NOTCH));
+                Arguments.of(new String[] {"importAll", "-c", "Notch", "-g", "flat"}, Generator.FLAT, NOTCH),
+                Arguments.of(new String[] {"importAll", "-G", "flat", "-C", "Notch"}, Generator.FLAT, NOTCH));
     }
 
     @ParameterizedTest(name = "{0}")
