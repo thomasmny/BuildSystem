@@ -23,17 +23,17 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.storage.yaml.YamlStatusStorage;
+import de.eintosti.buildsystem.storage.codec.StatusCodec;
+import de.eintosti.buildsystem.storage.yaml.YamlRegistryStorage;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.display.AbstractRegistry;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -50,7 +50,7 @@ import org.jspecify.annotations.Nullable;
  * a valid default always exists.
  */
 @NullMarked
-public class WorldStatusRegistryImpl implements WorldStatusRegistry {
+public class WorldStatusRegistryImpl extends AbstractRegistry<WorldStatusImpl> implements WorldStatusRegistry {
 
     /**
      * The number of slots in the {@code /worlds setStatus} picker. Status layout slots live in {@code [0, SIZE)},
@@ -72,39 +72,39 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
     private final NavigatorCategoryRegistryImpl categoryRegistry;
     private final Messages messages;
     private final Supplier<WorldServiceImpl> worldService;
-    private final YamlStatusStorage storage;
-    private final Map<String, WorldStatusImpl> statuses = new LinkedHashMap<>();
 
     public WorldStatusRegistryImpl(
             BuildSystemPlugin plugin,
             NavigatorCategoryRegistryImpl categoryRegistry,
             Messages messages,
             Supplier<WorldServiceImpl> worldService) {
+        super(
+                new YamlRegistryStorage<>(plugin, "statuses.yml", "statuses", "status", new StatusCodec()),
+                Comparator.comparingInt(WorldStatusImpl::getOrder));
         this.categoryRegistry = categoryRegistry;
         this.messages = messages;
         this.worldService = worldService;
-        this.storage = new YamlStatusStorage(plugin);
 
-        this.statuses.putAll(storage.load());
-        if (this.statuses.isEmpty()) {
-            seedDefaults();
-            storage.saveAll(this.statuses.values());
-        }
+        loadOrSeed();
         // A statuses.yml written before the picker became a configurable layout has no slots; give those statuses a
         // home in the grid (by order) so the upgraded picker is populated instead of empty.
         placeUnplacedStatuses();
     }
 
-    private void seedDefaults() {
-        put("not_started", "Not Started", "&c", Material.RED_DYE, 1, true, "in_progress");
-        put("in_progress", "In Progress", "&6", Material.ORANGE_DYE, 2, true, null);
-        put("almost_finished", "Almost Finished", "&a", Material.LIME_DYE, 3, true, null);
-        put("finished", "Finished", "&2", Material.GREEN_DYE, 4, true, null);
-        put("archive", "Archive", "&3", Material.CYAN_DYE, 5, false, null);
-        put("hidden", "Hidden", "&7", Material.BONE_MEAL, 6, true, null);
+    @Override
+    protected Map<String, WorldStatusImpl> buildDefaults() {
+        Map<String, WorldStatusImpl> defaults = new LinkedHashMap<>();
+        put(defaults, "not_started", "Not Started", "&c", Material.RED_DYE, 1, true, "in_progress");
+        put(defaults, "in_progress", "In Progress", "&6", Material.ORANGE_DYE, 2, true, null);
+        put(defaults, "almost_finished", "Almost Finished", "&a", Material.LIME_DYE, 3, true, null);
+        put(defaults, "finished", "Finished", "&2", Material.GREEN_DYE, 4, true, null);
+        put(defaults, "archive", "Archive", "&3", Material.CYAN_DYE, 5, false, null);
+        put(defaults, "hidden", "Hidden", "&7", Material.BONE_MEAL, 6, true, null);
+        return defaults;
     }
 
     private void put(
+            Map<String, WorldStatusImpl> defaults,
             String id,
             String displayName,
             String color,
@@ -116,7 +116,7 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
         // "status_<id>" message key (the message store never prunes user keys). When present, adopt it so the
         // server's renames/translations survive the move of status names from messages.yml into statuses.yml.
         String[] styledName = migrateLegacyName(id, displayName, color);
-        this.statuses.put(
+        defaults.put(
                 id,
                 WorldStatusImpl.builder(id)
                         .displayName(styledName[1])
@@ -177,57 +177,44 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
 
     @Override
     public Collection<BuildWorldStatus> getAll() {
-        List<BuildWorldStatus> ordered = new ArrayList<>(this.statuses.values());
-        ordered.sort(Comparator.comparingInt(BuildWorldStatus::getOrder));
-        return Collections.unmodifiableList(ordered);
+        return Collections.unmodifiableList(sorted());
     }
 
     @Override
     public Optional<BuildWorldStatus> get(@Nullable String id) {
-        return Optional.ofNullable(this.statuses.get(id));
+        return Optional.ofNullable(entries.get(id));
     }
 
     @Override
-    public BuildWorldStatus getDefault() {
-        if (this.statuses.isEmpty()) {
-            seedDefaults();
-            storage.saveAll(this.statuses.values());
-        }
-        WorldStatusImpl notStarted = this.statuses.get(NOT_STARTED_ID);
-        // Prefer the built-in fallback, but it may have been deleted by an admin; then the lowest-order status wins.
-        return notStarted != null ? notStarted : getAll().iterator().next();
+    protected String preferredDefaultId() {
+        return NOT_STARTED_ID;
+    }
+
+    /** The last status can never be deleted, so a valid default always exists. */
+    @Override
+    protected boolean mayBeEmpty() {
+        return false;
     }
 
     /**
-     * Restores the six built-in statuses, discarding any customizations. Used by the setup menu's "reset to defaults"
-     * control so an admin can always get back to a known-good state.
-     *
-     * <p>Discarding a custom status cascades exactly as {@link #delete(String)} does: every world that used it is reset
-     * to the {@link #getDefault() default} and the id is removed from every category that grouped it. Without this the
-     * worlds keep pointing at an id the registry no longer resolves, which only heals on the next restart.
+     * Resets every world that used the status to the {@link #getDefault() default}, clears it as a progression target
+     * and removes it from every category that grouped it. Without this the worlds keep pointing at an id the registry no
+     * longer resolves, which only heals on the next restart.
      */
-    public void resetToDefaults() {
-        Set<String> discarded = new LinkedHashSet<>(this.statuses.keySet());
-
-        this.statuses.clear();
-        seedDefaults();
-        storage.saveAll(this.statuses.values());
-        // saveAll rewrites the whole section, so the discarded statuses are already gone from disk.
-        discarded.removeAll(this.statuses.keySet());
-
+    @Override
+    protected void onDiscarded(String id) {
         BuildWorldStatus fallback = getDefault();
-        for (String id : discarded) {
-            for (BuildWorld world : worldsWithStatus(id)) {
-                world.getData().set(WorldDataKey.STATUS, fallback);
-                worldService.get().getWorldStorage().save(world);
-            }
-            categoryRegistry.removeStatusFromCategories(id);
+        for (BuildWorld world : worldsWithStatus(id)) {
+            world.getData().set(WorldDataKey.STATUS, fallback);
+            worldService.get().getWorldStorage().save(world);
         }
+        clearDanglingProgression(id);
+        categoryRegistry.removeStatusFromCategories(id);
     }
 
     public WorldStatusImpl create(String displayName) {
-        String id = StringUtils.uniqueId(displayName, "status", this.statuses::containsKey);
-        int order = this.statuses.values().stream()
+        String id = StringUtils.uniqueId(displayName, "status", entries::containsKey);
+        int order = entries.values().stream()
                         .mapToInt(WorldStatusImpl::getOrder)
                         .max()
                         .orElse(0)
@@ -241,28 +228,10 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
                 .statusSlot(slot)
                 .shownInStatusMenu(slot >= 0)
                 .build();
-        this.statuses.put(id, status);
+        entries.put(id, status);
         storage.save(status);
         categoryRegistry.addStatusToDefaultCategory(id);
         return status;
-    }
-
-    /**
-     * Restores the built-in statuses to their default picker slots and hides every custom status from the picker,
-     * without otherwise changing the statuses. Backs the status editor's "reset layout" control, mirroring the
-     * navigator's layout reset; a full {@link #resetToDefaults()} is the separate "reset everything".
-     */
-    public void resetLayout() {
-        for (WorldStatusImpl status : this.statuses.values()) {
-            Integer preset = DEFAULT_SLOTS.get(status.getId());
-            if (preset != null) {
-                status.setSlot(preset);
-                status.setShown(true);
-            } else {
-                status.setShown(false);
-            }
-            storage.save(status);
-        }
     }
 
     /**
@@ -270,7 +239,7 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
      * the first free slots. Persists only the statuses it moves, so a fully-placed registry is untouched.
      */
     private void placeUnplacedStatuses() {
-        List<WorldStatusImpl> unplaced = this.statuses.values().stream()
+        List<WorldStatusImpl> unplaced = entries.values().stream()
                 .filter(status -> status.getSlot() < 0)
                 .sorted(Comparator.comparingInt(WorldStatusImpl::getOrder))
                 .toList();
@@ -290,7 +259,7 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
      */
     private int firstFreeSlot() {
         Set<Integer> occupied = new HashSet<>();
-        for (WorldStatusImpl status : this.statuses.values()) {
+        for (WorldStatusImpl status : entries.values()) {
             if (status.isShown() && status.getSlot() >= 0) {
                 occupied.add(status.getSlot());
             }
@@ -303,11 +272,9 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
         return -1;
     }
 
+    @Override
     public void persist(BuildWorldStatus status) {
-        if (!this.statuses.containsKey(status.getId())) {
-            return;
-        }
-        storage.save((WorldStatusImpl) status);
+        save(status);
     }
 
     /**
@@ -321,37 +288,11 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
     }
 
     /**
-     * Deletes a status (built-in or custom), cascading every world that used it back to the
-     * {@link #getDefault() default} and removing the id from every category that grouped it. The last remaining
-     * status is never deleted, so a valid default always exists; an admin can restore the built-ins with
-     * {@link #resetToDefaults()}.
-     *
-     * @return {@code true} if the status was deleted, {@code false} if it was unknown or the last remaining status
-     */
-    public boolean delete(String id) {
-        if (!this.statuses.containsKey(id) || this.statuses.size() == 1) {
-            return false;
-        }
-
-        this.statuses.remove(id);
-        BuildWorldStatus fallback = getDefault();
-        for (BuildWorld world : worldsWithStatus(id)) {
-            world.getData().set(WorldDataKey.STATUS, fallback);
-            worldService.get().getWorldStorage().save(world);
-        }
-
-        clearDanglingProgression(id);
-        categoryRegistry.removeStatusFromCategories(id);
-        storage.delete(id);
-        return true;
-    }
-
-    /**
      * Clears the {@code progressesTo} target on any sibling status that auto-advanced to the just-deleted status, so no
      * status is left pointing at an id that no longer resolves.
      */
     private void clearDanglingProgression(String deletedId) {
-        for (WorldStatusImpl status : this.statuses.values()) {
+        for (WorldStatusImpl status : entries.values()) {
             if (status.getProgressesTo().filter(deletedId::equals).isPresent()) {
                 status.setProgressesTo(null);
                 persist(status);

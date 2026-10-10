@@ -34,6 +34,8 @@ import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.io.File;
 import java.util.List;
+import java.util.Set;
+import org.bukkit.Material;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -161,6 +163,42 @@ class NavigatorCategoryRegistryImplTest {
         registry.addStatusToDefaultCategory("custom_status");
 
         assertTrue(registry.getDefault().getStatusIds().contains("custom_status"));
+    }
+
+    @Test
+    void editedCategory_keepsEveryFieldAfterReload() {
+        NavigatorCategoryImpl category = registry.create("Events");
+        category.setDisplayName("Event Maps");
+        category.setColor("&e");
+        category.setIcon(Material.CAKE);
+        category.setIconSkullTexture("texture");
+        category.toggleVisibility(Visibility.ADDED_PLAYERS);
+        category.addStatusId("finished");
+        category.setSlot(22);
+        category.setShown(false);
+        registry.persist(category);
+        registry.setSettingsSlot(8);
+
+        NavigatorCategoryRegistryImpl reloaded = reload();
+        NavigatorCategory loaded = reloaded.get(category.getId()).orElseThrow();
+        assertEquals("Event Maps", loaded.getDisplayName());
+        assertEquals("&e", loaded.getColor());
+        assertEquals(Material.CAKE, loaded.getIcon());
+        assertEquals("texture", loaded.getIconSkullTexture());
+        assertEquals(Set.of(Visibility.EVERYONE, Visibility.ADDED_PLAYERS), loaded.getVisibilities());
+        assertEquals(List.of("finished"), loaded.getStatusIds());
+        assertEquals(22, loaded.getSlot());
+        assertFalse(loaded.isShown());
+        assertFalse(loaded.isBuiltIn());
+        assertTrue(
+                reloaded.get(NavigatorCategoryRegistry.PUBLIC_ID).orElseThrow().isBuiltIn());
+        assertEquals(8, reloaded.getSettingsSlot());
+    }
+
+    private NavigatorCategoryRegistryImpl reload() {
+        BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
+        when(plugin.getDataFolder()).thenReturn(dataFolder);
+        return new NavigatorCategoryRegistryImpl(plugin, () -> mock(WorldServiceImpl.class));
     }
 
     @Test

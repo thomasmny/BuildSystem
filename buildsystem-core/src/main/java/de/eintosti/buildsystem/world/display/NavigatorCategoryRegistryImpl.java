@@ -28,7 +28,8 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
-import de.eintosti.buildsystem.storage.yaml.YamlCategoryStorage;
+import de.eintosti.buildsystem.storage.codec.CategoryCodec;
+import de.eintosti.buildsystem.storage.yaml.YamlRegistryStorage;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
@@ -38,11 +39,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Supplier;
 import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
@@ -58,28 +57,28 @@ import org.jspecify.annotations.Nullable;
  * are shared, not owned.
  */
 @NullMarked
-public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry {
+public class NavigatorCategoryRegistryImpl extends AbstractRegistry<NavigatorCategoryImpl>
+        implements NavigatorCategoryRegistry {
 
     /** Slot the settings button occupies in a freshly seeded navigator (matches the historical fixed slot). */
     public static final int DEFAULT_SETTINGS_SLOT = 15;
 
+    private static final String SETTINGS_SLOT_KEY = "settings-slot";
+
     private final BuildSystemPlugin plugin;
     private final Supplier<WorldServiceImpl> worldService;
-    private final YamlCategoryStorage storage;
-    private final Map<String, NavigatorCategoryImpl> categories = new LinkedHashMap<>();
     private int settingsSlot;
 
     public NavigatorCategoryRegistryImpl(BuildSystemPlugin plugin, Supplier<WorldServiceImpl> worldService) {
+        super(
+                new YamlRegistryStorage<>(
+                        plugin, "categories.yml", "categories", "navigator category", new CategoryCodec()),
+                Comparator.comparingInt(NavigatorCategoryImpl::getSlot));
         this.plugin = plugin;
         this.worldService = worldService;
-        this.storage = new YamlCategoryStorage(plugin);
 
-        this.categories.putAll(storage.load());
-        if (this.categories.isEmpty()) {
-            seedDefaults();
-            storage.saveAll(this.categories.values());
-        }
-        this.settingsSlot = storage.loadSettingsSlot(DEFAULT_SETTINGS_SLOT);
+        loadOrSeed();
+        this.settingsSlot = storage.getInt(SETTINGS_SLOT_KEY, DEFAULT_SETTINGS_SLOT);
     }
 
     /**
@@ -99,18 +98,15 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
      */
     public void setSettingsSlot(int slot) {
         this.settingsSlot = slot;
-        storage.saveSettingsSlot(slot);
-    }
-
-    private void seedDefaults() {
-        this.categories.putAll(buildDefaults());
+        storage.set(SETTINGS_SLOT_KEY, slot);
     }
 
     /**
      * {@return a fresh map of the built-in categories in their default state} Built on demand without touching the live
      * registry, so it can back both first-run seeding and the navigator-layout reset.
      */
-    private Map<String, NavigatorCategoryImpl> buildDefaults() {
+    @Override
+    protected Map<String, NavigatorCategoryImpl> buildDefaults() {
         Map<String, NavigatorCategoryImpl> defaults = new LinkedHashMap<>();
         List<String> activeStatuses = List.of("not_started", "in_progress", "almost_finished", "finished");
         // Built-in categories keep the pre-4.0 navigator icons: textured player-head skulls. The private category
@@ -154,20 +150,14 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
         return defaults;
     }
 
-    private void put(NavigatorCategoryImpl category) {
-        this.categories.put(category.getId(), category);
-    }
-
     @Override
     public Collection<NavigatorCategory> getAll() {
-        List<NavigatorCategory> ordered = new ArrayList<>(this.categories.values());
-        ordered.sort(Comparator.comparingInt(NavigatorCategory::getSlot));
-        return Collections.unmodifiableList(ordered);
+        return Collections.unmodifiableList(sorted());
     }
 
     @Override
     public Optional<NavigatorCategory> get(@Nullable String id) {
-        return Optional.ofNullable(this.categories.get(id));
+        return Optional.ofNullable(entries.get(id));
     }
 
     @Override
@@ -184,65 +174,39 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
     }
 
     @Override
-    public NavigatorCategory getDefault() {
-        // Folders always need a home category, so an empty registry reseeds the built-ins on demand rather than handing
-        // back nothing. The navigator's own browse paths never call this, so deleting every category still leaves the
-        // navigator empty until an admin resets — only folder operations trigger the reseed.
-        if (this.categories.isEmpty()) {
-            seedDefaults();
-            storage.saveAll(this.categories.values());
-        }
-        NavigatorCategoryImpl publicCategory = this.categories.get(PUBLIC_ID);
-        // Prefer the built-in public category, but it may have been deleted; then the lowest-slot category wins.
-        return publicCategory != null ? publicCategory : getAll().iterator().next();
+    protected String preferredDefaultId() {
+        // Folders always need a home category, so getDefault() reseeds an empty registry. The navigator's own browse
+        // paths never call it, so deleting every category still leaves the navigator empty until an admin resets.
+        return PUBLIC_ID;
     }
 
-    /**
-     * Restores the three built-in categories, discarding any customizations. Used by the setup menu's "reset to
-     * defaults" control so an admin can always get back to a known-good state.
-     *
-     * <p>Discarding a custom category re-homes its folders exactly as {@link #delete(String)} does. Without this the
-     * folders keep a category the registry no longer lists, so they — and every world inside them — disappear from the
-     * navigator until the next restart re-homes them on load.
-     */
+    @Override
+    protected boolean mayBeEmpty() {
+        return true;
+    }
+
+    @Override
+    protected void onDiscarded(String id) {
+        rehomeFolders(id);
+    }
+
+    /** Also puts the settings button back in its default slot. */
+    @Override
     public void resetToDefaults() {
-        Set<String> discarded = new LinkedHashSet<>(this.categories.keySet());
-
-        this.categories.clear();
-        seedDefaults();
-        storage.saveAll(this.categories.values());
+        super.resetToDefaults();
         setSettingsSlot(DEFAULT_SETTINGS_SLOT);
-        // saveAll rewrites the whole section, so the discarded categories are already gone from disk.
-        discarded.removeAll(this.categories.keySet());
-
-        for (String id : discarded) {
-            rehomeFolders(id);
-        }
     }
 
-    /**
-     * Resets only the navigator layout — where categories and the settings button sit — without touching the categories
-     * themselves. Built-in categories return to their default slots and become visible again; custom categories are kept
-     * but removed from the navigator (so they can be re-added). The settings button returns to its default slot.
-     */
+    /** Also puts the settings button back in its default slot. */
+    @Override
     public void resetLayout() {
-        Map<String, NavigatorCategoryImpl> defaults = buildDefaults();
-        for (NavigatorCategoryImpl category : this.categories.values()) {
-            NavigatorCategoryImpl preset = defaults.get(category.getId());
-            if (preset != null) {
-                category.setSlot(preset.getSlot());
-                category.setShown(preset.isShown());
-            } else {
-                category.setShown(false);
-            }
-            storage.save(category);
-        }
+        super.resetLayout();
         setSettingsSlot(DEFAULT_SETTINGS_SLOT);
     }
 
     public NavigatorCategoryImpl create(String displayName) {
-        String id = StringUtils.uniqueId(displayName, "category", this.categories::containsKey);
-        int slot = this.categories.values().stream()
+        String id = StringUtils.uniqueId(displayName, "category", entries::containsKey);
+        int slot = entries.values().stream()
                         .mapToInt(NavigatorCategory::getSlot)
                         .max()
                         .orElse(10)
@@ -251,16 +215,14 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
                 .displayName(displayName)
                 .navigatorSlot(slot)
                 .build();
-        put(category);
+        entries.put(id, category);
         storage.save(category);
         return category;
     }
 
+    @Override
     public void persist(NavigatorCategory category) {
-        if (!this.categories.containsKey(category.getId())) {
-            return;
-        }
-        storage.save((NavigatorCategoryImpl) category);
+        save(category);
     }
 
     /**
@@ -270,7 +232,7 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
         // Don't resurrect the built-ins just because a status was created: if an admin has deleted every category, a
         // new
         // status simply stays ungrouped until a category is created (or the built-ins are reset) to list it.
-        if (this.categories.isEmpty()) {
+        if (entries.isEmpty()) {
             return;
         }
         NavigatorCategoryImpl defaultSet = (NavigatorCategoryImpl) getDefault();
@@ -283,35 +245,12 @@ public class NavigatorCategoryRegistryImpl implements NavigatorCategoryRegistry 
      * shared status may be grouped by several categories.
      */
     public void removeStatusFromCategories(String statusId) {
-        for (NavigatorCategoryImpl category : this.categories.values()) {
+        for (NavigatorCategoryImpl category : entries.values()) {
             if (category.getStatusIds().contains(statusId)) {
                 category.removeStatusId(statusId);
                 storage.save(category);
             }
         }
-    }
-
-    /**
-     * Removes a category (built-in or custom). Any category may be deleted, including the last one; the navigator then
-     * shows no categories until an admin restores the built-ins with {@link #resetToDefaults()}. Worlds previously
-     * displayed in the category simply resolve to another matching category (or the {@link #getDefault() default})
-     * on the next render; no status is orphaned because statuses are shared rather than owned by a category. Folders,
-     * which hold a fixed category, are re-homed to the default so they (and the worlds they contain) stay reachable — but
-     * only while at least one category remains, since deleting the very last category leaves nothing to re-home them to
-     * (they resolve to a reseeded default the next time they are loaded).
-     *
-     * @return {@code true} if the category was deleted, {@code false} if it was unknown
-     */
-    public boolean delete(String id) {
-        if (!this.categories.containsKey(id)) {
-            return false;
-        }
-        this.categories.remove(id);
-        storage.delete(id);
-        if (!this.categories.isEmpty()) {
-            rehomeFolders(id);
-        }
-        return true;
     }
 
     /**
