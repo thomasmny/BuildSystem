@@ -47,6 +47,8 @@ class StorageMigratorTest {
 
     private static final Logger LOGGER = Logger.getLogger("StorageMigratorTest");
 
+    private static final String HOSTILE = "'; DROP TABLE buildsystem_players; -- \" OR 1=1 {\"$gt\": \"\"}";
+
     private record Note(String key, long time) {}
 
     private static final Codec<Note> CODEC = new Codec<>() {
@@ -57,7 +59,8 @@ class StorageMigratorTest {
 
         @Override
         public Map<String, Object> serialize(Note note) {
-            return Map.of("time", note.time(), "tags", List.of("a", "b"), "nested", Map.of("on", true));
+            return Map.of(
+                    "time", note.time(), "name", HOSTILE, "tags", List.of("a", "b"), "nested", Map.of("on", true));
         }
 
         @Override
@@ -109,7 +112,7 @@ class StorageMigratorTest {
         live.addAll(List.of(new Note("a", 1_700_000_000_000L), new Note("b", 2)));
         notes.save(live);
 
-        CompletableFuture<Map<EntityKind, Integer>> migration = migrator.migrate(StorageType.SQLITE, settings());
+        CompletableFuture<Map<EntityKind, Integer>> migration = migrator.migrate(target(), settings());
         drain(background);
         drain(mainThread);
         live.add(new Note("c", 3));
@@ -117,13 +120,21 @@ class StorageMigratorTest {
         runAll();
 
         assertEquals(Map.of(EntityKind.PLAYERS, 2), migration.join());
-        assertEquals(StorageType.SQLITE, current.get().type());
+        assertEquals(target(), current.get().type());
         assertEquals(
                 List.of("a", "b", "c"),
                 List.copyOf(
                         current.get().collection(EntityKind.PLAYERS).loadAll().keySet()));
         assertEquals(
-                Map.of("time", 1_700_000_000_000L, "tags", List.of("a", "b"), "nested", Map.of("on", true)),
+                Map.of(
+                        "time",
+                        1_700_000_000_000L,
+                        "name",
+                        HOSTILE,
+                        "tags",
+                        List.of("a", "b"),
+                        "nested",
+                        Map.of("on", true)),
                 current.get().collection(EntityKind.PLAYERS).loadAll().get("a"));
         assertEquals(
                 List.of("a", "b"),
@@ -131,23 +142,23 @@ class StorageMigratorTest {
                         EntityKind.PLAYERS.yaml(dataFolder, LOGGER).loadAll().keySet()),
                 "the write queued during the migration goes to the new backend only");
         YamlConfiguration config = YamlConfiguration.loadConfiguration(new File(dataFolder, "config.yml"));
-        assertEquals("sqlite", config.getString("storage.type"));
+        assertEquals(target().key(), config.getString("storage.type"));
         assertEquals(List.of("Kept as it is."), config.getComments("storage.type"));
-        assertEquals("sqlite", liveConfig.getString("storage.type"));
+        assertEquals(target().key(), liveConfig.getString("storage.type"));
         assertFalse(migrator.running());
     }
 
     @Test
     void migrate_replacesWhatTheTargetHeldBefore() {
         live.add(new Note("old", 1));
-        migrator.migrate(StorageType.SQLITE, settings());
+        migrator.migrate(target(), settings());
         runAll();
         live.clear();
         live.add(new Note("new", 2));
 
         migrator.migrate(StorageType.YAML, settings());
         runAll();
-        migrator.migrate(StorageType.SQLITE, settings());
+        migrator.migrate(target(), settings());
         runAll();
 
         assertEquals(
@@ -207,17 +218,18 @@ class StorageMigratorTest {
                 mainThread::push,
                 LOGGER);
 
-        CompletableFuture<Map<EntityKind, Integer>> migration = early.migrate(StorageType.SQLITE, settings());
+        CompletableFuture<Map<EntityKind, Integer>> migration = early.migrate(target(), settings());
 
         assertTrue(migration.isCompletedExceptionally());
         assertFalse(new File(dataFolder, StorageBackend.SQLITE_FILE).exists());
+        assertFalse(early.running());
     }
 
     @Test
     void migrate_whileOneRuns_isRefused() {
-        CompletableFuture<Map<EntityKind, Integer>> first = migrator.migrate(StorageType.SQLITE, settings());
+        CompletableFuture<Map<EntityKind, Integer>> first = migrator.migrate(target(), settings());
 
-        CompletableFuture<Map<EntityKind, Integer>> second = migrator.migrate(StorageType.SQLITE, settings());
+        CompletableFuture<Map<EntityKind, Integer>> second = migrator.migrate(target(), settings());
 
         assertTrue(second.isCompletedExceptionally());
         runAll();
@@ -227,7 +239,7 @@ class StorageMigratorTest {
     @Test
     void abort_letsHeldWritesGoToTheOldBackendAndStopsTheSwitch() {
         StorageBackend before = current.get();
-        CompletableFuture<Map<EntityKind, Integer>> migration = migrator.migrate(StorageType.SQLITE, settings());
+        CompletableFuture<Map<EntityKind, Integer>> migration = migrator.migrate(target(), settings());
         notes.save(new Note("held", 1));
 
         migrator.abort();
@@ -251,14 +263,25 @@ class StorageMigratorTest {
         }
     }
 
-    private static PluginConfig.Storage.Database settings() {
+    /**
+     * {@return the backend the migrations go to}
+     */
+    protected StorageType target() {
+        return StorageType.SQLITE;
+    }
+
+    /**
+     * {@return the servers to migrate to, holding at least an unreachable MySQL}
+     */
+    protected Map<StorageType, PluginConfig.Storage.Database.Server> servers() {
         // Nothing listens on port 1.
-        return new PluginConfig.Storage.Database(
-                StorageType.SQLITE,
-                "buildsystem_",
-                Map.of(
-                        StorageType.MYSQL,
-                        new PluginConfig.Storage.Database.Server(
-                                StorageType.MYSQL, "localhost", 1, "buildsystem", "builder", "")));
+        return Map.of(
+                StorageType.MYSQL,
+                new PluginConfig.Storage.Database.Server(
+                        StorageType.MYSQL, "localhost", 1, "buildsystem", "builder", ""));
+    }
+
+    private PluginConfig.Storage.Database settings() {
+        return new PluginConfig.Storage.Database(StorageType.SQLITE, "buildsystem_", servers());
     }
 }
