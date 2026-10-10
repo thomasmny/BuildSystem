@@ -73,8 +73,8 @@ class WorldProtectionPolicyTest {
         when(data.get(WorldDataKey.STATUS)).thenReturn(TestData.ARCHIVE_STATUS);
         when(data.get(WorldDataKey.BUILDERS_ENABLED)).thenReturn(true);
 
-        assertEquals(Denial.NONE, policy.checkStatus(player, world));
-        assertEquals(Denial.NONE, policy.checkBuilders(player, world));
+        assertEquals(Denial.NONE, policy.mayModify(player, world));
+        assertEquals(Denial.NONE, policy.mayModify(player, world));
         assertEquals(Denial.NONE, policy.mayModify(player, world));
     }
 
@@ -83,26 +83,26 @@ class WorldProtectionPolicyTest {
         when(player.hasPermission("buildsystem.bypass.archive")).thenReturn(true);
         when(data.get(WorldDataKey.STATUS)).thenReturn(TestData.ARCHIVE_STATUS);
 
-        assertEquals(Denial.NONE, policy.checkStatus(player, world));
+        assertEquals(Denial.NONE, policy.mayModify(player, world));
     }
 
     @Test
     void archivedWorld_noBypass_returnsStatusLocked() {
         when(data.get(WorldDataKey.STATUS)).thenReturn(TestData.ARCHIVE_STATUS);
 
-        assertEquals(Denial.STATUS_LOCKED, policy.checkStatus(player, world));
+        assertEquals(Denial.STATUS_LOCKED, policy.mayModify(player, world));
     }
 
     @Test
     void nonArchivedWorld_returnsNone() {
-        assertEquals(Denial.NONE, policy.checkStatus(player, world));
+        assertEquals(Denial.NONE, policy.mayModify(player, world));
     }
 
     @Test
     void buildersEnabled_nonBuilder_notCreator_returnsNotABuilder() {
         when(data.get(WorldDataKey.BUILDERS_ENABLED)).thenReturn(true);
 
-        assertEquals(Denial.NOT_A_BUILDER, policy.checkBuilders(player, world));
+        assertEquals(Denial.NOT_A_BUILDER, policy.mayModify(player, world));
     }
 
     @Test
@@ -110,7 +110,7 @@ class WorldProtectionPolicyTest {
         when(data.get(WorldDataKey.BUILDERS_ENABLED)).thenReturn(true);
         when(builders.isCreator(player)).thenReturn(true);
 
-        assertEquals(Denial.NONE, policy.checkBuilders(player, world));
+        assertEquals(Denial.NONE, policy.mayModify(player, world));
     }
 
     @Test
@@ -118,12 +118,12 @@ class WorldProtectionPolicyTest {
         when(data.get(WorldDataKey.BUILDERS_ENABLED)).thenReturn(true);
         when(builders.isBuilder(player)).thenReturn(true);
 
-        assertEquals(Denial.NONE, policy.checkBuilders(player, world));
+        assertEquals(Denial.NONE, policy.mayModify(player, world));
     }
 
     @Test
     void buildersDisabled_returnsNone() {
-        assertEquals(Denial.NONE, policy.checkBuilders(player, world));
+        assertEquals(Denial.NONE, policy.mayModify(player, world));
     }
 
     @Test
@@ -131,19 +131,19 @@ class WorldProtectionPolicyTest {
         when(player.hasPermission("buildsystem.bypass.builders")).thenReturn(true);
         when(data.get(WorldDataKey.BUILDERS_ENABLED)).thenReturn(true);
 
-        assertEquals(Denial.NONE, policy.checkBuilders(player, world));
+        assertEquals(Denial.NONE, policy.mayModify(player, world));
     }
 
     @Test
     void settingDisabled_returnsSettingDisabled() {
         when(data.get(WorldDataKey.BLOCK_PLACEMENT)).thenReturn(false);
-        assertEquals(Denial.SETTING_DISABLED, policy.checkSetting(player, world, WorldSetting.BLOCK_PLACEMENT));
+        assertEquals(Denial.SETTING_DISABLED, policy.mayModify(player, world, WorldSetting.BLOCK_PLACEMENT));
     }
 
     @Test
     void settingEnabled_returnsNone() {
         when(data.get(WorldDataKey.BLOCK_PLACEMENT)).thenReturn(true);
-        assertEquals(Denial.NONE, policy.checkSetting(player, world, WorldSetting.BLOCK_PLACEMENT));
+        assertEquals(Denial.NONE, policy.mayModify(player, world, WorldSetting.BLOCK_PLACEMENT));
     }
 
     @Test

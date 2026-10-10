@@ -26,7 +26,6 @@ import de.eintosti.buildsystem.integration.worldedit.WorldEditCommands;
 import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
-import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import java.util.List;
 import org.bukkit.Bukkit;
@@ -101,15 +100,15 @@ public class PlayerCommandPreprocessListener implements Listener {
                 return;
             }
 
-            if (policy.checkStatus(player, buildWorld) == Denial.STATUS_LOCKED) {
+            String key =
+                    switch (policy.mayModify(player, buildWorld)) {
+                        case STATUS_LOCKED -> "command_archive_world";
+                        case NOT_A_BUILDER -> "command_not_builder";
+                        case NONE, SETTING_DISABLED -> null;
+                    };
+            if (key != null) {
                 event.setCancelled(true);
-                messages.sendMessage(player, "command_archive_world");
-                return;
-            }
-
-            if (policy.checkBuilders(player, buildWorld) == Denial.NOT_A_BUILDER) {
-                event.setCancelled(true);
-                messages.sendMessage(player, "command_not_builder");
+                messages.sendMessage(player, key);
             }
         }
     }

@@ -77,22 +77,12 @@ public class WorldPermissionsImpl implements WorldPermissions {
 
     @Override
     public boolean canModify(Player player) {
-        return evaluateModify(player, null);
+        return buildWorld == null || POLICY.mayModify(player, buildWorld) == Denial.NONE;
     }
 
     @Override
     public boolean canModify(Player player, WorldSetting setting) {
-        return evaluateModify(player, setting);
-    }
-
-    private boolean evaluateModify(Player player, @Nullable WorldSetting setting) {
-        if (buildWorld == null) {
-            return true;
-        }
-
-        Denial denial =
-                setting == null ? POLICY.mayModify(player, buildWorld) : POLICY.mayModify(player, buildWorld, setting);
-        return denial == Denial.NONE;
+        return buildWorld == null || POLICY.mayModify(player, buildWorld, setting) == Denial.NONE;
     }
 
     @Override
