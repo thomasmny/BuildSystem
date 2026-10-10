@@ -370,14 +370,8 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
             return;
         }
 
-        if (buildWorld.isLoaded()) {
-            XSound.BLOCK_CHEST_OPEN.play(player);
-            menus.openEdit(buildWorld, player);
-        } else {
-            player.closeInventory();
-            XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            player.sendTitle(" ", messages.getString("world_not_loaded", player), 5, 70, 20);
-        }
+        XSound.BLOCK_CHEST_OPEN.play(player);
+        menus.openEdit(buildWorld, player);
     }
 
     /**

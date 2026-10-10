@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.menu;
 
+import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -130,7 +131,18 @@ public final class Menus {
         new BackupsConfirmationMenu(services.messages(), backup, player).open(player);
     }
 
+    /**
+     * Opens the world editor, or tells the player the world is not loaded. Every way back into the editor goes through
+     * here, so a world that unloaded while a menu or chat prompt was open never reaches the menu.
+     */
     public void openEdit(BuildWorld buildWorld, Player player) {
+        if (buildWorld.getWorld().isEmpty()) {
+            player.closeInventory();
+            XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
+            player.sendTitle(" ", services.messages().getString("world_not_loaded", player), 5, 70, 20);
+            return;
+        }
+
         new EditMenu(
                         services.messages(),
                         services.player(),

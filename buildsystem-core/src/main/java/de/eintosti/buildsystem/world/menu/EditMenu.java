@@ -507,7 +507,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
     private void cycleDifficulty() {
         Difficulty difficulty = buildWorld.cycleDifficulty();
-        buildWorld.getWorld().orElseThrow().setDifficulty(difficulty);
+        buildWorld.getWorld().ifPresent(world -> world.setDifficulty(difficulty));
     }
 
     private void reopen(Player player) {
@@ -517,19 +517,14 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
     private void changeTime(Player player) {
         Time defaultTime = configService.current().world().defaults().time();
-        int time =
-                switch (getWorldTime()) {
-                    case SUNRISE -> defaultTime.noon();
-                    case NOON -> defaultTime.night();
-                    case NIGHT -> defaultTime.sunrise();
-                };
-        buildWorld.getWorld().orElseThrow().setTime(time);
-    }
-
-    private TimeOfDay getWorldTime() {
-        int worldTime = (int) buildWorld.getWorld().orElseThrow().getTime();
-        int noonTime = configService.current().world().defaults().time().noon();
-        return TimeOfDay.fromTicks(worldTime, noonTime);
+        buildWorld
+                .getWorld()
+                .ifPresent(world -> world.setTime(
+                        switch (renderer.timeOfDay(world)) {
+                            case SUNRISE -> defaultTime.noon();
+                            case NOON -> defaultTime.night();
+                            case NIGHT -> defaultTime.sunrise();
+                        }));
     }
 
     private void removeEntities(Player player) {
