@@ -20,11 +20,10 @@ package de.eintosti.buildsystem.menu;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Central registry for skull texture profile hashes that are shared across multiple menus.
+ * The skull texture profile hashes of every menu button.
  *
- * <p>Only textures used by 2+ menus belong here — single-use textures stay inline in the menu that owns them. To add a
- * texture, copy the profile hash from the skin (e.g. from minecraft-heads.com), give it a constant named after what it
- * depicts, and reference it via {@code Profileable.detect(SkullTextures.MY_TEXTURE)}.
+ * <p>To add a texture, copy the profile hash from the skin (e.g. from minecraft-heads.com), give it a constant named
+ * after what it depicts or does, and reference it via {@code Profileable.detect(SkullTextures.MY_TEXTURE)}.
  */
 @NullMarked
 public final class SkullTextures {
@@ -88,6 +87,57 @@ public final class SkullTextures {
      * Red-cross head used for "cancel"/"no" actions.
      */
     public static final String CANCEL = "27548362a24c0fa8453e4d93e68c5969ddbde57bf6666c0319c1ed1e84d89065";
+
+    /**
+     * Head used for the navigator's "create folder" button.
+     */
+    public static final String CREATE_FOLDER = "69b861aabb316c4ed73b4e5428305782e735565ba2a053912e1efd834fa5a6f";
+
+    /**
+     * Head shown in the navigator when a category has no worlds to list.
+     */
+    public static final String NO_WORLDS = "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6";
+
+    /**
+     * Head used for the create menu's predefined worlds tab.
+     */
+    public static final String PREDEFINED_WORLDS_TAB =
+            "2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78";
+
+    /**
+     * Head used for the create menu's generators tab.
+     */
+    public static final String GENERATORS_TAB = "b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a";
+
+    /**
+     * Head used for the create menu's templates tab.
+     */
+    public static final String TEMPLATES_TAB = "d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c";
+
+    /**
+     * Head used for speed 1, the slowest, in the speed menu.
+     */
+    public static final String SPEED_1 = "71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530";
+
+    /**
+     * Head used for speed 2 in the speed menu.
+     */
+    public static final String SPEED_2 = "4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847";
+
+    /**
+     * Head used for speed 3 in the speed menu.
+     */
+    public static final String SPEED_3 = "1d4eae13933860a6df5e8e955693b95a8c3b15c36b8b587532ac0996bc37e5";
+
+    /**
+     * Head used for speed 4 in the speed menu.
+     */
+    public static final String SPEED_4 = "d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5";
+
+    /**
+     * Head used for speed 5, the fastest, in the speed menu.
+     */
+    public static final String SPEED_5 = "6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2";
 
     private SkullTextures() {}
 }

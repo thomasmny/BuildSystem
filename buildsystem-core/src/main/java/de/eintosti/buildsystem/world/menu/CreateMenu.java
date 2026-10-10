@@ -59,13 +59,6 @@ public class CreateMenu extends PaginatedMenu {
     private static final int SLOT_TEMPLATE_NEXT_PAGE = 34;
     private static final int FIRST_TEMPLATE_SLOT = 29;
 
-    private static final String PREDEFINED_TAB_PROFILE =
-            "2cdc0feb7001e2c10fd5066e501b87e3d64793092b85a50c856d962f8be92c78";
-    private static final String GENERATOR_TAB_PROFILE =
-            "b2f79016cad84d1ae21609c4813782598e387961be13c15682752f126dce7a";
-    private static final String TEMPLATE_TAB_PROFILE =
-            "d17b8b43f8c4b5cfeb919c9f8fe93f26ceb6d2b133c2ab1eb339bd6621fd309c";
-
     private static final Map<Integer, BuildWorldType> PREDEFINED_SLOTS = Map.of(
             29, BuildWorldType.NORMAL,
             30, BuildWorldType.FLAT,
@@ -127,9 +120,9 @@ public class CreateMenu extends PaginatedMenu {
         menuItems.fillRange(player, getInventory(), 0, 29);
         menuItems.fillRange(player, getInventory(), 34, 45);
 
-        registerTab(Page.PREDEFINED, PREDEFINED_TAB_PROFILE, "create_predefined_worlds");
-        registerTab(Page.GENERATOR, GENERATOR_TAB_PROFILE, "create_generators");
-        registerTab(Page.TEMPLATES, TEMPLATE_TAB_PROFILE, "create_templates");
+        registerTab(Page.PREDEFINED, SkullTextures.PREDEFINED_WORLDS_TAB, "create_predefined_worlds");
+        registerTab(Page.GENERATOR, SkullTextures.GENERATORS_TAB, "create_generators");
+        registerTab(Page.TEMPLATES, SkullTextures.TEMPLATES_TAB, "create_templates");
 
         switch (currentPage) {
             case PREDEFINED -> registerPredefined();

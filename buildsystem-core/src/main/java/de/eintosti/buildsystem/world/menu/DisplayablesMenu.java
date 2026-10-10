@@ -78,12 +78,6 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     protected static final int FIRST_BOTTOM_BAR_SLOT = 45;
     protected static final int LAST_BOTTOM_BAR_SLOT = 53;
 
-    static final String CREATE_WORLD_PROFILE = SkullTextures.ADD_ITEM;
-    static final String CREATE_FOLDER_PROFILE = "69b861aabb316c4ed73b4e5428305782e735565ba2a053912e1efd834fa5a6f";
-
-    private static final String NO_WORLDS_SKULL_PROFILE =
-            "2e3f50ba62cbda3ecf5479b62fedebd61d76589771cc19286bf2745cd71e47c6";
-
     protected final PlayerServiceImpl playerService;
     protected final SettingsService settingsManager;
     protected final FolderStorageImpl folderStorage;
@@ -222,7 +216,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
 
         registerPageItems(FIRST_WORLD_SLOT, MAX_WORLDS_PER_PAGE, displayables, this::displayableButton);
         if (displayables.isEmpty() && noWorldsMessage != null) {
-            ItemBuilder.skull(Profileable.detect(NO_WORLDS_SKULL_PROFILE))
+            ItemBuilder.skull(Profileable.detect(SkullTextures.NO_WORLDS))
                     .name(noWorldsMessage)
                     .into(inv, SLOT_NO_WORLDS);
         }
@@ -262,13 +256,14 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         if (offered.world()) {
             register(
                     SLOT_CREATE_WORLD,
-                    createButton(CREATE_WORLD_PROFILE, "world_navigator_create_world", p -> beginWorldCreation()));
+                    createButton(SkullTextures.ADD_ITEM, "world_navigator_create_world", p -> beginWorldCreation()));
         }
         if (offered.folder()) {
             // With the create-world button hidden, centre the lone folder button instead of leaving it off to the side.
             register(
                     offered.world() ? LAST_CREATE_FOLDER_SLOT : FIRST_CREATE_FOLDER_SLOT,
-                    createButton(CREATE_FOLDER_PROFILE, "world_navigator_create_folder", this::beginFolderCreation));
+                    createButton(
+                            SkullTextures.CREATE_FOLDER, "world_navigator_create_folder", this::beginFolderCreation));
         }
     }
 

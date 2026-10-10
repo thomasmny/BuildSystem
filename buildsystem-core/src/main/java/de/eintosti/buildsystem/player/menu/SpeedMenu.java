@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.Map;
@@ -35,12 +36,6 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SpeedMenu extends ButtonMenu {
 
-    private static final String SKULL_SPEED_1 = "71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530";
-    private static final String SKULL_SPEED_2 = "4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847";
-    private static final String SKULL_SPEED_3 = "1d4eae13933860a6df5e8e955693b95a8c3b15c36b8b587532ac0996bc37e5";
-    private static final String SKULL_SPEED_4 = "d2e78fb22424232dc27b81fbcb47fd24c1acf76098753f2d9c28598287db5";
-    private static final String SKULL_SPEED_5 = "6d57e3bc88a65730e31a14e3f41e038a5ecf0891a6c243643b8e5476ae2";
-
     record SpeedOption(String skullTexture, String nameKey, float speed, int displayNumber) {}
 
     /**
@@ -48,11 +43,11 @@ public class SpeedMenu extends ButtonMenu {
      * raw flight/walk speed; {@code displayNumber} is the 1&ndash;5 value shown in the {@code %speed%} placeholder.
      */
     private static final Map<Integer, SpeedOption> SPEED_BY_SLOT = Map.ofEntries(
-            Map.entry(11, new SpeedOption(SKULL_SPEED_1, "speed_1", 0.2f, 1)),
-            Map.entry(12, new SpeedOption(SKULL_SPEED_2, "speed_2", 0.4f, 2)),
-            Map.entry(13, new SpeedOption(SKULL_SPEED_3, "speed_3", 0.6f, 3)),
-            Map.entry(14, new SpeedOption(SKULL_SPEED_4, "speed_4", 0.8f, 4)),
-            Map.entry(15, new SpeedOption(SKULL_SPEED_5, "speed_5", 1.0f, 5)));
+            Map.entry(11, new SpeedOption(SkullTextures.SPEED_1, "speed_1", 0.2f, 1)),
+            Map.entry(12, new SpeedOption(SkullTextures.SPEED_2, "speed_2", 0.4f, 2)),
+            Map.entry(13, new SpeedOption(SkullTextures.SPEED_3, "speed_3", 0.6f, 3)),
+            Map.entry(14, new SpeedOption(SkullTextures.SPEED_4, "speed_4", 0.8f, 4)),
+            Map.entry(15, new SpeedOption(SkullTextures.SPEED_5, "speed_5", 1.0f, 5)));
 
     private final SettingsService settingsService;
 
