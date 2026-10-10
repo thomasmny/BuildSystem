@@ -30,7 +30,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class CustomBlockMenu extends ButtonMenu<MenuButton> {
+public class CustomBlockMenu extends ButtonMenu {
 
     /**
      * A selectable custom block. {@code giveMaterial} is the material the item is handed out as; the default

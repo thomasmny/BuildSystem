@@ -35,7 +35,7 @@ import org.jspecify.annotations.NullMarked;
  * colour token (e.g. {@code "&a"}) to the supplied callback; clicking anywhere else returns to the previous menu.
  */
 @NullMarked
-public class DyePickerMenu extends ButtonMenu<MenuButton> {
+public class DyePickerMenu extends ButtonMenu {
 
     /**
      * A selectable colour: its legacy token, the concrete swatch that represents it (the most saturated solid-colour

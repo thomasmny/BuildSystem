@@ -42,7 +42,7 @@ import org.jspecify.annotations.NullMarked;
  * Every toggle is gated by the same {@code buildsystem.edit.physics} permission as the editor's physics button.
  */
 @NullMarked
-public class PhysicsMenu extends ButtonMenu<MenuButton> {
+public class PhysicsMenu extends ButtonMenu {
 
     private static final String PERMISSION = Permissions.EDIT_PHYSICS;
 

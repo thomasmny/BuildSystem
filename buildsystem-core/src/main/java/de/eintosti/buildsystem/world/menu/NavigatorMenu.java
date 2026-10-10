@@ -42,7 +42,7 @@ import org.jspecify.annotations.NullMarked;
  * code changes. The settings button keeps a fixed slot.
  */
 @NullMarked
-public class NavigatorMenu extends ButtonMenu<MenuButton> {
+public class NavigatorMenu extends ButtonMenu {
 
     private static final int INVENTORY_SIZE = 27;
 

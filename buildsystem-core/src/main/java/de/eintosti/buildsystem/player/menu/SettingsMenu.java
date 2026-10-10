@@ -43,7 +43,7 @@ import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SettingsMenu extends ButtonMenu<MenuButton> {
+public class SettingsMenu extends ButtonMenu {
 
     private static final int DESIGN_SLOT = 11;
 

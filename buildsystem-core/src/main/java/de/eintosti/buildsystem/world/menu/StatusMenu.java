@@ -46,7 +46,7 @@ import org.jspecify.annotations.NullMarked;
  * that is hidden or has no slot is omitted. Each entry is gated by its own permission.
  */
 @NullMarked
-public class StatusMenu extends ButtonMenu<MenuButton> {
+public class StatusMenu extends ButtonMenu {
 
     private final SettingsService settingsService;
     private final MenuItems menuItems;

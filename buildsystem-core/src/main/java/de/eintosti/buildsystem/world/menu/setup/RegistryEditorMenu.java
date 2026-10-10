@@ -41,7 +41,7 @@ import org.jspecify.annotations.NullMarked;
  * through {@link #persist()} and lay out their own entry-specific buttons.
  */
 @NullMarked
-abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
+abstract class RegistryEditorMenu extends ButtonMenu {
 
     private static final int INVENTORY_SIZE = 27;
     private static final int MIDDLE_ROW_START_SLOT = 9;

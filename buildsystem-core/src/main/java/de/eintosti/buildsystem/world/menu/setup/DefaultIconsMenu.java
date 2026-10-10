@@ -37,7 +37,7 @@ import org.jspecify.annotations.NullMarked;
  * {@link MaterialPickerMenu} to choose the icon, which is stored immediately.
  */
 @NullMarked
-public class DefaultIconsMenu extends ButtonMenu<MenuButton> {
+public class DefaultIconsMenu extends ButtonMenu {
 
     private static final int INVENTORY_SIZE = 27;
     private static final int SLOT_RESET = 4;

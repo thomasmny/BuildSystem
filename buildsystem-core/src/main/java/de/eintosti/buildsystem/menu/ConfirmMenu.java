@@ -31,7 +31,7 @@ import org.jspecify.annotations.Nullable;
  * cancel item on the right, and an optional info item in the middle. Either choice closes the menu first.
  */
 @NullMarked
-public class ConfirmMenu extends ButtonMenu<MenuButton> {
+public class ConfirmMenu extends ButtonMenu {
 
     private static final int[] GREEN_SLOTS = {0, 1, 2, 3, 9, 10, 12, 18, 19, 20, 21};
     private static final int[] RED_SLOTS = {5, 6, 7, 8, 14, 16, 17, 23, 24, 25, 26};

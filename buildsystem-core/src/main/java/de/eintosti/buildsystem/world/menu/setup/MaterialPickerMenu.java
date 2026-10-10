@@ -45,7 +45,7 @@ import org.jspecify.annotations.NullMarked;
  * configured (statuses, categories, default world-type icons).
  */
 @NullMarked
-public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
+public class MaterialPickerMenu extends ButtonMenu {
 
     private static final int INVENTORY_SIZE = 54;
     private static final int COLUMNS = 8;

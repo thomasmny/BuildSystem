@@ -33,7 +33,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SpeedMenu extends ButtonMenu<MenuButton> {
+public class SpeedMenu extends ButtonMenu {
 
     private static final String SKULL_SPEED_1 = "71bc2bcfb2bd3759e6b1e86fc7a79585e1127dd357fc202893f9de241bc9e530";
     private static final String SKULL_SPEED_2 = "4cd9eeee883468881d83848a46bf3012485c23f75753b8fbe8487341419847";

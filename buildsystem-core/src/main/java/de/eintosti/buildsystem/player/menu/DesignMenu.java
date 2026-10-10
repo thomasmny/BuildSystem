@@ -34,7 +34,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class DesignMenu extends ButtonMenu<MenuButton> {
+public class DesignMenu extends ButtonMenu {
 
     /**
      * The colors selectable in the design menu, keyed by the slot they occupy. {@link LinkedHashMap} keeps insertion

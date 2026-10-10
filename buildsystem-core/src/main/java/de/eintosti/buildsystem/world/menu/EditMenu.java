@@ -54,7 +54,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class EditMenu extends ButtonMenu<MenuButton> {
+public class EditMenu extends ButtonMenu {
 
     private static final int SLOT_WORLD_INFO = 3;
     private static final int SLOT_PHYSICS = 22;
