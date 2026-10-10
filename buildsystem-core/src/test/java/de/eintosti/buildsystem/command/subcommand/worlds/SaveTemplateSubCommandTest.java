@@ -126,6 +126,20 @@ class SaveTemplateSubCommandTest {
     }
 
     @Test
+    void execute_failedCopy_resumesWritesAndFreesWorld() throws Exception {
+        // A file where the templates folder belongs makes the copy fail.
+        Files.writeString(dataFolder.toPath().resolve("templates"), "");
+
+        command.execute(player, buildWorld, new String[] {"savetemplate", "castle", "keep"});
+        backgroundTasks.removeFirst().run();
+
+        assertFalse(operations.isBusy(buildWorld), "the world must be free once the copy failed");
+        verify(world).setAutoSave(true);
+        verify(messages).sendMessage(eq(player), eq("worlds_savetemplate_error"), any(Placeholders.class));
+        verify(messages, never()).sendMessage(eq(player), eq("worlds_savetemplate_finished"), any(Placeholders.class));
+    }
+
+    @Test
     void execute_whileWorldBusy_isRefused() {
         operations.runExclusively(buildWorld, CompletableFuture::new);
 
