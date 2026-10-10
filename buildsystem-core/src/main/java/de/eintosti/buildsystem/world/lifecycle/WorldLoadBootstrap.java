@@ -24,8 +24,10 @@ import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldNames;
+import de.eintosti.buildsystem.world.backup.WorldRestore;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import java.util.ArrayList;
 import java.util.List;
@@ -70,6 +72,13 @@ public class WorldLoadBootstrap {
     public void loadWorlds() {
         this.worldStorage
                 .load()
+                .thenApply(worlds -> {
+                    // Off the main thread, before any world loads and would generate an empty world in a missing
+                    // folder.
+                    worlds.forEach(
+                            world -> WorldRestore.recover(FileUtils.worldFolder(world.getName()), plugin.getLogger()));
+                    return worlds;
+                })
                 .thenAccept(worlds -> scheduler.run(() -> {
                     worlds.forEach(worldStorage::addBuildWorld);
                     assignWorldsToFolders();

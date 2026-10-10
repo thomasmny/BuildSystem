@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.util;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.world.backup.WorldRestore;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +45,9 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class WorldArchive {
 
-    /** Held open by the server while the world is loaded, and meaningless in a backup. */
+    /**
+     * Held open by the server while the world is loaded, and meaningless in a backup.
+     */
     private static final String SESSION_LOCK = "session.lock";
 
     private WorldArchive() {}
@@ -60,17 +63,25 @@ public final class WorldArchive {
 
     /**
      * Packs every file under {@code worldFolder} into {@code target}. A file that cannot be read fails the whole
-     * archive rather than leaving it silently incomplete.
+     * archive rather than leaving it silently incomplete, and so does a world folder with no files.
      *
      * @param excludedSubtree A directory inside the world folder to leave out, or {@code null}
      */
     static void write(Path worldFolder, @Nullable Path excludedSubtree, Path target) throws IOException {
+        // A world folder that is a symbolic link is archived from where it points.
+        Path folder = worldFolder.toRealPath();
+        @Nullable Path excluded = excludedSubtree != null && Files.exists(excludedSubtree) ? excludedSubtree.toRealPath() : null;
+        Path restoreFolder = folder.resolve(WorldRestore.FOLDER);
         List<Path> files;
-        try (Stream<Path> walk = Files.walk(worldFolder)) {
+        try (Stream<Path> walk = Files.walk(folder)) {
             files = walk.filter(Files::isRegularFile)
-                    .filter(file -> excludedSubtree == null || !file.startsWith(excludedSubtree))
-                    .filter(file -> !file.equals(worldFolder.resolve(SESSION_LOCK)))
+                    .filter(file -> excluded == null || !file.startsWith(excluded))
+                    .filter(file -> !file.startsWith(restoreFolder))
+                    .filter(file -> !file.equals(folder.resolve(SESSION_LOCK)))
                     .toList();
+        }
+        if (files.isEmpty()) {
+            throw new IOException("World folder has no files to back up: " + worldFolder);
         }
 
         // The remote storages write into a temp directory that their close() deletes.
@@ -78,8 +89,7 @@ public final class WorldArchive {
         try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(target));
                 ZipOutputStream zip = new ZipOutputStream(out)) {
             for (Path file : files) {
-                zip.putNextEntry(
-                        new ZipEntry(worldFolder.relativize(file).toString().replace(File.separatorChar, '/')));
+                zip.putNextEntry(new ZipEntry(folder.relativize(file).toString().replace(File.separatorChar, '/')));
                 Files.copy(file, zip);
                 zip.closeEntry();
             }
@@ -87,9 +97,8 @@ public final class WorldArchive {
     }
 
     /**
-     * Checks that {@code archive} can be read in full, has entries, and that none of them would land outside
-     * {@code targetDirectory}. Run before the world is deleted, so a broken archive fails the restore while the world
-     * is still there.
+     * Checks that {@code archive} opens, lists files, and that none of them would land outside {@code targetDirectory}.
+     * Only the archive's central directory is read, so a damaged entry still fails later, during {@link #extract}.
      */
     public static void validate(File archive, File targetDirectory) throws IOException {
         try (ZipFile zip = open(archive)) {
@@ -105,7 +114,9 @@ public final class WorldArchive {
         }
     }
 
-    /** Extracts {@code archive} into {@code targetDirectory}, refusing any entry that would land outside it. */
+    /**
+     * Extracts {@code archive} into {@code targetDirectory}, refusing any entry that would land outside it.
+     */
     public static void extract(File archive, File targetDirectory) throws IOException {
         try (ZipFile zip = open(archive)) {
             String root = legacyRoot(zip);

@@ -43,6 +43,7 @@ import de.eintosti.buildsystem.api.world.lifecycle.WorldUnloader;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
+import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
@@ -61,6 +62,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.bukkit.Bukkit;
@@ -344,7 +346,7 @@ class BackupProfileImplTest {
     }
 
     @Test
-    void restoreAfterAFailedRollback_keepsTheOldWorldCopy() throws Exception {
+    void restoreAfterAFailedRollback_isRefusedBeforeTheWorldGoesOffline() throws Exception {
         Path worldFolder = tempDir.resolve("arena");
         Backup backup = unloadableArenaWithBackup(worldFolder, "zip4j-remote.zip");
         Path leftOver =
@@ -359,6 +361,58 @@ class BackupProfileImplTest {
 
         assertEquals("only copy", Files.readString(leftOver.resolve("level.dat")));
         assertEquals("current", Files.readString(worldFolder.resolve("level.dat")));
+        verify(buildWorld.getUnloader(), never()).forceUnload(any());
+        verify(buildWorld.getLoader(), never()).load();
         verify(messages).sendMessage(player, "worlds_backup_restoration_failed");
+    }
+
+    @Test
+    void restoreWhoseSwapFails_loadsTheOldWorldAndBringsThePlayersBack() throws Exception {
+        Path worldFolder = tempDir.resolve("arena");
+        Backup backup = unloadableArenaWithBackup(worldFolder, "zip4j-remote.zip");
+        Player inside = mock(Player.class);
+        when(inside.teleport(any(Location.class))).thenReturn(true);
+        when(inside.getLocation()).thenReturn(new Location(null, 1, 64, 1));
+        when(buildWorld.getWorld().orElseThrow().getPlayers()).thenReturn(List.of(inside));
+        // Losing the extracted backup while the world unloads makes moving it in fail.
+        WorldUnloader unloader = buildWorld.getUnloader();
+        doAnswer(invocation -> {
+                    bukkit.when(() -> Bukkit.getWorld("arena")).thenReturn(null);
+                    try (Stream<Path> staged = Files.list(tempDir.resolve(".buildsystem-restore"))) {
+                        for (Path folder : staged.toList()) {
+                            FileUtils.deleteDirectory(folder);
+                        }
+                    }
+                    return null;
+                })
+                .when(unloader)
+                .forceUnload(any());
+        Player player = mock(Player.class);
+
+        profile(3)
+                .restoreBackup(backup, player)
+                .handle((ignored, throwable) -> null)
+                .get(5, TimeUnit.SECONDS);
+
+        assertEquals("current", Files.readString(worldFolder.resolve("level.dat")));
+        verify(buildWorld.getLoader()).load();
+        verify(buildWorld.getTeleporter()).teleport(inside);
+        verify(messages).sendMessage(player, "worlds_backup_restoration_failed");
+        verify(messages, never())
+                .sendMessage(eq(player), eq("worlds_backup_restoration_successful"), any(Placeholders.class));
+        assertFalse(operations.isBusy(buildWorld));
+    }
+
+    @Test
+    void backupThatFailsToStore_deletesNoOlderBackup() {
+        List<Backup> existing = List.of(backup(1L), backup(2L), backup(3L));
+        when(backupStorage.listBackups(buildWorld)).thenReturn(CompletableFuture.completedFuture(existing));
+        when(backupStorage.storeBackup(buildWorld))
+                .thenReturn(CompletableFuture.failedFuture(new IOException("disk full")));
+
+        CompletableFuture<Backup> result = profile(3).createBackup();
+
+        assertThrows(Exception.class, () -> result.get(5, TimeUnit.SECONDS));
+        verify(backupStorage, never()).deleteBackup(any());
     }
 }

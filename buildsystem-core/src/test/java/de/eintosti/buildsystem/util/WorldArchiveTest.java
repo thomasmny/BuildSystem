@@ -137,6 +137,41 @@ class WorldArchiveTest {
     }
 
     @Test
+    void symlinkedWorldFolder_isArchivedFromWhereItPoints() throws IOException {
+        Path link = Files.createSymbolicLink(tempDir.resolve("linked"), world("volume"));
+        Path archive = tempDir.resolve("backup.zip");
+
+        WorldArchive.write(link, null, archive);
+        Path target = tempDir.resolve("restored");
+        WorldArchive.extract(archive.toFile(), target.toFile());
+
+        assertRestored(target);
+    }
+
+    @Test
+    void worldFolderWithNoFiles_fails() throws IOException {
+        Path empty = Files.createDirectories(tempDir.resolve("empty").resolve("region"));
+
+        assertThrows(
+                IOException.class, () -> WorldArchive.write(empty.getParent(), null, tempDir.resolve("backup.zip")));
+    }
+
+    @Test
+    void writtenArchive_leavesOutAnUnfinishedRestore() throws IOException {
+        Path world = world("source");
+        Files.createDirectories(world.resolve(".buildsystem-restore").resolve("replaced"));
+        Files.writeString(
+                world.resolve(".buildsystem-restore").resolve("replaced").resolve("level.dat"), "old");
+        Path archive = tempDir.resolve("backup.zip");
+
+        WorldArchive.write(world, null, archive);
+
+        try (ZipFile zip = new ZipFile(archive.toFile())) {
+            assertTrue(zip.stream().map(ZipEntry::getName).noneMatch(name -> name.startsWith(".buildsystem-restore")));
+        }
+    }
+
+    @Test
     void writtenArchive_leavesOutTheExcludedSubtree() throws IOException {
         Path source = world("main");
         Path nested = source.resolve("dimensions").resolve("minecraft").resolve("other");
