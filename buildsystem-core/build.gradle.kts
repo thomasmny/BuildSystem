@@ -76,6 +76,7 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.mockito)
     testImplementation(libs.mockbukkit)
+    testImplementation(libs.testcontainers)
     // Test-only Bukkit API: MockBukkit requires the Paper API. The plugin itself targets spigot-api (compileOnly
     // above); paper-api is a strict superset and is confined to the test classpath, so the shipped plugin stays
     // spigot-only. Do NOT add paper-api to a non-test configuration.
@@ -90,6 +91,19 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+// Tests tagged "docker" start containers, so they stay out of the default build and run through dockerTest.
+tasks.named<Test>("test") {
+    useJUnitPlatform { excludeTags("docker") }
+}
+
+tasks.register<Test>("dockerTest") {
+    description = "Runs the tests that need Docker."
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform { includeTags("docker") }
 }
 
 tasks.named("assemble") {
