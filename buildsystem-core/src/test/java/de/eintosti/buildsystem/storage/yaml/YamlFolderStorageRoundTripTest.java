@@ -139,7 +139,7 @@ class YamlFolderStorageRoundTripTest {
                     @Override
                     protected void fireEvent(Event event) {}
                 };
-        storage.loadFolders();
+        storage.loadFolders().join();
         storage.removeFolder("Removed");
         // Queued behind the delete, so joining it means the delete has been written too.
         storage.save(storage.getFolders()).join();

@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import org.bukkit.World;
 import org.jspecify.annotations.NullMarked;
@@ -69,9 +70,13 @@ public class WorldLoadBootstrap {
         this.afterLoad = afterLoad;
     }
 
-    public void loadWorlds() {
+    /**
+     * @param foldersLoaded Completes once the folders are in place, which the worlds are then assigned to
+     */
+    public void loadWorlds(CompletableFuture<Void> foldersLoaded) {
         this.worldStorage
                 .load()
+                .thenCombine(foldersLoaded, (worlds, ignored) -> worlds)
                 .thenApply(worlds -> {
                     // Off the main thread, before any world loads and would generate an empty world in a missing
                     // folder.
