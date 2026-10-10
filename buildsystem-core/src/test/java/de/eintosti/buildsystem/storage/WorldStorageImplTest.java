@@ -34,6 +34,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -155,35 +157,40 @@ class WorldStorageImplTest {
     }
 
     @Test
-    void concurrentAddRemoveIsConsistent() throws InterruptedException {
+    void concurrentAddRemoveIsConsistent() throws Exception {
         int threads = 4;
         int opsPerThread = 250;
 
         try (ExecutorService exec = Executors.newFixedThreadPool(threads)) {
             CountDownLatch ready = new CountDownLatch(threads);
             CountDownLatch done = new CountDownLatch(threads);
+            Future<?>[] futures = new Future<?>[threads];
 
             for (int t = 0; t < threads; t++) {
-                exec.submit(() -> {
-                    ready.countDown();
+                futures[t] = exec.submit(() -> {
                     try {
+                        ready.countDown();
                         ready.await();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        return;
+                        for (int i = 0; i < opsPerThread; i++) {
+                            BuildWorld w =
+                                    world("World-" + Thread.currentThread().threadId() + "-" + i);
+                            storage.addBuildWorld(w);
+                            assertNotNull(storage.getBuildWorld(w.getUniqueId()));
+                            storage.removeBuildWorld(w);
+                            assertNull(storage.getBuildWorld(w.getUniqueId()));
+                        }
+                    } finally {
+                        done.countDown();
                     }
-                    for (int i = 0; i < opsPerThread; i++) {
-                        BuildWorld w = world("World-" + Thread.currentThread().threadId() + "-" + i);
-                        storage.addBuildWorld(w);
-                        assertNotNull(storage.getBuildWorld(w.getUniqueId()));
-                        storage.removeBuildWorld(w);
-                        assertNull(storage.getBuildWorld(w.getUniqueId()));
-                    }
-                    done.countDown();
+                    return null;
                 });
             }
 
-            done.await();
+            assertTrue(done.await(10, TimeUnit.SECONDS));
+            // Rethrows an assertion that failed on a worker thread.
+            for (Future<?> future : futures) {
+                future.get();
+            }
         }
     }
 
