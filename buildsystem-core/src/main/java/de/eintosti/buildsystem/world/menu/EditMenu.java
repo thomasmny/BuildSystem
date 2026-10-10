@@ -118,7 +118,7 @@ public class EditMenu extends ButtonMenu {
                 SLOT_WORLD_INFO,
                 MenuButton.builder()
                         .permission(Permissions.EDIT_ICON)
-                        .render((player, inventory, slot) -> renderer.renderWorldInfo(player, inventory, slot))
+                        .render(renderer::renderWorldInfo)
                         .onClick(this::onWorldInfoClick)
                         .build());
 
@@ -138,7 +138,7 @@ public class EditMenu extends ButtonMenu {
                 SLOT_TIME,
                 MenuButton.builder()
                         .permission(Permissions.EDIT_TIME)
-                        .render((player, inventory, slot) -> renderer.renderTime(player, inventory, slot))
+                        .render(renderer::renderTime)
                         .onClick((player, event) -> {
                             changeTime(player);
                             reopen(player);
@@ -149,7 +149,7 @@ public class EditMenu extends ButtonMenu {
                 SLOT_BUTCHER,
                 MenuButton.builder()
                         .permission(Permissions.EDIT_ENTITIES)
-                        .render((player, inventory, slot) -> renderer.renderButcher(player, inventory, slot))
+                        .render(renderer::renderButcher)
                         .onClick((player, event) -> removeEntities(player))
                         .build());
 
@@ -188,7 +188,7 @@ public class EditMenu extends ButtonMenu {
                 SLOT_GAMERULES,
                 MenuButton.builder()
                         .permission(Permissions.EDIT_GAMERULES)
-                        .render((player, inventory, slot) -> renderer.renderGameRules(player, inventory, slot))
+                        .render(renderer::renderGameRules)
                         .onClick((player, event) -> {
                             XSound.BLOCK_CHEST_OPEN.play(player);
                             menus.openGameRules(buildWorld, player);
@@ -199,7 +199,7 @@ public class EditMenu extends ButtonMenu {
                 SLOT_DIFFICULTY,
                 MenuButton.builder()
                         .permission(Permissions.EDIT_DIFFICULTY)
-                        .render((player, inventory, slot) -> renderer.renderDifficulty(player, inventory, slot))
+                        .render(renderer::renderDifficulty)
                         .onClick((player, event) -> {
                             cycleDifficulty();
                             reopen(player);
@@ -210,7 +210,7 @@ public class EditMenu extends ButtonMenu {
                 SLOT_STATUS,
                 MenuButton.builder()
                         .permission(Permissions.EDIT_STATUS)
-                        .render((player, inventory, slot) -> renderer.renderStatus(player, inventory, slot))
+                        .render(renderer::renderStatus)
                         .onClick((player, event) -> {
                             XSound.ENTITY_CHICKEN_EGG.play(player);
                             menus.openStatus(buildWorld, player);
@@ -221,7 +221,7 @@ public class EditMenu extends ButtonMenu {
                 SLOT_PROJECT,
                 MenuButton.builder()
                         .permission(Permissions.EDIT_PROJECT)
-                        .render((player, inventory, slot) -> renderer.renderProject(player, inventory, slot))
+                        .render(renderer::renderProject)
                         .onClick((player, event) -> {
                             XSound.ENTITY_CHICKEN_EGG.play(player);
                             menus.promptWorldProject(buildWorld, player);
@@ -232,7 +232,7 @@ public class EditMenu extends ButtonMenu {
                 SLOT_PERMISSION,
                 MenuButton.builder()
                         .permission(Permissions.EDIT_PERMISSION)
-                        .render((player, inventory, slot) -> renderer.renderPermission(player, inventory, slot))
+                        .render(renderer::renderPermission)
                         .onClick((player, event) -> {
                             XSound.ENTITY_CHICKEN_EGG.play(player);
                             menus.promptWorldPermission(buildWorld, player);
