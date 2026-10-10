@@ -7,7 +7,7 @@ paperlib = "1.0.8"
 
 # Test
 junit = "6.1.3"
-mockito = "5.23.0"
+mockito = "5.24.0"
 mockbukkit = "4.115.0"
 
 # Plugins
