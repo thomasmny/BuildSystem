@@ -24,7 +24,6 @@ import com.cryptomorin.xseries.profiles.exceptions.ProfileException;
 import com.cryptomorin.xseries.profiles.objects.ProfileInputType;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
-import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -36,6 +35,7 @@ import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.stream.IntStream;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -95,11 +95,23 @@ public final class MenuItems {
      * @param player The player to get the glass pane for
      * @return The colored glass pane material
      */
-    public XMaterial getColoredGlassPane(Player player) {
-        Settings settings = settingsService.getSettings(player);
-        DesignColor color = settings.getDesignColor();
-        String paneItemName = color.name() + "_STAINED_GLASS_PANE";
-        return XMaterial.matchXMaterial(paneItemName).orElse(XMaterial.BLACK_STAINED_GLASS_PANE);
+    public Material getColoredGlassPane(Player player) {
+        return glassPane(settingsService.getSettings(player).getDesignColor());
+    }
+
+    /**
+     * {@return the stained glass block in the given design colour} Every {@link DesignColor} is named after a
+     * {@link org.bukkit.DyeColor}, so the material always exists.
+     */
+    public static Material glass(DesignColor color) {
+        return Material.valueOf(color.name() + "_STAINED_GLASS");
+    }
+
+    /**
+     * {@return the stained glass pane in the given design colour}
+     */
+    public static Material glassPane(DesignColor color) {
+        return Material.valueOf(color.name() + "_STAINED_GLASS_PANE");
     }
 
     /**

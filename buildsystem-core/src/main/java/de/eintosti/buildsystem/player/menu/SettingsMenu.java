@@ -300,10 +300,7 @@ public class SettingsMenu extends ButtonMenu<MenuButton> {
 
     private void renderDesign(Player player, Inventory inventory, int slot) {
         DesignColor color = settingsManager.getSettings(player).getDesignColor();
-        XMaterial material =
-                XMaterial.matchXMaterial(color.name() + "_STAINED_GLASS").orElse(XMaterial.BLACK_STAINED_GLASS);
-
-        ItemBuilder.of(material)
+        ItemBuilder.of(MenuItems.glass(color))
                 .name(messages.getString("settings_change_design_item", player))
                 .lore(messages.getStringList("settings_change_design_lore", player))
                 .glow(true)
