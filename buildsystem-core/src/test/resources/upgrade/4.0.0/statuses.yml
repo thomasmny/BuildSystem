@@ -1,0 +1,66 @@
+statuses:
+  not_started:
+    display-name: Not Started
+    color: '&c'
+    icon: RED_DYE
+    order: 1
+    building-allowed: true
+    progresses-to: in_progress
+    built-in: true
+    status-slot: 10
+    shown-in-status-menu: true
+  in_progress:
+    display-name: In Progress
+    color: '&6'
+    icon: ORANGE_DYE
+    order: 2
+    building-allowed: true
+    built-in: true
+    status-slot: 11
+    shown-in-status-menu: true
+  almost_finished:
+    display-name: Almost Finished
+    color: '&a'
+    icon: LIME_DYE
+    order: 3
+    building-allowed: true
+    built-in: true
+    status-slot: 12
+    shown-in-status-menu: true
+  finished:
+    display-name: Done
+    color: '&2'
+    icon: GREEN_DYE
+    order: 4
+    building-allowed: true
+    built-in: true
+    status-slot: 13
+    shown-in-status-menu: true
+  archive:
+    display-name: Archive
+    color: '&3'
+    icon: CYAN_DYE
+    order: 5
+    building-allowed: false
+    built-in: true
+    status-slot: 14
+    shown-in-status-menu: true
+  hidden:
+    display-name: Hidden
+    color: '&7'
+    icon: BONE_MEAL
+    order: 6
+    building-allowed: true
+    built-in: true
+    status-slot: 15
+    shown-in-status-menu: true
+  review:
+    display-name: Review
+    color: '&d'
+    icon: PURPLE_DYE
+    order: 7
+    building-allowed: false
+    built-in: false
+    status-slot: 0
+    shown-in-status-menu: true
+    progresses-to: finished

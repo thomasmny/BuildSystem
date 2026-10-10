@@ -1,0 +1,48 @@
+version: 4
+folders:
+  21ee33de-1c1a-4398-8a35-3fc4c0d4cbba:
+    creator: 11111111-1111-1111-1111-111111111111,Alice
+    worlds:
+    - 232aa55e-e4dc-4c89-a9ed-d21c27e1b3bd
+    material: BOOKSHELF
+    name: Projects
+    project: '-'
+    permission: '-'
+    category: public
+    uuid: 21ee33de-1c1a-4398-8a35-3fc4c0d4cbba
+    creation: 1791634915863
+  75de2c5e-b2a5-45e4-91e7-1e17301f2113:
+    creator: 11111111-1111-1111-1111-111111111111,Alice
+    worlds:
+    - 19028348-a3e3-410c-8716-496855fda9e7
+    material: CHEST
+    name: Hidden
+    project: Hidden Project
+    permission: build.hidden
+    category: private
+    uuid: 75de2c5e-b2a5-45e4-91e7-1e17301f2113
+    creation: 1791634915864
+  1e5103b8-9b6f-4342-8cff-6dda3cf8c467:
+    parent: 21ee33de-1c1a-4398-8a35-3fc4c0d4cbba
+    creator: 11111111-1111-1111-1111-111111111111,Alice
+    worlds:
+    - 63e2fe2d-2961-46d2-a8f2-039e1b9d106b
+    material: CHEST
+    name: Lobbies
+    project: '-'
+    permission: '-'
+    category: public
+    uuid: 1e5103b8-9b6f-4342-8cff-6dda3cf8c467
+    creation: 1791634915864
+  e772f15b-0510-41bb-b523-515f20198a55:
+    parent: 1e5103b8-9b6f-4342-8cff-6dda3cf8c467
+    creator: 22222222-2222-2222-2222-222222222222,Bob
+    worlds:
+    - 4a88a9ed-e49e-4795-b9b5-d8e24414bfc0
+    material: CHEST
+    name: Archive
+    project: '-'
+    permission: '-'
+    category: public
+    uuid: e772f15b-0510-41bb-b523-515f20198a55
+    creation: 1791634915864

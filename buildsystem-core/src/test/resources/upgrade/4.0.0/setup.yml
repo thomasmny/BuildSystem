@@ -1,0 +1,10 @@
+setup:
+  type:
+    normal: OAK_LOG
+    flat: GRASS_BLOCK
+    nether: NETHERRACK
+    end: END_STONE
+    void: GLASS
+    template: FILLED_MAP
+    imported: FURNACE
+    custom: FILLED_MAP
