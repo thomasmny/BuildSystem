@@ -232,9 +232,7 @@ public class BukkitWorldFactory {
             bukkitWorld.setTime(time);
         }
         if (worldBorderSize != null) {
-            bukkitWorld
-                    .getWorldBorder()
-                    .setSize(configService.current().world().defaults().worldBorderSize());
+            bukkitWorld.getWorldBorder().setSize(worldBorderSize);
         }
         configService
                 .current()
