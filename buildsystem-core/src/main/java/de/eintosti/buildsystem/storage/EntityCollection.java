@@ -97,6 +97,14 @@ public final class EntityCollection<T> {
         return serialized;
     }
 
+    /**
+     * Replaces every stored entry with {@code values}, including entries that failed to load.
+     */
+    public CompletableFuture<Void> replaceAll(Collection<T> values) {
+        Map<String, Map<String, Object>> serialized = serialize(values);
+        return write(() -> store.replaceAll(serialized));
+    }
+
     public CompletableFuture<Void> delete(T value) {
         return delete(codec().key(value));
     }

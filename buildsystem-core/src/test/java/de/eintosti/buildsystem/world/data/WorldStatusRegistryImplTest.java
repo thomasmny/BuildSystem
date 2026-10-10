@@ -34,6 +34,7 @@ import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.storage.yaml.YamlSetupStorage;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.io.File;
 import java.util.List;
@@ -61,7 +62,11 @@ class WorldStatusRegistryImplTest {
         // cascades are no-ops.
         categories = new NavigatorCategoryRegistryImpl(plugin, mock(FolderStorageImpl.class));
         registry = new WorldStatusRegistryImpl(
-                plugin, categories, mock(Messages.class, RETURNS_DEEP_STUBS), mock(WorldStorageImpl.class));
+                plugin,
+                categories,
+                mock(Messages.class, RETURNS_DEEP_STUBS),
+                mock(WorldStorageImpl.class),
+                new YamlSetupStorage(plugin));
     }
 
     @Test
@@ -125,8 +130,12 @@ class WorldStatusRegistryImplTest {
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
         WorldStorageImpl worldStorage = mock(WorldStorageImpl.class);
-        WorldStatusRegistryImpl statuses =
-                new WorldStatusRegistryImpl(plugin, categories, mock(Messages.class, RETURNS_DEEP_STUBS), worldStorage);
+        WorldStatusRegistryImpl statuses = new WorldStatusRegistryImpl(
+                plugin,
+                categories,
+                mock(Messages.class, RETURNS_DEEP_STUBS),
+                worldStorage,
+                new YamlSetupStorage(plugin));
         WorldStatusImpl custom = statuses.create("Review");
         BuildWorld world = mock(BuildWorld.class, RETURNS_DEEP_STUBS);
         when(world.getData().get(WorldDataKey.STATUS)).thenReturn(custom);
@@ -143,8 +152,12 @@ class WorldStatusRegistryImplTest {
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
         WorldStorageImpl worldStorage = mock(WorldStorageImpl.class);
-        WorldStatusRegistryImpl statuses =
-                new WorldStatusRegistryImpl(plugin, categories, mock(Messages.class, RETURNS_DEEP_STUBS), worldStorage);
+        WorldStatusRegistryImpl statuses = new WorldStatusRegistryImpl(
+                plugin,
+                categories,
+                mock(Messages.class, RETURNS_DEEP_STUBS),
+                worldStorage,
+                new YamlSetupStorage(plugin));
         BuildWorldStatus oldDefault = statuses.getDefault();
         // Loaded with a status that no longer exists, so it shows the default.
         WorldDataImpl data = WorldDataSchema.create("arena", oldDefault);
@@ -280,6 +293,7 @@ class WorldStatusRegistryImplTest {
                 plugin,
                 new NavigatorCategoryRegistryImpl(plugin, mock(FolderStorageImpl.class)),
                 mock(Messages.class, RETURNS_DEEP_STUBS),
-                mock(WorldStorageImpl.class));
+                mock(WorldStorageImpl.class),
+                new YamlSetupStorage(plugin));
     }
 }

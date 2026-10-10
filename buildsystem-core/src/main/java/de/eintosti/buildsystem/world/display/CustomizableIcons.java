@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.display;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.storage.yaml.YamlSetupStorage;
 import java.util.EnumMap;
@@ -37,8 +36,8 @@ public class CustomizableIcons {
 
     private final Map<BuildWorldType, Material> typeIcons;
 
-    public CustomizableIcons(BuildSystemPlugin plugin) {
-        this.setupStorage = new YamlSetupStorage(plugin);
+    public CustomizableIcons(YamlSetupStorage setupStorage) {
+        this.setupStorage = setupStorage;
 
         this.typeIcons = loadTypeIcons();
     }

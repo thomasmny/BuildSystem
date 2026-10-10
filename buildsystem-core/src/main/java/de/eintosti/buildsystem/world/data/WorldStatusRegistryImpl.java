@@ -25,8 +25,8 @@ import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.codec.StatusCodec;
-import de.eintosti.buildsystem.storage.yaml.YamlRegistryStorage;
 import de.eintosti.buildsystem.storage.yaml.YamlSetupStorage;
+import de.eintosti.buildsystem.storage.yaml.YamlStore;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.display.AbstractRegistry;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
@@ -78,14 +78,19 @@ public class WorldStatusRegistryImpl extends AbstractRegistry<WorldStatusImpl> i
             BuildSystemPlugin plugin,
             NavigatorCategoryRegistryImpl categoryRegistry,
             Messages messages,
-            WorldStorageImpl worldStorage) {
+            WorldStorageImpl worldStorage,
+            YamlSetupStorage setupStorage) {
         super(
-                new YamlRegistryStorage<>(plugin, "statuses.yml", "statuses", "status", new StatusCodec()),
+                new YamlStore(plugin.getDataFolder(), "statuses.yml", plugin.getLogger()),
+                "statuses",
+                "status",
+                new StatusCodec(),
+                plugin.getLogger(),
                 Comparator.comparingInt(WorldStatusImpl::getOrder));
         this.categoryRegistry = categoryRegistry;
         this.messages = messages;
         this.worldStorage = worldStorage;
-        this.legacyIcons = new YamlSetupStorage(plugin).loadLegacyStatusIcons();
+        this.legacyIcons = setupStorage.loadLegacyStatusIcons();
 
         loadOrSeed();
         // A statuses.yml written before the picker became a configurable layout has no slots; give those statuses a

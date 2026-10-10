@@ -29,7 +29,7 @@ import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.codec.CategoryCodec;
-import de.eintosti.buildsystem.storage.yaml.YamlRegistryStorage;
+import de.eintosti.buildsystem.storage.yaml.YamlStore;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.ArrayList;
@@ -71,14 +71,17 @@ public class NavigatorCategoryRegistryImpl extends AbstractRegistry<NavigatorCat
 
     public NavigatorCategoryRegistryImpl(BuildSystemPlugin plugin, FolderStorageImpl folderStorage) {
         super(
-                new YamlRegistryStorage<>(
-                        plugin, "categories.yml", "categories", "navigator category", new CategoryCodec()),
+                new YamlStore(plugin.getDataFolder(), "categories.yml", plugin.getLogger()),
+                "categories",
+                "navigator category",
+                new CategoryCodec(),
+                plugin.getLogger(),
                 Comparator.comparingInt(NavigatorCategoryImpl::getSlot));
         this.plugin = plugin;
         this.folderStorage = folderStorage;
 
         loadOrSeed();
-        this.settingsSlot = storage.getInt(SETTINGS_SLOT_KEY, DEFAULT_SETTINGS_SLOT);
+        this.settingsSlot = file.config().getInt(SETTINGS_SLOT_KEY, DEFAULT_SETTINGS_SLOT);
     }
 
     /**
@@ -98,7 +101,7 @@ public class NavigatorCategoryRegistryImpl extends AbstractRegistry<NavigatorCat
      */
     public void setSettingsSlot(int slot) {
         this.settingsSlot = slot;
-        storage.set(SETTINGS_SLOT_KEY, slot);
+        file.atomicSave(() -> file.config().set(SETTINGS_SLOT_KEY, slot));
     }
 
     /**

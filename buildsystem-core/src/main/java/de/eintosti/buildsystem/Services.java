@@ -36,6 +36,7 @@ import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.StorageBackend;
 import de.eintosti.buildsystem.storage.StorageMigrator;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.storage.yaml.YamlSetupStorage;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.WorldPrompts;
@@ -112,9 +113,10 @@ public final class Services {
                 new FolderStorageImpl(plugin, worldStorage, this, storageBackend.store(EntityKind.FOLDERS));
 
         this.navigatorCategoryRegistry = new NavigatorCategoryRegistryImpl(plugin, folderStorage);
+        YamlSetupStorage setupStorage = new YamlSetupStorage(plugin);
         this.worldStatusRegistry =
-                new WorldStatusRegistryImpl(plugin, navigatorCategoryRegistry, messages, worldStorage);
-        this.customizableIcons = new CustomizableIcons(plugin);
+                new WorldStatusRegistryImpl(plugin, navigatorCategoryRegistry, messages, worldStorage, setupStorage);
+        this.customizableIcons = new CustomizableIcons(setupStorage);
 
         this.customBlockManager = new CustomBlockManager(plugin, taskScheduler, worldStorage);
         (this.playerService = new PlayerServiceImpl(
