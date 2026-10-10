@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.listener.navigator;
 
-import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XPotion;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.inventory.XInventoryView;
@@ -28,9 +27,7 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.navigator.NavigatorService;
@@ -53,11 +50,9 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class NavigatorListener implements Listener {
@@ -71,7 +66,6 @@ public class NavigatorListener implements Listener {
     private final NavigatorItems navigatorItems;
     private final Messages messages;
     private final Menus menus;
-    private final ConfigService configService;
     private final PlayerService playerService;
 
     public NavigatorListener(
@@ -81,7 +75,6 @@ public class NavigatorListener implements Listener {
             NavigatorItems navigatorItems,
             Messages messages,
             Menus menus,
-            ConfigService configService,
             PlayerService playerService) {
         this.navigatorService = navigatorService;
         this.settingsManager = settingsManager;
@@ -89,7 +82,6 @@ public class NavigatorListener implements Listener {
         this.navigatorItems = navigatorItems;
         this.messages = messages;
         this.menus = menus;
-        this.configService = configService;
         this.playerService = playerService;
     }
 
@@ -117,7 +109,7 @@ public class NavigatorListener implements Listener {
                 return;
             }
             openNavigator(player);
-        } else if (isCloseNavigatorItem(player, itemStack)) {
+        } else if (navigatorItems.isBarrier(itemStack)) {
             event.setCancelled(true);
             navigatorService.closeNewNavigator(player);
         }
@@ -137,15 +129,7 @@ public class NavigatorListener implements Listener {
                 }
 
                 summonNewNavigator(player);
-                String findItemName = messages.getString("navigator_item", player);
-                ItemStack replaceItem = ItemBuilder.of(XMaterial.BARRIER)
-                        .name(messages.getString("barrier_item", player))
-                        .build();
-                navigatorItems.replace(
-                        player,
-                        findItemName,
-                        configService.current().settings().navigator().item(),
-                        replaceItem);
+                navigatorItems.replace(player, navigatorItems::is, navigatorItems.createBarrier(player));
             }
         }
     }
@@ -186,7 +170,7 @@ public class NavigatorListener implements Listener {
             return;
         }
 
-        if (isCloseNavigatorItem(player, player.getInventory().getItemInMainHand())) {
+        if (navigatorItems.isBarrier(player.getInventory().getItemInMainHand())) {
             event.setCancelled(true);
             navigatorService.closeNewNavigator(player);
             return;
@@ -254,32 +238,8 @@ public class NavigatorListener implements Listener {
             return;
         }
 
-        if (isCloseNavigatorItem(player, event.getItemDrop().getItemStack())) {
+        if (navigatorItems.isBarrier(event.getItemDrop().getItemStack())) {
             event.setCancelled(true);
         }
-    }
-
-    /**
-     * Checks if the given item is the item that is used to close the {@link NavigatorType#NEW} navigator.
-     *
-     * @param player The player used to get the item name
-     * @param itemStack The item stack to check
-     * @return {@code true} if the item is the navigator close item, {@code false} otherwise
-     */
-    private boolean isCloseNavigatorItem(Player player, @Nullable ItemStack itemStack) {
-        if (itemStack == null || itemStack.getType() == Material.AIR) {
-            return false;
-        }
-
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null || !itemMeta.hasDisplayName()) {
-            return false;
-        }
-
-        if (XMaterial.matchXMaterial(itemStack) != XMaterial.BARRIER) {
-            return false;
-        }
-
-        return itemMeta.getDisplayName().equals(messages.getString("barrier_item", player));
     }
 }
