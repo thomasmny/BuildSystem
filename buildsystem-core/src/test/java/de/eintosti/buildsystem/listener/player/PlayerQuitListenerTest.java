@@ -52,6 +52,8 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerQuitEvent.QuitReason;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -123,6 +125,52 @@ class PlayerQuitListenerTest {
 
         assertTrue(player.getInventory().contains(Material.DIAMOND, 3));
         assertEquals(GameMode.CREATIVE, player.getGameMode());
+    }
+
+    @Test
+    void quittingInBuildModeInsideAnArchiveWorld_restoresTheInventory() {
+        enterArchiveWorld();
+        buildPlayer.getCachedValues().saveBuildState(player);
+
+        quit();
+
+        assertTrue(player.getInventory().contains(Material.DIAMOND, 3));
+        assertEquals(GameMode.CREATIVE, player.getGameMode());
+    }
+
+    @Test
+    void enteringArchiveModeTwice_keepsTheFirstSnapshot() {
+        player.getInventory().addItem(new ItemStack(Material.DIAMOND, 3));
+        PluginConfig.Settings.Archive archive = new PluginConfig.Settings.Archive(false, true, GameMode.ADVENTURE);
+        ArchiveMode.enter(player, buildPlayer.getCachedValues(), archive);
+        ArchiveMode.enter(player, buildPlayer.getCachedValues(), archive);
+
+        quit();
+
+        assertTrue(player.getInventory().contains(Material.DIAMOND, 3));
+    }
+
+    @Test
+    void quitting_keepsAnInvisibilityPotion() {
+        player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 600, 0));
+
+        quit();
+
+        assertTrue(player.hasPotionEffect(PotionEffectType.INVISIBILITY));
+    }
+
+    @Test
+    void quitting_removesTheEndlessArchiveInvisibilityLeftByEarlierVersions() {
+        player.addPotionEffect(
+                new PotionEffect(PotionEffectType.INVISIBILITY, PotionEffect.INFINITE_DURATION, 0, false, false));
+
+        quit();
+
+        assertFalse(player.hasPotionEffect(PotionEffectType.INVISIBILITY));
+    }
+
+    private void quit() {
+        listener.onPlayerQuit(new PlayerQuitEvent(player, (Component) null, QuitReason.DISCONNECTED));
     }
 
     @Test

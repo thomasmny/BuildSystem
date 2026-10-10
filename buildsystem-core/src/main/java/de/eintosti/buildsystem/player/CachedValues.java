@@ -102,10 +102,17 @@ public class CachedValues {
         this.archiveArmor = player.getInventory().getArmorContents();
     }
 
+    public boolean hasArchiveState() {
+        return archiveGameMode != null;
+    }
+
     /**
      * Restores the state captured by {@link #saveArchiveState(Player)}, if any, and clears the snapshot.
+     *
+     * @return Whether there was a snapshot to restore
      */
-    public void resetArchiveStateIfPresent(Player player) {
+    public boolean resetArchiveStateIfPresent(Player player) {
+        boolean present = hasArchiveState();
         if (this.archiveGameMode != null) {
             player.setGameMode(archiveGameMode);
             this.archiveGameMode = null;
@@ -121,6 +128,7 @@ public class CachedValues {
             player.getInventory().setArmorContents(archiveArmor);
             this.archiveArmor = null;
         }
+        return present;
     }
 
     public void resetCachedValues(Player player) {

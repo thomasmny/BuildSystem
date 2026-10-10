@@ -38,10 +38,14 @@ final class ArchiveMode {
 
     /**
      * Snapshots the player's gamemode, inventory and armor, then clears them and applies the archive settings. The
-     * snapshot is handed back by {@link CachedValues#resetArchiveStateIfPresent(Player)}.
+     * snapshot is handed back by {@link CachedValues#resetArchiveStateIfPresent(Player)}. Does nothing for a player
+     * already in archive mode, whose snapshot would otherwise be replaced by the emptied inventory.
      */
     @SuppressWarnings("deprecation")
     static void enter(Player player, CachedValues cachedValues, PluginConfig.Settings.Archive archive) {
+        if (cachedValues.hasArchiveState()) {
+            return;
+        }
         cachedValues.saveArchiveState(player);
 
         PlayerInventory playerInventory = player.getInventory();
@@ -71,13 +75,26 @@ final class ArchiveMode {
      * Hands back what {@link #enter} took and makes the player visible again. Safe to call for a player who is not in
      * archive mode. Called before the player quits as well, so the endless invisibility is never saved into their
      * player data.
+     *
+     * <p>Only the archive's own invisibility is removed: endless, without particles, level one. Earlier versions saved
+     * it into player data, so it is also removed from players who carry it without a snapshot. Any other invisibility,
+     * such as a potion, is left alone.
      */
     @SuppressWarnings("deprecation")
     static void exit(Player player, CachedValues cachedValues, SettingsService settingsService) {
         cachedValues.resetArchiveStateIfPresent(player);
+        PotionEffect invisibility = player.getPotionEffect(XPotion.INVISIBILITY.get());
+        if (invisibility == null || !isArchiveInvisibility(invisibility)) {
+            return;
+        }
+
         player.removePotionEffect(XPotion.INVISIBILITY.get());
         Bukkit.getOnlinePlayers().stream()
                 .filter(pl -> !settingsService.getSettings(pl).isHidePlayers())
                 .forEach(pl -> pl.showPlayer(player));
+    }
+
+    private static boolean isArchiveInvisibility(PotionEffect effect) {
+        return effect.isInfinite() && !effect.hasParticles() && effect.getAmplifier() == 0;
     }
 }
