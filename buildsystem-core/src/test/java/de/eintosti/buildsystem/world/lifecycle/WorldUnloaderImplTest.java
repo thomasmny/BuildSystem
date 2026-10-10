@@ -33,7 +33,7 @@ import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
-import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
+import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.List;
@@ -92,7 +92,7 @@ class WorldUnloaderImplTest {
                 UUID.randomUUID(),
                 name,
                 BuildWorldType.NORMAL,
-                new WorldDataBuilder(name).withStatus(TestData.NOT_STARTED).build(),
+                WorldDataSchema.create(name, TestData.NOT_STARTED),
                 null,
                 List.of(),
                 1L,

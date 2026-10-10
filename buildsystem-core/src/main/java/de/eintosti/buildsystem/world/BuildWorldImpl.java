@@ -34,7 +34,7 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.HeadProfileSource;
 import de.eintosti.buildsystem.world.builder.BuildersImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
-import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
+import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import de.eintosti.buildsystem.world.lifecycle.WorldLoaderImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldTeleporterImpl;
@@ -114,30 +114,27 @@ public final class BuildWorldImpl implements BuildWorld, HeadProfileSource {
         boolean buildersEnabled = privateWorld
                 ? defaults.buildersEnabled().privateBuilders()
                 : defaults.buildersEnabled().publicBuilders();
-        WorldDataBuilder builder = new WorldDataBuilder(name)
-                .withVisibility(Visibility.matchVisibility(privateWorld))
-                .withStatus(context.statusRegistry().getDefault())
-                .withMaterial(
-                        privateWorld
-                                ? Material.PLAYER_HEAD
-                                : context.customizableIcons().getIcon(worldType))
-                .withPermission(permission)
-                .withDifficulty(defaults.difficulty())
-                .withBlockBreaking(defaults.blockBreaking())
-                .withBlockInteractions(defaults.blockInteractions())
-                .withBlockPlacement(defaults.blockPlacement())
-                .withExplosions(defaults.explosions())
-                .withMobAi(defaults.mobAi())
-                .withPhysics(defaults.physics())
-                .withBuildersEnabled(buildersEnabled)
-                .withPermissionOverrideEnabled(
-                        () -> context.configService().current().folder().overridePermissions())
-                .withProjectOverrideEnabled(
-                        () -> context.configService().current().folder().overrideProjects());
+        WorldDataImpl data =
+                WorldDataSchema.create(name, context.statusRegistry().getDefault());
+        data.set(WorldDataKey.VISIBILITY, Visibility.matchVisibility(privateWorld));
+        data.set(
+                WorldDataKey.MATERIAL,
+                privateWorld
+                        ? Material.PLAYER_HEAD
+                        : context.customizableIcons().getIcon(worldType));
+        data.set(WorldDataKey.PERMISSION, permission);
+        data.set(WorldDataKey.DIFFICULTY, defaults.difficulty());
+        data.set(WorldDataKey.BLOCK_BREAKING, defaults.blockBreaking());
+        data.set(WorldDataKey.BLOCK_INTERACTIONS, defaults.blockInteractions());
+        data.set(WorldDataKey.BLOCK_PLACEMENT, defaults.blockPlacement());
+        data.set(WorldDataKey.EXPLOSIONS, defaults.explosions());
+        data.set(WorldDataKey.MOB_AI, defaults.mobAi());
+        data.set(WorldDataKey.PHYSICS, defaults.physics());
+        data.set(WorldDataKey.BUILDERS_ENABLED, buildersEnabled);
         for (PhysicsCategory category : PhysicsCategory.values()) {
-            builder.withPhysicsCategory(category, defaults.physicsException(category));
+            data.set(category.key(), defaults.physicsException(category));
         }
-        return builder.build();
+        return data;
     }
 
     public BuildWorldImpl(
@@ -161,7 +158,7 @@ public final class BuildWorldImpl implements BuildWorld, HeadProfileSource {
         this.customGenerator = customGenerator;
         this.folder = folder;
 
-        this.worldData.setFolderResolver(this::getFolder);
+        this.worldData.setOverride(this::folderOverride);
         this.worldData.setStatusChangeListener((previousStatus, newStatus) -> Bukkit.getServer()
                 .getPluginManager()
                 .callEvent(new BuildWorldStatusChangeEvent(this, previousStatus, newStatus)));
@@ -178,6 +175,24 @@ public final class BuildWorldImpl implements BuildWorld, HeadProfileSource {
      */
     public Optional<World> getWorld() {
         return Optional.ofNullable(WorldNames.bukkitWorld(name));
+    }
+
+    /**
+     * {@return the folder's permission or project while the config lets folders override them, or {@code null}}
+     */
+    private @Nullable Object folderOverride(WorldDataKey<?> key) {
+        Folder assigned = this.folder;
+        if (assigned == null) {
+            return null;
+        }
+        PluginConfig.Folder config = context.configService().current().folder();
+        if (key.equals(WorldDataKey.PERMISSION) && config.overridePermissions()) {
+            return assigned.getPermission();
+        }
+        if (key.equals(WorldDataKey.PROJECT) && config.overrideProjects()) {
+            return assigned.getProject();
+        }
+        return null;
     }
 
     @Override

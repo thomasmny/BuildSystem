@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
+import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.bukkit.World;
@@ -66,9 +67,7 @@ class BlockPhysicsListenerTest {
 
     @BeforeEach
     void setUp() {
-        data = new WorldDataImpl.WorldDataBuilder("world")
-                .withStatus(TestData.NOT_STARTED)
-                .build();
+        data = WorldDataSchema.create("world", TestData.NOT_STARTED);
         BuildWorld buildWorld = mock(BuildWorld.class);
         when(buildWorld.getData()).thenReturn(data);
         WorldStorage worldStorage = mock(WorldStorage.class);

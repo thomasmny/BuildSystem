@@ -23,9 +23,10 @@ import static org.mockito.Mockito.when;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
-import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
+import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,16 +52,12 @@ class BuildWorldImplTest {
     }
 
     private BuildWorldImpl world(String name, UUID uuid) {
-        WorldDataImpl data = new WorldDataBuilder(name)
-                .withStatus(TestData.NOT_STARTED)
-                .withDifficulty(Difficulty.NORMAL)
-                .withMaterial(Material.GRASS_BLOCK)
-                .withPermission("-")
-                .withProject("-")
-                .withVisibility(Visibility.EVERYONE)
-                .withPermissionOverrideEnabled(() -> false)
-                .withProjectOverrideEnabled(() -> false)
-                .build();
+        WorldDataImpl data = WorldDataSchema.create(name, TestData.NOT_STARTED);
+        data.set(WorldDataKey.DIFFICULTY, Difficulty.NORMAL);
+        data.set(WorldDataKey.MATERIAL, Material.GRASS_BLOCK);
+        data.set(WorldDataKey.PERMISSION, "-");
+        data.set(WorldDataKey.PROJECT, "-");
+        data.set(WorldDataKey.VISIBILITY, Visibility.EVERYONE);
         return new BuildWorldImpl(
                 context,
                 uuid,

@@ -18,173 +18,75 @@
 package de.eintosti.buildsystem.world.data;
 
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
-import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
-import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
-import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.world.WorldNames;
-import de.eintosti.buildsystem.world.data.type.ConfigurableProperty;
-import de.eintosti.buildsystem.world.data.type.Overridable;
-import de.eintosti.buildsystem.world.data.type.PersistentProperty;
 import java.util.Collections;
-import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import org.bukkit.Difficulty;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+/**
+ * A world's settings, one value per {@link WorldDataSchema} key. Created through {@link WorldDataSchema#create}.
+ */
 @NullMarked
 public class WorldDataImpl implements WorldData {
 
-    /**
-     * Default values for the persisted world settings. These are the single source of truth for both world creation
-     * (the {@link WorldDataBuilder} field initializers) and deserialization ({@code WorldCodec} passes them to
-     * {@code getBoolean}/{@code getLong}/{@code getInt} so a key absent from disk restores the same value a freshly
-     * created world would have). Keeping them here keeps the two paths from drifting apart.
-     */
-    public static final boolean DEFAULT_BLOCK_BREAKING = true;
-
-    public static final boolean DEFAULT_BLOCK_INTERACTIONS = true;
-    public static final boolean DEFAULT_BLOCK_PLACEMENT = true;
-    public static final boolean DEFAULT_BUILDERS_ENABLED = false;
-    public static final boolean DEFAULT_EXPLOSIONS = true;
-    public static final boolean DEFAULT_MOB_AI = true;
-    public static final boolean DEFAULT_PHYSICS = true;
-
-    /**
-     * Unlike the other defaults, the {@link PhysicsCategory} values are seeded from the
-     * {@code world.defaults.physics-exceptions} config section at both creation and deserialization; this constant is
-     * only the fallback for builders that were never seeded.
-     */
-    public static final boolean DEFAULT_PHYSICS_CATEGORY = false;
-
-    public static final boolean DEFAULT_PINNED = false;
-    public static final int DEFAULT_TIME_SINCE_BACKUP = 0;
-
-    /** Sentinel for the {@code last-*} timestamps meaning "never". */
-    public static final long DEFAULT_TIMESTAMP = -1L;
-
-    private final Map<String, PersistentProperty<?>> data = new HashMap<>();
+    private final Map<WorldDataKey<?>, Object> values;
 
     private String worldName;
-    private @Nullable Supplier<@Nullable Folder> folderResolver;
+    private Function<WorldDataKey<?>, @Nullable Object> override = key -> null;
+    private @Nullable BiConsumer<BuildWorldStatus, BuildWorldStatus> statusChangeListener;
 
-    private WorldDataImpl(WorldDataBuilder builder) {
-        this.worldName = builder.worldName;
-
-        register(WorldDataKey.CUSTOM_SPAWN, new ConfigurableProperty<>(builder.customSpawn));
-        register(
-                WorldDataKey.PERMISSION,
-                new ConfigurableProperty<>(builder.permission)
-                        .withCapability(
-                                Overridable.class,
-                                folderOverride(builder.permissionOverrideEnabled, Folder::getPermission)));
-        register(
-                WorldDataKey.PROJECT,
-                new ConfigurableProperty<>(builder.project)
-                        .withCapability(
-                                Overridable.class, folderOverride(builder.projectOverrideEnabled, Folder::getProject)));
-
-        register(
-                WorldDataKey.DIFFICULTY,
-                new ConfigurableProperty<>(builder.difficulty).withConfigFormatter(Difficulty::name));
-        register(
-                WorldDataKey.MATERIAL,
-                new ConfigurableProperty<>(builder.material).withConfigFormatter(Material::name));
-        register(WorldDataKey.ICON_SKULL_TEXTURE, new ConfigurableProperty<>(builder.iconSkullTexture));
-        register(
-                WorldDataKey.STATUS,
-                new ConfigurableProperty<>(Objects.requireNonNull(builder.status, "status"))
-                        .withConfigFormatter(BuildWorldStatus::getId));
-
-        register(WorldDataKey.BLOCK_BREAKING, new ConfigurableProperty<>(builder.blockBreaking));
-        register(WorldDataKey.BLOCK_INTERACTIONS, new ConfigurableProperty<>(builder.blockInteractions));
-        register(WorldDataKey.BLOCK_PLACEMENT, new ConfigurableProperty<>(builder.blockPlacement));
-        register(WorldDataKey.BUILDERS_ENABLED, new ConfigurableProperty<>(builder.buildersEnabled));
-        register(WorldDataKey.EXPLOSIONS, new ConfigurableProperty<>(builder.explosions));
-        register(WorldDataKey.MOB_AI, new ConfigurableProperty<>(builder.mobAi));
-        register(WorldDataKey.PHYSICS, new ConfigurableProperty<>(builder.physics));
-        for (PhysicsCategory category : PhysicsCategory.values()) {
-            register(
-                    category.key(),
-                    new ConfigurableProperty<>(
-                            builder.physicsCategories.getOrDefault(category, DEFAULT_PHYSICS_CATEGORY)));
-        }
-        register(WorldDataKey.PINNED, new ConfigurableProperty<>(builder.pinned));
-        register(
-                WorldDataKey.VISIBILITY,
-                new ConfigurableProperty<>(builder.visibility).withConfigFormatter(Visibility::name));
-
-        register(WorldDataKey.TIME_SINCE_BACKUP, new ConfigurableProperty<>(builder.timeSinceBackup));
-        register(WorldDataKey.LAST_EDITED, new ConfigurableProperty<>(builder.lastEdited));
-        register(WorldDataKey.LAST_LOADED, new ConfigurableProperty<>(builder.lastLoaded));
-        register(WorldDataKey.LAST_UNLOADED, new ConfigurableProperty<>(builder.lastUnloaded));
+    WorldDataImpl(String worldName, Map<WorldDataKey<?>, Object> values) {
+        this.worldName = worldName;
+        this.values = values;
     }
 
-    public void setFolderResolver(Supplier<@Nullable Folder> resolver) {
-        this.folderResolver = resolver;
+    /**
+     * Sets where overriding values come from, such as a folder's permission. An override only changes what
+     * {@link #get} returns; the world's own value is kept and is what gets saved.
+     *
+     * @param override Returns the value in effect instead of the world's own, or {@code null} for none
+     */
+    public void setOverride(Function<WorldDataKey<?>, @Nullable Object> override) {
+        this.override = override;
     }
 
     public void setStatusChangeListener(BiConsumer<BuildWorldStatus, BuildWorldStatus> listener) {
-        ((ConfigurableProperty<BuildWorldStatus>) property(WorldDataKey.STATUS)).setChangeListener(listener);
+        this.statusChangeListener = listener;
     }
 
-    private @Nullable Folder getAssignedFolder() {
-        Supplier<@Nullable Folder> resolver = this.folderResolver;
-        return resolver != null ? resolver.get() : null;
-    }
-
-    /**
-     * Binds a key to the property holding its value. The shared type parameter is what makes the registration block
-     * above compile-checked: pairing a key with a property of the wrong type is a compile error, not a corrupted read
-     * somewhere else.
-     */
-    private <T> void register(WorldDataKey<T> key, ConfigurableProperty<T> property) {
-        this.data.put(key.id(), property);
-    }
-
-    /**
-     * {@return the property registered for the given key} The map is heterogeneous, so the cast cannot be expressed to
-     * the compiler; it is sound because {@link #register(WorldDataKey, ConfigurableProperty)} is the only writer and
-     * only accepts a matching pair. Confining the cast here keeps it the single unchecked spot in this class.
-     */
-    @SuppressWarnings("unchecked")
-    private <T> PersistentProperty<T> property(WorldDataKey<T> key) {
-        PersistentProperty<?> property = this.data.get(key.id());
-        if (property == null) {
+    private void requireKnown(WorldDataKey<?> key) {
+        if (!values.containsKey(key)) {
             throw new IllegalArgumentException("Unknown world data key: " + key.id());
         }
-        return (PersistentProperty<T>) property;
-    }
-
-    /**
-     * Builds an {@link Overridable} capability that draws its override value from this world's assigned folder, or
-     * {@code null} when the world has no folder.
-     */
-    private Overridable<String> folderOverride(BooleanSupplier enabled, Function<Folder, @Nullable String> extractor) {
-        return new Overridable<>(enabled, () -> {
-            Folder folder = getAssignedFolder();
-            return folder != null ? extractor.apply(folder) : null;
-        });
     }
 
     @Override
     public <T> T get(WorldDataKey<T> key) {
-        return key.type().cast(property(key).get());
+        requireKnown(key);
+        Object overriding = override.apply(key);
+        return key.type().cast(overriding != null ? overriding : values.get(key));
     }
 
     @Override
     public <T> void set(WorldDataKey<T> key, T value) {
-        property(key).set(value);
+        requireKnown(key);
+        Object previous = values.put(key, key.type().cast(Objects.requireNonNull(value, "value")));
+        BiConsumer<BuildWorldStatus, BuildWorldStatus> listener = this.statusChangeListener;
+        if (listener != null && key.equals(WorldDataKey.STATUS) && !value.equals(previous)) {
+            listener.accept((BuildWorldStatus) previous, (BuildWorldStatus) value);
+        }
+    }
+
+    /** {@return the world's own values, without overrides, as they are saved} */
+    public Map<WorldDataKey<?>, Object> storedValues() {
+        return Collections.unmodifiableMap(values);
     }
 
     @Override
@@ -194,172 +96,5 @@ public class WorldDataImpl implements WorldData {
 
     public void setWorldName(String worldName) {
         this.worldName = worldName;
-    }
-
-    public Map<String, PersistentProperty<?>> getAllData() {
-        return Collections.unmodifiableMap(data);
-    }
-
-    public static class WorldDataBuilder {
-
-        private final String worldName;
-
-        private String customSpawn = "";
-        private String permission = "-";
-        private String project = "-";
-        private Difficulty difficulty = Difficulty.PEACEFUL;
-        private Material material = Material.GRASS_BLOCK;
-        private String iconSkullTexture = "";
-        private @Nullable BuildWorldStatus status;
-        private boolean blockBreaking = DEFAULT_BLOCK_BREAKING;
-        private boolean blockInteractions = DEFAULT_BLOCK_INTERACTIONS;
-        private boolean blockPlacement = DEFAULT_BLOCK_PLACEMENT;
-        private boolean buildersEnabled = DEFAULT_BUILDERS_ENABLED;
-        private boolean explosions = DEFAULT_EXPLOSIONS;
-        private boolean mobAi = DEFAULT_MOB_AI;
-        private boolean physics = DEFAULT_PHYSICS;
-        private final Map<PhysicsCategory, Boolean> physicsCategories = new EnumMap<>(PhysicsCategory.class);
-        private boolean pinned = DEFAULT_PINNED;
-        private Visibility visibility = Visibility.EVERYONE;
-        private int timeSinceBackup = DEFAULT_TIME_SINCE_BACKUP;
-        private long lastEdited = DEFAULT_TIMESTAMP;
-        private long lastLoaded = DEFAULT_TIMESTAMP;
-        private long lastUnloaded = DEFAULT_TIMESTAMP;
-        BooleanSupplier permissionOverrideEnabled = () -> false;
-        BooleanSupplier projectOverrideEnabled = () -> false;
-
-        /**
-         * Creates a new builder for {@link WorldData}.
-         *
-         * @param worldName The name of the world, which is required.
-         */
-        public WorldDataBuilder(String worldName) {
-            this.worldName = Objects.requireNonNull(worldName, "World name cannot be null");
-        }
-
-        /**
-         * Builds the {@link WorldDataImpl} instance from this builder's configured values.
-         *
-         * @return A new, fully-initialized {@link WorldDataImpl}. The returned instance is mutable — its properties can
-         *     still be changed afterwards through the {@code set*} methods.
-         */
-        public WorldDataImpl build() {
-            return new WorldDataImpl(this);
-        }
-
-        public WorldDataBuilder withCustomSpawn(String customSpawn) {
-            this.customSpawn = customSpawn;
-            return this;
-        }
-
-        public WorldDataBuilder withPermission(String permission) {
-            this.permission = permission;
-            return this;
-        }
-
-        public WorldDataBuilder withProject(String project) {
-            this.project = project;
-            return this;
-        }
-
-        public WorldDataBuilder withDifficulty(Difficulty difficulty) {
-            this.difficulty = difficulty;
-            return this;
-        }
-
-        public WorldDataBuilder withMaterial(Material material) {
-            this.material = material;
-            return this;
-        }
-
-        public WorldDataBuilder withIconSkullTexture(String iconSkullTexture) {
-            this.iconSkullTexture = iconSkullTexture;
-            return this;
-        }
-
-        public WorldDataBuilder withStatus(BuildWorldStatus status) {
-            this.status = status;
-            return this;
-        }
-
-        public WorldDataBuilder withBlockBreaking(boolean blockBreaking) {
-            this.blockBreaking = blockBreaking;
-            return this;
-        }
-
-        public WorldDataBuilder withBlockInteractions(boolean blockInteractions) {
-            this.blockInteractions = blockInteractions;
-            return this;
-        }
-
-        public WorldDataBuilder withBlockPlacement(boolean blockPlacement) {
-            this.blockPlacement = blockPlacement;
-            return this;
-        }
-
-        public WorldDataBuilder withBuildersEnabled(boolean buildersEnabled) {
-            this.buildersEnabled = buildersEnabled;
-            return this;
-        }
-
-        public WorldDataBuilder withExplosions(boolean explosions) {
-            this.explosions = explosions;
-            return this;
-        }
-
-        public WorldDataBuilder withMobAi(boolean mobAi) {
-            this.mobAi = mobAi;
-            return this;
-        }
-
-        public WorldDataBuilder withPhysics(boolean physics) {
-            this.physics = physics;
-            return this;
-        }
-
-        public WorldDataBuilder withPhysicsCategory(PhysicsCategory category, boolean allowed) {
-            this.physicsCategories.put(category, allowed);
-            return this;
-        }
-
-        public WorldDataBuilder withPinned(boolean pinned) {
-            this.pinned = pinned;
-            return this;
-        }
-
-        public WorldDataBuilder withVisibility(Visibility visibility) {
-            this.visibility = visibility;
-            return this;
-        }
-
-        public WorldDataBuilder withTimeSinceBackup(int timeSinceBackup) {
-            this.timeSinceBackup = timeSinceBackup;
-            return this;
-        }
-
-        public WorldDataBuilder withLastEdited(long lastEdited) {
-            this.lastEdited = lastEdited;
-            return this;
-        }
-
-        public WorldDataBuilder withLastLoaded(long lastLoaded) {
-            this.lastLoaded = lastLoaded;
-            return this;
-        }
-
-        public WorldDataBuilder withLastUnloaded(long lastUnloaded) {
-            this.lastUnloaded = lastUnloaded;
-            return this;
-        }
-
-        public WorldDataBuilder withPermissionOverrideEnabled(BooleanSupplier supplier) {
-            this.permissionOverrideEnabled = supplier;
-            return this;
-        }
-
-        public WorldDataBuilder withProjectOverrideEnabled(BooleanSupplier supplier) {
-            this.projectOverrideEnabled = supplier;
-            return this;
-        }
     }
 }

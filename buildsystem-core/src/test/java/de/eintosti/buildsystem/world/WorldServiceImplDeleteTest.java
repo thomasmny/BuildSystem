@@ -29,9 +29,10 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
-import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
+import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -77,16 +78,12 @@ class WorldServiceImplDeleteTest {
     }
 
     private BuildWorldImpl registeredWorld(String name) {
-        WorldDataImpl data = new WorldDataBuilder(name)
-                .withStatus(TestData.NOT_STARTED)
-                .withDifficulty(Difficulty.NORMAL)
-                .withMaterial(Material.GRASS_BLOCK)
-                .withPermission("-")
-                .withProject("-")
-                .withVisibility(Visibility.EVERYONE)
-                .withPermissionOverrideEnabled(() -> false)
-                .withProjectOverrideEnabled(() -> false)
-                .build();
+        WorldDataImpl data = WorldDataSchema.create(name, TestData.NOT_STARTED);
+        data.set(WorldDataKey.DIFFICULTY, Difficulty.NORMAL);
+        data.set(WorldDataKey.MATERIAL, Material.GRASS_BLOCK);
+        data.set(WorldDataKey.PERMISSION, "-");
+        data.set(WorldDataKey.PROJECT, "-");
+        data.set(WorldDataKey.VISIBILITY, Visibility.EVERYONE);
         BuildWorldImpl buildWorld = new BuildWorldImpl(
                 services.worldContext(),
                 UUID.randomUUID(),
