@@ -14,10 +14,6 @@ project.description = "Core"
 
 repositories {
     maven {
-        name = "AuthLib"
-        url = uri("https://libraries.minecraft.net/")
-    }
-    maven {
         name = "EngineHub"
         url = uri("https://maven.enginehub.org/repo/")
     }
@@ -35,10 +31,6 @@ repositories {
         name = "PaperMC"
         url = uri("https://repo.papermc.io/repository/maven-public/")
     }
-    maven {
-        name = "Modrinth"
-        url = uri("https://api.modrinth.com/maven")
-    }
     modrinthMavenWorkaround(
         "axiom-paper-plugin",
         "6.0.1+26.3",
@@ -53,16 +45,12 @@ dependencies {
     compileOnlyApi(libs.jspecify)
 
     compileOnly(libs.spigot)
-    // authlib and worldedit strictly pin Guava/Gson to versions older than spigot-api ships ("Mojang provides
-    // Guava"). All three are compileOnly and the server provides these libs at runtime, so drop the stale pins
-    // and let spigot-api's versions resolve.
-    compileOnly(libs.authlib) {
-        exclude(group = "com.google.guava")
-        exclude(group = "com.google.code.gson")
-    }
     compileOnly(libs.essentialsx) { isTransitive = false }
     compileOnly(libs.luckperms)
     compileOnly(libs.placeholderapi)
+    // worldedit strictly pins Guava/Gson to versions older than spigot-api ships ("Mojang provides Guava"). It is
+    // compileOnly and the server provides these libs at runtime, so drop the stale pins and let spigot-api's versions
+    // resolve.
     compileOnly(libs.worldedit) {
         exclude(group = "com.google.guava")
         exclude(group = "com.google.code.gson")
@@ -117,12 +105,9 @@ tasks.named<ShadowJar>("shadowJar") {
     relocate("com.cryptomorin.xseries", "$shadePath.xseries")
     relocate("dev.dewy.nbt", "$shadePath.nbt")
     relocate("fr.mrmicky.fastboard", "$shadePath.fastboard")
-    relocate("io.netty", "$shadePath.netty")
     relocate("io.papermc.lib", "$shadePath.paperlib")
     relocate("net.lingala.zip4j", "$shadePath.zip4j")
-    relocate("org.apache.commons.codec", "$shadePath.apache.commons.codec")
     relocate("org.apache.commons.logging", "$shadePath.apache.commons.logging")
-    relocate("org.apache.http", "$shadePath.apache.http")
     relocate("org.apache.sshd", "$shadePath.sshd")
     relocate("net.i2p.crypto", "$shadePath.eddsa")
     relocate("org.bstats", "$shadePath.bstats")
@@ -136,13 +121,6 @@ tasks.runServer {
 
 tasks.named<Jar>("jar") {
     archiveClassifier.set("unshaded")
-}
-
-tasks.processResources {
-    val props = mapOf("version" to project.version)
-    filesMatching("plugin.yml") {
-        expand(props)
-    }
 }
 
 bukkit {

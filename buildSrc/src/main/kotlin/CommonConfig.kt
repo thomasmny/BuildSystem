@@ -17,14 +17,6 @@ fun Project.applyCommonConfiguration() {
             name = "Spigot"
             url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
         }
-        maven {
-            name = "PaperMC"
-            url = uri("https://repo.papermc.io/repository/maven-public/")
-        }
-        maven {
-            name = "OSS Sonatype Snapshots"
-            url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
-        }
     }
 
     plugins.withId("java") {
