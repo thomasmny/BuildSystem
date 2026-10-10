@@ -189,8 +189,11 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
         }
 
         // Created here rather than by the copy, so the name is taken before this method returns: isNameTaken looks
-        // at the folder, and the world is only registered once the copy is done.
+        // at the folder, and the world is only registered once the copy is done. The import lists the folder as soon as
+        // the copy has written world data into it, so the name stays reserved until the world is registered or its
+        // folder is deleted again.
         File worldFile = FileUtils.worldFolder(worldName);
+        worldStorage.reserve(worldName);
         worldFile.mkdirs();
         return CompletableFuture.runAsync(
                         () -> {
@@ -214,7 +217,9 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
                     // Thrown by the world generation; a synchronous build() would have surfaced it to the caller.
                     if (throwable != null) {
                         context.logger().log(Level.SEVERE, "Failed to create world " + worldName, throwable);
+                        notifyAudience("worlds_creation_failed", Placeholders.of("%world%", worldName));
                     }
+                    folderDeleted.whenComplete((ignored, deleteFailure) -> worldStorage.release(worldName));
                 });
     }
 

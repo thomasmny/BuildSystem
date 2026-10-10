@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,6 +67,7 @@ public class WorldStorageImpl implements WorldStorage {
 
     private final ConcurrentHashMap<UUID, BuildWorld> buildWorldsByUuid;
     private final ConcurrentHashMap<String, UUID> uuidByName;
+    private final Set<String> pendingCreations = ConcurrentHashMap.newKeySet();
     private final Supplier<String> defaultNamespace;
     private final YamlEntityFile<BuildWorld> file;
 
@@ -284,7 +286,7 @@ public class WorldStorageImpl implements WorldStorage {
      */
     public List<String> unimportedWorldNames() {
         return FileUtils.dimensionWorldNames().stream()
-                .filter(name -> !worldExists(name))
+                .filter(name -> !worldExists(name) && !isBeingCreated(name))
                 .toList();
     }
 
@@ -293,7 +295,31 @@ public class WorldStorageImpl implements WorldStorage {
      * over, and an existing folder merged into.
      */
     public boolean isNameTaken(String worldName) {
-        return worldExists(worldName) || FileUtils.worldFolder(worldName).exists();
+        return worldExists(worldName)
+                || isBeingCreated(worldName)
+                || FileUtils.worldFolder(worldName).exists();
+    }
+
+    /**
+     * Holds the name of a world whose folder is being filled in the background, so the folder is not imported while it
+     * is half-copied.
+     */
+    public void reserve(String worldName) {
+        pendingCreations.add(WorldNames.id(worldName));
+    }
+
+    /**
+     * Frees a name held by {@link #reserve}.
+     */
+    public void release(String worldName) {
+        pendingCreations.remove(WorldNames.id(worldName));
+    }
+
+    /**
+     * {@return whether the world is still being created in the background}
+     */
+    public boolean isBeingCreated(String worldName) {
+        return pendingCreations.contains(WorldNames.id(worldName));
     }
 
     @Override

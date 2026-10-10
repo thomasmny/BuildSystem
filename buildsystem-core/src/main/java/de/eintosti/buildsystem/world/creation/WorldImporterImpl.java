@@ -93,6 +93,12 @@ public class WorldImporterImpl extends AbstractWorldCreator implements WorldImpo
 
     @Override
     public @Nullable BuildWorld build() {
+        // The folder of a world created from a template looks importable while the template is still copied into it.
+        if (worldStorage.isBeingCreated(worldName)) {
+            notifyAudience("worlds_world_exists");
+            return null;
+        }
+
         if (isDataVersionTooHigh()) {
             notifyAudience("worlds_import_newer_version", Placeholders.of("%world%", worldName));
             return null;
