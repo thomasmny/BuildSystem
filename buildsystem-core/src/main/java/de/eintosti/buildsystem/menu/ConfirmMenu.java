@@ -42,17 +42,25 @@ public class ConfirmMenu extends ButtonMenu {
     private final @Nullable ItemStack info;
 
     /**
+     * One side of the menu: the item shown and what clicking it does after the menu closes.
+     *
+     * @param item The item shown
+     * @param action Runs with the clicking player
+     */
+    public record Choice(ItemStack item, Consumer<Player> action) {}
+
+    /**
+     * @param confirm The confirm item and action
      * @param confirmPermission The permission the confirm click needs, or {@code null} for none
+     * @param cancel The cancel item and action
      * @param info The item shown in the middle, or {@code null} for a black pane
      */
     public ConfirmMenu(
             Messages messages,
             String title,
-            ItemStack confirmItem,
+            Choice confirm,
             @Nullable String confirmPermission,
-            Consumer<Player> onConfirm,
-            ItemStack cancelItem,
-            Consumer<Player> onCancel,
+            Choice cancel,
             @Nullable ItemStack info) {
         super(messages, 27, title);
         this.info = info;
@@ -60,22 +68,22 @@ public class ConfirmMenu extends ButtonMenu {
         register(
                 SLOT_CONFIRM,
                 MenuButton.builder()
-                        .render((player, inventory, slot) -> inventory.setItem(slot, confirmItem))
+                        .render((player, inventory, slot) -> inventory.setItem(slot, confirm.item()))
                         .permission(confirmPermission)
                         .onClick((player, event) -> {
                             player.closeInventory();
                             XSound.ENTITY_PLAYER_LEVELUP.play(player);
-                            onConfirm.accept(player);
+                            confirm.action().accept(player);
                         })
                         .build());
         register(
                 SLOT_CANCEL,
                 MenuButton.builder()
-                        .render((player, inventory, slot) -> inventory.setItem(slot, cancelItem))
+                        .render((player, inventory, slot) -> inventory.setItem(slot, cancel.item()))
                         .onClick((player, event) -> {
                             player.closeInventory();
                             XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-                            onCancel.accept(player);
+                            cancel.action().accept(player);
                         })
                         .build());
     }

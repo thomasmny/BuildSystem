@@ -128,19 +128,22 @@ public final class Menus {
         new ConfirmMenu(
                         messages,
                         messages.getString("restore_backup_title", player),
-                        ItemBuilder.of(XMaterial.LIME_DYE)
-                                .name(messages.getString("restore_backup_confirm_name", player))
-                                .lore(messages.getStringList(
-                                        "restore_backup_confirm_lore",
-                                        player,
-                                        Placeholders.of("%timestamp%", messages.formatDateTime(backup.creationTime()))))
-                                .build(),
+                        new ConfirmMenu.Choice(
+                                ItemBuilder.of(XMaterial.LIME_DYE)
+                                        .name(messages.getString("restore_backup_confirm_name", player))
+                                        .lore(messages.getStringList(
+                                                "restore_backup_confirm_lore",
+                                                player,
+                                                Placeholders.of(
+                                                        "%timestamp%", messages.formatDateTime(backup.creationTime()))))
+                                        .build(),
+                                p -> backup.owner().restoreBackup(backup, p)),
                         Permissions.BACKUP,
-                        p -> backup.owner().restoreBackup(backup, p),
-                        ItemBuilder.of(XMaterial.RED_DYE)
-                                .name(messages.getString("restore_backup_cancel_name", player))
-                                .build(),
-                        p -> {},
+                        new ConfirmMenu.Choice(
+                                ItemBuilder.of(XMaterial.RED_DYE)
+                                        .name(messages.getString("restore_backup_cancel_name", player))
+                                        .build(),
+                                p -> {}),
                         null)
                 .open(player);
     }
@@ -258,15 +261,17 @@ public final class Menus {
         new ConfirmMenu(
                         messages,
                         messages.getString("delete_title", player),
-                        ItemBuilder.of(XMaterial.LIME_DYE)
-                                .name(messages.getString("delete_world_confirm", player))
-                                .build(),
+                        new ConfirmMenu.Choice(
+                                ItemBuilder.of(XMaterial.LIME_DYE)
+                                        .name(messages.getString("delete_world_confirm", player))
+                                        .build(),
+                                p -> services.world().deleteWorld(p, buildWorld)),
                         null,
-                        p -> services.world().deleteWorld(p, buildWorld),
-                        ItemBuilder.of(XMaterial.RED_DYE)
-                                .name(messages.getString("delete_world_cancel", player))
-                                .build(),
-                        p -> messages.sendMessage(p, "worlds_delete_canceled", world),
+                        new ConfirmMenu.Choice(
+                                ItemBuilder.of(XMaterial.RED_DYE)
+                                        .name(messages.getString("delete_world_cancel", player))
+                                        .build(),
+                                p -> messages.sendMessage(p, "worlds_delete_canceled", world)),
                         ItemBuilder.of(XMaterial.FILLED_MAP)
                                 .name(messages.getString("delete_world_name", player, world))
                                 .lore(messages.getStringList("delete_world_name_lore", player))

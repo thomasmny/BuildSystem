@@ -100,11 +100,9 @@ class ConfirmMenuTest {
         return new ConfirmMenu(
                 mock(Messages.class),
                 "Title",
-                new ItemStack(Material.LIME_DYE),
+                new ConfirmMenu.Choice(new ItemStack(Material.LIME_DYE), p -> calls.add("confirm")),
                 permission,
-                p -> calls.add("confirm"),
-                new ItemStack(Material.RED_DYE),
-                p -> calls.add("cancel"),
+                new ConfirmMenu.Choice(new ItemStack(Material.RED_DYE), p -> calls.add("cancel")),
                 info);
     }
 
