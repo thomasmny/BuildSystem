@@ -40,24 +40,20 @@ public class WorldPermissionsImpl implements WorldPermissions {
 
     private final WorldContext context;
 
-    private final @Nullable BuildWorld buildWorld;
+    private final BuildWorld buildWorld;
 
-    private WorldPermissionsImpl(WorldContext context, @Nullable BuildWorld buildWorld) {
+    private WorldPermissionsImpl(WorldContext context, BuildWorld buildWorld) {
         this.context = context;
         this.buildWorld = buildWorld;
     }
 
     @Contract("_, _ -> new")
-    public static WorldPermissionsImpl of(WorldContext context, @Nullable BuildWorld buildWorld) {
+    public static WorldPermissionsImpl of(WorldContext context, BuildWorld buildWorld) {
         return new WorldPermissionsImpl(context, buildWorld);
     }
 
     @Override
     public boolean canEnter(Player player) {
-        if (buildWorld == null) {
-            return false;
-        }
-
         if (hasAdminPermission(player) || canBypassViewPermission(player)) {
             return true;
         }
@@ -86,10 +82,6 @@ public class WorldPermissionsImpl implements WorldPermissions {
     }
 
     private boolean evaluateModify(Player player, @Nullable WorldSetting setting) {
-        if (buildWorld == null) {
-            return true;
-        }
-
         Denial denial =
                 setting == null ? POLICY.mayModify(player, buildWorld) : POLICY.mayModify(player, buildWorld, setting);
         return denial == Denial.NONE;
@@ -103,12 +95,6 @@ public class WorldPermissionsImpl implements WorldPermissions {
         }
 
         if (hasAdminPermission(player)) {
-            return true;
-        }
-
-        if (buildWorld == null) {
-            // Most commands require the world to be non-null.
-            // Nevertheless, return true to allow a "world is null" message to be sent.
             return true;
         }
 
@@ -126,10 +112,6 @@ public class WorldPermissionsImpl implements WorldPermissions {
 
     @Override
     public boolean canBypassViewPermission(Player player) {
-        if (buildWorld == null) {
-            return false;
-        }
-
         WorldData worldData = buildWorld.getData();
         if (!worldData.get(WorldDataKey.STATUS).isBuildingAllowed()) {
             return player.hasPermission(Permissions.BYPASS_PERMISSION_ARCHIVE);
