@@ -48,5 +48,11 @@ public interface EntityStore {
      */
     void upsert(Map<String, Map<String, Object>> entries);
 
+    /**
+     * Replaces everything stored with the given entries in one write, which applies all of them or none, except on
+     * MongoDB.
+     */
+    void replaceAll(Map<String, Map<String, Object>> entries);
+
     void delete(String key);
 }

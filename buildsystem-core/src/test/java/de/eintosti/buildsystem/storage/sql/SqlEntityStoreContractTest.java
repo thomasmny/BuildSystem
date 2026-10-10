@@ -98,6 +98,18 @@ public abstract class SqlEntityStoreContractTest extends EntityStoreContractTest
     }
 
     @Test
+    void replaceAllFailingPartWay_keepsWhatWasThere() {
+        store("players").upsert(Map.of("kept", Map.of("n", "1")));
+        Map<String, Map<String, Object>> entries = new LinkedHashMap<>();
+        entries.put("added", Map.of("n", "2"));
+        entries.put(null, Map.of("n", "3"));
+
+        assertThrows(StorageException.class, () -> store("players").replaceAll(entries));
+
+        assertEquals(Map.of("kept", Map.of("n", "1")), store("players").loadAll());
+    }
+
+    @Test
     void connectionDroppedByTheServer_isOpenedAgain() {
         store("players").upsert(Map.of("before", Map.of("n", "1")));
         SqlDatabase raw = rawDatabase();

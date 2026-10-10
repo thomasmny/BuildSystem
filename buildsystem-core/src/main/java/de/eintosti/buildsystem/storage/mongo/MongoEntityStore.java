@@ -89,6 +89,17 @@ final class MongoEntityStore implements EntityStore {
         collection.bulkWrite(replacements);
     }
 
+    /**
+     * Deletes every document and then writes the entries, so like {@link #upsert}, a failure part way keeps what was
+     * done before it.
+     */
+    @Override
+    public void replaceAll(Map<String, Map<String, Object>> entries) {
+        entries.values().forEach(MongoEntityStore::checkFieldNames);
+        collection.deleteMany(new Document());
+        upsert(entries);
+    }
+
     @Override
     public void delete(String key) {
         collection.deleteOne(Filters.eq(ID, key));

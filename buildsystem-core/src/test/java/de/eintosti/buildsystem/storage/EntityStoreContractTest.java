@@ -291,6 +291,15 @@ public abstract class EntityStoreContractTest {
     }
 
     @Test
+    void replaceAll_leavesOnlyTheGivenEntries() {
+        store("players").upsert(Map.of("a", Map.of("n", "1"), "b", Map.of("n", "2")));
+
+        store("players").replaceAll(Map.of("c", Map.of("n", "3")));
+
+        assertEquals(Map.of("c", Map.of("n", "3")), store("players").loadAll());
+    }
+
+    @Test
     void hostileKeysAndValues_roundTripExactly() {
         // No dots: a key is always a UUID, and a dot would nest the entry in YAML.
         List<String> hostile = List.of(

@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.player;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.PlayerService;
-import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
@@ -66,7 +65,7 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public PlayerStorage getPlayerStorage() {
+    public PlayerStorageImpl getPlayerStorage() {
         return playerStorage;
     }
 

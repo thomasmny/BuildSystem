@@ -23,6 +23,8 @@ import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -39,7 +41,9 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -64,6 +68,18 @@ public class ConfigService {
      */
     public PluginConfig current() {
         return current;
+    }
+
+    /**
+     * {@return the storage settings as config.yml holds them now} Read from the file rather than the loaded config, so
+     * a connection block edited since the last reload is used.
+     *
+     * @throws IllegalArgumentException If a value is invalid
+     */
+    public PluginConfig.Storage.Database readStorageSettings() throws IOException, InvalidConfigurationException {
+        YamlConfiguration config = new YamlConfiguration();
+        config.load(new File(plugin.getDataFolder(), "config.yml"));
+        return StorageSettingsFactory.fromConfig(config).database();
     }
 
     /**

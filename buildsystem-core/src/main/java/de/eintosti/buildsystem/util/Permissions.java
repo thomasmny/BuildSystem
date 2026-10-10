@@ -107,6 +107,7 @@ public final class Permissions {
     public static final String SKULL = "buildsystem.skull";
     public static final String SPAWN = "buildsystem.spawn";
     public static final String SPEED = "buildsystem.speed";
+    public static final String STORAGE_MIGRATE = "buildsystem.storage.migrate";
     public static final String TOP = "buildsystem.top";
     public static final String UNIMPORT = "buildsystem.unimport";
     public static final String UPDATES = "buildsystem.updates";

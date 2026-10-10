@@ -128,6 +128,17 @@ public final class YamlEntityStore implements EntityStore {
     }
 
     @Override
+    public void replaceAll(Map<String, Map<String, Object>> entries) {
+        store.atomicSave(() -> {
+            store.config().set(rootKey, null);
+            if (migration != null) {
+                store.config().set(StorageMigration.VERSION_KEY, StorageMigration.CURRENT_VERSION);
+            }
+            entries.forEach((key, values) -> store.config().set(rootKey + "." + key, values));
+        });
+    }
+
+    @Override
     public void delete(String key) {
         store.atomicSave(() -> store.config().set(rootKey + "." + key, null));
     }

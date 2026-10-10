@@ -105,7 +105,7 @@ public final class StorageBackend implements AutoCloseable {
                     }
                 };
         if (database != null) {
-            logger.info("Storing worlds, folders and players in " + type.displayName() + ", database "
+            logger.info("Connected to " + type.displayName() + ", database "
                     + (type == StorageType.SQLITE
                             ? SQLITE_FILE
                             : settings.server(type).database()));
@@ -153,6 +153,13 @@ public final class StorageBackend implements AutoCloseable {
     }
 
     /**
+     * {@return the store for {@code kind}, as it is} Unlike {@link #store}, nothing is imported into it.
+     */
+    EntityStore collection(EntityKind kind) {
+        return database == null ? kind.yaml(dataFolder, logger) : database.collection(kind);
+    }
+
+    /**
      * {@return where entries of {@code kind} are kept} For a database, an empty collection is first filled from the
      * YAML file, read through the same path as a YAML load so a legacy file is migrated first. The file is left as it
      * is.
@@ -162,7 +169,7 @@ public final class StorageBackend implements AutoCloseable {
         if (database == null) {
             return yaml;
         }
-        EntityStore store = database.collection(kind);
+        EntityStore store = collection(kind);
         if (store.isEmpty()) {
             importEntries(yaml, store);
         }

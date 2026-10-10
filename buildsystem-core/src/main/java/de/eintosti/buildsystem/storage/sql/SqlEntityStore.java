@@ -25,8 +25,10 @@ import com.google.gson.reflect.TypeToken;
 import de.eintosti.buildsystem.storage.EntityKind;
 import de.eintosti.buildsystem.storage.EntityStore;
 import java.lang.reflect.Type;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.SequencedMap;
@@ -53,6 +55,7 @@ final class SqlEntityStore implements EntityStore {
     private final String selectAny;
     private final String upsert;
     private final String delete;
+    private final String deleteAll;
     private final Logger logger;
 
     /**
@@ -66,6 +69,7 @@ final class SqlEntityStore implements EntityStore {
         this.selectAny = "SELECT 1 FROM " + table + " LIMIT 1";
         this.upsert = dialect.upsert(table);
         this.delete = "DELETE FROM " + table + " WHERE id = ?";
+        this.deleteAll = "DELETE FROM " + table;
         this.logger = logger;
     }
 
@@ -108,16 +112,33 @@ final class SqlEntityStore implements EntityStore {
             return;
         }
         database.transaction(connection -> {
-            try (PreparedStatement statement = connection.prepareStatement(upsert)) {
-                for (Map.Entry<String, Map<String, Object>> entry : entries.entrySet()) {
-                    statement.setString(1, entry.getKey());
-                    statement.setString(2, GSON.toJson(entry.getValue()));
-                    statement.addBatch();
-                }
-                statement.executeBatch();
+            write(connection, entries);
+            return null;
+        });
+    }
+
+    @Override
+    public void replaceAll(Map<String, Map<String, Object>> entries) {
+        database.transaction(connection -> {
+            try (PreparedStatement statement = connection.prepareStatement(deleteAll)) {
+                statement.executeUpdate();
+            }
+            if (!entries.isEmpty()) {
+                write(connection, entries);
             }
             return null;
         });
+    }
+
+    private void write(Connection connection, Map<String, Map<String, Object>> entries) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(upsert)) {
+            for (Map.Entry<String, Map<String, Object>> entry : entries.entrySet()) {
+                statement.setString(1, entry.getKey());
+                statement.setString(2, GSON.toJson(entry.getValue()));
+                statement.addBatch();
+            }
+            statement.executeBatch();
+        }
     }
 
     @Override

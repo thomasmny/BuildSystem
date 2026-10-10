@@ -34,6 +34,7 @@ import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.EntityKind;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.StorageBackend;
+import de.eintosti.buildsystem.storage.StorageMigrator;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldContext;
@@ -65,7 +66,8 @@ public final class Services {
     private final Messages messages;
 
     private final PlayerLookupService playerLookupService;
-    private final StorageBackend storageBackend;
+    private volatile StorageBackend storageBackend;
+    private final StorageMigrator storageMigrator;
     private final WorldStorageImpl worldStorage;
     private final FolderStorageImpl folderStorage;
     private final NavigatorCategoryRegistryImpl navigatorCategoryRegistry;
@@ -118,6 +120,8 @@ public final class Services {
         (this.playerService = new PlayerServiceImpl(
                         plugin, configService, worldStorage, taskScheduler, storageBackend.store(EntityKind.PLAYERS)))
                 .init();
+        this.storageMigrator =
+                new StorageMigrator(plugin, this, worldStorage, folderStorage, playerService.getPlayerStorage());
         this.navigatorEditorService = new NavigatorEditorService();
         this.noClipService = new NoClipService(taskScheduler);
         this.spawnService = new SpawnService(plugin, worldStorage, taskScheduler);
@@ -181,6 +185,17 @@ public final class Services {
      */
     public StorageBackend storage() {
         return storageBackend;
+    }
+
+    /**
+     * Replaces the backend once {@link StorageMigrator} has moved everything to {@code backend}.
+     */
+    public void switchStorage(StorageBackend backend) {
+        this.storageBackend = backend;
+    }
+
+    public StorageMigrator storageMigrator() {
+        return storageMigrator;
     }
 
     public Messages messages() {

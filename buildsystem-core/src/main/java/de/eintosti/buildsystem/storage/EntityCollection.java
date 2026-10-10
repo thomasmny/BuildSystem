@@ -43,7 +43,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class EntityCollection<T> {
 
-    private final EntityStore store;
+    private volatile EntityStore store;
     private final String label;
     private final Supplier<Codec<T>> codecFactory;
     private final Executor background;
@@ -82,11 +82,19 @@ public final class EntityCollection<T> {
      * this way, rather than being erased by the next save.
      */
     public CompletableFuture<Void> save(Collection<T> values) {
+        Map<String, Map<String, Object>> serialized = serialize(values);
+        return write(() -> store.upsert(serialized));
+    }
+
+    /**
+     * {@return the entities as they would be stored, by key} Must run where their state is owned, like {@link #save}.
+     */
+    public Map<String, Map<String, Object>> serialize(Collection<T> values) {
         Map<String, Map<String, Object>> serialized = new LinkedHashMap<>();
         for (T value : values) {
             serialized.put(codec().key(value), codec().serialize(value));
         }
-        return write(() -> store.upsert(serialized));
+        return serialized;
     }
 
     public CompletableFuture<Void> delete(T value) {
@@ -95,6 +103,24 @@ public final class EntityCollection<T> {
 
     public CompletableFuture<Void> delete(String key) {
         return write(() -> store.delete(key));
+    }
+
+    /**
+     * Holds back every write submitted from now on until {@code gate} completes, without blocking a thread.
+     *
+     * @return Completes once every write submitted before this call is done
+     */
+    synchronized CompletableFuture<Void> hold(CompletableFuture<Void> gate) {
+        CompletableFuture<Void> drained = lastWrite.handle((ignored, throwable) -> null);
+        lastWrite = drained.thenCompose(ignored -> gate);
+        return drained;
+    }
+
+    /**
+     * Sends every write that has not started yet to {@code store}. Only safe while writes are held.
+     */
+    void switchTo(EntityStore store) {
+        this.store = store;
     }
 
     private synchronized CompletableFuture<Void> write(Runnable io) {

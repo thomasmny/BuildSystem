@@ -286,6 +286,10 @@ bukkit {
             description = "Permission for creating world types."
             default = BukkitPluginDescription.Permission.Default.TRUE
         }
+        register("buildsystem.storage.migrate") {
+            description = "Move worlds, folders and players to another storage type."
+            default = BukkitPluginDescription.Permission.Default.OP
+        }
         register("buildsystem.download") {
             description = "Download a world as a single-player save."
             default = BukkitPluginDescription.Permission.Default.OP

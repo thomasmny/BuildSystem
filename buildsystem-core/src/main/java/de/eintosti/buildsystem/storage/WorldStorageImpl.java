@@ -89,6 +89,10 @@ public class WorldStorageImpl implements WorldStorage {
         this.file = file;
     }
 
+    EntityCollection<BuildWorld> collection() {
+        return file;
+    }
+
     @Override
     public CompletableFuture<Void> save(BuildWorld buildWorld) {
         return file.save(buildWorld);

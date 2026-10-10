@@ -86,6 +86,10 @@ public class FolderStorageImpl implements FolderStorage {
         this.file = file;
     }
 
+    EntityCollection<Folder> collection() {
+        return file;
+    }
+
     @Override
     public CompletableFuture<Void> save(Folder folder) {
         return file.save(folder);

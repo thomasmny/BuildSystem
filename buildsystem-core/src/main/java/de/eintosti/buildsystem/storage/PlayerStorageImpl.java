@@ -70,6 +70,10 @@ public class PlayerStorageImpl implements PlayerStorage {
         this.file = file;
     }
 
+    EntityCollection<BuildPlayer> collection() {
+        return file;
+    }
+
     @Override
     public CompletableFuture<Void> save(BuildPlayer buildPlayer) {
         return file.save(buildPlayer);

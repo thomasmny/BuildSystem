@@ -168,6 +168,8 @@ public class BuildSystemPlugin extends JavaPlugin {
             this.configSaveTask.cancel();
         }
 
+        // A migration holds writes back until it switches, which needs the main thread this blocks.
+        services.storageMigrator().abort();
         try {
             saveBuildConfig().join();
         } catch (CompletionException e) {
