@@ -74,8 +74,17 @@ public final class EntityCollection<T> {
         return codec;
     }
 
+    /**
+     * Writes one entity, logging a failure: the callers, such as a player joining, leaving or changing worlds, have
+     * nobody to tell.
+     */
     public CompletableFuture<Void> save(T value) {
-        return save(List.of(value));
+        String key = codec().key(value);
+        return save(List.of(value)).whenComplete((ignored, failure) -> {
+            if (failure != null) {
+                logger.log(Level.SEVERE, "Could not save " + label + " \"" + key + "\"", failure);
+            }
+        });
     }
 
     /**

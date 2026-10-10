@@ -17,10 +17,12 @@
  */
 package de.eintosti.buildsystem.storage;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -31,11 +33,14 @@ import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
 import de.eintosti.buildsystem.storage.yaml.YamlStore;
 import java.io.File;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -89,6 +94,34 @@ class EntityCollectionTest {
         assertTrue(save.isDone() && delete.isDone());
         YamlConfiguration written = YamlConfiguration.loadConfiguration(new File(dataFolder, "entries.yml"));
         assertFalse(written.contains("entries.arena"), "the save must not bring the deleted entry back");
+    }
+
+    @Test
+    void aSingleSaveThatFails_isLogged() {
+        Logger logger = Logger.getAnonymousLogger();
+        logger.setUseParentHandlers(false);
+        List<String> logged = new ArrayList<>();
+        logger.addHandler(new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                logged.add(record.getLevel() + " " + record.getMessage());
+            }
+
+            @Override
+            public void flush() {}
+
+            @Override
+            public void close() {}
+        });
+        EntityStore failing = mock(EntityStore.class);
+        doThrow(new StorageException("Could not save to buildsystem_players", null))
+                .when(failing)
+                .upsert(any());
+        EntityCollection<Entry> file = new EntityCollection<>(failing, "player", () -> CODEC, Runnable::run, logger);
+
+        assertThrows(CompletionException.class, file.save(new Entry("steve"))::join);
+
+        assertEquals(List.of("SEVERE Could not save player \"steve\""), logged);
     }
 
     @Test
