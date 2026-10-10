@@ -36,9 +36,11 @@ public class YamlSpawnStorage extends AbstractYamlStorage {
 
     /**
      * Writes the spawn, in the logout-location format, or removes it when {@code spawn} is {@code null}.
+     *
+     * @return Whether the file was written
      */
-    public void saveSpawn(@Nullable String spawn) {
+    public boolean saveSpawn(@Nullable String spawn) {
         getFile().set(SPAWN_KEY, spawn);
-        saveFile();
+        return saveFile();
     }
 }

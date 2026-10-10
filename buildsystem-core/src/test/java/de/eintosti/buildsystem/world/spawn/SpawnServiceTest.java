@@ -114,6 +114,23 @@ class SpawnServiceTest {
     }
 
     @Test
+    void failedWrite_isRetriedByTheNextSave() throws IOException {
+        SpawnService service = newService();
+        service.set(new Location(null, 1.5, 70, -2.5, 45f, 10f), "lobby");
+        // A non-empty directory where the temp file goes makes the write fail.
+        File blocker = new File(dataFolder, "spawn.yml.tmp");
+        Files.createDirectories(blocker.toPath().resolve("inside"));
+
+        service.save().join();
+        assertNull(readSpawnFile().getString("spawn"));
+
+        Files.delete(blocker.toPath().resolve("inside"));
+        Files.delete(blocker.toPath());
+        service.save().join();
+        assertEquals("lobby:1.5:70.0:-2.5:45.0:10.0", readSpawnFile().getString("spawn"));
+    }
+
+    @Test
     void removedSpawn_isRemovedFromDisk() throws IOException {
         writeSpawn("lobby:10.5:64.0:-3.5:90.0:0.0");
         SpawnService service = newService();

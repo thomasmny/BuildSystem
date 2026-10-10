@@ -183,6 +183,7 @@ public class WorldRenamer {
         }
 
         spawnService.renameWorld(oldName, sanitizedNewName);
+        spawnService.save();
 
         messages.sendMessage(
                 player,

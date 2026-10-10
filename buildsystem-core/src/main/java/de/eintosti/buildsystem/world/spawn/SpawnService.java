@@ -154,7 +154,8 @@ public class SpawnService {
     }
 
     /**
-     * Writes the spawn when it changed since the last save.
+     * Writes the spawn when it changed since the last save. A write that fails leaves it marked changed, so the next
+     * save tries again. The mark is cleared before writing, so a change made during the write is not lost.
      */
     public CompletableFuture<Void> save() {
         if (!dirty) {
@@ -163,6 +164,12 @@ public class SpawnService {
         dirty = false;
         LogoutLocation stored = this.spawn;
         String formatted = stored != null ? LogoutLocationCodec.format(stored) : null;
-        return CompletableFuture.runAsync(() -> spawnStorage.saveSpawn(formatted), background);
+        return CompletableFuture.runAsync(
+                () -> {
+                    if (!spawnStorage.saveSpawn(formatted)) {
+                        dirty = true;
+                    }
+                },
+                background);
     }
 }

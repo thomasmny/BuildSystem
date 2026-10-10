@@ -40,8 +40,8 @@ public abstract class AbstractYamlStorage {
         store.locked(store::reload);
     }
 
-    public void saveFile() {
-        store.atomicSave(() -> {});
+    public boolean saveFile() {
+        return store.atomicSave(() -> {});
     }
 
     public FileConfiguration getFile() {

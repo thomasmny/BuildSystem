@@ -86,15 +86,17 @@ public final class YamlStore {
      * <p>Writes to a sibling temp file first and moves it onto {@code file}, so a crash or power loss mid-write
      * never leaves a truncated file in place — {@link #reload} either reads the previous complete file or the new
      * complete one, never a partial one.
+     *
+     * @return Whether the file was written. A failure is logged.
      */
-    public void save() {
+    public boolean save() {
         File temp = new File(file.getParentFile(), file.getName() + ".tmp");
         try {
             configuration.save(temp);
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to save configuration file: %s".formatted(file.getName()), e);
             deleteQuietly(temp);
-            return;
+            return false;
         }
 
         Path tempPath = temp.toPath();
@@ -107,11 +109,14 @@ public final class YamlStore {
             } catch (IOException e2) {
                 logger.log(Level.SEVERE, "Failed to save configuration file: %s".formatted(file.getName()), e2);
                 deleteQuietly(temp);
+                return false;
             }
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to save configuration file: %s".formatted(file.getName()), e);
             deleteQuietly(temp);
+            return false;
         }
+        return true;
     }
 
     private void deleteQuietly(File file) {
@@ -124,11 +129,13 @@ public final class YamlStore {
 
     /**
      * Applies {@code mutation} to the configuration and persists it, both under the I/O lock guarding the file.
+     *
+     * @return Whether the file was written
      */
-    public void atomicSave(Runnable mutation) {
+    public boolean atomicSave(Runnable mutation) {
         synchronized (ioLock) {
             mutation.run();
-            save();
+            return save();
         }
     }
 
