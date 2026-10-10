@@ -32,7 +32,6 @@ import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.test.TestData;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.io.File;
 import java.util.List;
@@ -58,9 +57,8 @@ class NavigatorCategoryRegistryImplTest {
     void setUp() {
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
-        // The delete/reset cascades re-home folders via worldService.getFolderStorage().getFolders(); a deep-stub
-        // mock yields an empty folder list so those cascades are no-ops rather than NPEs.
-        registry = new NavigatorCategoryRegistryImpl(plugin, () -> mock(WorldServiceImpl.class, RETURNS_DEEP_STUBS));
+        // The delete/reset cascades re-home the folder storage's folders; the mock has none, so they are no-ops.
+        registry = new NavigatorCategoryRegistryImpl(plugin, mock(FolderStorageImpl.class));
     }
 
     @Test
@@ -145,9 +143,7 @@ class NavigatorCategoryRegistryImplTest {
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
         FolderStorageImpl folderStorage = mock(FolderStorageImpl.class);
-        WorldServiceImpl worldService = mock(WorldServiceImpl.class);
-        when(worldService.getFolderStorage()).thenReturn(folderStorage);
-        NavigatorCategoryRegistryImpl categoryRegistry = new NavigatorCategoryRegistryImpl(plugin, () -> worldService);
+        NavigatorCategoryRegistryImpl categoryRegistry = new NavigatorCategoryRegistryImpl(plugin, folderStorage);
 
         NavigatorCategory custom = categoryRegistry.create("Administration");
         FolderImpl folder = mock(FolderImpl.class);
@@ -166,9 +162,7 @@ class NavigatorCategoryRegistryImplTest {
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
         FolderStorageImpl folderStorage = mock(FolderStorageImpl.class);
-        WorldServiceImpl worldService = mock(WorldServiceImpl.class);
-        when(worldService.getFolderStorage()).thenReturn(folderStorage);
-        NavigatorCategoryRegistryImpl categoryRegistry = new NavigatorCategoryRegistryImpl(plugin, () -> worldService);
+        NavigatorCategoryRegistryImpl categoryRegistry = new NavigatorCategoryRegistryImpl(plugin, folderStorage);
         NavigatorCategory oldDefault = categoryRegistry.getDefault();
         // Loaded with a category that no longer exists, so it shows the default.
         FolderImpl folder = FolderImpl.builder(TestData.worldContext(), UUID.randomUUID())
@@ -225,7 +219,7 @@ class NavigatorCategoryRegistryImplTest {
     private NavigatorCategoryRegistryImpl reload() {
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
-        return new NavigatorCategoryRegistryImpl(plugin, () -> mock(WorldServiceImpl.class));
+        return new NavigatorCategoryRegistryImpl(plugin, mock(FolderStorageImpl.class));
     }
 
     @Test

@@ -32,7 +32,6 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.util.TaskScheduler;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
@@ -84,14 +83,11 @@ class BackupServiceImplTest {
                 .thenAnswer(invocation -> holder.runExclusively(buildWorld, CompletableFuture::new));
         WorldStorageImpl worldStorage = mock(WorldStorageImpl.class);
         when(worldStorage.getBuildWorlds()).thenReturn(List.of(buildWorld));
-        WorldServiceImpl worldService = mock(WorldServiceImpl.class);
-        when(worldService.getWorldStorage()).thenReturn(worldStorage);
-        when(worldService.operations()).thenReturn(operations);
 
         TaskScheduler scheduler = mock(TaskScheduler.class);
         when(scheduler.mainThread()).thenReturn(Runnable::run);
 
-        new BackupServiceImpl(plugin, scheduler, configService, mock(Messages.class), worldService)
+        new BackupServiceImpl(plugin, scheduler, configService, mock(Messages.class), worldStorage, operations)
                 .incrementTimeSinceBackup();
 
         assertEquals(INTERVAL, data.get(WorldDataKey.TIME_SINCE_BACKUP));

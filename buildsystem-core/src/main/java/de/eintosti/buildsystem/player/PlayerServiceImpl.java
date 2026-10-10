@@ -26,13 +26,11 @@ import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -42,7 +40,7 @@ public class PlayerServiceImpl implements PlayerService {
 
     private final BuildSystemPlugin plugin;
     private final ConfigService configService;
-    private final Supplier<WorldServiceImpl> worldService;
+    private final WorldStorageImpl worldStorage;
     private final PlayerStorageImpl playerStorage;
     private final MaxWorldsResolver maxWorldsResolver;
 
@@ -51,11 +49,11 @@ public class PlayerServiceImpl implements PlayerService {
     public PlayerServiceImpl(
             BuildSystemPlugin plugin,
             ConfigService configService,
-            Supplier<WorldServiceImpl> worldService,
+            WorldStorageImpl worldStorage,
             TaskScheduler scheduler) {
         this.plugin = plugin;
         this.configService = configService;
-        this.worldService = worldService;
+        this.worldStorage = worldStorage;
         this.playerStorage = new PlayerStorageImpl(plugin, scheduler);
         this.maxWorldsResolver = new MaxWorldsResolver(plugin.getLogger());
         this.buildModePlayers = ConcurrentHashMap.newKeySet();
@@ -135,7 +133,6 @@ public class PlayerServiceImpl implements PlayerService {
             return true;
         }
 
-        WorldStorageImpl worldStorage = worldService.get().getWorldStorage();
         return worldStorage.getBuildWorldsCreatedByPlayer(player, visibility).size() < max;
     }
 

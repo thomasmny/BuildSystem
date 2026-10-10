@@ -25,8 +25,8 @@ import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.logging.Logger;
 import org.bukkit.GameMode;
@@ -62,7 +62,7 @@ class BuildModeTest {
         when(plugin.getLogger()).thenReturn(Logger.getLogger("test"));
         when(plugin.getDataFolder()).thenReturn(dataFolder);
         PlayerServiceImpl service = new PlayerServiceImpl(
-                plugin, mock(ConfigService.class), () -> mock(WorldServiceImpl.class), mock(TaskScheduler.class));
+                plugin, mock(ConfigService.class), mock(WorldStorageImpl.class), mock(TaskScheduler.class));
 
         assertTrue(service.startBuildSession(player));
         assertFalse(service.startBuildSession(player), "a second start keeps the first snapshot");

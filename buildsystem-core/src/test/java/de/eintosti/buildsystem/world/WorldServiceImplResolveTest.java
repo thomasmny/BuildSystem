@@ -54,7 +54,7 @@ class WorldServiceImplResolveTest {
         Services services = TestData.mockServices();
         when(services.config().current().world().defaultNamespace()).thenReturn("maps");
         messages = services.messages();
-        worldService = new WorldServiceImpl(plugin, services);
+        worldService = TestData.worldService(plugin, services);
     }
 
     private void addWorld(String name, boolean permitted) {

@@ -23,11 +23,11 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.codec.StatusCodec;
 import de.eintosti.buildsystem.storage.yaml.YamlRegistryStorage;
 import de.eintosti.buildsystem.storage.yaml.YamlSetupStorage;
 import de.eintosti.buildsystem.util.StringUtils;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.display.AbstractRegistry;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.Collection;
@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -72,20 +71,20 @@ public class WorldStatusRegistryImpl extends AbstractRegistry<WorldStatusImpl> i
 
     private final NavigatorCategoryRegistryImpl categoryRegistry;
     private final Messages messages;
-    private final Supplier<WorldServiceImpl> worldService;
+    private final WorldStorageImpl worldStorage;
     private final Map<String, Material> legacyIcons;
 
     public WorldStatusRegistryImpl(
             BuildSystemPlugin plugin,
             NavigatorCategoryRegistryImpl categoryRegistry,
             Messages messages,
-            Supplier<WorldServiceImpl> worldService) {
+            WorldStorageImpl worldStorage) {
         super(
                 new YamlRegistryStorage<>(plugin, "statuses.yml", "statuses", "status", new StatusCodec()),
                 Comparator.comparingInt(WorldStatusImpl::getOrder));
         this.categoryRegistry = categoryRegistry;
         this.messages = messages;
-        this.worldService = worldService;
+        this.worldStorage = worldStorage;
         this.legacyIcons = new YamlSetupStorage(plugin).loadLegacyStatusIcons();
 
         loadOrSeed();
@@ -214,7 +213,7 @@ public class WorldStatusRegistryImpl extends AbstractRegistry<WorldStatusImpl> i
         for (BuildWorld world : worldsWithStatus(id)) {
             // A world that only shows the deleted status as a fallback keeps its stored one.
             WorldDataImpl.setFallback(world.getData(), WorldDataKey.STATUS, fallback);
-            worldService.get().getWorldStorage().save(world);
+            worldStorage.save(world);
         }
         clearDanglingProgression(id);
         categoryRegistry.removeStatusFromCategories(id);
@@ -289,7 +288,7 @@ public class WorldStatusRegistryImpl extends AbstractRegistry<WorldStatusImpl> i
      * Lists the loaded worlds currently using the given status, for the deletion confirmation prompt.
      */
     public List<BuildWorld> worldsWithStatus(String id) {
-        return worldService.get().getWorldStorage().getBuildWorlds().stream()
+        return worldStorage.getBuildWorlds().stream()
                 .filter(world ->
                         world.getData().get(WorldDataKey.STATUS).getId().equals(id))
                 .toList();

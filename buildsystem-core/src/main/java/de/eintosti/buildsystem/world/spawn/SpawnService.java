@@ -26,7 +26,6 @@ import de.eintosti.buildsystem.storage.yaml.YamlSpawnStorage;
 import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldNames;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import io.papermc.lib.PaperLib;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -56,9 +55,9 @@ public class SpawnService {
      */
     private volatile boolean dirty;
 
-    public SpawnService(BuildSystemPlugin plugin, WorldServiceImpl worldService, TaskScheduler scheduler) {
+    public SpawnService(BuildSystemPlugin plugin, WorldStorage worldStorage, TaskScheduler scheduler) {
         this.plugin = plugin;
-        this.worldStorage = worldService.getWorldStorage();
+        this.worldStorage = worldStorage;
         this.spawnStorage = new YamlSpawnStorage(plugin);
         this.background = scheduler.background();
         // Same world:x:y:z:yaw:pitch format as a logout location, so the namespaced-name handling is shared.

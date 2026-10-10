@@ -20,9 +20,8 @@ package de.eintosti.buildsystem.player.customblock;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
-import java.util.function.Supplier;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ItemFrame;
@@ -38,12 +37,11 @@ import org.jspecify.annotations.NullMarked;
 public class CustomBlockManager implements Listener {
 
     private final TaskScheduler scheduler;
-    private final Supplier<WorldServiceImpl> worldService;
+    private final WorldStorageImpl worldStorage;
 
-    public CustomBlockManager(
-            BuildSystemPlugin plugin, TaskScheduler scheduler, Supplier<WorldServiceImpl> worldService) {
+    public CustomBlockManager(BuildSystemPlugin plugin, TaskScheduler scheduler, WorldStorageImpl worldStorage) {
         this.scheduler = scheduler;
-        this.worldService = worldService;
+        this.worldStorage = worldStorage;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -54,7 +52,7 @@ public class CustomBlockManager implements Listener {
         }
 
         Player player = event.getPlayer();
-        BuildWorld buildWorld = worldService.get().getWorldStorage().getBuildWorld(player.getWorld());
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         boolean isBuildWorld = buildWorld != null;
 
         ItemStack itemStack = event.getItemInHand();

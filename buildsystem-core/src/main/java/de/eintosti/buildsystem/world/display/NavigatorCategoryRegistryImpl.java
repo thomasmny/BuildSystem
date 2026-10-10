@@ -31,7 +31,6 @@ import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.codec.CategoryCodec;
 import de.eintosti.buildsystem.storage.yaml.YamlRegistryStorage;
 import de.eintosti.buildsystem.util.StringUtils;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,7 +41,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -68,16 +66,16 @@ public class NavigatorCategoryRegistryImpl extends AbstractRegistry<NavigatorCat
     private static final String SETTINGS_SLOT_KEY = "settings-slot";
 
     private final BuildSystemPlugin plugin;
-    private final Supplier<WorldServiceImpl> worldService;
+    private final FolderStorageImpl folderStorage;
     private int settingsSlot;
 
-    public NavigatorCategoryRegistryImpl(BuildSystemPlugin plugin, Supplier<WorldServiceImpl> worldService) {
+    public NavigatorCategoryRegistryImpl(BuildSystemPlugin plugin, FolderStorageImpl folderStorage) {
         super(
                 new YamlRegistryStorage<>(
                         plugin, "categories.yml", "categories", "navigator category", new CategoryCodec()),
                 Comparator.comparingInt(NavigatorCategoryImpl::getSlot));
         this.plugin = plugin;
-        this.worldService = worldService;
+        this.folderStorage = folderStorage;
 
         loadOrSeed();
         this.settingsSlot = storage.getInt(SETTINGS_SLOT_KEY, DEFAULT_SETTINGS_SLOT);
@@ -267,7 +265,6 @@ public class NavigatorCategoryRegistryImpl extends AbstractRegistry<NavigatorCat
      */
     private void rehomeFolders(String deletedId) {
         NavigatorCategory fallback = getDefault();
-        FolderStorageImpl folderStorage = worldService.get().getFolderStorage();
         List<Folder> rehomed = new ArrayList<>();
         for (Folder folder : folderStorage.getFolders()) {
             if (folder.getCategory().getId().equals(deletedId)) {

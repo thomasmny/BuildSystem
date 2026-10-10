@@ -22,6 +22,7 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
@@ -32,10 +33,13 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.storage.FolderStorageImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlEntityFile;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
@@ -234,6 +238,15 @@ public final class TestData {
         lenient().when(services.prompts()).thenReturn(prompts);
         lenient().when(services.backup()).thenReturn(backup);
         return services;
+    }
+
+    /**
+     * {@return a world service with real storages, wired to the collaborators of {@code services}}
+     */
+    public static WorldServiceImpl worldService(BuildSystemPlugin plugin, Services services) {
+        WorldStorageImpl worldStorage = new WorldStorageImpl(plugin, services);
+        return new WorldServiceImpl(
+                plugin, services, worldStorage, new FolderStorageImpl(plugin, worldStorage, services));
     }
 
     private static Optional<BuildWorldStatus> byId(String id) {

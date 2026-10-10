@@ -32,7 +32,8 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.storage.FolderStorageImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.io.File;
 import java.util.List;
@@ -56,14 +57,11 @@ class WorldStatusRegistryImplTest {
     void setUp() {
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
-        // The delete/reset cascades walk worldService.getWorldStorage()/getFolderStorage(); deep-stub mocks yield
-        // empty collections so those cascades are no-ops rather than NPEs.
-        categories = new NavigatorCategoryRegistryImpl(plugin, () -> mock(WorldServiceImpl.class, RETURNS_DEEP_STUBS));
+        // The delete/reset cascades walk the world and folder storages; mocks yield empty collections, so those
+        // cascades are no-ops.
+        categories = new NavigatorCategoryRegistryImpl(plugin, mock(FolderStorageImpl.class));
         registry = new WorldStatusRegistryImpl(
-                plugin,
-                categories,
-                mock(Messages.class, RETURNS_DEEP_STUBS),
-                () -> mock(WorldServiceImpl.class, RETURNS_DEEP_STUBS));
+                plugin, categories, mock(Messages.class, RETURNS_DEEP_STUBS), mock(WorldStorageImpl.class));
     }
 
     @Test
@@ -126,34 +124,34 @@ class WorldStatusRegistryImplTest {
     void deletedStatus_movesItsWorldsToTheDefault() {
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
-        WorldServiceImpl worldService = mock(WorldServiceImpl.class, RETURNS_DEEP_STUBS);
-        WorldStatusRegistryImpl statuses = new WorldStatusRegistryImpl(
-                plugin, categories, mock(Messages.class, RETURNS_DEEP_STUBS), () -> worldService);
+        WorldStorageImpl worldStorage = mock(WorldStorageImpl.class);
+        WorldStatusRegistryImpl statuses =
+                new WorldStatusRegistryImpl(plugin, categories, mock(Messages.class, RETURNS_DEEP_STUBS), worldStorage);
         WorldStatusImpl custom = statuses.create("Review");
         BuildWorld world = mock(BuildWorld.class, RETURNS_DEEP_STUBS);
         when(world.getData().get(WorldDataKey.STATUS)).thenReturn(custom);
-        when(worldService.getWorldStorage().getBuildWorlds()).thenReturn(List.of(world));
+        when(worldStorage.getBuildWorlds()).thenReturn(List.of(world));
 
         assertTrue(statuses.delete(custom.getId()));
 
         verify(world.getData()).set(WorldDataKey.STATUS, statuses.getDefault());
-        verify(worldService.getWorldStorage()).save(world);
+        verify(worldStorage).save(world);
     }
 
     @Test
     void deletingTheDefault_keepsAWorldStatusThatCouldNotBeResolved() {
         BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
-        WorldServiceImpl worldService = mock(WorldServiceImpl.class, RETURNS_DEEP_STUBS);
-        WorldStatusRegistryImpl statuses = new WorldStatusRegistryImpl(
-                plugin, categories, mock(Messages.class, RETURNS_DEEP_STUBS), () -> worldService);
+        WorldStorageImpl worldStorage = mock(WorldStorageImpl.class);
+        WorldStatusRegistryImpl statuses =
+                new WorldStatusRegistryImpl(plugin, categories, mock(Messages.class, RETURNS_DEEP_STUBS), worldStorage);
         BuildWorldStatus oldDefault = statuses.getDefault();
         // Loaded with a status that no longer exists, so it shows the default.
         WorldDataImpl data = WorldDataSchema.create("arena", oldDefault);
         data.keepUnresolved(WorldDataKey.STATUS, "retired");
         BuildWorld world = mock(BuildWorld.class);
         when(world.getData()).thenReturn(data);
-        when(worldService.getWorldStorage().getBuildWorlds()).thenReturn(List.of(world));
+        when(worldStorage.getBuildWorlds()).thenReturn(List.of(world));
 
         assertTrue(statuses.delete(oldDefault.getId()));
 
@@ -280,8 +278,8 @@ class WorldStatusRegistryImplTest {
         when(plugin.getDataFolder()).thenReturn(dataFolder);
         return new WorldStatusRegistryImpl(
                 plugin,
-                new NavigatorCategoryRegistryImpl(plugin, () -> mock(WorldServiceImpl.class)),
+                new NavigatorCategoryRegistryImpl(plugin, mock(FolderStorageImpl.class)),
                 mock(Messages.class, RETURNS_DEEP_STUBS),
-                () -> mock(WorldServiceImpl.class));
+                mock(WorldStorageImpl.class));
     }
 }

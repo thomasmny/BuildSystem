@@ -27,10 +27,10 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.WorldNames;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import fr.mrmicky.fastboard.FastBoard;
 import java.util.HashMap;
 import java.util.List;
@@ -52,7 +52,7 @@ public class SettingsService {
     private final ConfigService configService;
     private final Messages messages;
     private final PlayerServiceImpl playerService;
-    private final WorldServiceImpl worldService;
+    private final WorldStorageImpl worldStorage;
 
     private final Map<UUID, FastBoard> boards;
     private final Map<UUID, BukkitTask> scoreboardTasks;
@@ -63,13 +63,13 @@ public class SettingsService {
             ConfigService configService,
             Messages messages,
             PlayerServiceImpl playerService,
-            WorldServiceImpl worldService) {
+            WorldStorageImpl worldStorage) {
         this.plugin = plugin;
         this.scheduler = scheduler;
         this.configService = configService;
         this.messages = messages;
         this.playerService = playerService;
-        this.worldService = worldService;
+        this.worldStorage = worldStorage;
 
         this.boards = new HashMap<>();
         this.scoreboardTasks = new HashMap<>();
@@ -185,7 +185,7 @@ public class SettingsService {
     @Contract("_ -> new")
     private Placeholders getPlaceholders(Player player) {
         String worldName = WorldNames.of(player.getWorld());
-        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld != null) {
             worldName = buildWorld.getName();
         }

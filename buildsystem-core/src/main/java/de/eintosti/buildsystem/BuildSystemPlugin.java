@@ -23,11 +23,13 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.command.CommandRegistrar;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.integration.Integrations;
 import de.eintosti.buildsystem.listener.ListenerRegistrar;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.util.Permissions;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.WorldNames;
 import java.io.File;
@@ -39,6 +41,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+import org.jspecify.annotations.Nullable;
 
 public class BuildSystemPlugin extends JavaPlugin {
 
@@ -47,29 +50,32 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     private static final long CONFIG_SAVE_INTERVAL_TICKS = 5L * 60L * 20L;
 
-    private Services services;
+    private ConfigService configService;
+    private Messages messages;
+    private @Nullable TaskScheduler scheduler;
+    private @Nullable Services services;
     private UpdateChecker updateChecker;
-    private Integrations integrations;
-    private BuildSystemApi api;
+    private @Nullable Integrations integrations;
+    private @Nullable BuildSystemApi api;
     private BukkitTask configSaveTask;
 
     @Override
     public void onLoad() {
-        this.services = new Services(this);
-
-        ConfigService configService = this.services.createConfigService();
+        this.configService = new ConfigService(this);
         new ConfigMigrationManager(this).migrate();
         this.getConfig().options().copyDefaults(true);
         this.saveConfig();
         configService.load();
 
-        this.services.createMessages().load();
+        (this.messages = new Messages(this, configService)).load();
         createTemplateFolder();
     }
 
     @Override
     public void onEnable() {
-        this.services.initClasses();
+        this.scheduler = new TaskScheduler(this);
+        this.services = new Services(this, scheduler, configService, messages);
+        this.services.loadWorlds();
         this.updateChecker = new UpdateChecker(this, services.scheduler().background());
         performUpdateCheck();
 
@@ -108,6 +114,14 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (services == null) {
+            // onEnable failed before the services existed, so nothing was loaded that could be saved.
+            if (scheduler != null) {
+                scheduler.shutdown();
+            }
+            return;
+        }
+
         Bukkit.getOnlinePlayers().forEach(pl -> {
             BuildPlayerImpl buildPlayer =
                     BuildPlayerImpl.of(services.player().getPlayerStorage().getBuildPlayer(pl));
@@ -143,8 +157,13 @@ public class BuildSystemPlugin extends JavaPlugin {
         // Shut the shared background pool down only after the final saves above have completed.
         services.scheduler().shutdown();
 
-        this.integrations.deactivate();
-        getServer().getServicesManager().unregister(BuildSystem.class, api);
+        // onEnable may have failed after the services were built, before these existed.
+        if (this.integrations != null) {
+            this.integrations.deactivate();
+        }
+        if (api != null) {
+            getServer().getServicesManager().unregister(BuildSystem.class, api);
+        }
 
         Bukkit.getConsoleSender()
                 .sendMessage("%sBuildSystem » Plugin %sdisabled%s!"

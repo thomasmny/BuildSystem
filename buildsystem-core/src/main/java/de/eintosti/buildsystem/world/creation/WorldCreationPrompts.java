@@ -31,7 +31,6 @@ import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import java.util.Objects;
-import java.util.function.Supplier;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -44,10 +43,10 @@ import org.jspecify.annotations.Nullable;
 public class WorldCreationPrompts {
 
     private final WorldServiceImpl worldService;
-    private final Supplier<Prompts> prompts;
+    private final Prompts prompts;
     private final Messages messages;
 
-    public WorldCreationPrompts(WorldServiceImpl worldService, Supplier<Prompts> prompts, Messages messages) {
+    public WorldCreationPrompts(WorldServiceImpl worldService, Prompts prompts, Messages messages) {
         this.worldService = worldService;
         this.prompts = prompts;
         this.messages = messages;
@@ -61,12 +60,10 @@ public class WorldCreationPrompts {
             boolean promptSeed,
             @Nullable Folder folder) {
         player.closeInventory();
-        Prompts promptsInstance = prompts.get();
         Selection selection = new Selection();
 
-        Prompts.PromptFlow flow = promptsInstance
-                .flow(player)
-                .step("enter_world_name", input -> nameStep(promptsInstance, player, selection, input));
+        Prompts.PromptFlow flow =
+                prompts.flow(player).step("enter_world_name", input -> nameStep(player, selection, input));
 
         if (worldType == BuildWorldType.CUSTOM) {
             flow.step("enter_generator_name", input -> generatorStep(player, selection, input));
@@ -77,9 +74,9 @@ public class WorldCreationPrompts {
         flow.start(() -> build(player, selection, worldType, template, privateWorld, folder));
     }
 
-    private boolean nameStep(Prompts promptsInstance, Player player, Selection selection, String input) {
-        String name = promptsInstance.sanitizeWorldName(
-                player, worldService.getWorldStorage().newWorldName(input.trim()));
+    private boolean nameStep(Player player, Selection selection, String input) {
+        String name =
+                prompts.sanitizeWorldName(player, worldService.getWorldStorage().newWorldName(input.trim()));
         if (name == null) {
             return false;
         }
