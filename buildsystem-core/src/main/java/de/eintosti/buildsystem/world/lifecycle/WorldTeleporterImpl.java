@@ -120,19 +120,16 @@ public class WorldTeleporterImpl implements WorldTeleporter {
                         hadToLoad ? 20L : 0L);
     }
 
-    public static boolean isSafeLocation(Location location) {
-        Block feet = location.getBlock();
-        if (!feet.getType().isAir()
-                && !feet.getLocation().add(0, 1, 0).getBlock().getType().isAir()) {
-            return false;
-        }
-
+    /**
+     * {@return whether a player can stand on the block at {@code ground}} The block must be solid and the two blocks
+     * above it, where the player's feet and head end up, must be air.
+     */
+    public static boolean isSafeLocation(Location ground) {
+        Block block = ground.getBlock();
+        Block feet = block.getRelative(BlockFace.UP);
         Block head = feet.getRelative(BlockFace.UP);
-        if (!head.getType().isAir()) {
-            return false;
-        }
-
-        Block ground = feet.getRelative(BlockFace.DOWN);
-        return ground.getType().isSolid();
+        return block.getType().isSolid()
+                && feet.getType().isAir()
+                && head.getType().isAir();
     }
 }
