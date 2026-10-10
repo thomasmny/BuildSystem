@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
@@ -55,10 +54,9 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
+public class EditMenu extends ButtonMenu<MenuButton> {
 
     private static final int SLOT_WORLD_INFO = 3;
     private static final int SLOT_PHYSICS = 22;
@@ -88,84 +86,6 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
             XEntityType.SPAWNER_MINECART,
             XEntityType.TNT_MINECART,
             XEntityType.PLAYER);
-
-    /**
-     * Classifies what a button does after a click, so the per-slot contract can be asserted as data. The actual action
-     * lives in each button's {@link MenuButton#onClick}; this is the classification the golden test pins.
-     */
-    enum ClickOutcome {
-        REOPEN,
-        SUBMENU,
-        INPUT,
-        CLOSE,
-        NONE
-    }
-
-    /**
-     * A single editor slot: its required permission (or {@code null} for a render-only slot), its {@link ClickOutcome}
-     * classification, and the render/click behavior. Declaring each slot once here replaces the old parallel
-     * {@code populate} calls and {@code handleClick} switch.
-     */
-    record EditButton(
-            @Nullable String permission,
-            ClickOutcome outcome,
-            BiConsumer<Player, Inventory> renderer,
-            BiConsumer<Player, InventoryClickEvent> clickHandler)
-            implements MenuButton {
-
-        @Override
-        public void render(Player player, Inventory inventory, int slot) {
-            renderer.accept(player, inventory);
-        }
-
-        @Override
-        public void onClick(Player player, InventoryClickEvent event) {
-            clickHandler.accept(player, event);
-        }
-
-        static Builder builder() {
-            return new Builder();
-        }
-
-        /**
-         * Fluent builder for an {@link EditButton}. {@code outcome} defaults to {@link ClickOutcome#NONE}; the
-         * {@code permission}, renderer, and click handler default to none/no-op until set. Editor slots render at fixed
-         * positions, so the renderer is a plain {@code (player, inventory)} consumer rather than a slot-aware one.
-         */
-        static final class Builder {
-
-            private @Nullable String permission;
-            private ClickOutcome outcome = ClickOutcome.NONE;
-            private BiConsumer<Player, Inventory> renderer = (player, inventory) -> {};
-            private BiConsumer<Player, InventoryClickEvent> clickHandler = (player, event) -> {};
-
-            private Builder() {}
-
-            Builder permission(@Nullable String permission) {
-                this.permission = permission;
-                return this;
-            }
-
-            Builder outcome(ClickOutcome outcome) {
-                this.outcome = outcome;
-                return this;
-            }
-
-            Builder render(BiConsumer<Player, Inventory> renderer) {
-                this.renderer = renderer;
-                return this;
-            }
-
-            Builder onClick(BiConsumer<Player, InventoryClickEvent> clickHandler) {
-                this.clickHandler = clickHandler;
-                return this;
-            }
-
-            EditButton build() {
-                return new EditButton(permission, outcome, renderer, clickHandler);
-            }
-        }
-    }
 
     private final PlayerServiceImpl playerManager;
     private final MenuItems menuItems;
@@ -198,19 +118,17 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
     private void buildButtons() {
         register(
                 SLOT_WORLD_INFO,
-                EditButton.builder()
+                MenuButton.builder()
                         .permission(Permissions.EDIT_ICON)
-                        .outcome(ClickOutcome.SUBMENU)
-                        .render((player, inventory) -> renderer.renderWorldInfo(player, inventory, SLOT_WORLD_INFO))
+                        .render((player, inventory, slot) -> renderer.renderWorldInfo(player, inventory, slot))
                         .onClick(this::onWorldInfoClick)
                         .build());
 
-        EditMenuToggles.TOGGLES.forEach((slot, toggle) -> register(
-                slot,
-                EditButton.builder()
+        EditMenuToggles.TOGGLES.forEach((toggleSlot, toggle) -> register(
+                toggleSlot,
+                MenuButton.builder()
                         .permission(toggle.permission())
-                        .outcome(ClickOutcome.REOPEN)
-                        .render((player, inventory) ->
+                        .render((player, inventory, slot) ->
                                 toggle.render(menuItems, buildWorld.getData(), player, inventory, slot))
                         .onClick((player, event) -> {
                             toggle.flip(buildWorld.getData());
@@ -220,10 +138,9 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
         register(
                 SLOT_TIME,
-                EditButton.builder()
+                MenuButton.builder()
                         .permission(Permissions.EDIT_TIME)
-                        .outcome(ClickOutcome.REOPEN)
-                        .render((player, inventory) -> renderer.renderTime(player, inventory, SLOT_TIME))
+                        .render((player, inventory, slot) -> renderer.renderTime(player, inventory, slot))
                         .onClick((player, event) -> {
                             changeTime(player);
                             reopen(player);
@@ -232,22 +149,20 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
         register(
                 SLOT_BUTCHER,
-                EditButton.builder()
+                MenuButton.builder()
                         .permission(Permissions.EDIT_ENTITIES)
-                        .outcome(ClickOutcome.CLOSE)
-                        .render((player, inventory) -> renderer.renderButcher(player, inventory, SLOT_BUTCHER))
+                        .render((player, inventory, slot) -> renderer.renderButcher(player, inventory, slot))
                         .onClick((player, event) -> removeEntities(player))
                         .build());
 
         register(
                 SLOT_PHYSICS,
-                EditButton.builder()
+                MenuButton.builder()
                         .permission(Permissions.EDIT_PHYSICS)
-                        .outcome(ClickOutcome.REOPEN)
-                        .render((player, inventory) -> menuItems.addToggleItem(
+                        .render((player, inventory, slot) -> menuItems.addToggleItem(
                                 player,
                                 inventory,
-                                SLOT_PHYSICS,
+                                slot,
                                 XMaterial.SAND,
                                 buildWorld.getData().get(WorldDataKey.PHYSICS),
                                 "worldeditor_physics_item",
@@ -257,28 +172,25 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
         register(
                 SLOT_BUILDERS,
-                EditButton.builder()
+                MenuButton.builder()
                         .permission(Permissions.EDIT_BUILDERS)
-                        .outcome(ClickOutcome.REOPEN)
                         .render(this::renderBuilders)
                         .onClick(this::onBuildersClick)
                         .build());
 
         register(
                 SLOT_VISIBILITY,
-                EditButton.builder()
+                MenuButton.builder()
                         .permission(Permissions.EDIT_VISIBILITY)
-                        .outcome(ClickOutcome.REOPEN)
                         .render(this::renderVisibility)
                         .onClick(this::onVisibilityClick)
                         .build());
 
         register(
                 SLOT_GAMERULES,
-                EditButton.builder()
+                MenuButton.builder()
                         .permission(Permissions.EDIT_GAMERULES)
-                        .outcome(ClickOutcome.SUBMENU)
-                        .render((player, inventory) -> renderer.renderGameRules(player, inventory, SLOT_GAMERULES))
+                        .render((player, inventory, slot) -> renderer.renderGameRules(player, inventory, slot))
                         .onClick((player, event) -> {
                             XSound.BLOCK_CHEST_OPEN.play(player);
                             menus.openGameRules(buildWorld, player);
@@ -287,10 +199,9 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
         register(
                 SLOT_DIFFICULTY,
-                EditButton.builder()
+                MenuButton.builder()
                         .permission(Permissions.EDIT_DIFFICULTY)
-                        .outcome(ClickOutcome.REOPEN)
-                        .render((player, inventory) -> renderer.renderDifficulty(player, inventory, SLOT_DIFFICULTY))
+                        .render((player, inventory, slot) -> renderer.renderDifficulty(player, inventory, slot))
                         .onClick((player, event) -> {
                             cycleDifficulty();
                             reopen(player);
@@ -299,10 +210,9 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
         register(
                 SLOT_STATUS,
-                EditButton.builder()
+                MenuButton.builder()
                         .permission(Permissions.EDIT_STATUS)
-                        .outcome(ClickOutcome.SUBMENU)
-                        .render((player, inventory) -> renderer.renderStatus(player, inventory, SLOT_STATUS))
+                        .render((player, inventory, slot) -> renderer.renderStatus(player, inventory, slot))
                         .onClick((player, event) -> {
                             XSound.ENTITY_CHICKEN_EGG.play(player);
                             menus.openStatus(buildWorld, player);
@@ -311,10 +221,9 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
         register(
                 SLOT_PROJECT,
-                EditButton.builder()
+                MenuButton.builder()
                         .permission(Permissions.EDIT_PROJECT)
-                        .outcome(ClickOutcome.INPUT)
-                        .render((player, inventory) -> renderer.renderProject(player, inventory, SLOT_PROJECT))
+                        .render((player, inventory, slot) -> renderer.renderProject(player, inventory, slot))
                         .onClick((player, event) -> {
                             XSound.ENTITY_CHICKEN_EGG.play(player);
                             menus.promptWorldProject(buildWorld, player);
@@ -323,10 +232,9 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
 
         register(
                 SLOT_PERMISSION,
-                EditButton.builder()
+                MenuButton.builder()
                         .permission(Permissions.EDIT_PERMISSION)
-                        .outcome(ClickOutcome.INPUT)
-                        .render((player, inventory) -> renderer.renderPermission(player, inventory, SLOT_PERMISSION))
+                        .render((player, inventory, slot) -> renderer.renderPermission(player, inventory, slot))
                         .onClick((player, event) -> {
                             XSound.ENTITY_CHICKEN_EGG.play(player);
                             menus.promptWorldPermission(buildWorld, player);
@@ -386,12 +294,12 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         return buildWorld.getBuilders().isCreator(player) || player.hasPermission(BuildSystemPlugin.ADMIN_PERMISSION);
     }
 
-    private void renderBuilders(Player player, Inventory inventory) {
+    private void renderBuilders(Player player, Inventory inventory, int slot) {
         if (canManageBuilders(player)) {
             menuItems.addToggleItem(
                     player,
                     inventory,
-                    SLOT_BUILDERS,
+                    slot,
                     XMaterial.IRON_PICKAXE,
                     buildWorld.getData().get(WorldDataKey.BUILDERS_ENABLED),
                     "worldeditor_builders_item",
@@ -400,7 +308,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
             ItemBuilder.of(XMaterial.BARRIER)
                     .name(messages.getString("worldeditor_builders_not_creator_item", player))
                     .lore(messages.getStringList("worldeditor_builders_not_creator_lore", player))
-                    .into(inventory, SLOT_BUILDERS);
+                    .into(inventory, slot);
         }
     }
 
@@ -408,14 +316,14 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         return playerManager.canCreateWorld(player, Visibility.matchVisibility(isPrivate));
     }
 
-    private void renderVisibility(Player player, Inventory inventory) {
+    private void renderVisibility(Player player, Inventory inventory, int slot) {
         String displayName = messages.getString("worldeditor_visibility_item", player);
         boolean isPrivate = buildWorld.getData().get(WorldDataKey.VISIBILITY).isPrivate();
 
         if (!canChangeVisibility(player, isPrivate)) {
             ItemBuilder.of(XMaterial.BARRIER)
                     .name("§c§m" + ChatColor.stripColor(displayName))
-                    .into(inventory, SLOT_VISIBILITY);
+                    .into(inventory, slot);
             return;
         }
 
@@ -423,7 +331,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
         List<String> lore = messages.getStringList(
                 isPrivate ? "worldeditor_visibility_lore_private" : "worldeditor_visibility_lore_public", player);
 
-        ItemBuilder.of(material).name(displayName).lore(lore).into(inventory, SLOT_VISIBILITY);
+        ItemBuilder.of(material).name(displayName).lore(lore).into(inventory, slot);
     }
 
     @Override
@@ -502,16 +410,6 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
             }
         });
         return permissions;
-    }
-
-    /**
-     * The slot &rarr; {@link ClickOutcome} classification, derived from the button registry. Exposed for the golden
-     * test that pins the per-slot contract.
-     */
-    Map<Integer, ClickOutcome> outcomeBySlot() {
-        Map<Integer, ClickOutcome> outcomes = new LinkedHashMap<>();
-        buttons().forEach((slot, button) -> outcomes.put(slot, button.outcome()));
-        return outcomes;
     }
 
     private void cycleDifficulty() {

@@ -43,98 +43,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
+public class SettingsMenu extends ButtonMenu<MenuButton> {
 
     private static final int DESIGN_SLOT = 11;
-
-    /**
-     * Classifies a settings slot's click behavior, so the per-slot contract can be asserted as data. {@code TOGGLE}
-     * always accepts; {@code REJECTABLE} (the scoreboard slot) may reject when disabled in config; {@code SUBMENU} (the
-     * design slot) opens another menu.
-     */
-    enum ClickOutcome {
-        TOGGLE,
-        REJECTABLE,
-        SUBMENU
-    }
-
-    /**
-     * A single settings slot: its permission {@code node} suffix (or {@code null} for the design slot, which has no
-     * permission), its {@link ClickOutcome} classification, and its render/click behavior. Replaces the old private
-     * {@code Toggle} record and the hand-rolled dispatch.
-     */
-    record SettingsButton(
-            @Nullable String node,
-            ClickOutcome outcome,
-            MenuButton.Renderer renderer,
-            BiConsumer<Player, InventoryClickEvent> clickHandler)
-            implements MenuButton {
-
-        @Override
-        public void render(Player player, Inventory inventory, int slot) {
-            renderer.render(player, inventory, slot);
-        }
-
-        @Override
-        public void onClick(Player player, InventoryClickEvent event) {
-            clickHandler.accept(player, event);
-        }
-
-        /**
-         * {@return the full permission node for this button, or {@code null} for the unrestricted design slot} The
-         * short {@link #node()} is the configurable part; the shared prefix is applied here so the menu enforces the
-         * same string the golden test pins.
-         */
-        @Override
-        public @Nullable String permission() {
-            return node == null ? null : Permissions.setting(node);
-        }
-
-        static Builder builder() {
-            return new Builder();
-        }
-
-        /**
-         * Fluent builder for a {@link SettingsButton}. {@code outcome} defaults to {@link ClickOutcome#TOGGLE}; the
-         * {@code node}, renderer, and click handler default to none/no-op until set.
-         */
-        static final class Builder {
-
-            private @Nullable String node;
-            private ClickOutcome outcome = ClickOutcome.TOGGLE;
-            private MenuButton.Renderer renderer = (player, inventory, slot) -> {};
-            private BiConsumer<Player, InventoryClickEvent> clickHandler = (player, event) -> {};
-
-            private Builder() {}
-
-            Builder node(@Nullable String node) {
-                this.node = node;
-                return this;
-            }
-
-            Builder outcome(ClickOutcome outcome) {
-                this.outcome = outcome;
-                return this;
-            }
-
-            Builder render(MenuButton.Renderer renderer) {
-                this.renderer = renderer;
-                return this;
-            }
-
-            Builder onClick(BiConsumer<Player, InventoryClickEvent> clickHandler) {
-                this.clickHandler = clickHandler;
-                return this;
-            }
-
-            SettingsButton build() {
-                return new SettingsButton(node, outcome, renderer, clickHandler);
-            }
-        }
-    }
 
     private final SettingsService settingsManager;
     private final ConfigService configService;
@@ -163,8 +76,7 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
     private void buildButtons() {
         register(
                 DESIGN_SLOT,
-                SettingsButton.builder()
-                        .outcome(ClickOutcome.SUBMENU)
+                MenuButton.builder()
                         .render(this::renderDesign)
                         .onClick((player, event) -> {
                             menus.openDesign(player);
@@ -286,7 +198,7 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
                         (player, s) -> s.setSpawnTeleport(!s.isSpawnTeleport())));
     }
 
-    private SettingsButton toggleButton(
+    private MenuButton toggleButton(
             String node,
             String itemKey,
             String loreKey,
@@ -301,16 +213,15 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
      * live settings at click time — equivalent to the previous per-click snapshot. The slot is supplied at render time,
      * so it is declared only once, where the button is {@link #register(int, MenuButton) registered}.
      */
-    private SettingsButton toggleButton(
+    private MenuButton toggleButton(
             String node,
             String itemKey,
             String loreKey,
             Function<Settings, XMaterial> material,
             Predicate<Settings> enabled,
             BiConsumer<Player, Settings> flip) {
-        return SettingsButton.builder()
-                .node(node)
-                .outcome(ClickOutcome.TOGGLE)
+        return MenuButton.builder()
+                .permission(Permissions.setting(node))
                 .render((player, inventory, slot) -> {
                     Settings settings = settingsManager.getSettings(player);
                     menuItems.addToggleItem(
@@ -322,17 +233,16 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
                             itemKey,
                             loreKey);
                 })
-                .onClick((player, event) -> handleToggle(player, node, () -> {
+                .onClick((player, event) -> handleToggle(player, () -> {
                     flip.accept(player, settingsManager.getSettings(player));
                     return true;
                 }))
                 .build();
     }
 
-    private SettingsButton scoreboardButton() {
-        return SettingsButton.builder()
-                .node("scoreboard")
-                .outcome(ClickOutcome.REJECTABLE)
+    private MenuButton scoreboardButton() {
+        return MenuButton.builder()
+                .permission(Permissions.setting("scoreboard"))
                 .render((player, inventory, slot) -> {
                     boolean scoreboardEnabled =
                             configService.current().settings().scoreboard();
@@ -351,7 +261,6 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
                             configService.current().settings().scoreboard();
                     handleToggle(
                             player,
-                            "scoreboard",
                             () -> toggles.toggleScoreboard(
                                     player, settingsManager.getSettings(player), scoreboardEnabled));
                 })
@@ -363,7 +272,7 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
      * {@link #onPermissionDenied}); a rejected toggle (scoreboard disabled in config) plays the break sound without
      * re-opening.
      */
-    private void handleToggle(Player player, String node, BooleanSupplier onToggle) {
+    private void handleToggle(Player player, BooleanSupplier onToggle) {
         if (!onToggle.getAsBoolean()) {
             XSound.ENTITY_ITEM_BREAK.play(player);
             return;
@@ -408,21 +317,11 @@ public class SettingsMenu extends ButtonMenu<SettingsMenu.SettingsButton> {
     Map<Integer, String> permissionNodeBySlot() {
         Map<Integer, String> nodes = new LinkedHashMap<>();
         buttons().forEach((slot, button) -> {
-            String node = button.node();
-            if (node != null) {
-                nodes.put(slot, Permissions.setting(node));
+            String permission = button.permission();
+            if (permission != null) {
+                nodes.put(slot, permission);
             }
         });
         return nodes;
-    }
-
-    /**
-     * The slot &rarr; {@link ClickOutcome} classification, derived from the button registry. Exposed for the golden
-     * test that pins the per-slot contract.
-     */
-    Map<Integer, ClickOutcome> outcomeBySlot() {
-        Map<Integer, ClickOutcome> outcomes = new LinkedHashMap<>();
-        buttons().forEach((slot, button) -> outcomes.put(slot, button.outcome()));
-        return outcomes;
     }
 }

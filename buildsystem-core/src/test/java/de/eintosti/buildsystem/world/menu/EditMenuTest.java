@@ -21,18 +21,27 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.world.menu.EditMenu.ClickOutcome;
+import de.eintosti.buildsystem.test.SoundlessPlayer;
 import java.util.Map;
-import org.bukkit.entity.Player;
+import java.util.Optional;
+import org.bukkit.Difficulty;
+import org.bukkit.Material;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,18 +50,24 @@ import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 
 /**
- * Golden test pinning the {@link EditMenu} slot &rarr; permission and slot &rarr; {@link ClickOutcome} contract. The
- * menu is built through its real production constructor under a {@link MockBukkit} server, so no test-only seam is
- * required.
+ * Golden test pinning the {@link EditMenu} slot &rarr; permission contract, plus what a click on the non-toggle slots
+ * does. The menu is built through its real production constructor under a {@link MockBukkit} server, so no test-only
+ * seam is required.
  */
 @NullMarked
 class EditMenuTest {
 
     private ServerMock server;
+    private Menus menus;
+    private BuildWorld buildWorld;
+    private SoundlessPlayer player;
 
     @BeforeEach
     void setUp() {
         server = MockBukkit.mock();
+        menus = mock(Menus.class);
+        buildWorld = mock(BuildWorld.class);
+        player = SoundlessPlayer.join(server, "Alex");
     }
 
     @AfterEach
@@ -63,15 +78,13 @@ class EditMenuTest {
     private EditMenu menu() {
         Messages messages = mock(Messages.class);
         when(messages.getString(anyString(), any())).thenReturn("Title");
-        BuildWorld buildWorld = mock(BuildWorld.class);
-        Player player = server.addPlayer();
         return new EditMenu(
                 messages,
                 mock(PlayerServiceImpl.class),
                 mock(MenuItems.class),
                 mock(ConfigService.class),
                 mock(Prompts.class),
-                mock(Menus.class),
+                menus,
                 buildWorld,
                 player);
     }
@@ -112,36 +125,49 @@ class EditMenuTest {
     }
 
     @Test
-    void outcomeBySlot_classifiesEachSlot() {
-        Map<Integer, ClickOutcome> outcomes = menu().outcomeBySlot();
+    void gameRules_opensTheGameRulesMenu() {
+        player.setOp(true);
+        click(menu(), 38);
 
-        // World-info icon editor opens the material picker
-        assertEquals(ClickOutcome.SUBMENU, outcomes.get(3));
+        verify(menus).openGameRules(buildWorld, player);
+    }
 
-        // Toggles all re-open
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(5));
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(20));
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(21));
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(22));
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(24));
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(31));
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(33));
+    @Test
+    void difficulty_cyclesAndReopens() {
+        player.setOp(true);
+        when(buildWorld.cycleDifficulty()).thenReturn(Difficulty.EASY);
+        when(buildWorld.getWorld()).thenReturn(Optional.empty());
 
-        // Re-open actions
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(23)); // time
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(30)); // builders (left-click toggle)
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(32)); // visibility
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(39)); // difficulty
+        click(menu(), 39);
 
-        // Sub-menus
-        assertEquals(ClickOutcome.SUBMENU, outcomes.get(38)); // gamerules
-        assertEquals(ClickOutcome.SUBMENU, outcomes.get(40)); // status
+        verify(buildWorld).cycleDifficulty();
+        verify(menus).reopenEdit(buildWorld, player);
+    }
 
-        // Chat input
-        assertEquals(ClickOutcome.INPUT, outcomes.get(41)); // project
-        assertEquals(ClickOutcome.INPUT, outcomes.get(42)); // permission
+    @Test
+    void project_promptsForTheProject() {
+        player.setOp(true);
+        click(menu(), 41);
 
-        // Closes the inventory
-        assertEquals(ClickOutcome.CLOSE, outcomes.get(29)); // butcher
+        verify(menus).promptWorldProject(buildWorld, player);
+    }
+
+    @Test
+    void withoutPermission_theClickDoesNothing() {
+        click(menu(), 38);
+
+        verify(menus, never()).openGameRules(buildWorld, player);
+    }
+
+    private void click(EditMenu menu, int slot) {
+        menu.getInventory()
+                .setItem(slot, ItemBuilder.of(Material.STONE).name("x").build());
+        InventoryClickEvent event = new InventoryClickEvent(
+                player.openInventory(menu.getInventory()),
+                SlotType.CONTAINER,
+                slot,
+                ClickType.LEFT,
+                InventoryAction.PICKUP_ALL);
+        menu.handleClick(event);
     }
 }
