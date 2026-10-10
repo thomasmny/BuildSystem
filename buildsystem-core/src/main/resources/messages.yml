@@ -117,6 +117,7 @@ physics_unknown_world: "%prefix% &cUnknown world."
 physics_world_not_imported: "%prefix% &cWorld must be imported: /worlds import <world>"
 physics_activated: "%prefix% &7Physics in &b%world% &7were &aactivated&7."
 physics_activated_all: "%prefix% &7Physics in &ball worlds &7were &aactivated&7."
+physics_activated_all_skipped: "%prefix% &7Physics were &aactivated &7in &b%activated% &7worlds. &b%skipped% &7worlds were skipped because you lack permission."
 physics_deactivated: "%prefix% &7Physics in &b%world% &7were &cdeactivated&7."
 physics_deactivated_in_world: "%prefix% &7Physics in &b%world% &7are currently &cdeactivated&7."
 

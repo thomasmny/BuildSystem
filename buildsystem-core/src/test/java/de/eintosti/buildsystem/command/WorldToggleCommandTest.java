@@ -85,6 +85,17 @@ class WorldToggleCommandTest {
 
         verify(allowed.getData()).set(WorldDataKey.PHYSICS, true);
         verify(denied.getData(), never()).set(eq(WorldDataKey.PHYSICS), anyBoolean());
+        verify(messages).sendMessage(eq(player), eq("physics_activated_all_skipped"), any());
+    }
+
+    @Test
+    void physicsAll_withPermissionEverywhere_saysAllWorlds() {
+        BuildWorld allowed = buildWorld(true);
+        when(worldStorage.getBuildWorlds()).thenReturn(List.of(allowed));
+
+        run(Toggle.PHYSICS, "all");
+
+        verify(allowed.getData()).set(WorldDataKey.PHYSICS, true);
         verify(messages).sendMessage(player, "physics_activated_all");
     }
 
@@ -98,6 +109,7 @@ class WorldToggleCommandTest {
         verify(denied.getData(), never()).set(eq(WorldDataKey.PHYSICS), anyBoolean());
         verify(messages).sendPermissionError(player);
         verify(messages, never()).sendMessage(player, "physics_activated_all");
+        verify(messages, never()).sendMessage(eq(player), eq("physics_activated_all_skipped"), any());
     }
 
     @Test

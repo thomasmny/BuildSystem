@@ -136,7 +136,18 @@ public class WorldToggleCommand extends CommandBase {
         }
 
         permitted.forEach(world -> world.getData().set(toggle.key, !toggle.inverted));
-        messages.sendMessage(player, toggle.label + "_activated_all");
+        int skipped = worldStorage.getBuildWorlds().size() - permitted.size();
+        if (skipped == 0) {
+            messages.sendMessage(player, toggle.label + "_activated_all");
+        } else {
+            messages.sendMessage(
+                    player,
+                    toggle.label + "_activated_all_skipped",
+                    Placeholders.of()
+                            .add("%activated%", permitted.size())
+                            .add("%skipped%", skipped)
+                            .build());
+        }
     }
 
     private void flip(Player player, @Nullable World world) {
