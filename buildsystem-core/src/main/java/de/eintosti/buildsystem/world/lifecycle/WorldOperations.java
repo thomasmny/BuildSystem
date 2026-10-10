@@ -23,8 +23,9 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -36,7 +37,6 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
  * The shared steps of the operations that take a world away from the server for a while: delete, unimport, rename,
@@ -86,22 +86,29 @@ public final class WorldOperations {
 
     /**
      * Moves the players out of the world and unloads it. When the unload does not go through, the players are sent
-     * back and the world is left as it was.
+     * back to where they stood and the world is left as it was. The main world is refused before anyone is moved,
+     * since Bukkit never unloads it.
      *
-     * @param messageKey Sent to each player moved, and used as the kick message when there is nowhere to move them
+     * @param messageKey Sent to each player moved
      * @return The players that were moved, for the caller to bring back once the world is loaded again
-     * @throws WorldOperationRefusedException When a listener cancelled the unload or Bukkit refused it
+     * @throws WorldOperationRefusedException When it is the main world, a listener cancelled the unload or Bukkit
+     *     refused it
      */
     public List<Player> takeOffline(BuildWorld buildWorld, String messageKey, SaveBehavior saveBehavior) {
         String worldName = buildWorld.getName();
-        List<Player> moved = evacuate(worldName, messageKey);
+        World world = WorldNames.bukkitWorld(worldName);
+        if (world != null && isMainWorld(world)) {
+            throw WorldOperationRefusedException.notUnloaded(worldName);
+        }
+
+        Map<Player, Location> moved = world == null ? Map.of() : evacuate(world, messageKey);
         // forceUnload is void API, so whether the world went away is read back from the server.
         buildWorld.getUnloader().forceUnload(saveBehavior);
         if (WorldNames.bukkitWorld(worldName) != null) {
-            moved.forEach(buildWorld.getTeleporter()::teleport);
+            moved.forEach(Player::teleport);
             throw WorldOperationRefusedException.notUnloaded(worldName);
         }
-        return moved;
+        return List.copyOf(moved.keySet());
     }
 
     /**
@@ -119,53 +126,44 @@ public final class WorldOperations {
     }
 
     /**
-     * Moves every player out of the world so it can be unloaded: to the server spawn when it lies in another loaded
-     * world, otherwise to the main world's spawn. When the world is the main world and holds the spawn, there is
-     * nowhere to go and the players are kicked. The teleports are synchronous, so the world is empty when this returns,
+     * Moves every player out of a world other than the main world: to the server spawn when it lies in another world,
+     * otherwise to the main world's spawn. The teleports are synchronous, so the world is empty when this returns,
      * unless a plugin cancelled a teleport.
      *
-     * @param worldName The world to empty
-     * @param messageKey The message sent to each player moved, and used as the kick message
-     * @return The players that were moved
+     * @param messageKey The message sent to each player moved
+     * @return Each player moved, with where they stood
      */
-    public List<Player> evacuate(String worldName, String messageKey) {
-        World world = WorldNames.bukkitWorld(worldName);
-        if (world == null) {
-            return List.of();
+    Map<Player, Location> evacuate(World world, String messageKey) {
+        List<Player> players = List.copyOf(world.getPlayers());
+        if (players.isEmpty()) {
+            return Map.of();
         }
 
-        Location target = evacuationTarget(worldName, world);
-        List<Player> moved = new ArrayList<>();
-        for (Player player : List.copyOf(world.getPlayers())) {
-            if (target == null) {
-                player.kickPlayer(messages.getString(messageKey, player));
-                continue;
-            }
-
+        Location target = evacuationTarget(world);
+        Map<Player, Location> moved = new LinkedHashMap<>();
+        for (Player player : players) {
+            Location from = player.getLocation();
             player.setFallDistance(0);
             if (player.teleport(target)) {
                 messages.sendMessage(player, messageKey);
-                moved.add(player);
+                moved.put(player, from);
             }
         }
         return moved;
     }
 
-    private @Nullable Location evacuationTarget(String worldName, World world) {
-        if (!spawnService.isIn(worldName)) {
-            Location spawn = spawnService.getSpawn();
-            if (spawn != null) {
-                return spawn;
-            }
+    private static boolean isMainWorld(World world) {
+        List<World> worlds = Bukkit.getWorlds();
+        return !worlds.isEmpty() && worlds.getFirst().equals(world);
+    }
+
+    private Location evacuationTarget(World world) {
+        Location spawn = spawnService.getSpawn();
+        if (spawn != null && !spawnService.isIn(world.getName())) {
+            return spawn;
         }
 
-        List<World> worlds = Bukkit.getWorlds();
-        if (worlds.isEmpty() || worlds.getFirst().equals(world)) {
-            return null;
-        }
-        World fallback = worlds.getFirst();
-        return fallback.getHighestBlockAt(fallback.getSpawnLocation())
-                .getLocation()
-                .add(0.5, 1, 0.5);
+        World main = Bukkit.getWorlds().getFirst();
+        return main.getHighestBlockAt(main.getSpawnLocation()).getLocation().add(0.5, 1, 0.5);
     }
 }

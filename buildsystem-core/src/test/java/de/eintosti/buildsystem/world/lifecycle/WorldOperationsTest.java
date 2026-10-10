@@ -25,15 +25,16 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
-import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -86,9 +87,11 @@ class WorldOperationsTest {
         when(spawnService.getSpawn()).thenReturn(spawn);
         PlayerMock player = playerIn(doomed);
 
-        List<Player> moved = operations.evacuate("doomed", "key");
+        Location from = player.getLocation();
 
-        assertEquals(List.of(player), moved);
+        Map<Player, Location> moved = operations.evacuate(doomed, "key");
+
+        assertEquals(Map.of(player, from), moved);
         assertEquals(lobby, player.getWorld());
         assertTrue(doomed.getPlayers().isEmpty());
     }
@@ -100,21 +103,25 @@ class WorldOperationsTest {
         when(spawnService.getSpawn()).thenReturn(new Location(doomed, 0, 70, 0));
         PlayerMock player = playerIn(doomed);
 
-        operations.evacuate("doomed", "key");
+        operations.evacuate(doomed, "key");
 
         assertEquals(mainWorld, player.getWorld());
         assertTrue(doomed.getPlayers().isEmpty());
     }
 
     @Test
-    void evacuate_withNowhereToGo_kicksThePlayers() {
-        when(spawnService.isIn("main")).thenReturn(true);
+    void takeOffline_ofTheMainWorld_isRefusedWithoutMovingAnyone() {
         PlayerMock player = playerIn(mainWorld);
+        Location from = player.getLocation();
+        BuildWorld world = mock(BuildWorld.class, RETURNS_DEEP_STUBS);
+        when(world.getName()).thenReturn("main");
 
-        List<Player> moved = operations.evacuate("main", "key");
+        assertThrows(
+                WorldOperationRefusedException.class, () -> operations.takeOffline(world, "key", SaveBehavior.SAVE));
 
-        assertTrue(moved.isEmpty());
-        assertFalse(player.isOnline());
+        assertTrue(player.isOnline());
+        assertEquals(from, player.getLocation());
+        verify(world.getUnloader(), never()).forceUnload(any());
     }
 
     @Test
@@ -176,16 +183,17 @@ class WorldOperationsTest {
         WorldMock arena = server.addSimpleWorld("arena");
         when(spawnService.getSpawn()).thenReturn(new Location(lobby, 5, 70, 5));
         PlayerMock player = playerIn(arena);
+        Location stoodAt = new Location(arena, 12, 80, -7);
+        player.teleport(stoodAt);
         BuildWorld world = mock(BuildWorld.class, RETURNS_DEEP_STUBS);
         when(world.getName()).thenReturn("arena");
-        WorldTeleporter teleporter = world.getTeleporter();
 
         WorldOperationRefusedException refused = assertThrows(
                 WorldOperationRefusedException.class, () -> operations.takeOffline(world, "key", SaveBehavior.SAVE));
 
         assertEquals("worlds_world_unload_failed", refused.messageKey());
         verify(world.getUnloader()).forceUnload(SaveBehavior.SAVE);
-        verify(teleporter).teleport(player);
+        assertEquals(stoodAt, player.getLocation());
     }
 
     @Test

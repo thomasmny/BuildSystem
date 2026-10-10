@@ -224,7 +224,9 @@ class BackupProfileImplTest {
         Files.writeString(worldFolder.resolve("level.dat"), "current");
         Player player = mock(Player.class);
         when(player.teleport(any(Location.class))).thenReturn(true);
-        WorldTeleporter teleporter = loadedWorld(worldFolder, player);
+        Location stoodAt = new Location(null, 12, 80, -7);
+        when(player.getLocation()).thenReturn(stoodAt);
+        loadedWorld(worldFolder, player);
         Backup backup = backup(1_000L);
         when(backupStorage.downloadBackup(backup))
                 .thenReturn(
@@ -235,7 +237,7 @@ class BackupProfileImplTest {
                 .handle((ignored, throwable) -> null)
                 .get(5, TimeUnit.SECONDS);
 
-        verify(teleporter).teleport(player);
+        verify(player).teleport(stoodAt);
         verify(messages).sendMessage(eq(player), eq("worlds_world_unload_failed"), any(Placeholders.class));
         assertEquals("current", Files.readString(worldFolder.resolve("level.dat")));
         assertFalse(operations.isBusy(buildWorld));
@@ -261,7 +263,7 @@ class BackupProfileImplTest {
      * Makes {@link #buildWorld} a loaded world named {@code arena} that is not the server's main world, with the given
      * players inside. Its unloader does nothing, as when a listener cancels the unload.
      */
-    private WorldTeleporter loadedWorld(Path folder, Player... players) {
+    private void loadedWorld(Path folder, Player... players) {
         World world = mock(World.class);
         when(world.getWorldFolder()).thenReturn(folder.toFile());
         when(world.getPlayers()).thenReturn(List.of(players));
@@ -271,9 +273,7 @@ class BackupProfileImplTest {
         when(buildWorld.getName()).thenReturn("arena");
         when(buildWorld.getWorld()).thenReturn(Optional.of(world));
         lenient().when(buildWorld.getUnloader()).thenReturn(mock(WorldUnloader.class));
-        WorldTeleporter teleporter = mock(WorldTeleporter.class);
-        lenient().when(buildWorld.getTeleporter()).thenReturn(teleporter);
-        return teleporter;
+        lenient().when(buildWorld.getTeleporter()).thenReturn(mock(WorldTeleporter.class));
     }
 
     private Path archiveWithLevelDat() throws IOException {
