@@ -129,7 +129,6 @@ public class BukkitWorldFactory {
 
         if (bukkitWorld != null) {
             applyWorldSettings(bukkitWorld);
-            versionGuard.updateWorldDataVersion();
             generationDataStore.save(bukkitWorld, this.worldType, this.customGenerator);
         }
 
