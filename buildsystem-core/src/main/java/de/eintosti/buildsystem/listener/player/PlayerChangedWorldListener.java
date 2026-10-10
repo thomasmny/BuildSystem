@@ -133,7 +133,9 @@ public class PlayerChangedWorldListener implements Listener {
             }
         } else {
             player.removePotionEffect(XPotion.INVISIBILITY.get());
-            Bukkit.getOnlinePlayers().forEach(pl -> pl.showPlayer(player));
+            Bukkit.getOnlinePlayers().stream()
+                    .filter(pl -> !settingsManager.getSettings(pl).isHidePlayers())
+                    .forEach(pl -> pl.showPlayer(player));
         }
 
         navigatorService.giveNavigator(player);
