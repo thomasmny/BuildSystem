@@ -79,19 +79,36 @@ public final class SerializedObjects {
         if (value instanceof Map<?, ?> map) {
             Map<String, Object> revived = new LinkedHashMap<>();
             map.forEach((key, nested) -> revived.put(String.valueOf(key), reviveValue(nested)));
-            if (!revived.containsKey(ConfigurationSerialization.SERIALIZED_TYPE_KEY)) {
-                return revived;
-            }
-            // YAML hands deserializers an Integer for a small whole number, and some cast to it.
-            revived.replaceAll((key, nested) -> nested instanceof Long number && number == number.intValue()
-                    ? Integer.valueOf(number.intValue())
-                    : nested);
-            return ConfigurationSerialization.deserializeObject(revived);
+            return revived.containsKey(ConfigurationSerialization.SERIALIZED_TYPE_KEY)
+                    ? ConfigurationSerialization.deserializeObject(asYamlNumbers(revived))
+                    : revived;
         }
         if (value instanceof List<?> list) {
             List<@Nullable Object> revived = new ArrayList<>();
             list.forEach(element -> revived.add(reviveValue(element)));
             return revived;
+        }
+        return value;
+    }
+
+    /**
+     * {@return {@code value} with every whole number that fits an int as an Integer, at any depth} YAML hands
+     * deserializers such numbers as Integer, and some cast to it, such as for enchantment levels.
+     */
+    @SuppressWarnings("unchecked")
+    private static <V> V asYamlNumbers(V value) {
+        if (value instanceof Long number && number == number.intValue()) {
+            return (V) Integer.valueOf(number.intValue());
+        }
+        if (value instanceof Map<?, ?> map) {
+            Map<Object, Object> converted = new LinkedHashMap<>();
+            map.forEach((key, nested) -> converted.put(key, asYamlNumbers(nested)));
+            return (V) converted;
+        }
+        if (value instanceof List<?> list) {
+            List<@Nullable Object> converted = new ArrayList<>();
+            list.forEach(element -> converted.add(asYamlNumbers(element)));
+            return (V) converted;
         }
         return value;
     }
