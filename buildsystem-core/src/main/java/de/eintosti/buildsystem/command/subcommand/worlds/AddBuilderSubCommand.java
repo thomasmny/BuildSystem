@@ -60,7 +60,7 @@ public class AddBuilderSubCommand extends WorldSubCommand {
     @Override
     protected void execute(Player player, BuildWorld buildWorld, String[] args) {
         switch (args.length) {
-            case 1 -> getAddBuilderInput(player, buildWorld, true);
+            case 1 -> promptForBuilder(player, buildWorld, true);
             case 2 -> addBuilder(player, buildWorld, args[1], true);
             default -> messages.sendMessage(player, "worlds_addbuilder_usage");
         }
@@ -101,13 +101,18 @@ public class AddBuilderSubCommand extends WorldSubCommand {
         }
     }
 
+    /**
+     * Asks for a builder's name from the editor menu, which reaches this without the command's permission check.
+     */
     public void getAddBuilderInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
-        // The command checked this already; the editor menu reaches this prompt directly.
         if (!buildWorld.getPermissions().canPerformCommand(player, getArgument().getPermission())) {
             messages.sendPermissionError(player);
             return;
         }
+        promptForBuilder(player, buildWorld, closeInventory);
+    }
 
+    private void promptForBuilder(Player player, BuildWorld buildWorld, boolean closeInventory) {
         prompts.prompt(player).title("enter_player_name").request(input -> {
             String builderName = input.trim();
             addBuilder(player, buildWorld, builderName, closeInventory);
