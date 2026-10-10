@@ -131,14 +131,14 @@ class MenusTest {
         verify(fixture.messages).sendMessage(eq(fixture.player), eq("worlds_delete_canceled"), any(Placeholders.class));
     }
 
-    @ParameterizedTest(name = "slot {0} restores: {1}")
-    @CsvSource({"11, true", "15, false"})
-    void openBackupsConfirmation_onlyConfirmRestores(int slot, boolean restores) {
+    @ParameterizedTest(name = "slot {0}, op {1}, restores: {2}")
+    @CsvSource({"11, true, true", "15, true, false", "11, false, false"})
+    void openBackupsConfirmation_onlyAPermittedConfirmRestores(int slot, boolean op, boolean restores) {
         Messages messages = labelledMessages();
         Services services = mock(Services.class);
         when(services.messages()).thenReturn(messages);
         SoundlessPlayer player = SoundlessPlayer.join(server, "Builder");
-        player.setOp(true);
+        player.setOp(op);
         BackupProfile owner = mock(BackupProfile.class);
         Backup backup = mock(Backup.class);
         when(backup.owner()).thenReturn(owner);
