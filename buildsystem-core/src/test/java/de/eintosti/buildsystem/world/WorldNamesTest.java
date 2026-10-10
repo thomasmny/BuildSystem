@@ -86,6 +86,16 @@ class WorldNamesTest {
     }
 
     @Test
+    void isValidName_rejectsNamesThatDoNotReadBackOrCannotBeKeyed() {
+        assertTrue(WorldNames.isValidName("Lobby"));
+        assertTrue(WorldNames.isValidName("my world"));
+        assertTrue(WorldNames.isValidName("maps:Lobby"));
+        assertFalse(WorldNames.isValidName("minecraft:a:b"));
+        assertFalse(WorldNames.isValidName("maps:a:b"));
+        assertFalse(WorldNames.isValidName("maps:my world"));
+    }
+
+    @Test
     void bukkitName_followsPapersNaming() {
         assertEquals("Lobby", WorldNames.bukkitName("Lobby"));
         assertEquals("maps_lobby", WorldNames.bukkitName("maps:Lobby"));

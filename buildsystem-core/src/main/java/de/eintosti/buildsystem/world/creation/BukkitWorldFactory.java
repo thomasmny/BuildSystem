@@ -105,19 +105,21 @@ public class BukkitWorldFactory {
     }
 
     public @Nullable World generate(VersionCheck versionCheck) {
-        if (WorldNames.isNamespaced(worldName) && !WorldNames.namespacesSupported()) {
-            logger.warning("\"%s\" is in a namespace, which requires Paper. Skipping...".formatted(worldName));
-            return null;
-        }
-
         if (versionCheck == VersionCheck.REQUIRED && versionGuard.isDataVersionTooHigh()) {
             logger.warning("\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping..."
                     .formatted(worldName, versionGuard.parseDataVersion(), versionGuard.getServerDataVersion()));
             return null;
         }
 
-        WorldCreator worldCreator = createWorldCreator();
-        World bukkitWorld = Bukkit.createWorld(worldCreator);
+        WorldCreator worldCreator;
+        try {
+            worldCreator = WorldNames.creator(worldName);
+        } catch (IllegalArgumentException | UnsupportedOperationException e) {
+            // A namespaced world on Spigot, or a stored name that is not a valid key: skip it, not the whole load.
+            logger.warning("\"%s\" cannot be loaded: %s. Skipping...".formatted(worldName, e.getMessage()));
+            return null;
+        }
+        World bukkitWorld = Bukkit.createWorld(configure(worldCreator));
 
         if (bukkitWorld != null) {
             applyDefaultWorldSettings(bukkitWorld);
@@ -129,8 +131,7 @@ public class BukkitWorldFactory {
         return bukkitWorld;
     }
 
-    private WorldCreator createWorldCreator() {
-        WorldCreator worldCreator = WorldNames.creator(worldName);
+    private WorldCreator configure(WorldCreator worldCreator) {
         if (seed != null) {
             worldCreator.seed(seed);
         }

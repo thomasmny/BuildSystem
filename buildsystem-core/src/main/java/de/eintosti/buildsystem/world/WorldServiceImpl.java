@@ -143,6 +143,9 @@ public class WorldServiceImpl implements WorldService {
         if (!WorldNames.isValidNamespace(namespace)) {
             throw new IllegalArgumentException("World name '%s' has an invalid namespace".formatted(name));
         }
+        if (!WorldNames.isValidName(name)) {
+            throw new IllegalArgumentException("World name '%s' is not a valid world id".formatted(name));
+        }
         if (WorldNames.isNamespaced(name) && !WorldNames.namespacesSupported()) {
             throw new UnsupportedOperationException("World namespaces require Paper: '%s'".formatted(name));
         }

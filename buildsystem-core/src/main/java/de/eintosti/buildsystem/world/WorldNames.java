@@ -135,6 +135,15 @@ public final class WorldNames {
     }
 
     /**
+     * {@return whether {@code worldName} reads back as itself and, when namespaced, is a valid key} A second separator
+     * fails both: {@code minecraft:a:b} would be stored as {@code a:b}, which is a different world.
+     */
+    public static boolean isValidName(String worldName) {
+        return path(worldName).indexOf(SEPARATOR) < 0
+                && (!isNamespaced(worldName) || NamespacedKey.fromString(id(worldName)) != null);
+    }
+
+    /**
      * {@return whether the server can create worlds outside the {@code minecraft} namespace}
      */
     public static boolean namespacesSupported() {
