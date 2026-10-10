@@ -322,7 +322,6 @@ world_info:
 worlds_item_receive: "%prefix% &7You received the &bNavigator&7."
 
 worlds_removebuilder_usage: "%prefix% &7Usage: &b/worlds removeBuilder [player]"
-worlds_removebuilder_error: "%prefix% &cError: Please try again!"
 worlds_removebuilder_unknown_world: "%prefix% &cWorld must be imported: /worlds import <world>"
 worlds_removebuilder_player_not_found: "%prefix% &cThat player was not found."
 worlds_removebuilder_not_yourself: "%prefix% &cYou cannot remove yourself as creator."

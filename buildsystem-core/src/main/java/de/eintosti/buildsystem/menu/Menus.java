@@ -144,16 +144,7 @@ public final class Menus {
     }
 
     public void openBuilder(BuildWorld buildWorld, Player player) {
-        new BuilderMenu(
-                        services.messages(),
-                        services.menuItems(),
-                        this,
-                        services.playerLookup(),
-                        scheduler,
-                        plugin.getLogger(),
-                        builderNameKey,
-                        buildWorld,
-                        player)
+        new BuilderMenu(services.messages(), services.menuItems(), this, builderNameKey, buildWorld, player)
                 .open(player);
     }
 
