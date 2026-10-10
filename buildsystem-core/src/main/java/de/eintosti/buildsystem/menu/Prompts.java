@@ -109,13 +109,7 @@ public final class Prompts {
      */
     public @Nullable String sanitizeWorldName(Player player, String input, String defaultNamespace) {
         String worldName = WorldNames.fromInput(input.trim(), defaultNamespace);
-        String namespace = WorldNames.namespace(worldName);
-        if (!WorldNames.isValidNamespace(namespace)) {
-            messages.sendMessage(player, "worlds_world_namespace_invalid", Placeholders.of("%namespace%", namespace));
-            return null;
-        }
-        if (WorldNames.isNamespaced(worldName) && !WorldNames.namespacesSupported()) {
-            messages.sendMessage(player, "worlds_world_namespace_unsupported");
+        if (!checkNamespace(player, worldName)) {
             return null;
         }
 
@@ -124,7 +118,27 @@ public final class Prompts {
                 WorldNames.path(worldName),
                 "worlds_world_creation_invalid_characters",
                 "worlds_world_creation_name_bank");
-        return path == null ? null : WorldNames.of(namespace, path);
+        return path == null ? null : WorldNames.of(WorldNames.namespace(worldName), path);
+    }
+
+    /**
+     * Checks that the server can hold worlds in {@code worldName}'s namespace, telling the player why not.
+     *
+     * @param player The player who typed the name
+     * @param worldName The world name, already resolved from what the player typed
+     * @return Whether the namespace can be used
+     */
+    public boolean checkNamespace(Player player, String worldName) {
+        String namespace = WorldNames.namespace(worldName);
+        if (!WorldNames.isValidNamespace(namespace)) {
+            messages.sendMessage(player, "worlds_world_namespace_invalid", Placeholders.of("%namespace%", namespace));
+            return false;
+        }
+        if (WorldNames.isNamespaced(worldName) && !WorldNames.namespacesSupported()) {
+            messages.sendMessage(player, "worlds_world_namespace_unsupported");
+            return false;
+        }
+        return true;
     }
 
     /**

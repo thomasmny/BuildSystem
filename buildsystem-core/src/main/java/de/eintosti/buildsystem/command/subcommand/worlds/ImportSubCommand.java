@@ -28,6 +28,7 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
+import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.FileUtils;
@@ -50,6 +51,7 @@ import org.jspecify.annotations.Nullable;
 public class ImportSubCommand extends AbstractSubCommand {
 
     private final ConfigService configService;
+    private final Prompts prompts;
     private final PlayerLookupService playerLookupService;
     private final TaskScheduler scheduler;
 
@@ -57,10 +59,12 @@ public class ImportSubCommand extends AbstractSubCommand {
             Messages messages,
             WorldServiceImpl worldService,
             ConfigService configService,
+            Prompts prompts,
             PlayerLookupService playerLookupService,
             TaskScheduler scheduler) {
         super(messages, worldService);
         this.configService = configService;
+        this.prompts = prompts;
         this.playerLookupService = playerLookupService;
         this.scheduler = scheduler;
     }
@@ -84,13 +88,7 @@ public class ImportSubCommand extends AbstractSubCommand {
         }
 
         // Validate the name before touching the filesystem so invalid input cannot probe directory existence
-        String namespace = WorldNames.namespace(worldName);
-        if (!WorldNames.isValidNamespace(namespace)) {
-            messages.sendMessage(player, "worlds_world_namespace_invalid", Placeholders.of("%namespace%", namespace));
-            return;
-        }
-        if (WorldNames.isNamespaced(worldName) && !WorldNames.namespacesSupported()) {
-            messages.sendMessage(player, "worlds_world_namespace_unsupported");
+        if (!prompts.checkNamespace(player, worldName)) {
             return;
         }
 
