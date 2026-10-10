@@ -162,6 +162,24 @@ public final class StorageBackend implements AutoCloseable {
     }
 
     /**
+     * {@return whether the table or collection for {@code kind} exists} A YAML file always counts as existing, so it is
+     * never {@link #drop dropped}.
+     */
+    public boolean exists(EntityKind kind) {
+        return database == null || database.exists(kind);
+    }
+
+    /**
+     * Removes the table or collection for {@code kind} with everything in it. Does nothing for YAML, whose files are
+     * never deleted.
+     */
+    public void drop(EntityKind kind) {
+        if (database != null) {
+            database.drop(kind);
+        }
+    }
+
+    /**
      * {@return whether entries of {@code kind} are stored here} Creates nothing, so that a later start still imports
      * the YAML file into a table or collection that does not exist yet.
      */

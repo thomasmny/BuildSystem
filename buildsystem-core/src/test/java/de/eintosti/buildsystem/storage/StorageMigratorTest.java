@@ -313,6 +313,25 @@ class StorageMigratorTest {
     }
 
     @Test
+    void migrate_thatFails_dropsTheTablesItCreated_soTheNextStartStillImportsTheYamlFile() {
+        live.add(new Note("a", 1));
+        notes.save(live);
+        runAll();
+
+        CompletableFuture<Map<EntityKind, Integer>> migration = migrator.migrate(target(), settings());
+        drain(background);
+        migrator.abort();
+        runAll();
+
+        assertThrows(CompletionException.class, migration::join);
+        try (StorageBackend started = StorageBackend.connect(target(), settings(), dataFolder, LOGGER)) {
+            assertEquals(
+                    List.of("a"),
+                    List.copyOf(started.store(EntityKind.PLAYERS).loadAll().keySet()));
+        }
+    }
+
+    @Test
     void migrate_whileOneRuns_isRefused() {
         CompletableFuture<Map<EntityKind, Integer>> first = migrator.migrate(target(), settings());
 

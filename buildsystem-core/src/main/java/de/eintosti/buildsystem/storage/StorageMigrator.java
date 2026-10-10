@@ -25,9 +25,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -148,9 +150,10 @@ public final class StorageMigrator {
         CompletableFuture<Void> gate = new CompletableFuture<>();
         this.gate = gate;
         AtomicReference<@Nullable StorageBackend> target = new AtomicReference<>();
+        Set<EntityKind> created = EnumSet.noneOf(EntityKind.class);
         Map<EntityKind, Map<String, Map<String, Object>>> snapshots = new EnumMap<>(EntityKind.class);
         // Writes are only held once the target is reachable, so a server that never answers holds nothing back.
-        return CompletableFuture.supplyAsync(() -> open(type, settings, target), background)
+        return CompletableFuture.supplyAsync(() -> open(type, settings, target, created), background)
                 .thenComposeAsync(stores -> hold(gate, snapshots).thenApply(ignored -> stores), mainThread)
                 .thenApplyAsync(stores -> copy(type, stores, snapshots), background)
                 .thenApplyAsync(stores -> switchTo(type, stores, target, gate), mainThread)
@@ -159,16 +162,25 @@ public final class StorageMigrator {
                     snapshots.forEach((kind, entries) -> counts.put(kind, entries.size()));
                     return counts;
                 })
-                .whenComplete((counts, failure) -> {
-                    if (failure != null) {
-                        gate.complete(null);
-                        StorageBackend opened = target.get();
-                        if (opened != null) {
-                            opened.close();
-                        }
-                    }
-                    running.set(false);
-                });
+                .whenCompleteAsync(
+                        (counts, failure) -> {
+                            if (failure != null) {
+                                gate.complete(null);
+                                StorageBackend opened = target.get();
+                                if (opened != null) {
+                                    // Like a failed import, so that the next start still imports the YAML files into
+                                    // them.
+                                    try {
+                                        created.forEach(opened::drop);
+                                    } catch (RuntimeException e) {
+                                        failure.addSuppressed(e);
+                                    }
+                                    opened.close();
+                                }
+                            }
+                            running.set(false);
+                        },
+                        background);
     }
 
     /**
@@ -211,11 +223,17 @@ public final class StorageMigrator {
     private Map<EntityKind, EntityStore> open(
             StorageType type,
             PluginConfig.Storage.Database settings,
-            AtomicReference<@Nullable StorageBackend> target) {
+            AtomicReference<@Nullable StorageBackend> target,
+            Set<EntityKind> created) {
         StorageBackend backend = StorageBackend.connect(type, settings, dataFolder, logger);
         target.set(backend);
         Map<EntityKind, EntityStore> stores = new EnumMap<>(EntityKind.class);
-        parts.forEach(part -> stores.put(part.kind(), backend.collection(part.kind())));
+        parts.forEach(part -> {
+            if (!backend.exists(part.kind())) {
+                created.add(part.kind());
+            }
+            stores.put(part.kind(), backend.collection(part.kind()));
+        });
         return stores;
     }
 
