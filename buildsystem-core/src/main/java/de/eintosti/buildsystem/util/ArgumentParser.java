@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -38,14 +39,19 @@ public class ArgumentParser {
     }
 
     /**
-     * Gets whether the provided string is used as an argument.<br>
+     * Gets whether {@code -name} was passed, ignoring case. Only a token starting with "-" counts, so a world name or
+     * value that equals {@code name} does not.<br>
      * Useful for figuring out if an argument has a value.
      *
      * @param name The name of the argument
      * @return {@code true} if the argument is present, otherwise {@code false}
      */
     public boolean isArgument(String name) {
-        return args.stream().map(arg -> arg.replace("-", "")).anyMatch(name::equalsIgnoreCase);
+        String flag = name.toLowerCase(Locale.ROOT);
+        return args.stream()
+                .filter(arg -> arg.startsWith("-"))
+                .map(ArgumentParser::flagName)
+                .anyMatch(flag::equals);
     }
 
     /**
@@ -57,7 +63,7 @@ public class ArgumentParser {
      * @return The argument value if present, otherwise {@code null}.
      */
     public @Nullable String getValue(String name) {
-        List<String> value = map.get(name);
+        List<String> value = map.get(name.toLowerCase(Locale.ROOT));
         if (value != null) {
             return String.join(" ", value);
         }
@@ -75,9 +81,13 @@ public class ArgumentParser {
                 continue;
             }
             if (!isFlagArgument(arg, index)) {
-                map.put(arg.replace("-", ""), storeArgumentValues(arg, index));
+                map.put(flagName(arg), storeArgumentValues(arg, index));
             }
         }
+    }
+
+    private static String flagName(String arg) {
+        return arg.replace("-", "").toLowerCase(Locale.ROOT);
     }
 
     /**
