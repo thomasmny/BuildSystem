@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.WorldNames;
+import java.util.List;
 import java.util.Locale;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
@@ -133,14 +134,16 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
     }
 
     private @Nullable String worldPlaceholder(Player player, String identifier) {
-        String worldName = WorldNames.of(player.getWorld());
-        if (identifier.contains("_")) {
-            String[] splitString = identifier.split("_");
-            worldName = splitString[1];
-            identifier = splitString[0];
+        BuildWorld buildWorld;
+        // No placeholder key contains "_", so everything after the first one is the world name.
+        int separator = identifier.indexOf('_');
+        if (separator < 0) {
+            buildWorld = worldStorage.getBuildWorld(WorldNames.of(player.getWorld()));
+        } else {
+            buildWorld = namedWorld(identifier.substring(separator + 1));
+            identifier = identifier.substring(0, separator);
         }
 
-        BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld == null) {
             return "-";
         }
@@ -175,5 +178,22 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
             case "world" -> buildWorld.getName();
             default -> null;
         };
+    }
+
+    /**
+     * {@return the world a placeholder names} The name is resolved as commands resolve it, so {@code lobby} and
+     * {@code maps:lobby} both work, and an ambiguous name matches nothing. Other plugins name a namespaced world by its
+     * Bukkit name ({@code maps_lobby}), so that is accepted too.
+     */
+    private @Nullable BuildWorld namedWorld(String name) {
+        List<BuildWorld> matches = worldStorage.matchWorlds(name);
+        if (!matches.isEmpty()) {
+            return matches.size() == 1 ? matches.getFirst() : null;
+        }
+        return worldStorage.getBuildWorlds().stream()
+                .filter(buildWorld ->
+                        WorldNames.bukkitName(buildWorld.getName()).equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
     }
 }
