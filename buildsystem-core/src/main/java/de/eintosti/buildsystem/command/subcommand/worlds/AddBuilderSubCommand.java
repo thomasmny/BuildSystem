@@ -17,22 +17,15 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.i18n.Placeholders;
-import de.eintosti.buildsystem.menu.Menus;
-import de.eintosti.buildsystem.menu.Prompts;
-import de.eintosti.buildsystem.player.PlayerLookupService;
-import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.menu.WorldPrompts;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -40,23 +33,11 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class AddBuilderSubCommand extends AbstractSubCommand {
 
-    private final Menus menus;
-    private final PlayerLookupService playerLookupService;
-    private final Prompts prompts;
-    private final TaskScheduler scheduler;
+    private final WorldPrompts worldPrompts;
 
-    public AddBuilderSubCommand(
-            Messages messages,
-            WorldServiceImpl worldService,
-            Menus menus,
-            PlayerLookupService playerLookupService,
-            Prompts prompts,
-            TaskScheduler scheduler) {
+    public AddBuilderSubCommand(Messages messages, WorldServiceImpl worldService, WorldPrompts worldPrompts) {
         super(messages, worldService);
-        this.menus = menus;
-        this.playerLookupService = playerLookupService;
-        this.prompts = prompts;
-        this.scheduler = scheduler;
+        this.worldPrompts = worldPrompts;
     }
 
     @Override
@@ -67,68 +48,10 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
         }
 
         switch (args.length) {
-            case 1 -> getAddBuilderInput(player, buildWorld, true);
-            case 2 -> addBuilder(player, buildWorld, args[1], true);
+            case 1 -> worldPrompts.promptAddBuilder(player, buildWorld, player::closeInventory);
+            case 2 -> worldPrompts.addBuilder(player, buildWorld, args[1], player::closeInventory);
             default -> messages.sendMessage(player, "worlds_addbuilder_usage");
         }
-    }
-
-    private void addBuilder(Player player, BuildWorld buildWorld, String builderName, boolean closeInventory) {
-        resolvePlayer(
-                playerLookupService,
-                scheduler,
-                player,
-                builderName,
-                "worlds_addbuilder_player_not_found",
-                builder -> applyBuilder(player, buildWorld, builder, closeInventory));
-    }
-
-    private void applyBuilder(Player player, BuildWorld buildWorld, Builder builder, boolean closeInventory) {
-        UUID builderId = builder.getUniqueId();
-        Builders builders = buildWorld.getBuilders();
-        if (builderId.equals(player.getUniqueId()) && builders.isCreator(player)) {
-            messages.sendMessage(player, "worlds_addbuilder_already_creator");
-            player.closeInventory();
-            return;
-        }
-
-        if (builders.isBuilder(builderId)) {
-            messages.sendMessage(player, "worlds_addbuilder_already_added");
-            player.closeInventory();
-            return;
-        }
-
-        builders.addBuilder(builder);
-        XSound.ENTITY_PLAYER_LEVELUP.play(player);
-        messages.sendMessage(player, "worlds_addbuilder_added", Placeholders.of("%builder%", builder.getName()));
-
-        if (closeInventory) {
-            player.closeInventory();
-        } else {
-            menus.openBuilder(buildWorld, player);
-        }
-    }
-
-    public void getAddBuilderInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
-        if (!hasAddBuilderPermission(player, buildWorld)) {
-            messages.sendPermissionError(player);
-            return;
-        }
-
-        prompts.prompt(player).title("enter_player_name").request(input -> {
-            String builderName = input.trim();
-            addBuilder(player, buildWorld, builderName, closeInventory);
-        });
-    }
-
-    /**
-     * Whether {@code player} may add builders to {@code buildWorld}, per the argument's permission node. Shared by the
-     * command entry point and the GUI prompt so both are gated by the same check.
-     */
-    private boolean hasAddBuilderPermission(Player player, BuildWorld buildWorld) {
-        return buildWorld
-                .getPermissions()
-                .canPerformCommand(player, getArgument().getPermission());
     }
 
     @Override

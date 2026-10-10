@@ -21,8 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -70,7 +72,7 @@ class WorldSubCommandPreambleTest {
         worldStorage = mock(WorldStorageImpl.class);
         worldService = mock(WorldServiceImpl.class);
         when(worldService.getWorldStorage()).thenReturn(worldStorage);
-        lookup = mock(PlayerLookupService.class);
+        lookup = spy(new PlayerLookupService(MockBukkit.createMockPlugin(), Runnable::run));
         scheduler = mock(TaskScheduler.class);
         when(scheduler.mainThread()).thenReturn(Runnable::run);
         when(scheduler.run(any())).thenAnswer(invocation -> {
@@ -129,7 +131,7 @@ class WorldSubCommandPreambleTest {
     @Test
     void lookup_offlinePlayer_isResolved() {
         UUID notch = UUID.randomUUID();
-        when(lookup.lookupUniqueId("Notch")).thenReturn(CompletableFuture.completedFuture(notch));
+        doReturn(CompletableFuture.completedFuture(notch)).when(lookup).lookupUniqueId("Notch");
         BuildWorld buildWorld = buildWorld(true);
         when(buildWorld.getBuilders().isBuilder(notch)).thenReturn(true);
         when(worldStorage.getBuildWorld(player.getWorld())).thenReturn(buildWorld);
@@ -141,7 +143,7 @@ class WorldSubCommandPreambleTest {
 
     @Test
     void lookup_unknownPlayer_sendsTheCommandsNotFoundKey() {
-        when(lookup.lookupUniqueId("Nobody")).thenReturn(CompletableFuture.completedFuture(null));
+        doReturn(CompletableFuture.completedFuture(null)).when(lookup).lookupUniqueId("Nobody");
         BuildWorld buildWorld = buildWorld(true);
         when(worldStorage.getBuildWorld(player.getWorld())).thenReturn(buildWorld);
 
