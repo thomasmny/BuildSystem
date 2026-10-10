@@ -32,48 +32,79 @@ import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.lifecycle.WorldPermissionsImpl;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Stream;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
- * Runs every combination of the inputs that decide "may this player modify this world" through both
- * {@link WorldPermissionsImpl#canModify} and {@link WorldProtectionPolicy#mayModify}, and checks them against one
- * written-out rule set. The block listeners use the first and the setting listeners and WorldEdit the second, so they
- * must never disagree.
+ * The truth table for "may this player modify this world": every combination of the inputs, for a plain modification
+ * and for each {@link WorldSetting}, runs through {@link WorldProtectionPolicy#mayModify} and
+ * {@link WorldPermissionsImpl#canModify} and is checked against {@link Row#expected()}, a separate written-out rule set.
  */
 @NullMarked
-class WorldModifyParityTest {
+class WorldModifyRulesTest {
 
-    private static final int INPUTS = 11;
+    private static final int INPUTS = 10;
 
     private final WorldContext context = TestData.worldContext();
 
-    @Test
-    void permissionsAndPolicyAgreeWithTheRules() {
+    static Stream<Arguments> settings() {
+        return Stream.concat(
+                Stream.of(Arguments.of((WorldSetting) null)),
+                Arrays.stream(WorldSetting.values()).map(Arguments::of));
+    }
+
+    @ParameterizedTest(name = "setting: {0}")
+    @MethodSource("settings")
+    void policyAndPermissionsFollowTheRules(@Nullable WorldSetting setting) {
         List<String> mismatches = new ArrayList<>();
         for (int bits = 0; bits < 1 << INPUTS; bits++) {
-            Row row = new Row(bits);
+            Row row = new Row(bits, setting);
             BuildWorld world = world(row);
             Player player = row.player;
-            @Nullable WorldSetting setting = row.withSetting ? WorldSetting.BLOCK_PLACEMENT : null;
 
-            boolean expected = row.expected();
-            boolean byPermissions = setting == null
-                    ? world.getPermissions().canModify(player)
-                    : world.getPermissions().canModify(player, setting);
+            Denial expected = row.expected();
             Denial denial = setting == null
                     ? new WorldProtectionPolicy().mayModify(player, world)
                     : new WorldProtectionPolicy().mayModify(player, world, setting);
+            boolean byPermissions = setting == null
+                    ? world.getPermissions().canModify(player)
+                    : world.getPermissions().canModify(player, setting);
 
-            if (byPermissions != expected || (denial == Denial.NONE) != expected) {
+            if (denial != expected || byPermissions != (expected == Denial.NONE)) {
                 mismatches.add(
-                        "%s expected=%s permissions=%s policy=%s".formatted(row, expected, byPermissions, denial));
+                        "%s expected=%s policy=%s permissions=%s".formatted(row, expected, denial, byPermissions));
             }
         }
         assertEquals(List.of(), mismatches);
+    }
+
+    @ParameterizedTest(name = "setting: {0}")
+    @MethodSource("settings")
+    void anAdmin_passesALockedWorldWithTheSettingOffAsANonBuilder(@Nullable WorldSetting setting) {
+        // Admin, a locked status and builders on; the setting is off and the player is no builder.
+        Row row = new Row(2 | 8 | 32, setting);
+        BuildWorld world = world(row);
+
+        Denial denial = setting == null
+                ? new WorldProtectionPolicy().mayModify(row.player, world)
+                : new WorldProtectionPolicy().mayModify(row.player, world, setting);
+
+        assertEquals(Denial.NONE, denial);
+    }
+
+    private static WorldDataKey<Boolean> keyOf(WorldSetting setting) {
+        return switch (setting) {
+            case BLOCK_BREAKING -> WorldDataKey.BLOCK_BREAKING;
+            case BLOCK_PLACEMENT -> WorldDataKey.BLOCK_PLACEMENT;
+            case BLOCK_INTERACTIONS -> WorldDataKey.BLOCK_INTERACTIONS;
+        };
     }
 
     private BuildWorld world(Row row) {
@@ -82,7 +113,9 @@ class WorldModifyParityTest {
         WorldData data = mock(WorldData.class);
         when(data.get(WorldDataKey.STATUS)).thenReturn(row.locked ? TestData.ARCHIVE_STATUS : TestData.NOT_STARTED);
         when(data.get(WorldDataKey.BUILDERS_ENABLED)).thenReturn(row.buildersEnabled);
-        when(data.get(WorldDataKey.BLOCK_PLACEMENT)).thenReturn(row.settingEnabled);
+        if (row.setting != null) {
+            when(data.get(keyOf(row.setting))).thenReturn(row.settingEnabled);
+        }
 
         Builders builders = mock(Builders.class);
         when(builders.isCreator(row.player)).thenReturn(row.creator);
@@ -106,12 +139,13 @@ class WorldModifyParityTest {
                 buildersEnabled,
                 creator,
                 builder,
-                withSetting,
                 settingEnabled,
                 bypassSettings;
+        final @Nullable WorldSetting setting;
         final Player player = mock(Player.class);
 
-        Row(int bits) {
+        Row(int bits, @Nullable WorldSetting setting) {
+            this.setting = setting;
             buildMode = (bits & 1) != 0;
             admin = (bits & 2) != 0;
             bypassArchive = (bits & 4) != 0;
@@ -120,15 +154,13 @@ class WorldModifyParityTest {
             buildersEnabled = (bits & 32) != 0;
             creator = (bits & 64) != 0;
             builder = (bits & 128) != 0;
-            withSetting = (bits & 256) != 0;
-            settingEnabled = (bits & 512) != 0;
-            bypassSettings = (bits & 1024) != 0;
+            settingEnabled = (bits & 256) != 0;
+            bypassSettings = (bits & 512) != 0;
 
             when(player.hasPermission(Permissions.ADMIN)).thenReturn(admin);
             when(player.hasPermission(Permissions.BYPASS_ARCHIVE)).thenReturn(bypassArchive);
             when(player.hasPermission(Permissions.BYPASS_BUILDERS)).thenReturn(bypassBuilders);
-            when(player.hasPermission(WorldSetting.BLOCK_PLACEMENT.getBypassPermission()))
-                    .thenReturn(bypassSettings);
+            when(player.hasPermission("buildsystem.bypass.settings")).thenReturn(bypassSettings);
         }
 
         /**
@@ -136,17 +168,20 @@ class WorldModifyParityTest {
          * action needs the setting on or the settings bypass, which also excuses the builder check; and with the
          * builders feature on, only the creator, a builder or a builders-bypass holder may build.
          */
-        boolean expected() {
+        Denial expected() {
             if (buildMode || admin) {
-                return true;
+                return Denial.NONE;
             }
             if (locked && !bypassArchive) {
-                return false;
+                return Denial.STATUS_LOCKED;
             }
-            if (withSetting && (bypassSettings || !settingEnabled)) {
-                return bypassSettings;
+            if (setting != null && bypassSettings) {
+                return Denial.NONE;
             }
-            return creator || builder || bypassBuilders || !buildersEnabled;
+            if (setting != null && !settingEnabled) {
+                return Denial.SETTING_DISABLED;
+            }
+            return creator || builder || bypassBuilders || !buildersEnabled ? Denial.NONE : Denial.NOT_A_BUILDER;
         }
 
         @Override
@@ -154,8 +189,8 @@ class WorldModifyParityTest {
             return "buildMode=%s admin=%s bypassArchive=%s locked=%s bypassBuilders=%s buildersEnabled=%s creator=%s"
                             .formatted(
                                     buildMode, admin, bypassArchive, locked, bypassBuilders, buildersEnabled, creator)
-                    + " builder=%s withSetting=%s settingEnabled=%s bypassSettings=%s"
-                            .formatted(builder, withSetting, settingEnabled, bypassSettings);
+                    + " builder=%s settingEnabled=%s bypassSettings=%s"
+                            .formatted(builder, settingEnabled, bypassSettings);
         }
     }
 }
