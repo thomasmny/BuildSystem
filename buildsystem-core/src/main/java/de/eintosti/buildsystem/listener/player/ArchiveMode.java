@@ -84,6 +84,21 @@ public final class ArchiveMode {
     }
 
     /**
+     * Gives or takes the archive invisibility to match the vanish setting, for a player in archive mode. Used after the
+     * config is reloaded, since the setting may have changed while players were in an archive.
+     */
+    public static void applyVanish(Player player, CachedValues cachedValues, boolean vanish) {
+        if (!cachedValues.hasArchiveState()) {
+            return;
+        }
+        if (vanish) {
+            addArchiveInvisibility(player);
+        } else {
+            removeArchiveInvisibility(player);
+        }
+    }
+
+    /**
      * Hands back what {@link #enter} took and removes the archive invisibility. Safe to call for a player who is not in
      * archive mode. Called before the player quits as well, so the endless invisibility is never saved into their
      * player data.

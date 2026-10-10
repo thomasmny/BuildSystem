@@ -131,6 +131,20 @@ class ArchiveModeReloadTest {
         assertOutOfArchiveMode();
     }
 
+    @Test
+    void configReload_flippingTheVanish_showsOrHidesArchivedPlayers() {
+        assertInArchiveMode();
+
+        setVanish(false);
+        assertTrue(bystander.canSee(archived));
+        assertNull(archived.getPotionEffect(PotionEffectType.INVISIBILITY));
+        assertEquals(0, diamonds(), "still in archive mode");
+
+        setVanish(true);
+        assertFalse(bystander.canSee(archived));
+        assertNotNull(archived.getPotionEffect(PotionEffectType.INVISIBILITY));
+    }
+
     private void assertInArchiveMode() {
         assertEquals(0, diamonds());
         assertNull(archived.getInventory().getHelmet());
@@ -172,6 +186,12 @@ class ArchiveModeReloadTest {
                 .filter(item -> item != null && item.getType() == Material.DIAMOND)
                 .mapToInt(ItemStack::getAmount)
                 .sum();
+    }
+
+    private void setVanish(boolean vanish) {
+        plugin.getConfig().set("settings.archive.vanish", vanish);
+        plugin.saveConfig();
+        plugin.reloadConfigData(true);
     }
 
     /**

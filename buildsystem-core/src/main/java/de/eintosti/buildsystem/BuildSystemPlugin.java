@@ -275,6 +275,12 @@ public class BuildSystemPlugin extends JavaPlugin {
         if (init) {
             services.world().remanageAllUnloadTasks();
 
+            boolean vanish = services.config().current().settings().archive().vanish();
+            for (Player pl : Bukkit.getOnlinePlayers()) {
+                ArchiveMode.applyVanish(pl, cachedValues(pl), vanish);
+            }
+            Bukkit.getOnlinePlayers().forEach(services.settings()::updateVisibility);
+
             if (services.config().current().settings().scoreboard()) {
                 services.settings().displayScoreboard();
             } else {
