@@ -80,7 +80,7 @@ public class InstantSignPlacementListener implements Listener {
         }
 
         Block adjacent = clickedBlock.getRelative(blockFace);
-        if (adjacent.getType() != XMaterial.AIR.get()) {
+        if (!adjacent.getType().isAir()) {
             return;
         }
 
