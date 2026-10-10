@@ -21,22 +21,29 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.RETURNS_SELF;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.access.WorldPermissions;
+import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.PlayerChatInput.InputRunnable;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
-import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
 import java.util.UUID;
@@ -47,6 +54,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
+import org.mockito.ArgumentCaptor;
 
 /**
  * Pins the checks the {@code /worlds} subcommands share: the current-world preamble, the name-to-UUID lookup and the
@@ -60,7 +68,6 @@ class WorldSubCommandPreambleTest {
     private WorldServiceImpl worldService;
     private WorldStorageImpl worldStorage;
     private PlayerLookupService lookup;
-    private TaskScheduler scheduler;
     private SoundlessPlayer player;
 
     @BeforeEach
@@ -70,13 +77,7 @@ class WorldSubCommandPreambleTest {
         worldStorage = mock(WorldStorageImpl.class);
         worldService = mock(WorldServiceImpl.class);
         when(worldService.getWorldStorage()).thenReturn(worldStorage);
-        lookup = mock(PlayerLookupService.class);
-        scheduler = mock(TaskScheduler.class);
-        when(scheduler.mainThread()).thenReturn(Runnable::run);
-        when(scheduler.run(any())).thenAnswer(invocation -> {
-            invocation.<Runnable>getArgument(0).run();
-            return null;
-        });
+        lookup = spy(new PlayerLookupService(MockBukkit.createMockPlugin(), Runnable::run, Runnable::run));
         player = SoundlessPlayer.join(server, "Alex");
     }
 
@@ -129,7 +130,7 @@ class WorldSubCommandPreambleTest {
     @Test
     void lookup_offlinePlayer_isResolved() {
         UUID notch = UUID.randomUUID();
-        when(lookup.lookupUniqueId("Notch")).thenReturn(CompletableFuture.completedFuture(notch));
+        doReturn(CompletableFuture.completedFuture(notch)).when(lookup).lookupUniqueId("Notch");
         BuildWorld buildWorld = buildWorld(true);
         when(buildWorld.getBuilders().isBuilder(notch)).thenReturn(true);
         when(worldStorage.getBuildWorld(player.getWorld())).thenReturn(buildWorld);
@@ -141,7 +142,7 @@ class WorldSubCommandPreambleTest {
 
     @Test
     void lookup_unknownPlayer_sendsTheCommandsNotFoundKey() {
-        when(lookup.lookupUniqueId("Nobody")).thenReturn(CompletableFuture.completedFuture(null));
+        doReturn(CompletableFuture.completedFuture(null)).when(lookup).lookupUniqueId("Nobody");
         BuildWorld buildWorld = buildWorld(true);
         when(worldStorage.getBuildWorld(player.getWorld())).thenReturn(buildWorld);
 
@@ -161,14 +162,41 @@ class WorldSubCommandPreambleTest {
         when(worldStorage.getBuildWorlds()).thenReturn(List.of(allowed, otherPrefix, denied));
         when(worldStorage.typedName(anyString())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        EditSubCommand edit = new EditSubCommand(messages, worldService, null);
+        EditSubCommand edit = new EditSubCommand(messages, worldService, mock(Menus.class));
 
         assertEquals(List.of("Lobby"), edit.complete(player, new String[] {"edit", "lo"}));
         assertEquals(List.of(), edit.complete(player, new String[] {"edit", "lo", "x"}));
     }
 
+    @Test
+    void setCreator_onlinePlayer_isStoredWithoutAskingMojang() {
+        SoundlessPlayer target = SoundlessPlayer.join(server, "Steve");
+        BuildWorld buildWorld = buildWorld(true);
+        when(worldService.resolveWorldName(player, "world", WorldsArgument.SET_CREATOR.getPermission()))
+                .thenReturn("world");
+        when(worldStorage.getBuildWorld("world")).thenReturn(buildWorld);
+        Prompts prompts = mock(Prompts.class);
+        Prompts.Builder prompt = mock(Prompts.Builder.class, RETURNS_SELF);
+        when(prompts.prompt(player)).thenReturn(prompt);
+        doAnswer(invocation -> {
+                    invocation.<InputRunnable>getArgument(0).run("Steve");
+                    return null;
+                })
+                .when(prompt)
+                .request(any());
+
+        new SetCreatorSubCommand(messages, worldService, lookup, prompts, mock(SettingsService.class))
+                .execute(player, "world", new String[] {"setCreator", "world"});
+
+        verify(lookup, never()).lookupUniqueId(anyString());
+        ArgumentCaptor<Builder> creator = ArgumentCaptor.forClass(Builder.class);
+        verify(buildWorld.getBuilders()).setCreator(creator.capture());
+        assertEquals(target.getUniqueId(), creator.getValue().getUniqueId());
+        assertEquals("Steve", creator.getValue().getName());
+    }
+
     private RemoveBuilderSubCommand removeBuilder() {
-        return new RemoveBuilderSubCommand(messages, worldService, lookup, mock(Prompts.class), scheduler);
+        return new RemoveBuilderSubCommand(messages, worldService, lookup, mock(Prompts.class));
     }
 
     private BuildWorld buildWorld(boolean permitted) {

@@ -118,7 +118,8 @@ public final class Services {
         this.customizableIcons = new CustomizableIcons(plugin);
 
         this.customBlockManager = new CustomBlockManager(plugin, taskScheduler, this::world);
-        this.playerLookupService = new PlayerLookupService(plugin, taskScheduler.background());
+        this.playerLookupService =
+                new PlayerLookupService(plugin, taskScheduler.background(), taskScheduler.mainThread());
         (this.playerService = new PlayerServiceImpl(plugin, config(), this::world, taskScheduler)).init();
         this.navigatorEditorService = new NavigatorEditorService();
         this.noClipService = new NoClipService(taskScheduler);

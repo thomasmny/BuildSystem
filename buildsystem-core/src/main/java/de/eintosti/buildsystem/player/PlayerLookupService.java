@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.player;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.util.ServerModeChecker;
 import de.eintosti.buildsystem.util.ServerModeChecker.ServerMode;
 import de.eintosti.buildsystem.util.TaskScheduler;
@@ -34,9 +35,11 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -59,6 +62,7 @@ public final class PlayerLookupService {
     private final JavaPlugin plugin;
     private final HttpClient httpClient;
     private final Executor asyncExecutor;
+    private final Executor mainThread;
 
     private final Map<String, UUID> uuidCache = new ConcurrentHashMap<>();
 
@@ -66,11 +70,13 @@ public final class PlayerLookupService {
      * @param plugin The plugin, used for logging
      * @param asyncExecutor Runs the Mojang lookups off the main thread; in production this is
      *     {@link TaskScheduler#background()}
+     * @param mainThread Runs the {@link #resolve} callbacks; in production this is {@link TaskScheduler#mainThread()}
      */
-    public PlayerLookupService(JavaPlugin plugin, Executor asyncExecutor) {
+    public PlayerLookupService(JavaPlugin plugin, Executor asyncExecutor, Executor mainThread) {
         this.plugin = plugin;
         this.httpClient = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
         this.asyncExecutor = asyncExecutor;
+        this.mainThread = mainThread;
     }
 
     /**
@@ -96,6 +102,33 @@ public final class PlayerLookupService {
             return CompletableFuture.completedFuture(cached);
         }
         return CompletableFuture.supplyAsync(() -> lookupUniqueIdBlocking(name), asyncExecutor);
+    }
+
+    /**
+     * Resolves a player name to a {@link Builder}, using the online player when there is one and otherwise looking the
+     * name up off the main thread. Both callbacks run on the main thread.
+     *
+     * @param name The player name
+     * @param onFound Receives the builder
+     * @param onNotFound Runs when no account has that name
+     */
+    public void resolve(String name, Consumer<Builder> onFound, Runnable onNotFound) {
+        Player online = Bukkit.getPlayerExact(name);
+        if (online != null) {
+            onFound.accept(Builder.of(online));
+            return;
+        }
+
+        lookupUniqueId(name)
+                .thenAcceptAsync(
+                        uuid -> {
+                            if (uuid == null) {
+                                onNotFound.run();
+                            } else {
+                                onFound.accept(Builder.of(uuid, name));
+                            }
+                        },
+                        mainThread);
     }
 
     /**

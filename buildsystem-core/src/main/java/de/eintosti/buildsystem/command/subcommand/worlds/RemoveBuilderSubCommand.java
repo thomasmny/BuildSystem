@@ -27,7 +27,6 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
-import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,18 +39,15 @@ public class RemoveBuilderSubCommand extends AbstractSubCommand {
 
     private final PlayerLookupService playerLookupService;
     private final Prompts prompts;
-    private final TaskScheduler scheduler;
 
     public RemoveBuilderSubCommand(
             Messages messages,
             WorldServiceImpl worldService,
             PlayerLookupService playerLookupService,
-            Prompts prompts,
-            TaskScheduler scheduler) {
+            Prompts prompts) {
         super(messages, worldService);
         this.playerLookupService = playerLookupService;
         this.prompts = prompts;
-        this.scheduler = scheduler;
     }
 
     @Override
@@ -71,7 +67,6 @@ public class RemoveBuilderSubCommand extends AbstractSubCommand {
     private void removeBuilder(Player player, BuildWorld buildWorld, String builderName) {
         resolvePlayer(
                 playerLookupService,
-                scheduler,
                 player,
                 builderName,
                 "worlds_removebuilder_player_not_found",

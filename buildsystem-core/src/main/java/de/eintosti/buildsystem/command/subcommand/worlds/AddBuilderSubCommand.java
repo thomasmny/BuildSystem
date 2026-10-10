@@ -28,7 +28,6 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
-import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,20 +42,17 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
     private final Menus menus;
     private final PlayerLookupService playerLookupService;
     private final Prompts prompts;
-    private final TaskScheduler scheduler;
 
     public AddBuilderSubCommand(
             Messages messages,
             WorldServiceImpl worldService,
             Menus menus,
             PlayerLookupService playerLookupService,
-            Prompts prompts,
-            TaskScheduler scheduler) {
+            Prompts prompts) {
         super(messages, worldService);
         this.menus = menus;
         this.playerLookupService = playerLookupService;
         this.prompts = prompts;
-        this.scheduler = scheduler;
     }
 
     @Override
@@ -76,7 +72,6 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
     private void addBuilder(Player player, BuildWorld buildWorld, String builderName, boolean closeInventory) {
         resolvePlayer(
                 playerLookupService,
-                scheduler,
                 player,
                 builderName,
                 "worlds_addbuilder_player_not_found",

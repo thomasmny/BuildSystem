@@ -23,12 +23,10 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 import org.jspecify.annotations.NullMarked;
@@ -114,34 +112,15 @@ public abstract class AbstractSubCommand implements SubCommand {
     }
 
     /**
-     * Resolves a player name to a {@link Builder}, using the online player when there is one and otherwise looking the
-     * name up off the main thread. {@code onFound} always runs on the main thread. When the name is unknown, {@code
-     * notFoundKey} is sent and the player's inventory closed instead.
+     * Resolves a player name as {@link PlayerLookupService#resolve} does. When the name is unknown, {@code notFoundKey}
+     * is sent and the player's inventory closed instead.
      */
     protected void resolvePlayer(
-            PlayerLookupService lookup,
-            TaskScheduler scheduler,
-            Player player,
-            String name,
-            String notFoundKey,
-            Consumer<Builder> onFound) {
-        Player online = Bukkit.getPlayerExact(name);
-        if (online != null) {
-            onFound.accept(Builder.of(online));
-            return;
-        }
-
-        lookup.lookupUniqueId(name)
-                .thenAcceptAsync(
-                        uuid -> {
-                            if (uuid == null) {
-                                messages.sendMessage(player, notFoundKey);
-                                player.closeInventory();
-                                return;
-                            }
-                            onFound.accept(Builder.of(uuid, name));
-                        },
-                        scheduler.mainThread());
+            PlayerLookupService lookup, Player player, String name, String notFoundKey, Consumer<Builder> onFound) {
+        lookup.resolve(name, onFound, () -> {
+            messages.sendMessage(player, notFoundKey);
+            player.closeInventory();
+        });
     }
 
     /**

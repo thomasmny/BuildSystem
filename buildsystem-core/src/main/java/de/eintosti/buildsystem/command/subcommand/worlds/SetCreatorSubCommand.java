@@ -27,7 +27,6 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
 import org.bukkit.entity.Player;
@@ -40,20 +39,17 @@ public class SetCreatorSubCommand extends AbstractSubCommand {
     private final PlayerLookupService playerLookupService;
     private final Prompts prompts;
     private final SettingsService settingsService;
-    private final TaskScheduler scheduler;
 
     public SetCreatorSubCommand(
             Messages messages,
             WorldServiceImpl worldService,
             PlayerLookupService playerLookupService,
             Prompts prompts,
-            SettingsService settingsService,
-            TaskScheduler scheduler) {
+            SettingsService settingsService) {
         super(messages, worldService);
         this.playerLookupService = playerLookupService;
         this.prompts = prompts;
         this.settingsService = settingsService;
-        this.scheduler = scheduler;
     }
 
     @Override
@@ -72,7 +68,6 @@ public class SetCreatorSubCommand extends AbstractSubCommand {
 
             resolvePlayer(
                     playerLookupService,
-                    scheduler,
                     player,
                     creatorName,
                     "worlds_setcreator_player_not_found",

@@ -33,7 +33,6 @@ import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
-import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
@@ -53,20 +52,17 @@ public class ImportSubCommand extends AbstractSubCommand {
     private final ConfigService configService;
     private final Prompts prompts;
     private final PlayerLookupService playerLookupService;
-    private final TaskScheduler scheduler;
 
     public ImportSubCommand(
             Messages messages,
             WorldServiceImpl worldService,
             ConfigService configService,
             Prompts prompts,
-            PlayerLookupService playerLookupService,
-            TaskScheduler scheduler) {
+            PlayerLookupService playerLookupService) {
         super(messages, worldService);
         this.configService = configService;
         this.prompts = prompts;
         this.playerLookupService = playerLookupService;
-        this.scheduler = scheduler;
     }
 
     @Override
@@ -124,7 +120,6 @@ public class ImportSubCommand extends AbstractSubCommand {
 
         resolvePlayer(
                 playerLookupService,
-                scheduler,
                 player,
                 options.creatorName(),
                 "worlds_import_player_not_found",
