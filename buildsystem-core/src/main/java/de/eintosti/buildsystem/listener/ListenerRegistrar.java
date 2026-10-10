@@ -95,14 +95,7 @@ public final class ListenerRegistrar {
         register(new MenuListener());
         register(new PlayerChatInput.ChatInputListener());
         register(new NavigatorListener(
-                navigatorService,
-                settingsService,
-                worldStorage,
-                navigatorItems,
-                messages,
-                menus,
-                configService,
-                playerService));
+                navigatorService, settingsService, worldStorage, navigatorItems, messages, menus, playerService));
         register(new PlayerChangedWorldListener(
                 navigatorService, playerService, settingsService, worldStorage, configService, messages));
         register(new PlayerCommandPreprocessListener(

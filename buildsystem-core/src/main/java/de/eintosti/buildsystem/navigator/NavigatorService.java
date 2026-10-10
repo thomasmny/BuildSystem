@@ -242,8 +242,7 @@ public class NavigatorService {
 
         XSound.ENTITY_ITEM_BREAK.play(player);
         displayActionBarMessage(player, "");
-        navigatorItems.replace(
-                player, messages.getString("barrier_item", player), XMaterial.BARRIER, navigatorItems.create(player));
+        navigatorItems.replace(player, navigatorItems::isBarrier, navigatorItems.create(player));
 
         CachedValues cachedValues = buildPlayer.getCachedValues();
         cachedValues.resetSpeedsIfPresent(player);
