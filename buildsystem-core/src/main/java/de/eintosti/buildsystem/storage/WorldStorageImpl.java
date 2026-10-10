@@ -172,6 +172,14 @@ public abstract class WorldStorageImpl implements WorldStorage {
     }
 
     /**
+     * {@return the name a player typed to rename a world to} A name without a namespace keeps the world's current
+     * namespace, so renaming {@code maps:lobby} to {@code arena} gives {@code maps:arena}.
+     */
+    public String renamedWorldName(String oldName, String input) {
+        return WorldNames.fromInput(input, WorldNames.namespace(oldName));
+    }
+
+    /**
      * {@return what a player types to give a new world this name} The inverse of {@link #newWorldName}.
      */
     public String typedNewName(String worldName) {

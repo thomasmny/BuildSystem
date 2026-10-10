@@ -84,14 +84,14 @@ public class WorldRenamer {
     }
 
     /**
-     * Renames a world to what the player typed. A name typed without a namespace is placed in the default namespace,
-     * like a new world's, so the world's folder moves when that differs from its current namespace.
+     * Renames a world to what the player typed. A name typed without a namespace keeps the world's current namespace;
+     * typing another namespace moves the world's folder there.
      */
     public void rename(Player player, BuildWorld buildWorld, String input) {
         player.closeInventory();
 
         String oldName = buildWorld.getName();
-        String sanitizedNewName = prompts.sanitizeWorldName(player, worldStorage.newWorldName(input));
+        String sanitizedNewName = prompts.sanitizeWorldName(player, worldStorage.renamedWorldName(oldName, input));
         if (sanitizedNewName == null) {
             return;
         }

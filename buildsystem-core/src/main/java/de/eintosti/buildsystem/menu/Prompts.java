@@ -103,7 +103,8 @@ public final class Prompts {
      *
      * @param player The player who typed the name
      * @param worldName The name, already placed in a namespace (see {@link
-     *     de.eintosti.buildsystem.storage.WorldStorageImpl#newWorldName})
+     *     de.eintosti.buildsystem.storage.WorldStorageImpl#newWorldName} and {@link
+     *     de.eintosti.buildsystem.storage.WorldStorageImpl#renamedWorldName})
      * @return The world name, or {@code null} if it cannot be used (a message has already been sent)
      */
     public @Nullable String sanitizeWorldName(Player player, String worldName) {

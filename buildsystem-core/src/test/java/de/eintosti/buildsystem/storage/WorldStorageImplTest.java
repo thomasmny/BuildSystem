@@ -369,6 +369,16 @@ class WorldStorageImplTest {
     }
 
     @Test
+    void renamedWorldName_keepsTheWorldsNamespaceForBareNames() {
+        defaultNamespace = "events";
+
+        assertEquals("maps:arena", storage.renamedWorldName("maps:lobby", "arena"));
+        assertEquals("arena", storage.renamedWorldName("Lobby", "arena"));
+        assertEquals("events:arena", storage.renamedWorldName("maps:lobby", "events:arena"));
+        assertEquals("arena", storage.renamedWorldName("maps:lobby", "minecraft:arena"));
+    }
+
+    @Test
     void rename_remapsNameLookup() {
         BuildWorld buildWorld = world("oldName");
         storage.addBuildWorld(buildWorld);
