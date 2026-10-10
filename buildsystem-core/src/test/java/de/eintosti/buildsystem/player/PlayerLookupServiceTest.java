@@ -18,12 +18,17 @@
 package de.eintosti.buildsystem.player;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mockStatic;
 
+import de.eintosti.buildsystem.util.ServerModeChecker;
+import de.eintosti.buildsystem.util.ServerModeChecker.ServerMode;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 /**
  * Pins the offline-safe behavior of {@link PlayerLookupService}: cached lookups resolve without scheduling, names are
@@ -61,5 +66,19 @@ class PlayerLookupServiceTest {
         String undashed = PlayerLookupService.toUndashed(uuid);
         assertEquals("069a79f444e94726a5befca90e38aaf5", undashed);
         assertEquals(uuid, PlayerLookupService.fromUndashed(undashed));
+    }
+
+    @Test
+    void namesMojangCannotHaveAreRejectedBeforeAnyRequest() {
+        // A null plugin makes any attempt to log a failed request throw, so reaching the network would fail the test.
+        PlayerLookupService service = new PlayerLookupService(null, Runnable::run);
+        try (MockedStatic<ServerModeChecker> mode = mockStatic(ServerModeChecker.class)) {
+            mode.when(ServerModeChecker::getServerMode).thenReturn(ServerMode.ONLINE);
+
+            assertNull(service.lookupUniqueIdBlocking("two words"));
+            assertNull(service.lookupUniqueIdBlocking("a/b"));
+            assertNull(service.lookupUniqueIdBlocking("NameThatIsFarTooLong"));
+            assertNull(service.lookupUniqueIdBlocking(""));
+        }
     }
 }
