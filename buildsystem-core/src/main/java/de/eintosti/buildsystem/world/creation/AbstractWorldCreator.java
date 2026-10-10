@@ -140,7 +140,7 @@ abstract class AbstractWorldCreator {
         return newBuildWorld;
     }
 
-    private void deleteFolderOfFailedWorld() {
+    protected void deleteFolderOfFailedWorld() {
         File folder = FileUtils.worldFolder(worldName);
         CompletableFuture.runAsync(
                 () -> {

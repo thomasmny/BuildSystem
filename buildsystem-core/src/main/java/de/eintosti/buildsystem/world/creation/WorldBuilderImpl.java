@@ -31,6 +31,8 @@ import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.world.WorldContext;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
@@ -143,17 +145,88 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
 
     @Override
     public @Nullable BuildWorld build() {
+        if (!mayCreate()) {
+            return null;
+        }
+
+        if (worldType != BuildWorldType.TEMPLATE) {
+            return announceCreated(createWorldFromGenerator());
+        }
+
+        File templateFile = startTemplateCopy();
+        if (templateFile == null) {
+            return null;
+        }
+
+        File worldFile = FileUtils.worldFolder(worldName);
+        try {
+            FileUtils.copy(templateFile, worldFile);
+        } catch (IOException e) {
+            failTemplateCopy(e);
+            return null;
+        }
+        return announceCreated(generateAndRegister(true));
+    }
+
+    /**
+     * Builds the world like {@link #build()}, but copies a template in the background, so a large template does not
+     * freeze the server. Call it on the main thread; the future completes there.
+     *
+     * @return The created world, or {@code null} when it could not be created
+     */
+    public CompletableFuture<@Nullable BuildWorld> buildAsync() {
+        if (worldType != BuildWorldType.TEMPLATE) {
+            return CompletableFuture.completedFuture(build());
+        }
+
+        if (!mayCreate()) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        File templateFile = startTemplateCopy();
+        if (templateFile == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        // Created here rather than by the copy, so the name is taken before this method returns: isNameTaken looks
+        // at the folder, and the world is only registered once the copy is done.
+        File worldFile = FileUtils.worldFolder(worldName);
+        worldFile.mkdirs();
+        return CompletableFuture.runAsync(
+                        () -> {
+                            try {
+                                FileUtils.copy(templateFile, worldFile);
+                            } catch (IOException e) {
+                                throw new CompletionException(e);
+                            }
+                        },
+                        context.scheduler().background())
+                .handleAsync(
+                        (ignored, throwable) -> {
+                            if (throwable != null) {
+                                failTemplateCopy(throwable);
+                                return null;
+                            }
+                            return announceCreated(generateAndRegister(true));
+                        },
+                        context.scheduler().mainThread())
+                .whenComplete((created, throwable) -> {
+                    // Thrown by the world generation; a synchronous build() would have surfaced it to the caller.
+                    if (throwable != null) {
+                        context.logger().log(Level.SEVERE, "Failed to create world " + worldName, throwable);
+                    }
+                });
+    }
+
+    private boolean mayCreate() {
         if (worldStorage.isNameTaken(worldName)) {
             notifyAudience("worlds_world_exists");
-            return null;
+            return false;
         }
+        return !isCreationCancelled();
+    }
 
-        if (isCreationCancelled()) {
-            return null;
-        }
-
-        BuildWorld created =
-                (worldType == BuildWorldType.TEMPLATE) ? createWorldFromTemplate() : createWorldFromGenerator();
+    private @Nullable BuildWorld announceCreated(@Nullable BuildWorld created) {
         if (created != null) {
             notifyAudience("worlds_creation_finished");
         }
@@ -172,7 +245,12 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
         return generateAndRegister(false);
     }
 
-    private @Nullable BuildWorld createWorldFromTemplate() {
+    /**
+     * Checks the template exists and tells the audience the copy starts.
+     *
+     * @return The template folder to copy, or {@code null} when there is none
+     */
+    private @Nullable File startTemplateCopy() {
         if (template == null || template.isEmpty()) {
             throw new IllegalStateException("Attempted to create a template world without a template name");
         }
@@ -195,18 +273,17 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
                         .add("%world%", worldName)
                         .add("%template%", template)
                         .build());
+        return templateFile;
+    }
 
-        File worldFile = FileUtils.worldFolder(worldName);
-        try {
-            FileUtils.copy(templateFile, worldFile);
-        } catch (IOException e) {
-            // Without this the world was registered around a half-copied (or empty) directory and reported as created.
-            context.logger()
-                    .log(Level.SEVERE, "Failed to copy template \"" + template + "\" for world " + worldName, e);
-            notifyAudience("worlds_template_creation_error", Placeholders.of("%template%", template));
-            return null;
-        }
-
-        return generateAndRegister(true);
+    /**
+     * Reports a failed template copy and deletes what it left behind. Without this the world was registered around a
+     * half-copied (or empty) directory and reported as created.
+     */
+    private void failTemplateCopy(Throwable failure) {
+        context.logger()
+                .log(Level.SEVERE, "Failed to copy template \"" + template + "\" for world " + worldName, failure);
+        notifyAudience("worlds_template_creation_error", Placeholders.of("%template%", template));
+        deleteFolderOfFailedWorld();
     }
 }

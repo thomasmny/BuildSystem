@@ -29,7 +29,6 @@ import de.eintosti.buildsystem.api.exception.WorldNotFoundException;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.WorldService;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import de.eintosti.buildsystem.api.world.creation.WorldBuilder;
 import de.eintosti.buildsystem.api.world.creation.WorldImporter;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
@@ -129,7 +128,7 @@ public class WorldServiceImpl implements WorldService {
 
     @Override
     @Contract("_ -> new")
-    public WorldBuilder newWorld(String name) {
+    public WorldBuilderImpl newWorld(String name) {
         String worldName = validateWorldName(name);
         return new WorldBuilderImpl(services.worldContext(), worldStorage, plugin.getDataFolder(), worldName);
     }
