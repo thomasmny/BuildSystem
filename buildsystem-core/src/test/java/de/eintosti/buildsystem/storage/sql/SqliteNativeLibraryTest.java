@@ -57,7 +57,8 @@ class SqliteNativeLibraryTest {
         process.waitFor();
 
         assertTrue(output.contains("FAILED SQLite could not load its native library"), output);
-        assertTrue(output.contains("-Dorg.sqlite.tmpdir=<a folder that does>"), output);
+        assertTrue(output.contains("set storage.type to yaml"), output);
+        assertTrue(output.contains("-Djava.io.tmpdir=<folder>"), output);
     }
 
     static final class Connect {

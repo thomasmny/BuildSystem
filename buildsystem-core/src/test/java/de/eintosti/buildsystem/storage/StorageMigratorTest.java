@@ -174,6 +174,24 @@ class StorageMigratorTest {
     }
 
     @Test
+    void migrate_toAServerWithoutAUsername_namesTheMissingKey() {
+        PluginConfig.Storage.Database settings = new PluginConfig.Storage.Database(
+                StorageType.SQLITE,
+                "buildsystem_",
+                Map.of(
+                        StorageType.POSTGRESQL,
+                        new PluginConfig.Storage.Database.Server(
+                                StorageType.POSTGRESQL, "localhost", 1, "buildsystem", " ", "secret")));
+
+        CompletableFuture<Map<EntityKind, Integer>> migration = migrator.migrate(StorageType.POSTGRESQL, settings);
+        runAll();
+
+        CompletionException failure = assertThrows(CompletionException.class, migration::join);
+        assertEquals(
+                "storage.postgresql.username is not set", failure.getCause().getMessage());
+    }
+
+    @Test
     void migrate_whileOneRuns_isRefused() {
         CompletableFuture<Map<EntityKind, Integer>> first = migrator.migrate(StorageType.SQLITE, settings());
 
@@ -219,6 +237,6 @@ class StorageMigratorTest {
                 Map.of(
                         StorageType.MYSQL,
                         new PluginConfig.Storage.Database.Server(
-                                StorageType.MYSQL, "localhost", 1, "buildsystem", "", "")));
+                                StorageType.MYSQL, "localhost", 1, "buildsystem", "builder", "")));
     }
 }

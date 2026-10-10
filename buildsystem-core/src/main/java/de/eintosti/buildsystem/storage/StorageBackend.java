@@ -124,9 +124,9 @@ public final class StorageBackend implements AutoCloseable {
                     throw new StorageException(
                             "SQLite could not load its native library: " + cause.getMessage()
                                     + ". It is unpacked into the temp folder first, so this usually means that folder"
-                                    + " does not allow running native code. Start the server with"
-                                    + " -Dorg.sqlite.tmpdir=<a folder that does>, or set storage.type to another"
-                                    + " backend.",
+                                    + " does not allow running native code. Either set storage.type to yaml in"
+                                    + " config.yml, or start the server with -Djava.io.tmpdir=<folder> or"
+                                    + " -Dorg.sqlite.tmpdir=<folder>, pointing at a folder that allows it.",
                             e);
                 }
             }
@@ -139,6 +139,9 @@ public final class StorageBackend implements AutoCloseable {
     }
 
     private static Properties credentials(PluginConfig.Storage.Database.Server server) {
+        if (server.username().isBlank()) {
+            throw new StorageException("storage." + server.type().key() + ".username is not set", null);
+        }
         Properties properties = new Properties();
         properties.setProperty("user", server.username());
         String password = server.resolvedPassword();

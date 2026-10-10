@@ -79,6 +79,7 @@ public class ConfigService {
     public PluginConfig.Storage.Database readStorageSettings() throws IOException, InvalidConfigurationException {
         YamlConfiguration config = new YamlConfiguration();
         config.load(new File(plugin.getDataFolder(), "config.yml"));
+        config.setDefaults(Objects.requireNonNull(plugin.getConfig().getDefaults()));
         return StorageSettingsFactory.fromConfig(config).database();
     }
 
