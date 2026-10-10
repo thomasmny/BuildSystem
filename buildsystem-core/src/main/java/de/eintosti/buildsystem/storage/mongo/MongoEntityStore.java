@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.storage.mongo;
 
+import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.CountOptions;
 import com.mongodb.client.model.Filters;
@@ -24,11 +25,13 @@ import com.mongodb.client.model.ReplaceOneModel;
 import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.Sorts;
 import de.eintosti.buildsystem.storage.EntityStore;
+import de.eintosti.buildsystem.storage.StorageException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SequencedMap;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import org.bson.Document;
 import org.jspecify.annotations.NullMarked;
@@ -53,13 +56,14 @@ final class MongoEntityStore implements EntityStore {
     @Override
     public SequencedMap<String, Map<String, Object>> loadAll() {
         SequencedMap<String, Map<String, Object>> entries = new LinkedHashMap<>();
-        for (Document document : collection.find().sort(Sorts.ascending(ID))) {
+        List<Document> documents =
+                run("load", () -> collection.find().sort(Sorts.ascending(ID)).into(new ArrayList<>()));
+        for (Document document : documents) {
             Object id = document.remove(ID);
             if (id instanceof String key) {
                 entries.put(key, document);
             } else {
-                logger.warning("Skipping document " + id + " of "
-                        + collection.getNamespace().getCollectionName() + ": its _id is not a string");
+                logger.warning("Skipping document " + id + " of " + name() + ": its _id is not a string");
             }
         }
         return entries;
@@ -67,7 +71,7 @@ final class MongoEntityStore implements EntityStore {
 
     @Override
     public boolean isEmpty() {
-        return collection.countDocuments(new Document(), new CountOptions().limit(1)) == 0;
+        return run("read", () -> collection.countDocuments(new Document(), new CountOptions().limit(1))) == 0;
     }
 
     /**
@@ -86,7 +90,7 @@ final class MongoEntityStore implements EntityStore {
             document.putAll(values);
             replacements.add(new ReplaceOneModel<>(Filters.eq(ID, key), document, new ReplaceOptions().upsert(true)));
         });
-        collection.bulkWrite(replacements);
+        run("save to", () -> collection.bulkWrite(replacements));
     }
 
     /**
@@ -96,13 +100,27 @@ final class MongoEntityStore implements EntityStore {
     @Override
     public void replaceAll(Map<String, Map<String, Object>> entries) {
         entries.values().forEach(MongoEntityStore::checkFieldNames);
-        collection.deleteMany(new Document());
+        run("replace", () -> collection.deleteMany(new Document()));
         upsert(entries);
     }
 
     @Override
     public void delete(String key) {
-        collection.deleteOne(Filters.eq(ID, key));
+        run("delete from", () -> collection.deleteOne(Filters.eq(ID, key)));
+    }
+
+    private <R> R run(String action, Supplier<R> work) {
+        try {
+            return work.get();
+        } catch (MongoException e) {
+            throw new StorageException(
+                    "Could not " + action + " " + name() + ": " + e.getClass().getSimpleName() + ": " + e.getMessage(),
+                    e);
+        }
+    }
+
+    private String name() {
+        return collection.getNamespace().getCollectionName();
     }
 
     /**

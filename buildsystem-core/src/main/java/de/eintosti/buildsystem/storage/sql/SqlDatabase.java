@@ -76,10 +76,9 @@ public final class SqlDatabase implements Database {
         }
         SqlDatabase database = new SqlDatabase(dialect, driver, url, properties, tablePrefix, logger);
         try {
-            database.run(connection -> null);
+            database.run("connect to the database", connection -> null);
         } catch (StorageException e) {
-            throw new StorageException(
-                    "Could not connect to the database: " + e.getCause().getMessage(), e.getCause());
+            throw new StorageException(e.getMessage(), e.getCause());
         }
         return database;
     }
@@ -93,19 +92,24 @@ public final class SqlDatabase implements Database {
         return store;
     }
 
-    synchronized <R> R run(SqlWork<R> work) {
+    /**
+     * @param action What the work does, for the error, such as {@code "load buildsystem_worlds"}
+     */
+    synchronized <R> R run(String action, SqlWork<R> work) {
         try {
             return work.apply(connection());
         } catch (SQLException e) {
-            throw new StorageException("Database request failed: " + e.getMessage(), e);
+            // A driver message may quote the SQL, which holds only placeholders, never values, the URL or credentials.
+            throw new StorageException(
+                    "Could not " + action + ": " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
         }
     }
 
     /**
      * Runs {@code work} in one transaction, so it either commits whole or not at all.
      */
-    synchronized void transaction(SqlWork<Void> work) {
-        run(connection -> {
+    synchronized void transaction(String action, SqlWork<Void> work) {
+        run(action, connection -> {
             connection.setAutoCommit(false);
             try {
                 work.apply(connection);

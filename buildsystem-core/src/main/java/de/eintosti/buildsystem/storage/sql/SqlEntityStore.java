@@ -77,7 +77,7 @@ final class SqlEntityStore implements EntityStore {
     }
 
     void createTable() {
-        database.run(connection -> {
+        database.run("create " + table, connection -> {
             try (Statement statement = connection.createStatement()) {
                 statement.execute(createTable);
             }
@@ -87,7 +87,7 @@ final class SqlEntityStore implements EntityStore {
 
     @Override
     public SequencedMap<String, Map<String, Object>> loadAll() {
-        return database.run(connection -> {
+        return database.run("load " + table, connection -> {
             SequencedMap<String, Map<String, Object>> entries = new LinkedHashMap<>();
             try (PreparedStatement statement = connection.prepareStatement(selectAll);
                     ResultSet rows = statement.executeQuery()) {
@@ -110,7 +110,7 @@ final class SqlEntityStore implements EntityStore {
 
     @Override
     public boolean isEmpty() {
-        return database.run(connection -> {
+        return database.run("read " + table, connection -> {
             try (PreparedStatement statement = connection.prepareStatement(selectAny);
                     ResultSet rows = statement.executeQuery()) {
                 return !rows.next();
@@ -123,7 +123,7 @@ final class SqlEntityStore implements EntityStore {
         if (entries.isEmpty()) {
             return;
         }
-        database.transaction(connection -> {
+        database.transaction("save to " + table, connection -> {
             write(connection, entries);
             return null;
         });
@@ -131,7 +131,7 @@ final class SqlEntityStore implements EntityStore {
 
     @Override
     public void replaceAll(Map<String, Map<String, Object>> entries) {
-        database.transaction(connection -> {
+        database.transaction("replace " + table, connection -> {
             try (PreparedStatement statement = connection.prepareStatement(deleteAll)) {
                 statement.executeUpdate();
             }
@@ -155,7 +155,7 @@ final class SqlEntityStore implements EntityStore {
 
     @Override
     public void delete(String key) {
-        database.run(connection -> {
+        database.run("delete from " + table, connection -> {
             try (PreparedStatement statement = connection.prepareStatement(delete)) {
                 statement.setString(1, key);
                 statement.executeUpdate();
