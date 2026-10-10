@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
-import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
@@ -38,7 +37,7 @@ import org.jspecify.annotations.NullMarked;
  * {@link MaterialPickerMenu} to choose the icon, which is stored immediately.
  */
 @NullMarked
-public class DefaultIconsMenu extends ButtonMenu<MenuButton> {
+public class DefaultIconsMenu extends ButtonMenu {
 
     private static final int INVENTORY_SIZE = 27;
     private static final int SLOT_RESET = 4;
@@ -71,7 +70,7 @@ public class DefaultIconsMenu extends ButtonMenu<MenuButton> {
             register(layout.slot(), createTypeButton(layout));
         }
         register(SLOT_RESET, createResetButton());
-        register(SLOT_BACK, createBackButton());
+        register(SLOT_BACK, menuItems.backButton(menus::openSetup));
     }
 
     private MenuButton createResetButton() {
@@ -106,18 +105,6 @@ public class DefaultIconsMenu extends ButtonMenu<MenuButton> {
                             this.open(player);
                         },
                         () -> this.open(player)))
-                .build();
-    }
-
-    private MenuButton createBackButton() {
-        return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.BARRIER)
-                        .name(messages.getString("setup_back", player))
-                        .into(inventory, slot))
-                .onClick((player, event) -> {
-                    XSound.BLOCK_CHEST_OPEN.play(player);
-                    menus.openSetup(player);
-                })
                 .build();
     }
 

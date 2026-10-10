@@ -22,7 +22,9 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import java.util.List;
 import java.util.OptionalInt;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -45,11 +47,13 @@ public final class NavigatorItems {
     private final ConfigService configService;
     private final Messages messages;
     private final NamespacedKey navigatorKey;
+    private final NamespacedKey barrierKey;
 
     public NavigatorItems(JavaPlugin plugin, ConfigService configService, Messages messages) {
         this.configService = configService;
         this.messages = messages;
         this.navigatorKey = new NamespacedKey(plugin, "navigator");
+        this.barrierKey = new NamespacedKey(plugin, "navigator_barrier");
     }
 
     /**
@@ -59,18 +63,32 @@ public final class NavigatorItems {
      */
     @Contract("_ -> new")
     public ItemStack create(Player player) {
-        ItemStack itemStack = ItemBuilder.of(
-                        configService.current().settings().navigator().item())
+        return ItemBuilder.of(configService.current().settings().navigator().item())
                 .name(messages.getString("navigator_item", player))
+                .pdc(navigatorKey, PersistentDataType.BOOLEAN, true)
                 .build();
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null) {
-            return itemStack;
-        }
+    }
 
-        itemMeta.getPersistentDataContainer().set(navigatorKey, PersistentDataType.BOOLEAN, true);
-        itemStack.setItemMeta(itemMeta);
-        return itemStack;
+    /**
+     * {@return a tagged barrier that stands in for the navigator while the new navigator is open}
+     *
+     * @param player The player the item is created for
+     */
+    @Contract("_ -> new")
+    public ItemStack createBarrier(Player player) {
+        return ItemBuilder.of(XMaterial.BARRIER)
+                .name(messages.getString("barrier_item", player))
+                .pdc(barrierKey, PersistentDataType.BOOLEAN, true)
+                .build();
+    }
+
+    /**
+     * {@return whether the item is the barrier from {@link #createBarrier}}
+     *
+     * @param itemStack The item to test
+     */
+    public boolean isBarrier(@Nullable ItemStack itemStack) {
+        return itemStack != null && itemStack.getType() == Material.BARRIER && isTagged(itemStack, barrierKey);
     }
 
     /**
@@ -86,12 +104,13 @@ public final class NavigatorItems {
             return false;
         }
 
-        ItemMeta itemMeta = itemStack.getItemMeta();
-        if (itemMeta == null) {
-            return false;
-        }
+        return isTagged(itemStack, navigatorKey);
+    }
 
-        return Boolean.TRUE.equals(itemMeta.getPersistentDataContainer().get(navigatorKey, PersistentDataType.BOOLEAN));
+    private static boolean isTagged(ItemStack itemStack, NamespacedKey key) {
+        ItemMeta itemMeta = itemStack.getItemMeta();
+        return itemMeta != null
+                && Boolean.TRUE.equals(itemMeta.getPersistentDataContainer().get(key, PersistentDataType.BOOLEAN));
     }
 
     /**
@@ -127,23 +146,13 @@ public final class NavigatorItems {
      * matches, so toggling the navigator item never drops it on the floor.
      *
      * @param player The player whose inventory is modified
-     * @param findItemName The display name of the item to replace
-     * @param findItemType The material of the item to replace
+     * @param find Which item to replace
      * @param replaceItem The replacement item
      */
-    public void replace(Player player, String findItemName, XMaterial findItemType, ItemStack replaceItem) {
+    public void replace(Player player, Predicate<@Nullable ItemStack> find, ItemStack replaceItem) {
         PlayerInventory inventory = player.getInventory();
-
         OptionalInt slot = IntStream.range(0, inventory.getSize())
-                .filter(i -> {
-                    ItemStack currentItem = inventory.getItem(i);
-                    if (currentItem == null || currentItem.getType() != findItemType.get()) {
-                        return false;
-                    }
-
-                    ItemMeta itemMeta = currentItem.getItemMeta();
-                    return itemMeta != null && itemMeta.getDisplayName().equals(findItemName);
-                })
+                .filter(i -> find.test(inventory.getItem(i)))
                 .findFirst();
 
         if (slot.isPresent()) {

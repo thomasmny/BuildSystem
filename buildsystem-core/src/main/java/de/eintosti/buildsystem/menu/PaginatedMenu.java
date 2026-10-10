@@ -46,7 +46,7 @@ import org.jspecify.annotations.NullMarked;
  * variable page content is rendered separately by its {@code populate}.
  */
 @NullMarked
-public abstract class PaginatedMenu extends ButtonMenu<MenuButton> {
+public abstract class PaginatedMenu extends ButtonMenu {
 
     private int page = 0;
 

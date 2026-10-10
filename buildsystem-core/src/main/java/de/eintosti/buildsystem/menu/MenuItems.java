@@ -18,12 +18,12 @@
 package de.eintosti.buildsystem.menu;
 
 import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.exceptions.ProfileException;
 import com.cryptomorin.xseries.profiles.objects.ProfileInputType;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
-import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -35,6 +35,7 @@ import java.util.concurrent.CompletionException;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.stream.IntStream;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -63,6 +64,21 @@ public final class MenuItems {
     }
 
     /**
+     * {@return the setup menus' back button: a barrier that plays the chest sound and runs {@code onBack}}
+     */
+    public MenuButton backButton(Consumer<Player> onBack) {
+        return MenuButton.builder()
+                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.BARRIER)
+                        .name(messages.getString("setup_back", player))
+                        .into(inventory, slot))
+                .onClick((player, event) -> {
+                    XSound.BLOCK_CHEST_OPEN.play(player);
+                    onBack.accept(player);
+                })
+                .build();
+    }
+
+    /**
      * Adds a glass pane to the given inventory at the specified position.
      *
      * @param player The player viewing the inventory
@@ -79,11 +95,23 @@ public final class MenuItems {
      * @param player The player to get the glass pane for
      * @return The colored glass pane material
      */
-    public XMaterial getColoredGlassPane(Player player) {
-        Settings settings = settingsService.getSettings(player);
-        DesignColor color = settings.getDesignColor();
-        String paneItemName = color.name() + "_STAINED_GLASS_PANE";
-        return XMaterial.matchXMaterial(paneItemName).orElse(XMaterial.BLACK_STAINED_GLASS_PANE);
+    public Material getColoredGlassPane(Player player) {
+        return glassPane(settingsService.getSettings(player).getDesignColor());
+    }
+
+    /**
+     * {@return the stained glass block in the given design colour} Every {@link DesignColor} is named after a dye
+     * colour, so the material always exists.
+     */
+    public static Material glass(DesignColor color) {
+        return Material.valueOf(color.name() + "_STAINED_GLASS");
+    }
+
+    /**
+     * {@return the stained glass pane in the given design colour}
+     */
+    public static Material glassPane(DesignColor color) {
+        return Material.valueOf(color.name() + "_STAINED_GLASS_PANE");
     }
 
     /**

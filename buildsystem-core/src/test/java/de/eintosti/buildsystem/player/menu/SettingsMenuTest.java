@@ -18,40 +18,70 @@
 package de.eintosti.buildsystem.player.menu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.navigator.NavigatorService;
-import de.eintosti.buildsystem.player.menu.SettingsMenu.ClickOutcome;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
+import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
-import java.util.Map;
+import de.eintosti.buildsystem.test.SoundlessPlayer;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import org.bukkit.Sound;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 
 /**
- * Golden test pinning the {@link SettingsMenu} slot &rarr; permission-node mapping and the design/scoreboard
- * classifications. Built through the real production constructor under a {@link MockBukkit} server.
+ * Pins what each {@link SettingsMenu} slot needs and does: a player holding only that toggle's node flips it and the
+ * menu reopens, and a player without it is refused. Built through the real production constructor under a
+ * {@link MockBukkit} server.
  */
 @NullMarked
 class SettingsMenuTest {
 
     private ServerMock server;
+    private Messages messages;
+    private SettingsService settingsService;
+    private Menus menus;
+    private ConfigService configService;
+    private SoundlessPlayer player;
 
     @BeforeEach
     void setUp() {
         server = MockBukkit.mock();
+        messages = mock(Messages.class);
+        when(messages.getString(anyString(), any())).thenReturn("Title");
+        settingsService = mock(SettingsService.class);
+        menus = mock(Menus.class);
+        configService = mock(ConfigService.class, RETURNS_DEEP_STUBS);
+        player = SoundlessPlayer.join(server, "Alex");
     }
 
     @AfterEach
@@ -60,54 +90,123 @@ class SettingsMenuTest {
     }
 
     private SettingsMenu menu() {
-        Messages messages = mock(Messages.class);
-        when(messages.getString(anyString(), any())).thenReturn("Title");
         return new SettingsMenu(
                 messages,
-                mock(SettingsService.class),
-                mock(ConfigService.class),
+                settingsService,
+                configService,
                 mock(MenuItems.class),
                 mock(NavigatorService.class),
                 mock(NoClipService.class),
-                mock(Menus.class),
-                server.addPlayer());
+                menus,
+                player);
+    }
+
+    static Stream<Arguments> toggles() {
+        return Stream.of(
+                toggle(12, "clear-inventory", Settings::isClearInventory),
+                toggle(13, "disable-interact", Settings::isDisableInteract),
+                toggle(14, "hide-players", Settings::isHidePlayers),
+                toggle(15, "instant-place-signs", Settings::isInstantPlaceSigns),
+                toggle(20, "keep-navigator", Settings::isKeepNavigator),
+                toggle(21, "navigator-type", Settings::getNavigatorType),
+                toggle(22, "night-vision", Settings::isNightVision),
+                toggle(23, "no-clip", Settings::isNoClip),
+                toggle(24, "open-trapdoors", Settings::isOpenTrapDoors),
+                toggle(29, "place-plants", Settings::isPlacePlants),
+                toggle(30, "scoreboard", Settings::isScoreboard),
+                toggle(31, "slab-breaking", Settings::isSlabBreaking),
+                toggle(32, "spawn-teleport", Settings::isSpawnTeleport));
+    }
+
+    private static Arguments toggle(int slot, String setting, Function<Settings, Object> value) {
+        return Arguments.of(slot, "buildsystem.setting." + setting, value);
+    }
+
+    @ParameterizedTest(name = "slot {0} needs {1}")
+    @MethodSource("toggles")
+    void toggle_needsItsPermission_flipsItsSetting_andReopens(
+            int slot, String permission, Function<Settings, Object> value) {
+        Settings settings = new SettingsImpl();
+        when(settingsService.getSettings(player)).thenReturn(settings);
+        when(configService.current().settings().scoreboard()).thenReturn(true);
+        Object before = value.apply(settings);
+
+        click(menu(), slot);
+        verify(messages).sendPermissionError(player);
+        verify(menus, never()).openSettings(player);
+        assertEquals(before, value.apply(settings));
+
+        player.addAttachment(MockBukkit.createMockPlugin(), permission, true);
+        click(menu(), slot);
+        verify(menus).openSettings(player);
+        assertNotEquals(before, value.apply(settings));
     }
 
     @Test
-    void permissionNodeBySlot_mapsAllThirteenToggles() {
-        Map<Integer, String> nodes = menu().permissionNodeBySlot();
+    void scoreboard_disabledInConfig_isRefusedWithoutReopening() {
+        player.setOp(true);
+        Settings settings = new SettingsImpl();
+        when(settingsService.getSettings(player)).thenReturn(settings);
+        when(configService.current().settings().scoreboard()).thenReturn(false);
+        boolean before = settings.isScoreboard();
 
-        assertEquals("buildsystem.setting.clear-inventory", nodes.get(12));
-        assertEquals("buildsystem.setting.disable-interact", nodes.get(13));
-        assertEquals("buildsystem.setting.hide-players", nodes.get(14));
-        assertEquals("buildsystem.setting.instant-place-signs", nodes.get(15));
-        assertEquals("buildsystem.setting.keep-navigator", nodes.get(20));
-        assertEquals("buildsystem.setting.navigator-type", nodes.get(21));
-        assertEquals("buildsystem.setting.night-vision", nodes.get(22));
-        assertEquals("buildsystem.setting.no-clip", nodes.get(23));
-        assertEquals("buildsystem.setting.open-trapdoors", nodes.get(24));
-        assertEquals("buildsystem.setting.place-plants", nodes.get(29));
-        assertEquals("buildsystem.setting.scoreboard", nodes.get(30));
-        assertEquals("buildsystem.setting.slab-breaking", nodes.get(31));
-        assertEquals("buildsystem.setting.spawn-teleport", nodes.get(32));
+        click(menu(), 30);
 
-        assertEquals(13, nodes.size());
+        assertEquals(before, settings.isScoreboard());
+        verify(menus, never()).openSettings(player);
+        assertEquals(List.of(Sound.ENTITY_ITEM_BREAK), player.sounds());
     }
 
     @Test
-    void permissionNodeBySlot_omitsDesignSlot() {
-        assertFalse(menu().permissionNodeBySlot().containsKey(11));
+    void otherSlots_doNothingEvenForAnOperator() {
+        player.setOp(true);
+        SettingsMenu menu = menu();
+        Set<Integer> buttons = Set.of(11, 12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 30, 31, 32);
+
+        IntStream.range(0, 45).filter(slot -> !buttons.contains(slot)).forEach(slot -> click(menu, slot));
+
+        verifyNoInteractions(menus);
     }
 
     @Test
-    void outcomeBySlot_designIsSubmenu_scoreboardIsRejectable_restAreToggles() {
-        Map<Integer, ClickOutcome> outcomes = menu().outcomeBySlot();
+    void design_opensTheDesignMenu() {
+        click(menu(), 11);
 
-        assertEquals(ClickOutcome.SUBMENU, outcomes.get(11)); // design
-        assertEquals(ClickOutcome.REJECTABLE, outcomes.get(30)); // scoreboard
+        verify(menus).openDesign(player);
+    }
 
-        for (int slot : new int[] {12, 13, 14, 15, 20, 21, 22, 23, 24, 29, 31, 32}) {
-            assertEquals(ClickOutcome.TOGGLE, outcomes.get(slot), "slot " + slot + " should be a plain toggle");
-        }
+    @Test
+    void toggle_flipsTheSettingAndReopens() {
+        player.setOp(true);
+        Settings settings = mock(Settings.class);
+        when(settingsService.getSettings(player)).thenReturn(settings);
+
+        click(menu(), 12);
+
+        verify(settings).setClearInventory(true);
+        verify(menus).openSettings(player);
+    }
+
+    @Test
+    void deniedToggle_keepsTheMenuOpenAndChangesNothing() {
+        Settings settings = mock(Settings.class);
+        when(settingsService.getSettings(player)).thenReturn(settings);
+        SettingsMenu menu = menu();
+
+        click(menu, 12);
+
+        verify(messages).sendPermissionError(player);
+        verify(settings, never()).setClearInventory(true);
+        assertEquals(menu.getInventory(), player.getOpenInventory().getTopInventory());
+    }
+
+    private void click(SettingsMenu menu, int slot) {
+        InventoryClickEvent event = new InventoryClickEvent(
+                player.openInventory(menu.getInventory()),
+                SlotType.CONTAINER,
+                slot,
+                ClickType.LEFT,
+                InventoryAction.PICKUP_ALL);
+        menu.handleClick(event);
     }
 }

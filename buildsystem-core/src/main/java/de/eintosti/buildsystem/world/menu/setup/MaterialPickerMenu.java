@@ -45,7 +45,7 @@ import org.jspecify.annotations.NullMarked;
  * configured (statuses, categories, default world-type icons).
  */
 @NullMarked
-public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
+public class MaterialPickerMenu extends ButtonMenu {
 
     private static final int INVENTORY_SIZE = 54;
     private static final int COLUMNS = 8;
@@ -114,7 +114,7 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
         register(SLOT_SCROLL_UP, createScrollButton(true, topRow > 0));
         register(SLOT_SCROLL_DOWN, createScrollButton(false, topRow < maxTopRow));
         register(SLOT_FILTER, createFilterButton());
-        register(SLOT_BACK, createBackButton());
+        register(SLOT_BACK, menuItems.backButton(p -> onBack.run()));
 
         renderButtons(player);
     }
@@ -204,18 +204,6 @@ public class MaterialPickerMenu extends ButtonMenu<MenuButton> {
                                 topRow = 0;
                                 open(player);
                             });
-                })
-                .build();
-    }
-
-    private MenuButton createBackButton() {
-        return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.BARRIER)
-                        .name(messages.getString("setup_back", player))
-                        .into(inventory, slot))
-                .onClick((player, event) -> {
-                    XSound.BLOCK_CHEST_OPEN.play(player);
-                    onBack.run();
                 })
                 .build();
     }

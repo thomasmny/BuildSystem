@@ -17,17 +17,12 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
 import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.i18n.Placeholders;
-import de.eintosti.buildsystem.menu.Menus;
-import de.eintosti.buildsystem.menu.Prompts;
-import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.world.WorldPrompts;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
 import org.bukkit.entity.Player;
@@ -36,48 +31,16 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SetProjectSubCommand extends WorldSubCommand {
 
-    private final Menus menus;
-    private final Prompts prompts;
-    private final SettingsService settingsService;
+    private final WorldPrompts worldPrompts;
 
-    public SetProjectSubCommand(
-            Messages messages,
-            WorldServiceImpl worldService,
-            Menus menus,
-            Prompts prompts,
-            SettingsService settingsService) {
+    public SetProjectSubCommand(Messages messages, WorldServiceImpl worldService, WorldPrompts worldPrompts) {
         super(messages, worldService, WorldTarget.argument(2, "worlds_setproject"));
-        this.menus = menus;
-        this.prompts = prompts;
-        this.settingsService = settingsService;
+        this.worldPrompts = worldPrompts;
     }
 
     @Override
     protected void execute(Player player, BuildWorld buildWorld, String[] args) {
-        getProjectInput(player, buildWorld, true);
-    }
-
-    public void getProjectInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
-        prompts.prompt(player).title("enter_world_project").request(input -> {
-            String project = input.trim();
-            buildWorld.getData().set(WorldDataKey.PROJECT, project);
-            settingsService.forceUpdateSidebar(buildWorld);
-
-            XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            messages.sendMessage(player, "worlds_setproject_set", Placeholders.of("%world%", buildWorld.getName()));
-
-            // The world's folder can override this value, in which case the stored project is not the one shown.
-            String effective = buildWorld.getData().get(WorldDataKey.PROJECT);
-            if (!project.equals(effective)) {
-                messages.sendMessage(player, "worlds_setproject_overridden", Placeholders.of("%project%", effective));
-            }
-
-            if (closeInventory) {
-                player.closeInventory();
-            } else {
-                menus.reopenEdit(buildWorld, player);
-            }
-        });
+        worldPrompts.promptProject(player, buildWorld, player::closeInventory);
     }
 
     @Override

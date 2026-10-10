@@ -135,8 +135,7 @@ public interface MenuButton {
     }
 
     /**
-     * Fluent builder for a plain {@link MenuButton}. Menus that attach their own per-slot metadata implement
-     * {@code MenuButton} directly instead of using this builder.
+     * Fluent builder for a {@link MenuButton}: what it renders, who may click it and what a click does.
      */
     final class Builder {
 

@@ -37,7 +37,7 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class BackupsMenu extends ButtonMenu<MenuButton> {
+public class BackupsMenu extends ButtonMenu {
 
     private static final int SLOT_INFO = 4;
     private static final int FIRST_BACKUP_SLOT = 9;

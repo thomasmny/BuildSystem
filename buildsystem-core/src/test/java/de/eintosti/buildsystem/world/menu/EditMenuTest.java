@@ -20,39 +20,83 @@ package de.eintosti.buildsystem.world.menu;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.world.menu.EditMenu.ClickOutcome;
-import java.util.Map;
-import org.bukkit.entity.Player;
+import de.eintosti.buildsystem.test.SoundlessPlayer;
+import de.eintosti.buildsystem.test.TestData;
+import de.eintosti.buildsystem.util.Permissions;
+import de.eintosti.buildsystem.world.data.WorldDataImpl;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import org.bukkit.Difficulty;
+import org.bukkit.Material;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 
 /**
- * Golden test pinning the {@link EditMenu} slot &rarr; permission and slot &rarr; {@link ClickOutcome} contract. The
- * menu is built through its real production constructor under a {@link MockBukkit} server, so no test-only seam is
- * required.
+ * Pins what each {@link EditMenu} slot needs and does: a player holding only that slot's permission is let through and
+ * sees the click's effect, and a player without it is refused. The menu is built through its real production
+ * constructor under a {@link MockBukkit} server.
  */
 @NullMarked
 class EditMenuTest {
 
     private ServerMock server;
+    private Messages messages;
+    private Menus menus;
+    private PlayerServiceImpl playerService;
+    private BuildWorld buildWorld;
+    private WorldDataImpl data;
+    private SoundlessPlayer player;
 
     @BeforeEach
     void setUp() {
         server = MockBukkit.mock();
+        messages = mock(Messages.class);
+        when(messages.getString(anyString(), any())).thenReturn("Title");
+        menus = mock(Menus.class);
+        playerService = mock(PlayerServiceImpl.class);
+        data = new WorldDataImpl.WorldDataBuilder("world")
+                .withStatus(TestData.NOT_STARTED)
+                .build();
+        buildWorld = mock(BuildWorld.class);
+        when(buildWorld.getName()).thenReturn("world");
+        when(buildWorld.getData()).thenReturn(data);
+        when(buildWorld.getBuilders()).thenReturn(mock(Builders.class));
+        when(buildWorld.cycleDifficulty()).thenReturn(Difficulty.EASY);
+        player = SoundlessPlayer.join(server, "Alex");
     }
 
     @AfterEach
@@ -60,88 +104,91 @@ class EditMenuTest {
         MockBukkit.unmock();
     }
 
-    private EditMenu menu() {
-        Messages messages = mock(Messages.class);
-        when(messages.getString(anyString(), any())).thenReturn("Title");
-        BuildWorld buildWorld = mock(BuildWorld.class);
-        Player player = server.addPlayer();
-        return new EditMenu(
+    static Stream<Arguments> slots() {
+        return Stream.of(
+                slot(3, Permissions.EDIT_ICON, t -> verify(t.menus).openMaterialPicker(eq(t.player), any(), any())),
+                slot(5, Permissions.EDIT_PIN, t -> assertEquals(true, t.data.get(WorldDataKey.PINNED))),
+                slot(20, Permissions.EDIT_BREAKING, t -> assertEquals(false, t.data.get(WorldDataKey.BLOCK_BREAKING))),
+                slot(
+                        21,
+                        Permissions.EDIT_PLACEMENT,
+                        t -> assertEquals(false, t.data.get(WorldDataKey.BLOCK_PLACEMENT))),
+                slot(22, Permissions.EDIT_PHYSICS, t -> assertEquals(false, t.data.get(WorldDataKey.PHYSICS))),
+                slot(23, Permissions.EDIT_TIME, t -> verify(t.menus).reopenEdit(t.buildWorld, t.player)),
+                slot(24, Permissions.EDIT_EXPLOSIONS, t -> assertEquals(false, t.data.get(WorldDataKey.EXPLOSIONS))),
+                slot(
+                        29,
+                        Permissions.EDIT_ENTITIES,
+                        t -> verify(t.messages)
+                                .sendMessage(eq(t.player), eq("worldeditor_butcher_removed"), any(Placeholders.class))),
+                slot(30, Permissions.EDIT_BUILDERS, t -> assertEquals(true, t.data.get(WorldDataKey.BUILDERS_ENABLED))),
+                slot(31, Permissions.EDIT_MOBAI, t -> assertEquals(false, t.data.get(WorldDataKey.MOB_AI))),
+                slot(
+                        32,
+                        Permissions.EDIT_VISIBILITY,
+                        t -> assertEquals(Visibility.ADDED_PLAYERS, t.data.get(WorldDataKey.VISIBILITY))),
+                slot(
+                        33,
+                        Permissions.EDIT_INTERACTIONS,
+                        t -> assertEquals(false, t.data.get(WorldDataKey.BLOCK_INTERACTIONS))),
+                slot(38, Permissions.EDIT_GAMERULES, t -> verify(t.menus).openGameRules(t.buildWorld, t.player)),
+                slot(39, Permissions.EDIT_DIFFICULTY, t -> verify(t.buildWorld).cycleDifficulty()),
+                slot(40, Permissions.EDIT_STATUS, t -> verify(t.menus).openStatus(t.buildWorld, t.player)),
+                slot(41, Permissions.EDIT_PROJECT, t -> verify(t.menus).promptWorldProject(t.buildWorld, t.player)),
+                slot(
+                        42,
+                        Permissions.EDIT_PERMISSION,
+                        t -> verify(t.menus).promptWorldPermission(t.buildWorld, t.player)));
+    }
+
+    @ParameterizedTest(name = "slot {0} needs {1}")
+    @MethodSource("slots")
+    void slot_needsItsPermission_andActs(int slot, String permission, Consumer<EditMenuTest> effect) {
+        server.addSimpleWorld("world");
+        when(buildWorld.getBuilders().isCreator(player)).thenReturn(true);
+        when(playerService.canCreateWorld(eq(player), any())).thenReturn(true);
+
+        click(slot);
+        verify(messages).sendPermissionError(player);
+
+        player.addAttachment(MockBukkit.createMockPlugin(), permission, true);
+        click(slot);
+        effect.accept(this);
+    }
+
+    @Test
+    void otherSlots_doNothingEvenForAnOperator() {
+        Set<Integer> buttons =
+                slots().map(arguments -> (Integer) arguments.get()[0]).collect(Collectors.toSet());
+        player.setOp(true);
+
+        IntStream.range(0, 54).filter(slot -> !buttons.contains(slot)).forEach(this::click);
+
+        verifyNoInteractions(menus);
+        verify(messages, never()).sendPermissionError(player);
+    }
+
+    private static Arguments slot(int slot, String permission, Consumer<EditMenuTest> effect) {
+        return Arguments.of(slot, permission, effect);
+    }
+
+    private void click(int slot) {
+        EditMenu menu = new EditMenu(
                 messages,
-                mock(PlayerServiceImpl.class),
+                playerService,
                 mock(MenuItems.class),
-                mock(ConfigService.class),
+                mock(ConfigService.class, RETURNS_DEEP_STUBS),
                 mock(Prompts.class),
-                mock(Menus.class),
+                menus,
                 buildWorld,
                 player);
-    }
-
-    @Test
-    void permissionBySlot_mapsEveryInteractiveSlotToItsPermission() {
-        Map<Integer, String> permissions = menu().permissionBySlot();
-
-        // World-info icon editor
-        assertEquals("buildsystem.edit.icon", permissions.get(3));
-
-        // Toggles
-        assertEquals("buildsystem.edit.pin", permissions.get(5));
-        assertEquals("buildsystem.edit.breaking", permissions.get(20));
-        assertEquals("buildsystem.edit.placement", permissions.get(21));
-        assertEquals("buildsystem.edit.physics", permissions.get(22));
-        assertEquals("buildsystem.edit.explosions", permissions.get(24));
-        assertEquals("buildsystem.edit.mobai", permissions.get(31));
-        assertEquals("buildsystem.edit.interactions", permissions.get(33));
-
-        // Heterogeneous slots
-        assertEquals("buildsystem.edit.time", permissions.get(23));
-        assertEquals("buildsystem.edit.entities", permissions.get(29));
-        assertEquals("buildsystem.edit.builders", permissions.get(30));
-        assertEquals("buildsystem.edit.visibility", permissions.get(32));
-        assertEquals("buildsystem.edit.gamerules", permissions.get(38));
-        assertEquals("buildsystem.edit.difficulty", permissions.get(39));
-        assertEquals("buildsystem.edit.status", permissions.get(40));
-        assertEquals("buildsystem.edit.project", permissions.get(41));
-        assertEquals("buildsystem.edit.permission", permissions.get(42));
-
-        assertEquals(17, permissions.size());
-    }
-
-    @Test
-    void permissionBySlot_includesWorldInfoIconSlot() {
-        assertEquals("buildsystem.edit.icon", menu().permissionBySlot().get(3));
-    }
-
-    @Test
-    void outcomeBySlot_classifiesEachSlot() {
-        Map<Integer, ClickOutcome> outcomes = menu().outcomeBySlot();
-
-        // World-info icon editor opens the material picker
-        assertEquals(ClickOutcome.SUBMENU, outcomes.get(3));
-
-        // Toggles all re-open
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(5));
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(20));
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(21));
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(22));
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(24));
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(31));
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(33));
-
-        // Re-open actions
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(23)); // time
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(30)); // builders (left-click toggle)
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(32)); // visibility
-        assertEquals(ClickOutcome.REOPEN, outcomes.get(39)); // difficulty
-
-        // Sub-menus
-        assertEquals(ClickOutcome.SUBMENU, outcomes.get(38)); // gamerules
-        assertEquals(ClickOutcome.SUBMENU, outcomes.get(40)); // status
-
-        // Chat input
-        assertEquals(ClickOutcome.INPUT, outcomes.get(41)); // project
-        assertEquals(ClickOutcome.INPUT, outcomes.get(42)); // permission
-
-        // Closes the inventory
-        assertEquals(ClickOutcome.CLOSE, outcomes.get(29)); // butcher
+        menu.getInventory()
+                .setItem(slot, ItemBuilder.of(Material.STONE).name("x").build());
+        menu.handleClick(new InventoryClickEvent(
+                player.openInventory(menu.getInventory()),
+                SlotType.CONTAINER,
+                slot,
+                ClickType.LEFT,
+                InventoryAction.PICKUP_ALL));
     }
 }

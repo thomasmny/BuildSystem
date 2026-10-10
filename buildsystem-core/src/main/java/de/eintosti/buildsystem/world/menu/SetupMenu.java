@@ -34,7 +34,7 @@ import org.jspecify.annotations.NullMarked;
  * icons, the world {@code statuses}, and the navigator (categories and their layout, managed together).
  */
 @NullMarked
-public class SetupMenu extends ButtonMenu<MenuButton> {
+public class SetupMenu extends ButtonMenu {
 
     private static final int SLOT_DEFAULT_ICONS = 11;
     private static final int SLOT_STATUSES = 13;

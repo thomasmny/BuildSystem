@@ -18,9 +18,11 @@
 package de.eintosti.buildsystem.world.menu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -29,27 +31,53 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.test.SoundlessPlayer;
+import de.eintosti.buildsystem.test.TestData;
+import de.eintosti.buildsystem.util.Permissions;
+import de.eintosti.buildsystem.world.data.WorldDataImpl;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
-import org.bukkit.entity.Player;
+import java.util.Set;
+import java.util.stream.Stream;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockbukkit.mockbukkit.MockBukkit;
-import org.mockbukkit.mockbukkit.ServerMock;
 
 /**
- * Golden test pinning the {@link PhysicsMenu} slot &rarr; {@link WorldDataKey} contract: the master physics switch and
- * one toggle per {@link PhysicsCategory}.
+ * Pins which world-data key each {@link PhysicsMenu} slot flips, by clicking it. Built through the real production
+ * constructor under a {@link MockBukkit} server.
  */
 @NullMarked
 class PhysicsMenuTest {
 
-    private ServerMock server;
+    private static final int SIZE = 45;
+
+    private Messages messages;
+    private WorldDataImpl data;
+    private BuildWorld buildWorld;
+    private SoundlessPlayer player;
 
     @BeforeEach
     void setUp() {
-        server = MockBukkit.mock();
+        player = SoundlessPlayer.join(MockBukkit.mock(), "Alex");
+        messages = mock(Messages.class);
+        when(messages.getString(anyString(), any())).thenReturn("Title");
+        data = new WorldDataImpl.WorldDataBuilder("world")
+                .withStatus(TestData.NOT_STARTED)
+                .build();
+        buildWorld = mock(BuildWorld.class);
+        when(buildWorld.getData()).thenReturn(data);
     }
 
     @AfterEach
@@ -57,31 +85,64 @@ class PhysicsMenuTest {
         MockBukkit.unmock();
     }
 
-    private PhysicsMenu menu() {
-        Messages messages = mock(Messages.class);
-        when(messages.getString(anyString(), any())).thenReturn("Title");
-        BuildWorld buildWorld = mock(BuildWorld.class);
-        Player player = server.addPlayer();
-        return new PhysicsMenu(messages, mock(MenuItems.class), mock(Menus.class), buildWorld, player);
+    static Stream<Arguments> slots() {
+        return Stream.of(
+                Arguments.of(4, WorldDataKey.PHYSICS),
+                Arguments.of(12, PhysicsCategory.BLOCK_UPDATES.key()),
+                Arguments.of(13, PhysicsCategory.CONNECTIONS.key()),
+                Arguments.of(14, PhysicsCategory.FALLING_BLOCKS.key()),
+                Arguments.of(21, PhysicsCategory.FLUID_FLOW.key()),
+                Arguments.of(22, PhysicsCategory.LEAF_DECAY.key()),
+                Arguments.of(23, PhysicsCategory.GROWTH.key()),
+                Arguments.of(30, PhysicsCategory.SPREADING.key()),
+                Arguments.of(31, PhysicsCategory.BLOCK_FORMING.key()),
+                Arguments.of(32, PhysicsCategory.BLOCK_FADING.key()));
+    }
+
+    @ParameterizedTest(name = "slot {0} flips {1}")
+    @MethodSource("slots")
+    void slot_flipsItsKey_forAPlayerWhoMayEditPhysics(int slot, WorldDataKey<Boolean> key) {
+        boolean before = data.get(key);
+
+        click(slot);
+        verify(messages).sendPermissionError(player);
+        assertEquals(before, data.get(key));
+
+        player.addAttachment(MockBukkit.createMockPlugin(), Permissions.EDIT_PHYSICS, true);
+        click(slot);
+        assertEquals(!before, data.get(key));
     }
 
     @Test
-    void keyBySlot_mapsMasterAndEveryCategory() {
-        Map<Integer, WorldDataKey<Boolean>> keys = menu().keyBySlot();
+    void clickingEverySlot_flipsTheMasterAndEachCategoryOnce() {
+        player.setOp(true);
+        Set<WorldDataKey<Boolean>> keys = new HashSet<>();
+        keys.add(WorldDataKey.PHYSICS);
+        Arrays.stream(PhysicsCategory.values()).map(PhysicsCategory::key).forEach(keys::add);
+        Set<WorldDataKey<Boolean>> flipped = new HashSet<>();
 
-        assertEquals(WorldDataKey.PHYSICS, keys.get(4));
+        for (int slot = 0; slot < SIZE; slot++) {
+            Map<WorldDataKey<Boolean>, Boolean> before = new HashMap<>();
+            keys.forEach(key -> before.put(key, data.get(key)));
+            click(slot);
+            for (WorldDataKey<Boolean> key : keys) {
+                if (!data.get(key).equals(before.get(key))) {
+                    assertTrue(flipped.add(key), key + " is flipped by two slots");
+                    data.set(key, before.get(key));
+                }
+            }
+        }
 
-        assertEquals(PhysicsCategory.BLOCK_UPDATES.key(), keys.get(12));
-        assertEquals(PhysicsCategory.CONNECTIONS.key(), keys.get(13));
-        assertEquals(PhysicsCategory.FALLING_BLOCKS.key(), keys.get(14));
-        assertEquals(PhysicsCategory.FLUID_FLOW.key(), keys.get(21));
-        assertEquals(PhysicsCategory.LEAF_DECAY.key(), keys.get(22));
-        assertEquals(PhysicsCategory.GROWTH.key(), keys.get(23));
-        assertEquals(PhysicsCategory.SPREADING.key(), keys.get(30));
-        assertEquals(PhysicsCategory.BLOCK_FORMING.key(), keys.get(31));
-        assertEquals(PhysicsCategory.BLOCK_FADING.key(), keys.get(32));
+        assertEquals(keys, flipped);
+    }
 
-        // Master + one slot per category; a new PhysicsCategory constant must be given a slot here.
-        assertEquals(1 + PhysicsCategory.values().length, keys.size());
+    private void click(int slot) {
+        PhysicsMenu menu = new PhysicsMenu(messages, mock(MenuItems.class), mock(Menus.class), buildWorld, player);
+        menu.handleClick(new InventoryClickEvent(
+                player.openInventory(menu.getInventory()),
+                SlotType.CONTAINER,
+                slot,
+                ClickType.LEFT,
+                InventoryAction.PICKUP_ALL));
     }
 }

@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.world.menu.setup;
 
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
@@ -42,7 +41,7 @@ import org.jspecify.annotations.NullMarked;
  * through {@link #persist()} and lay out their own entry-specific buttons.
  */
 @NullMarked
-abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
+abstract class RegistryEditorMenu extends ButtonMenu {
 
     private static final int INVENTORY_SIZE = 27;
     private static final int MIDDLE_ROW_START_SLOT = 9;
@@ -171,15 +170,7 @@ abstract class RegistryEditorMenu extends ButtonMenu<MenuButton> {
     }
 
     protected final MenuButton backButton() {
-        return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.BARRIER)
-                        .name(messages.getString("setup_back", player))
-                        .into(inventory, slot))
-                .onClick((player, event) -> {
-                    XSound.BLOCK_CHEST_OPEN.play(player);
-                    openManagement(player);
-                })
-                .build();
+        return menuItems.backButton(this::openManagement);
     }
 
     /**

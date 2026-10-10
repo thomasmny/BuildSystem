@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.player.menu;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -35,7 +34,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class DesignMenu extends ButtonMenu<MenuButton> {
+public class DesignMenu extends ButtonMenu {
 
     /**
      * The colors selectable in the design menu, keyed by the slot they occupy. {@link LinkedHashMap} keeps insertion
@@ -45,26 +44,26 @@ public class DesignMenu extends ButtonMenu<MenuButton> {
 
     private static Map<Integer, ColorEntry> buildColorSlots() {
         Map<Integer, ColorEntry> slots = new LinkedHashMap<>();
-        slots.put(10, new ColorEntry(XMaterial.RED_STAINED_GLASS, "design_red", DesignColor.RED));
-        slots.put(11, new ColorEntry(XMaterial.ORANGE_STAINED_GLASS, "design_orange", DesignColor.ORANGE));
-        slots.put(12, new ColorEntry(XMaterial.YELLOW_STAINED_GLASS, "design_yellow", DesignColor.YELLOW));
-        slots.put(13, new ColorEntry(XMaterial.PINK_STAINED_GLASS, "design_pink", DesignColor.PINK));
-        slots.put(14, new ColorEntry(XMaterial.MAGENTA_STAINED_GLASS, "design_magenta", DesignColor.MAGENTA));
-        slots.put(15, new ColorEntry(XMaterial.PURPLE_STAINED_GLASS, "design_purple", DesignColor.PURPLE));
-        slots.put(16, new ColorEntry(XMaterial.BROWN_STAINED_GLASS, "design_brown", DesignColor.BROWN));
-        slots.put(18, new ColorEntry(XMaterial.LIME_STAINED_GLASS, "design_lime", DesignColor.LIME));
-        slots.put(19, new ColorEntry(XMaterial.GREEN_STAINED_GLASS, "design_green", DesignColor.GREEN));
-        slots.put(20, new ColorEntry(XMaterial.BLUE_STAINED_GLASS, "design_blue", DesignColor.BLUE));
-        slots.put(21, new ColorEntry(XMaterial.CYAN_STAINED_GLASS, "design_aqua", DesignColor.CYAN));
-        slots.put(22, new ColorEntry(XMaterial.LIGHT_BLUE_STAINED_GLASS, "design_light_blue", DesignColor.LIGHT_BLUE));
-        slots.put(23, new ColorEntry(XMaterial.WHITE_STAINED_GLASS, "design_white", DesignColor.WHITE));
-        slots.put(24, new ColorEntry(XMaterial.LIGHT_GRAY_STAINED_GLASS, "design_grey", DesignColor.LIGHT_GRAY));
-        slots.put(25, new ColorEntry(XMaterial.GRAY_STAINED_GLASS, "design_dark_grey", DesignColor.GRAY));
-        slots.put(26, new ColorEntry(XMaterial.BLACK_STAINED_GLASS, "design_black", DesignColor.BLACK));
+        slots.put(10, new ColorEntry("design_red", DesignColor.RED));
+        slots.put(11, new ColorEntry("design_orange", DesignColor.ORANGE));
+        slots.put(12, new ColorEntry("design_yellow", DesignColor.YELLOW));
+        slots.put(13, new ColorEntry("design_pink", DesignColor.PINK));
+        slots.put(14, new ColorEntry("design_magenta", DesignColor.MAGENTA));
+        slots.put(15, new ColorEntry("design_purple", DesignColor.PURPLE));
+        slots.put(16, new ColorEntry("design_brown", DesignColor.BROWN));
+        slots.put(18, new ColorEntry("design_lime", DesignColor.LIME));
+        slots.put(19, new ColorEntry("design_green", DesignColor.GREEN));
+        slots.put(20, new ColorEntry("design_blue", DesignColor.BLUE));
+        slots.put(21, new ColorEntry("design_aqua", DesignColor.CYAN));
+        slots.put(22, new ColorEntry("design_light_blue", DesignColor.LIGHT_BLUE));
+        slots.put(23, new ColorEntry("design_white", DesignColor.WHITE));
+        slots.put(24, new ColorEntry("design_grey", DesignColor.LIGHT_GRAY));
+        slots.put(25, new ColorEntry("design_dark_grey", DesignColor.GRAY));
+        slots.put(26, new ColorEntry("design_black", DesignColor.BLACK));
         return slots;
     }
 
-    private record ColorEntry(XMaterial material, String messageKey, DesignColor color) {}
+    private record ColorEntry(String messageKey, DesignColor color) {}
 
     private final SettingsService settingsService;
     private final MenuItems menuItems;
@@ -85,7 +84,7 @@ public class DesignMenu extends ButtonMenu<MenuButton> {
                 .render((player, inventory, slot) -> {
                     Settings settings = settingsService.getSettings(player);
                     boolean selected = settings.getDesignColor() == entry.color();
-                    ItemBuilder.of(entry.material())
+                    ItemBuilder.of(MenuItems.glass(entry.color()))
                             .name((selected ? "§a" : "§7") + messages.getString(entry.messageKey(), player))
                             .glow(selected)
                             .into(inventory, slot);

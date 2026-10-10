@@ -50,7 +50,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.util.Vector;
+import org.bukkit.util.BoundingBox;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -242,8 +242,7 @@ public class NavigatorService {
 
         XSound.ENTITY_ITEM_BREAK.play(player);
         displayActionBarMessage(player, "");
-        navigatorItems.replace(
-                player, messages.getString("barrier_item", player), XMaterial.BARRIER, navigatorItems.create(player));
+        navigatorItems.replace(player, navigatorItems::isBarrier, navigatorItems.create(player));
 
         CachedValues cachedValues = buildPlayer.getCachedValues();
         cachedValues.resetSpeedsIfPresent(player);
@@ -277,33 +276,15 @@ public class NavigatorService {
     }
 
     private boolean isLookingAtArmorStandHead(Player player, ArmorStand armorStand) {
-        Location eyeLocation = player.getEyeLocation();
-        Vector direction = eyeLocation.getDirection().normalize();
+        return isLookingAt(player.getEyeLocation(), armorStand.getEyeLocation());
+    }
 
-        Location standEyeLocation = armorStand.getEyeLocation().clone();
-        double boxHalfSize = 0.3;
-
-        double minX = standEyeLocation.getX() - boxHalfSize;
-        double maxX = standEyeLocation.getX() + boxHalfSize;
-        double minY = standEyeLocation.getY() - boxHalfSize;
-        double maxY = standEyeLocation.getY() + boxHalfSize;
-        double minZ = standEyeLocation.getZ() - boxHalfSize;
-        double maxZ = standEyeLocation.getZ() + boxHalfSize;
-
-        for (double distance = 0; distance <= 3; distance += 0.05) {
-            Vector point = eyeLocation.toVector().add(direction.clone().multiply(distance));
-
-            if (point.getX() >= minX
-                    && point.getX() <= maxX
-                    && point.getY() >= minY
-                    && point.getY() <= maxY
-                    && point.getZ() >= minZ
-                    && point.getZ() <= maxZ) {
-                return true;
-            }
-        }
-
-        return false;
+    /**
+     * {@return whether a line of sight from {@code eye} hits a 0.6 block cube around {@code target} within 3 blocks}
+     */
+    static boolean isLookingAt(Location eye, Location target) {
+        BoundingBox head = BoundingBox.of(target.toVector(), 0.3, 0.3, 0.3);
+        return head.contains(eye.toVector()) || head.rayTrace(eye.toVector(), eye.getDirection(), 3) != null;
     }
 
     private void sendTypeInfo(Player player, @Nullable NavigatorCategory category) {

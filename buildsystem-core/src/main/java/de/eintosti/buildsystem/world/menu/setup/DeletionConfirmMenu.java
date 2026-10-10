@@ -38,7 +38,7 @@ import org.jspecify.annotations.NullMarked;
  * add a filler or border shortcut here.
  */
 @NullMarked
-public class DeletionConfirmMenu extends ButtonMenu<MenuButton> {
+public class DeletionConfirmMenu extends ButtonMenu {
 
     private static final int INVENTORY_SIZE = 27;
     private static final int SLOT_CONFIRM = 11;

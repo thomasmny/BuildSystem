@@ -18,91 +18,123 @@
 package de.eintosti.buildsystem.player.customblock;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
-import com.cryptomorin.xseries.XMaterial;
+import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.player.customblock.CustomBlockMenu.BlockEntry;
-import java.util.Map;
-import org.bukkit.entity.Player;
+import de.eintosti.buildsystem.test.SoundlessPlayer;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import org.bukkit.Material;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType.SlotType;
+import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockbukkit.mockbukkit.MockBukkit;
-import org.mockbukkit.mockbukkit.ServerMock;
+import org.mockito.MockedStatic;
 
 /**
- * Golden test pinning the {@link CustomBlockMenu} slot &rarr; block selection grid. Built through the real production
- * constructor under a {@link MockBukkit} server.
+ * Pins the block each {@link CustomBlockMenu} slot gives, by clicking it. Built through the real production constructor
+ * under a {@link MockBukkit} server.
  */
 @NullMarked
 class CustomBlockMenuTest {
 
-    private ServerMock server;
+    private Messages messages;
+    private SoundlessPlayer player;
+    private MockedStatic<ItemBuilder> itemBuilder;
 
     @BeforeEach
     void setUp() {
-        server = MockBukkit.mock();
+        player = SoundlessPlayer.join(MockBukkit.mock(), "Alex");
+        messages = mock(Messages.class);
+        when(messages.getString(anyString(), any())).thenReturn("Title");
+        // XSkull needs authlib, which only the server provides; plain heads are enough here.
+        itemBuilder = mockStatic(ItemBuilder.class, CALLS_REAL_METHODS);
+        itemBuilder
+                .when(() -> ItemBuilder.skull(any(Profileable.class)))
+                .thenAnswer(invocation -> ItemBuilder.of(Material.PLAYER_HEAD));
     }
 
     @AfterEach
     void tearDown() {
+        itemBuilder.close();
         MockBukkit.unmock();
     }
 
-    private CustomBlockMenu menu() {
-        Messages messages = mock(Messages.class);
-        when(messages.getString(anyString(), any())).thenReturn("Title");
-        Player player = server.addPlayer();
-        return new CustomBlockMenu(messages, mock(MenuItems.class), player);
+    @ParameterizedTest(name = "slot {0} gives {1}")
+    @CsvSource({
+        "1, FULL_OAK_BARCH, PLAYER_HEAD",
+        "2, FULL_SPRUCE_BARCH, PLAYER_HEAD",
+        "3, FULL_BIRCH_BARCH, PLAYER_HEAD",
+        "4, FULL_JUNGLE_BARCH, PLAYER_HEAD",
+        "5, FULL_ACACIA_BARCH, PLAYER_HEAD",
+        "6, FULL_DARK_OAK_BARCH, PLAYER_HEAD",
+        "10, RED_MUSHROOM, PLAYER_HEAD",
+        "11, BROWN_MUSHROOM, PLAYER_HEAD",
+        "12, FULL_MUSHROOM_STEM, PLAYER_HEAD",
+        "13, MUSHROOM_STEM, PLAYER_HEAD",
+        "14, MUSHROOM_BLOCK, PLAYER_HEAD",
+        "19, SMOOTH_STONE, PLAYER_HEAD",
+        "20, DOUBLE_STONE_SLAB, PLAYER_HEAD",
+        "21, SMOOTH_SANDSTONE, PLAYER_HEAD",
+        "22, SMOOTH_RED_SANDSTONE, PLAYER_HEAD",
+        "28, POWERED_REDSTONE_LAMP, PLAYER_HEAD",
+        "29, BURNING_FURNACE, PLAYER_HEAD",
+        "30, PISTON_HEAD, PLAYER_HEAD",
+        "31, COMMAND_BLOCK, PLAYER_HEAD",
+        "32, BARRIER, BARRIER",
+        "33, INVISIBLE_ITEM_FRAME, ITEM_FRAME",
+        "37, MOB_SPAWNER, PLAYER_HEAD",
+        "38, NETHER_PORTAL, PLAYER_HEAD",
+        "39, END_PORTAL, PLAYER_HEAD",
+        "40, DRAGON_EGG, PLAYER_HEAD",
+        "41, DEBUG_STICK, DEBUG_STICK"
+    })
+    void slot_givesItsBlock(int slot, CustomBlock block, Material material) {
+        click(slot);
+
+        ItemStack given = player.getInventory().getItem(0);
+        assertEquals(block, CustomBlock.of(given));
+        assertEquals(material, given.getType());
     }
 
     @Test
-    void blockBySlot_hasAllTwentySixEntries() {
-        assertEquals(26, menu().blockBySlot().size());
+    void everySlot_givesTwentySixDifferentBlocks_andGlassOrEmptySlotsNothing() {
+        for (int slot = 0; slot < 45; slot++) {
+            click(slot);
+        }
+
+        List<CustomBlock> given = Arrays.stream(player.getInventory().getContents())
+                .map(CustomBlock::of)
+                .filter(Objects::nonNull)
+                .toList();
+        assertEquals(26, given.size());
+        assertEquals(26, given.stream().distinct().count());
     }
 
-    @Test
-    void blockBySlot_mapsSpotCheckedSlots() {
-        Map<Integer, BlockEntry> blocks = menu().blockBySlot();
-
-        assertEquals(CustomBlock.FULL_OAK_BARCH, blocks.get(1).block());
-        assertEquals(CustomBlock.MUSHROOM_BLOCK, blocks.get(14).block());
-        assertEquals(CustomBlock.SMOOTH_STONE, blocks.get(19).block());
-        assertEquals(CustomBlock.COMMAND_BLOCK, blocks.get(31).block());
-        assertEquals(CustomBlock.DRAGON_EGG, blocks.get(40).block());
-    }
-
-    @Test
-    void blockBySlot_defaultGiveMaterialIsPlayerHead() {
-        assertEquals(XMaterial.PLAYER_HEAD, menu().blockBySlot().get(1).giveMaterial());
-    }
-
-    @Test
-    void blockBySlot_specialSlotsCarryTheirNonSkullGiveMaterial() {
-        Map<Integer, BlockEntry> blocks = menu().blockBySlot();
-
-        assertEquals(CustomBlock.BARRIER, blocks.get(32).block());
-        assertEquals(XMaterial.BARRIER, blocks.get(32).giveMaterial());
-
-        assertEquals(CustomBlock.INVISIBLE_ITEM_FRAME, blocks.get(33).block());
-        assertEquals(XMaterial.ITEM_FRAME, blocks.get(33).giveMaterial());
-
-        assertEquals(CustomBlock.DEBUG_STICK, blocks.get(41).block());
-        assertEquals(XMaterial.DEBUG_STICK, blocks.get(41).giveMaterial());
-    }
-
-    @Test
-    void blockBySlot_glassAndEmptySlotsAreAbsent() {
-        Map<Integer, BlockEntry> blocks = menu().blockBySlot();
-        assertFalse(blocks.containsKey(0)); // glass
-        assertFalse(blocks.containsKey(7)); // empty
-        assertFalse(blocks.containsKey(15)); // empty
+    private void click(int slot) {
+        CustomBlockMenu menu = new CustomBlockMenu(messages, mock(MenuItems.class), player);
+        menu.handleClick(new InventoryClickEvent(
+                player.openInventory(menu.getInventory()),
+                SlotType.CONTAINER,
+                slot,
+                ClickType.LEFT,
+                InventoryAction.PICKUP_ALL));
     }
 }

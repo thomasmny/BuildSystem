@@ -46,6 +46,7 @@ import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
 import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.WorldPrompts;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import de.eintosti.buildsystem.world.download.WorldDownloadService;
@@ -87,6 +88,7 @@ class WorldSubCommandsTest {
     private BuildWorld buildWorld;
     private final Menus menus = mock(Menus.class);
     private final Prompts prompts = mock(Prompts.class);
+    private final WorldPrompts worldPrompts = mock(WorldPrompts.class);
     private final ConfigService configService = mock(ConfigService.class);
     private final SettingsService settingsService = mock(SettingsService.class);
     private final TaskScheduler scheduler = mock(TaskScheduler.class);
@@ -152,20 +154,18 @@ class WorldSubCommandsTest {
                         2),
                 typed(t -> new SetItemSubCommand(t.messages, t.worldService), "worlds_setitem", 2),
                 typed(
-                        t -> new SetPermissionSubCommand(
-                                t.messages, t.worldService, t.configService, t.menus, t.prompts, t.settingsService),
+                        t -> new SetPermissionSubCommand(t.messages, t.worldService, t.worldPrompts),
                         "worlds_setpermission",
                         2),
                 typed(
-                        t -> new SetProjectSubCommand(
-                                t.messages, t.worldService, t.menus, t.prompts, t.settingsService),
+                        t -> new SetProjectSubCommand(t.messages, t.worldService, t.worldPrompts),
                         "worlds_setproject",
                         2),
                 typed(t -> new SetStatusSubCommand(t.messages, t.worldService, t.menus), "worlds_setstatus", 2),
                 typed(t -> new UnimportSubCommand(t.messages, t.worldService), "worlds_unimport", 2),
                 Arguments.of(
                         (Function<WorldSubCommandsTest, WorldSubCommand>)
-                                t -> new AddBuilderSubCommand(t.messages, t.worldService, t.menus, t.lookup, t.prompts),
+                                t -> new AddBuilderSubCommand(t.messages, t.worldService, t.worldPrompts),
                         "worlds_addbuilder_unknown_world",
                         "worlds_addbuilder_usage",
                         2),

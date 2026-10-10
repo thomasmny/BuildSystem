@@ -38,14 +38,11 @@ import org.jspecify.annotations.Nullable;
  * {@link #handleClick(InventoryClickEvent)}, which routes to the registered button or to {@link #onUnhandledClick}; a
  * subclass overrides {@code populate} (to fill background items before rendering) and {@code onUnhandledClick} (e.g. to
  * treat a click on the border as "go back") rather than touching click dispatch directly.
- *
- * @param <B> The concrete button type, allowing subclasses to attach their own per-slot metadata while reusing the
- *     shared registry, render loop, and click dispatch
  */
 @NullMarked
-public abstract class ButtonMenu<B extends MenuButton> extends Menu {
+public abstract class ButtonMenu extends Menu {
 
-    private final Map<Integer, B> buttons = new LinkedHashMap<>();
+    private final Map<Integer, MenuButton> buttons = new LinkedHashMap<>();
 
     /**
      * Slots registered since the last {@link #renderButtons} (or {@link #clearButtons}). Bounds collision detection to a
@@ -73,7 +70,7 @@ public abstract class ButtonMenu<B extends MenuButton> extends Menu {
      *     {@link #renderButtons} or {@link #clearButtons}), which almost always means two catalogs disagree about which
      *     slot a button belongs to
      */
-    protected final void register(int slot, B button) {
+    protected final void register(int slot, MenuButton button) {
         if (!registeredThisPass.add(slot)) {
             throw new IllegalStateException("Slot %d is already registered".formatted(slot));
         }
@@ -87,14 +84,6 @@ public abstract class ButtonMenu<B extends MenuButton> extends Menu {
     protected final void clearButtons() {
         buttons.clear();
         registeredThisPass.clear();
-    }
-
-    /**
-     * {@return the registered slot &rarr; button view, in insertion order} Subclasses use this to derive per-slot
-     * metadata (e.g. required permissions) from the same registry that drives rendering and clicks.
-     */
-    protected final Map<Integer, B> buttons() {
-        return buttons;
     }
 
     /**
@@ -123,7 +112,7 @@ public abstract class ButtonMenu<B extends MenuButton> extends Menu {
         event.setCancelled(true);
         Player player = (Player) event.getWhoClicked();
 
-        B button = buttonAt(event);
+        MenuButton button = buttonAt(event);
         if (button == null) {
             onUnhandledClick(player, event);
             return;
@@ -138,9 +127,9 @@ public abstract class ButtonMenu<B extends MenuButton> extends Menu {
     }
 
     /**
-     * Hook for a click the player is not allowed to make, i.e. one rejected by
-     * {@link MenuButton#canClick(Player)}. The default closes the inventory, sends the permission error and plays the deny sound, matching the guard it
-     * replaces. Menus that must keep the inventory open on a denied click (e.g. per-toggle settings) override this.
+     * Hook for a click the player is not allowed to make, i.e. one rejected by {@link MenuButton#canClick(Player)}. The
+     * default closes the inventory, sends the permission error and plays the deny sound. Menus that must keep the
+     * inventory open on a denied click (e.g. per-toggle settings) override this.
      *
      * @param player The clicking player
      * @param event The click event (already cancelled)
@@ -167,7 +156,7 @@ public abstract class ButtonMenu<B extends MenuButton> extends Menu {
      *
      * @param event The click event
      */
-    protected final @Nullable B buttonAt(InventoryClickEvent event) {
+    protected final @Nullable MenuButton buttonAt(InventoryClickEvent event) {
         int rawSlot = event.getRawSlot();
         if (rawSlot < 0 || rawSlot >= getInventory().getSize()) {
             return null;

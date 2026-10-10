@@ -17,18 +17,12 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
 import de.eintosti.buildsystem.command.subcommand.WorldTarget;
-import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.i18n.Placeholders;
-import de.eintosti.buildsystem.menu.Menus;
-import de.eintosti.buildsystem.menu.Prompts;
-import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.world.WorldPrompts;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
 import org.bukkit.entity.Player;
@@ -37,80 +31,16 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class SetPermissionSubCommand extends WorldSubCommand {
 
-    private final ConfigService configService;
-    private final Menus menus;
-    private final Prompts prompts;
-    private final SettingsService settingsService;
+    private final WorldPrompts worldPrompts;
 
-    public SetPermissionSubCommand(
-            Messages messages,
-            WorldServiceImpl worldService,
-            ConfigService configService,
-            Menus menus,
-            Prompts prompts,
-            SettingsService settingsService) {
+    public SetPermissionSubCommand(Messages messages, WorldServiceImpl worldService, WorldPrompts worldPrompts) {
         super(messages, worldService, WorldTarget.argument(2, "worlds_setpermission"));
-        this.configService = configService;
-        this.menus = menus;
-        this.prompts = prompts;
-        this.settingsService = settingsService;
+        this.worldPrompts = worldPrompts;
     }
 
     @Override
     protected void execute(Player player, BuildWorld buildWorld, String[] args) {
-        getPermissionInput(player, buildWorld, true);
-    }
-
-    public void getPermissionInput(Player player, BuildWorld buildWorld, boolean closeInventory) {
-        prompts.prompt(player).title("enter_world_permission").request(input -> {
-            String permission = input.trim();
-
-            List<String> whitelist = configService.current().settings().worldPermissionWhitelist();
-            if (!isPermissionAllowed(permission, whitelist)) {
-                XSound.ENTITY_ITEM_BREAK.play(player);
-                messages.sendMessage(player, "worlds_setpermission_not_allowed");
-
-                if (closeInventory) {
-                    player.closeInventory();
-                } else {
-                    menus.reopenEdit(buildWorld, player);
-                }
-                return;
-            }
-
-            buildWorld.getData().set(WorldDataKey.PERMISSION, permission);
-            settingsService.forceUpdateSidebar(buildWorld);
-
-            XSound.ENTITY_PLAYER_LEVELUP.play(player);
-            messages.sendMessage(player, "worlds_setpermission_set", Placeholders.of("%world%", buildWorld.getName()));
-
-            // A folder override means the stored permission is not the one being enforced.
-            String effective = buildWorld.getData().get(WorldDataKey.PERMISSION);
-            if (!permission.equals(effective)) {
-                messages.sendMessage(
-                        player, "worlds_setpermission_overridden", Placeholders.of("%permission%", effective));
-            }
-
-            if (closeInventory) {
-                player.closeInventory();
-            } else {
-                menus.reopenEdit(buildWorld, player);
-            }
-        });
-    }
-
-    /**
-     * Determines whether a permission lock may be set via {@code /worlds setPermission}.
-     *
-     * <p>An empty whitelist imposes no restriction (today's behavior). When the whitelist is non-empty, only listed
-     * values and the {@code "-"} sentinel (which clears the permission) are allowed.
-     *
-     * @param input The trimmed permission input
-     * @param whitelist The configured whitelist of permitted permission strings
-     * @return {@code true} if the permission may be set, {@code false} otherwise
-     */
-    static boolean isPermissionAllowed(String input, List<String> whitelist) {
-        return whitelist.isEmpty() || input.equals("-") || whitelist.contains(input);
+        worldPrompts.promptPermission(player, buildWorld, player::closeInventory);
     }
 
     @Override
