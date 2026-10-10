@@ -65,24 +65,17 @@ final class S3DownloadDelivery implements DownloadDelivery {
     }
 
     /**
-     * {@return a delivery uploading to the bucket the backups use, or {@code null} if that is not configured} The
-     * reason is logged: downloads silently doing nothing would be worse than downloads that are visibly off.
+     * {@return a delivery uploading to the bucket the backups use} Missing credentials never get here: the config
+     * parser already falls back to local storage for them.
      *
      * @param configService The live configuration
      * @param logger The plugin logger
      * @param background Where the leftovers of a previous run are cleared, which must not hold up startup
      */
-    static @Nullable S3DownloadDelivery open(ConfigService configService, Logger logger, Executor background) {
+    static S3DownloadDelivery open(ConfigService configService, Logger logger, Executor background) {
         PluginConfig.Storage.S3 settings = configService.current().storage().s3();
         String accessKey = settings.resolvedAccessKey();
         String secretKey = settings.resolvedSecretKey();
-        if (isBlank(accessKey) || isBlank(secretKey) || isBlank(settings.region()) || isBlank(settings.bucket())) {
-            logger.severe("World downloads are disabled:"
-                    + " world.download.storage is 's3' but the storage.s3 section is missing its credentials,"
-                    + " region or bucket.");
-            return null;
-        }
-
         String url = settings.url();
         S3Client s3 = new S3Client(
                 accessKey, secretKey, settings.region(), settings.bucket(), isBlank(url) ? null : URI.create(url));
