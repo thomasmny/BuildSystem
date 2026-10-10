@@ -95,7 +95,7 @@ public class PlayerQuitListener implements Listener {
         BuildPlayerImpl buildPlayer =
                 BuildPlayerImpl.of(playerManager.getPlayerStorage().getBuildPlayer(player));
         // An archive world's snapshot only lives in memory: hand it back before the server saves the player.
-        buildPlayer.getCachedValues().resetArchiveStateIfPresent(player);
+        ArchiveMode.exit(player, buildPlayer.getCachedValues(), settingsManager);
 
         if (settings.isClearInventory()) {
             player.getInventory().clear();

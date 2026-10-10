@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.listener.player;
 import com.cryptomorin.xseries.XPotion;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.player.CachedValues;
+import de.eintosti.buildsystem.player.settings.SettingsService;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.PlayerInventory;
@@ -27,7 +28,8 @@ import org.bukkit.potion.PotionEffect;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Puts a player into an archive world's spectating state, shared by changing into such a world and joining inside one.
+ * Puts a player into an archive world's spectating state and takes them out of it again. Shared by changing worlds,
+ * joining inside an archive world and quitting.
  */
 @NullMarked
 final class ArchiveMode {
@@ -63,5 +65,19 @@ final class ArchiveMode {
                     false);
             Bukkit.getOnlinePlayers().forEach(pl -> pl.hidePlayer(player));
         }
+    }
+
+    /**
+     * Hands back what {@link #enter} took and makes the player visible again. Safe to call for a player who is not in
+     * archive mode. Called before the player quits as well, so the endless invisibility is never saved into their
+     * player data.
+     */
+    @SuppressWarnings("deprecation")
+    static void exit(Player player, CachedValues cachedValues, SettingsService settingsService) {
+        cachedValues.resetArchiveStateIfPresent(player);
+        player.removePotionEffect(XPotion.INVISIBILITY.get());
+        Bukkit.getOnlinePlayers().stream()
+                .filter(pl -> !settingsService.getSettings(pl).isHidePlayers())
+                .forEach(pl -> pl.showPlayer(player));
     }
 }

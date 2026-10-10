@@ -31,7 +31,6 @@ import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.Permissions;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -104,28 +103,24 @@ public class PlayerChangedWorldListener implements Listener {
         messages.sendMessage(player, "build_deactivated_self");
     }
 
-    @SuppressWarnings("deprecation")
     private void checkWorldStatus(Player player) {
+        CachedValues cachedValues = cachedValues(player);
+        ArchiveMode.exit(player, cachedValues, settingsManager);
+
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         if (buildWorld == null) {
             return;
         }
 
-        CachedValues cachedValues = BuildPlayerImpl.of(
-                        playerManager.getPlayerStorage().getBuildPlayer(player))
-                .getCachedValues();
-        cachedValues.resetArchiveStateIfPresent(player);
-
         if (!buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
             ArchiveMode.enter(
                     player, cachedValues, configService.current().settings().archive());
-        } else {
-            player.removePotionEffect(XPotion.INVISIBILITY.get());
-            Bukkit.getOnlinePlayers().stream()
-                    .filter(pl -> !settingsManager.getSettings(pl).isHidePlayers())
-                    .forEach(pl -> pl.showPlayer(player));
         }
-
         navigatorService.giveNavigator(player);
+    }
+
+    private CachedValues cachedValues(Player player) {
+        return BuildPlayerImpl.of(playerManager.getPlayerStorage().getBuildPlayer(player))
+                .getCachedValues();
     }
 }
