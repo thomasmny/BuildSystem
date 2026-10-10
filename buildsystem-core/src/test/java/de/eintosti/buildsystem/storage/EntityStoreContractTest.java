@@ -43,6 +43,7 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,9 +52,12 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.logging.Logger;
+import org.bukkit.Color;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.util.BlockVector;
+import org.bukkit.util.Vector;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -334,6 +338,18 @@ public abstract class EntityStoreContractTest {
 
         assertEquals(entries, store("players").loadAll());
         assertEquals(Map.of("kept", Map.of("name", "kept")), store("worlds").loadAll());
+    }
+
+    @Test
+    void bukkitObjects_comeBackAsObjects() {
+        // Stands in for the items of an archive snapshot, which need a running server to build.
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("items", Arrays.asList(new Vector(1, 2.5, -3), null, new BlockVector(4, 5, 6)));
+        values.put("nested", Map.of("color", Color.fromRGB(10, 20, 30)));
+
+        store("players").upsert(Map.of("holder", values));
+
+        assertEquals(values, store("players").loadAll().get("holder"));
     }
 
     @Test

@@ -25,6 +25,7 @@ import com.mongodb.client.model.ReplaceOneModel;
 import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.model.Sorts;
 import de.eintosti.buildsystem.storage.EntityStore;
+import de.eintosti.buildsystem.storage.SerializedObjects;
 import de.eintosti.buildsystem.storage.StorageException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SequencedMap;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bson.Document;
 import org.jspecify.annotations.NullMarked;
@@ -60,10 +62,14 @@ final class MongoEntityStore implements EntityStore {
                 run("load", () -> collection.find().sort(Sorts.ascending(ID)).into(new ArrayList<>()));
         for (Document document : documents) {
             Object id = document.remove(ID);
-            if (id instanceof String key) {
-                entries.put(key, document);
-            } else {
+            if (!(id instanceof String key)) {
                 logger.warning("Skipping document " + id + " of " + name() + ": its _id is not a string");
+                continue;
+            }
+            try {
+                entries.put(key, SerializedObjects.revive(document));
+            } catch (IllegalArgumentException e) {
+                logger.log(Level.WARNING, "Skipping document " + key + " of " + name() + ": could not be read", e);
             }
         }
         return entries;
@@ -85,9 +91,10 @@ final class MongoEntityStore implements EntityStore {
         }
         List<ReplaceOneModel<Document>> replacements = new ArrayList<>();
         entries.forEach((key, values) -> {
-            checkFieldNames(values);
+            Map<String, Object> flat = SerializedObjects.flatten(values);
+            checkFieldNames(flat);
             Document document = new Document(ID, key);
-            document.putAll(values);
+            document.putAll(flat);
             replacements.add(new ReplaceOneModel<>(Filters.eq(ID, key), document, new ReplaceOptions().upsert(true)));
         });
         run("save to", () -> collection.bulkWrite(replacements));
@@ -99,7 +106,7 @@ final class MongoEntityStore implements EntityStore {
      */
     @Override
     public void replaceAll(Map<String, Map<String, Object>> entries) {
-        entries.values().forEach(MongoEntityStore::checkFieldNames);
+        entries.values().forEach(values -> checkFieldNames(SerializedObjects.flatten(values)));
         run("replace", () -> collection.deleteMany(new Document()));
         upsert(entries);
     }

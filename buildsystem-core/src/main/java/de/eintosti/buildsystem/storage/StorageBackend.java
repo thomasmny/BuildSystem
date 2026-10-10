@@ -158,7 +158,7 @@ public final class StorageBackend implements AutoCloseable {
     /**
      * {@return the store for {@code kind}, as it is} Unlike {@link #store}, nothing is imported into it.
      */
-    EntityStore collection(EntityKind kind) {
+    public EntityStore collection(EntityKind kind) {
         return database == null ? kind.yaml(dataFolder, logger) : database.collection(kind);
     }
 

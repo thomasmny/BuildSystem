@@ -24,6 +24,7 @@ import com.google.gson.ToNumberPolicy;
 import com.google.gson.reflect.TypeToken;
 import de.eintosti.buildsystem.storage.EntityKind;
 import de.eintosti.buildsystem.storage.EntityStore;
+import de.eintosti.buildsystem.storage.SerializedObjects;
 import java.lang.reflect.Type;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -98,9 +99,9 @@ final class SqlEntityStore implements EntityStore {
                         if (values == null) {
                             throw new JsonParseException("No data");
                         }
-                        entries.put(id, values);
-                    } catch (JsonParseException e) {
-                        logger.log(Level.WARNING, "Skipping row \"" + id + "\" of " + table + ": not a JSON object", e);
+                        entries.put(id, SerializedObjects.revive(values));
+                    } catch (JsonParseException | IllegalArgumentException e) {
+                        logger.log(Level.WARNING, "Skipping row \"" + id + "\" of " + table + ": could not be read", e);
                     }
                 }
             }
@@ -146,7 +147,7 @@ final class SqlEntityStore implements EntityStore {
         try (PreparedStatement statement = connection.prepareStatement(upsert)) {
             for (Map.Entry<String, Map<String, Object>> entry : entries.entrySet()) {
                 statement.setString(1, entry.getKey());
-                statement.setString(2, GSON.toJson(entry.getValue()));
+                statement.setString(2, GSON.toJson(SerializedObjects.flatten(entry.getValue())));
                 statement.addBatch();
             }
             statement.executeBatch();

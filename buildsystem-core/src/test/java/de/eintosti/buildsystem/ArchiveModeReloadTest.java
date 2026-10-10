@@ -33,8 +33,12 @@ import de.eintosti.buildsystem.api.BuildSystem;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.menu.ItemBuilder;
+import de.eintosti.buildsystem.storage.EntityKind;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
+import de.eintosti.buildsystem.storage.StorageBackend;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
 import de.eintosti.buildsystem.test.TestData;
@@ -43,15 +47,17 @@ import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import de.eintosti.buildsystem.world.menu.setup.LayoutEditorMenu;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -344,7 +350,7 @@ class ArchiveModeReloadTest {
     }
 
     /**
-     * Waits for every queued write to {@code players.yml}: writes run in order, so an empty save lands after them.
+     * Waits for every queued write to the player storage: writes run in order, so an empty save lands after them.
      */
     private void flushWrites() {
         playerStorage().save(List.of()).join();
@@ -355,9 +361,23 @@ class ArchiveModeReloadTest {
     }
 
     private boolean snapshotStored(PlayerMock player) {
-        YamlConfiguration players =
-                YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "players.yml"));
-        return players.isConfigurationSection("players." + player.getUniqueId() + ".archive-snapshot");
+        // A connection of its own, so this also reads what a disabled plugin left behind.
+        PluginConfig.Storage.Database settings;
+        try {
+            settings = new ConfigService(plugin).readStorageSettings();
+        } catch (IOException | InvalidConfigurationException e) {
+            throw new IllegalStateException(e);
+        }
+        StorageBackend backend =
+                StorageBackend.connect(settings.type(), settings, plugin.getDataFolder(), plugin.getLogger());
+        try {
+            Map<String, Object> stored = backend.collection(EntityKind.PLAYERS)
+                    .loadAll()
+                    .get(player.getUniqueId().toString());
+            return stored != null && stored.containsKey("archive-snapshot");
+        } finally {
+            backend.close();
+        }
     }
 
     private PlayerStorageImpl playerStorage() {
