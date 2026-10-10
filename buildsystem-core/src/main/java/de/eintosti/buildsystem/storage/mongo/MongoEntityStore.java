@@ -83,22 +83,11 @@ final class MongoEntityStore implements EntityStore {
 
     /**
      * Writes the entries in one ordered bulk write. MongoDB applies it document by document, so a failure part way
-     * leaves the documents before it written.
+     * leaves the documents before it written. An entry with a field name MongoDB cannot store is skipped and logged.
      */
     @Override
     public void upsert(Map<String, Map<String, Object>> entries) {
-        if (entries.isEmpty()) {
-            return;
-        }
-        List<ReplaceOneModel<Document>> replacements = new ArrayList<>();
-        entries.forEach((key, values) -> {
-            Map<String, Object> flat = SerializedObjects.flatten(values);
-            checkFieldNames(flat);
-            Document document = new Document(ID, key);
-            document.putAll(flat);
-            replacements.add(new ReplaceOneModel<>(Filters.eq(ID, key), document, new ReplaceOptions().upsert(true)));
-        });
-        run("save to", () -> collection.bulkWrite(replacements));
+        write(storable(entries));
     }
 
     /**
@@ -107,9 +96,33 @@ final class MongoEntityStore implements EntityStore {
      */
     @Override
     public void replaceAll(Map<String, Map<String, Object>> entries) {
-        entries.values().forEach(values -> checkFieldNames(SerializedObjects.flatten(values)));
+        List<ReplaceOneModel<Document>> replacements = storable(entries);
         run("replace", () -> collection.deleteMany(new Document()));
-        upsert(entries);
+        write(replacements);
+    }
+
+    private List<ReplaceOneModel<Document>> storable(Map<String, Map<String, Object>> entries) {
+        List<ReplaceOneModel<Document>> replacements = new ArrayList<>();
+        entries.forEach((key, values) -> {
+            Map<String, Object> flat = SerializedObjects.flatten(values);
+            String badField = badFieldName(flat);
+            if (badField != null) {
+                logger.warning("Not saving \"" + key + "\" to " + name() + ": MongoDB cannot store the field name \""
+                        + badField + "\"");
+                return;
+            }
+            Document document = new Document(ID, key);
+            document.putAll(flat);
+            replacements.add(new ReplaceOneModel<>(Filters.eq(ID, key), document, new ReplaceOptions().upsert(true)));
+        });
+        return replacements;
+    }
+
+    private void write(List<ReplaceOneModel<Document>> replacements) {
+        // A bulk write refuses an empty list.
+        if (!replacements.isEmpty()) {
+            run("save to", () -> collection.bulkWrite(replacements));
+        }
     }
 
     @Override
@@ -132,23 +145,28 @@ final class MongoEntityStore implements EntityStore {
     }
 
     /**
-     * Rejects a field name MongoDB would read as an operator or a path. The codecs only use fixed names, so this only
-     * fails if a codec starts naming fields after user input.
+     * {@return the first field name MongoDB would read as an operator or a path, or {@code null}} The codecs only use
+     * fixed names, so there is only one if a codec starts naming fields after user input.
      */
-    private static void checkFieldNames(Map<?, ?> values) {
-        values.forEach((name, value) -> {
-            if (!(name instanceof String field) || field.startsWith("$") || field.contains(".")) {
-                throw new IllegalArgumentException("Cannot store the field name \"" + name + "\" in MongoDB");
+    private static @Nullable String badFieldName(@Nullable Object value) {
+        if (value instanceof Map<?, ?> map) {
+            for (Map.Entry<?, ?> field : map.entrySet()) {
+                if (!(field.getKey() instanceof String name) || name.startsWith("$") || name.contains(".")) {
+                    return String.valueOf(field.getKey());
+                }
+                String nested = badFieldName(field.getValue());
+                if (nested != null) {
+                    return nested;
+                }
             }
-            checkNested(value);
-        });
-    }
-
-    private static void checkNested(@Nullable Object value) {
-        if (value instanceof Map<?, ?> nested) {
-            checkFieldNames(nested);
         } else if (value instanceof List<?> list) {
-            list.forEach(MongoEntityStore::checkNested);
+            for (Object element : list) {
+                String nested = badFieldName(element);
+                if (nested != null) {
+                    return nested;
+                }
+            }
         }
+        return null;
     }
 }

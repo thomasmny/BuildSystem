@@ -18,13 +18,14 @@
 package de.eintosti.buildsystem.storage.mongo;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.storage.EntityStoreContractTest;
 import de.eintosti.buildsystem.storage.StorageType;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -83,18 +84,21 @@ class MongoEntityStoreContractTest extends EntityStoreContractTest {
     }
 
     @Test
-    void fieldNameMongoWouldReadAsOperatorOrPath_isRejected() {
+    void entryWithAFieldNameMongoWouldReadAsOperatorOrPath_isSkipped_andTheRestAreWritten() {
         for (String field : List.of("$set", "a.b")) {
             for (Object values : List.of(
                     Map.of(field, true),
                     List.of(Map.of(field, true)),
                     List.of(List.of(Map.of("ok", Map.of(field, 1)))))) {
-                Map<String, Map<String, Object>> entry = Map.of("p", Map.of("settings", values));
+                Map<String, Map<String, Object>> entries = new LinkedHashMap<>();
+                entries.put("bad", Map.of("settings", values));
+                entries.put("good", Map.of("settings", Map.of("on", true)));
 
-                assertThrows(
-                        IllegalArgumentException.class, () -> store("players").upsert(entry), field + " in " + values);
+                store("players").upsert(entries);
+                store("players").replaceAll(entries);
+
+                assertEquals(Set.of("good"), store("players").loadAll().keySet(), field + " in " + values);
             }
         }
-        assertEquals(Map.of(), store("players").loadAll());
     }
 }
