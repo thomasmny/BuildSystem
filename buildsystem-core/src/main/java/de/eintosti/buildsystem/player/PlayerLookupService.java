@@ -106,7 +106,8 @@ public final class PlayerLookupService {
 
     /**
      * Resolves a player name to a {@link Builder}, using the online player when there is one and otherwise looking the
-     * name up off the main thread. Both callbacks run on the main thread.
+     * name up off the main thread. Call it on the main thread: an online player reaches {@code onFound} straight away,
+     * and a looked-up answer is handed back to the main thread.
      *
      * @param name The player name
      * @param onFound Receives the builder

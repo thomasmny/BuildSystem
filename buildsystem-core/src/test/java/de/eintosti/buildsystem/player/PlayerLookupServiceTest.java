@@ -41,8 +41,8 @@ import org.mockito.MockedStatic;
 
 /**
  * Pins the offline-safe behavior of {@link PlayerLookupService}: cached lookups resolve without scheduling, names are
- * case-insensitive, the undashed/dashed UUID conversion round-trips, and {@code resolve} prefers an online player. The network paths are intentionally untested
- * (no live Mojang calls in CI) and covered by the compile gate.
+ * case-insensitive, the undashed/dashed UUID conversion round-trips, and {@code resolve} prefers an online player. The
+ * network paths are intentionally untested (no live Mojang calls in CI) and covered by the compile gate.
  */
 @NullMarked
 class PlayerLookupServiceTest {

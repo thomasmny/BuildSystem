@@ -37,7 +37,7 @@ public sealed interface WorldTarget {
      * <ol>
      *   <li>the name is resolved as {@link WorldServiceImpl#resolveWorldName} describes, which answers an ambiguous
      *       name itself;
-     *   <li>the permission, before existence so a player without it cannot probe which world names exist;
+     *   <li>the permission, when the world exists;
      *   <li>the argument count, against {@code <prefix>_usage};
      *   <li>that the world exists, against {@code <prefix>_unknown_world}.
      * </ol>
