@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
-import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
@@ -89,7 +88,7 @@ public class CategoryStatusesMenu extends PaginatedMenu {
         List<BuildWorldStatus> statuses = List.copyOf(worldStatusRegistry.getAll());
         registerPageItems(FIRST_CONTENT_SLOT, ITEMS_PER_PAGE, statuses, this::createStatusToggle);
 
-        register(SLOT_BACK, createBackButton());
+        register(SLOT_BACK, menuItems.backButton(p -> menus.openCategoryEditor(category, p)));
         setupPaginationArrows();
 
         renderButtons(player);
@@ -122,18 +121,6 @@ public class CategoryStatusesMenu extends PaginatedMenu {
 
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     populate(player);
-                })
-                .build();
-    }
-
-    private MenuButton createBackButton() {
-        return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.BARRIER)
-                        .name(messages.getString("setup_back", player))
-                        .into(inventory, slot))
-                .onClick((player, event) -> {
-                    XSound.BLOCK_CHEST_OPEN.play(player);
-                    menus.openCategoryEditor(category, player);
                 })
                 .build();
     }

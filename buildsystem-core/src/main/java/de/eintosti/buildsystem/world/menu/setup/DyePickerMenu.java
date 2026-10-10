@@ -116,7 +116,7 @@ public class DyePickerMenu extends ButtonMenu<MenuButton> {
         for (int i = 0; i < SWATCHES.size(); i++) {
             register(SWATCH_SLOTS[i], createSwatchButton(SWATCHES.get(i)));
         }
-        register(SLOT_BACK, createBackButton());
+        register(SLOT_BACK, menuItems.backButton(p -> onBack.run()));
     }
 
     private MenuButton createSwatchButton(Swatch swatch) {
@@ -128,18 +128,6 @@ public class DyePickerMenu extends ButtonMenu<MenuButton> {
                 .onClick((player, event) -> {
                     XSound.ENTITY_CHICKEN_EGG.play(player);
                     onPick.accept(swatch.token());
-                })
-                .build();
-    }
-
-    private MenuButton createBackButton() {
-        return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.BARRIER)
-                        .name(messages.getString("setup_back", player))
-                        .into(inventory, slot))
-                .onClick((player, event) -> {
-                    XSound.BLOCK_CHEST_OPEN.play(player);
-                    onBack.run();
                 })
                 .build();
     }
