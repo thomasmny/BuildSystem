@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
+import de.eintosti.buildsystem.command.WorldToggleCommand.Toggle;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
@@ -49,10 +50,10 @@ public final class CommandRegistrar {
         register("build", new BuildCommand(messages, logger, services.player()));
         register("buildsystem", new BuildSystemCommand(messages, logger));
         register("config", new ConfigCommand(messages, logger, plugin));
-        register("explosions", new ExplosionsCommand(messages, logger, services.world()));
+        register("explosions", new WorldToggleCommand(messages, logger, services.world(), Toggle.EXPLOSIONS));
         register("gamemode", new GamemodeCommand(messages, logger));
-        register("noai", new NoAICommand(messages, logger, services.world()));
-        register("physics", new PhysicsCommand(messages, logger, services.world()));
+        register("noai", new WorldToggleCommand(messages, logger, services.world(), Toggle.NOAI));
+        register("physics", new WorldToggleCommand(messages, logger, services.world(), Toggle.PHYSICS));
         register("settings", new SettingsCommand(messages, logger, menus));
         register("setup", new SetupCommand(messages, logger, menus));
         register("skull", new SkullCommand(messages, logger, services.menuItems()));
