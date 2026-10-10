@@ -104,6 +104,11 @@ public class PlayerJoinListener implements Listener {
         // A stored archive snapshot means the last session never left the archive, most likely because the server
         // crashed. The server saved the emptied archive inventory, so the real one is handed back from the snapshot.
         boolean restored = ArchiveMode.exit(player, buildPlayer.getCachedValues());
+        if (restored) {
+            // The .dat file still holds the emptied inventory until the server's next player-data save. Write it now,
+            // before the stored snapshot is cleared, so a second crash cannot lose the items.
+            player.saveData();
+        }
         manageSettings(player, buildPlayer.getSettings());
         teleportToCorrectLocation(player, buildPlayer);
 

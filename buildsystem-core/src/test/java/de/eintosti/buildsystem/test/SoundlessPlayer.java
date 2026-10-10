@@ -28,8 +28,9 @@ import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 
 /**
- * A {@link PlayerMock} that records the sounds played to it instead of playing them. It also fills in two calls
- * MockBukkit does not implement: the seeded {@code playSound} overload, and whether the player is visible by default.
+ * A {@link PlayerMock} that records the sounds played to it instead of playing them. It also fills in three calls
+ * MockBukkit does not implement: the seeded {@code playSound} overload, whether the player is visible by default, and
+ * saving the player's data, which does nothing here.
  */
 @NullMarked
 public class SoundlessPlayer extends PlayerMock {
@@ -57,6 +58,9 @@ public class SoundlessPlayer extends PlayerMock {
     public void playSound(Entity entity, Sound sound, float volume, float pitch) {
         sounds.add(sound);
     }
+
+    @Override
+    public void saveData() {}
 
     @Override
     public boolean isVisibleByDefault() {

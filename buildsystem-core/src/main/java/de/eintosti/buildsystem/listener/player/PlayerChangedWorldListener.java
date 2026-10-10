@@ -109,6 +109,11 @@ public class PlayerChangedWorldListener implements Listener {
                 BuildPlayerImpl.of(playerManager.getPlayerStorage().getBuildPlayer(player));
         CachedValues cachedValues = buildPlayer.getCachedValues();
         boolean snapshotChanged = ArchiveMode.exit(player, cachedValues);
+        if (snapshotChanged) {
+            // The player's .dat file still holds the emptied archive inventory until the server's next player-data
+            // save. Write it now, before the stored snapshot is cleared, so a crash in between cannot lose the items.
+            player.saveData();
+        }
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         if (buildWorld != null && !buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
