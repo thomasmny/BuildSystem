@@ -67,18 +67,24 @@ public final class FolderCodec implements Codec<Folder> {
         serialized.put("uuid", folder.getUniqueId().toString());
         serialized.put("creator", folder.getCreator().toString());
         serialized.put("creation", folder.getCreation());
-        FolderImpl impl = (FolderImpl) folder;
+        // A subfolder always has its parent's category, so a whole tree saves its top folder's, which keeps an
+        // unresolved category the same across the tree.
+        FolderImpl top = (FolderImpl) folder;
+        while (top.getParent() != null) {
+            top = (FolderImpl) top.getParent();
+        }
         serialized.put(
                 "category",
                 Objects.requireNonNullElse(
-                        impl.getUnresolvedCategory(), folder.getCategory().getId()));
+                        top.getUnresolvedCategory(), folder.getCategory().getId()));
         if (folder.hasParent()) {
             serialized.put(PARENT, folder.getParent().getUniqueId().toString());
         }
         serialized.put(
                 "material",
                 Objects.requireNonNullElse(
-                        impl.getUnresolvedMaterial(), folder.getIcon().name()));
+                        ((FolderImpl) folder).getUnresolvedMaterial(),
+                        folder.getIcon().name()));
         Codec.putIfPresent(serialized, "icon-skull-texture", folder.getIconSkullTexture());
         serialized.put("permission", folder.getPermission());
         serialized.put("project", folder.getProject());

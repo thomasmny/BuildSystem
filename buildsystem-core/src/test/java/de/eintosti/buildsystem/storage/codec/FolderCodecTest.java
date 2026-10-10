@@ -146,6 +146,29 @@ class FolderCodecTest {
         assertEquals("OAK_SIGN", codec.serialize(folder).get("material"));
     }
 
+    @Test
+    void subfolder_savesItsTopFoldersCategory() {
+        String key = CodecSamples.FOLDER_ID.toString();
+        ConfigurationSection unknown = CodecSamples.section("""
+                %s:
+                  creator: 0c0c0c0c-0000-4000-8000-000000000001,Alex
+                  category: deleted_category
+                """.formatted(key), key);
+        FolderImpl top = codec.deserialize(key, unknown);
+        FolderImpl child = codec.deserialize(key, unknown);
+        FolderImpl resolvedTop = CodecSamples.minimalFolder(context);
+        resolvedTop.setCategory(child.getCategory());
+
+        child.setParent(resolvedTop);
+        assertEquals(child.getCategory().getId(), codec.serialize(child).get("category"));
+
+        child.setParent(null);
+        FolderImpl knownChild = CodecSamples.minimalFolder(context);
+        knownChild.setCategory(top.getCategory());
+        knownChild.setParent(top);
+        assertEquals("deleted_category", codec.serialize(knownChild).get("category"));
+    }
+
     private FolderImpl parent(UUID uuid, FolderImpl child) {
         return FolderImpl.builder(context, uuid)
                 .name("Parent")
