@@ -10,8 +10,9 @@ junit = "6.1.3"
 mockito = "5.24.0"
 mockbukkit = "4.115.0"
 testcontainers = "2.0.5"
-# The driver Paper 26.3 bundles, for the storage tests.
+# The drivers Paper 26.3 bundles, for the storage tests.
 sqlite-jdbc = "3.49.1.0"
+mysql-connector = "9.2.0"
 
 # Plugins
 luckperms = "5.5"
@@ -22,6 +23,8 @@ essentialsx = "2.21.2"
 
 # Third Party
 annotations = "26.1.0"
+# Downloaded by the server through plugin.yml libraries, not shaded.
+postgresql = "42.7.13"
 eddsa = "0.3.0"
 bstats = "3.2.1"
 fastboard = "2.2.2"
@@ -40,6 +43,9 @@ mockbukkit = { group = "org.mockbukkit.mockbukkit", name = "mockbukkit-v26.1.2",
 paperapi = { group = "io.papermc.paper", name = "paper-api", version.ref = "paperapi" }
 testcontainers = { group = "org.testcontainers", name = "testcontainers", version.ref = "testcontainers" }
 sqlite-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version.ref = "sqlite-jdbc" }
+mysql-connector = { group = "com.mysql", name = "mysql-connector-j", version.ref = "mysql-connector" }
+testcontainers-mysql = { group = "org.testcontainers", name = "testcontainers-mysql", version.ref = "testcontainers" }
+testcontainers-postgresql = { group = "org.testcontainers", name = "testcontainers-postgresql", version.ref = "testcontainers" }
 
 # Platform expectations
 spigot = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot" }
@@ -58,6 +64,7 @@ eddsa = { group = "net.i2p.crypto", name = "eddsa", version.ref = "eddsa" }
 bstats = { group = "org.bstats", name = "bstats-bukkit", version.ref = "bstats" }
 fastboard = { group = "fr.mrmicky", name = "fastboard", version.ref = "fastboard" }
 jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
+postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgresql" }
 nbt = { group = "dev.dewy", name = "nbt", version.ref = "nbt" }
 sftp = { group = "org.apache.sshd", name = "sshd-sftp", version.ref = "sshd-sftp" }
 xseries = { group = "com.github.cryptomorin", name = "XSeries", version.ref = "xseries" }

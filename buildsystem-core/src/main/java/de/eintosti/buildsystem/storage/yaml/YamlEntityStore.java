@@ -74,6 +74,14 @@ public final class YamlEntityStore implements EntityStore {
         return new YamlEntityStore(new YamlStore(dataFolder, "players.yml", logger), "players", logger, null);
     }
 
+    public String name() {
+        return rootKey;
+    }
+
+    public String fileName() {
+        return store.fileName();
+    }
+
     /**
      * Re-reads the file, migrating a legacy one first.
      *

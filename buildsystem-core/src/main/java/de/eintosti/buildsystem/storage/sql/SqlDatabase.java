@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.storage.sql;
 
+import de.eintosti.buildsystem.storage.Database;
 import de.eintosti.buildsystem.storage.EntityStore;
 import de.eintosti.buildsystem.storage.StorageException;
 import java.sql.Connection;
@@ -33,7 +34,7 @@ import org.jspecify.annotations.Nullable;
  * that sat idle too long, so the connection is checked before each use and opened again when it has gone.
  */
 @NullMarked
-public final class SqlDatabase implements AutoCloseable {
+public final class SqlDatabase implements Database {
 
     private static final int VALID_TIMEOUT_SECONDS = 5;
 
@@ -81,6 +82,7 @@ public final class SqlDatabase implements AutoCloseable {
     /**
      * {@return the table for the named collection, created if it does not exist yet}
      */
+    @Override
     public EntityStore collection(String name) {
         String table = tablePrefix + name;
         run(connection -> {

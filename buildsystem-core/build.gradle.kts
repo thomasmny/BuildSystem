@@ -70,12 +70,19 @@ dependencies {
     implementation(libs.paperlib)
     implementation(libs.sftp)
     implementation(libs.xseries)
+    // Not shaded: the server downloads this from plugin.yml's libraries. Paper and Spigot already ship the SQLite and
+    // MySQL drivers.
+    library(libs.postgresql)
 
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.mockito)
     testImplementation(libs.mockbukkit)
     testImplementation(libs.testcontainers)
+    testImplementation(libs.testcontainers.mysql)
+    testImplementation(libs.testcontainers.postgresql)
+    testRuntimeOnly(libs.mysql.connector)
+    testRuntimeOnly(libs.postgresql)
     testRuntimeOnly(libs.sqlite.jdbc)
     // Test-only Bukkit API: MockBukkit requires the Paper API. The plugin itself targets spigot-api (compileOnly
     // above); paper-api is a strict superset and is confined to the test classpath, so the shipped plugin stays

@@ -48,6 +48,7 @@ final class StorageSettingsFactory {
     static Storage fromConfig(FileConfiguration config) {
         String s3 = BASE + "s3.";
         String sftp = BASE + "sftp.";
+        String database = BASE + "database.";
         return new Storage(
                 new Storage.S3(
                         config.getString(s3 + "url"),
@@ -60,7 +61,15 @@ final class StorageSettingsFactory {
                         config.getString(sftp + "host"),
                         config.getInt(sftp + "port", 22),
                         config.getString(sftp + "username"),
-                        config.getString(sftp + "password")));
+                        config.getString(sftp + "password")),
+                new Storage.Database(
+                        config.getString(database + "type", "yaml"),
+                        config.getString(database + "host", "localhost"),
+                        config.getInt(database + "port", 0),
+                        config.getString(database + "database", "buildsystem"),
+                        config.getString(database + "username", ""),
+                        config.getString(database + "password", ""),
+                        config.getString(database + "table-prefix", "buildsystem_")));
     }
 
     /**

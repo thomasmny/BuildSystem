@@ -17,12 +17,16 @@
  */
 package de.eintosti.buildsystem.storage;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 /**
  * A storage backend could not be reached or rejected a read or write.
  */
+@NullMarked
 public class StorageException extends RuntimeException {
 
-    public StorageException(String message, Throwable cause) {
+    public StorageException(String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 }

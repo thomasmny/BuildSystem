@@ -38,8 +38,9 @@ public record PluginConfig(Settings settings, Storage storage, World world, Fold
      *
      * @param s3 The S3 or S3-compatible service
      * @param sftp The SFTP server
+     * @param database Where worlds, folders and players are kept
      */
-    public record Storage(S3 s3, Sftp sftp) {
+    public record Storage(S3 s3, Sftp sftp, Database database) {
 
         /**
          * Which backend a feature stores its files on.
@@ -122,6 +123,42 @@ public record PluginConfig(Settings settings, Storage storage, World world, Fold
                                 region,
                                 bucket,
                                 path);
+            }
+        }
+
+        /**
+         * The backend worlds, folders and players are kept in. Only read when the plugin enables, so a change needs a
+         * restart.
+         *
+         * @param type The backend's name as configured, checked when the plugin enables
+         * @param database The database name, or for SQLite the file name in the plugin folder
+         * @param port The port, or 0 for the backend's default
+         * @param tablePrefix Put in front of every table or collection name
+         */
+        public record Database(
+                String type,
+                String host,
+                int port,
+                String database,
+                String username,
+                @Nullable String password,
+                String tablePrefix) {
+
+            /**
+             * {@return the password, preferring {@code BUILDSYSTEM_DATABASE_PASSWORD}} Lets operators keep the secret
+             * out of config.yml.
+             */
+            public @Nullable String resolvedPassword() {
+                return envOrConfig("BUILDSYSTEM_DATABASE_PASSWORD", password);
+            }
+
+            /**
+             * Overridden so the password never appears in a log or pasted support output.
+             */
+            @Override
+            public String toString() {
+                return "Database[type=%s, host=%s, port=%d, database=%s, username=%s, password=%s, tablePrefix=%s]"
+                        .formatted(type, host, port, database, username, password == null ? null : "***", tablePrefix);
             }
         }
 

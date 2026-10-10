@@ -17,22 +17,17 @@
  */
 package de.eintosti.buildsystem.storage.yaml;
 
-import de.eintosti.buildsystem.storage.EntityStore;
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.storage.EntityStoreContractTest;
-import java.io.File;
 import java.util.List;
 import org.jspecify.annotations.NullMarked;
-import org.junit.jupiter.api.io.TempDir;
 
 @NullMarked
 class YamlEntityStoreContractTest extends EntityStoreContractTest {
 
-    @TempDir
-    File dataFolder;
-
     @Override
-    protected EntityStore store(String name) {
-        return yamlStore(dataFolder, name);
+    protected PluginConfig.Storage.Database settings() {
+        return settings("yaml", "localhost", 0, "buildsystem", "", "", tablePrefix);
     }
 
     @Override

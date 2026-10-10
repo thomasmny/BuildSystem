@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 import de.eintosti.buildsystem.api.player.BuildPlayer;
@@ -25,6 +26,7 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.storage.codec.Codec;
 import de.eintosti.buildsystem.storage.codec.FolderCodec;
@@ -39,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -80,9 +83,22 @@ public abstract class EntityStoreContractTest {
     private final PlayerCodec playerCodec = new PlayerCodec(LOGGER);
 
     /**
-     * {@return the backend's store for the named collection} Every store of one name sees what the others wrote.
+     * The plugin folder the backend is opened in, which also holds the YAML files it imports.
      */
-    protected abstract EntityStore store(String name);
+    @TempDir
+    protected File dataFolder;
+
+    /**
+     * Unique to each test, so tests sharing one database server never see each other's tables.
+     */
+    protected final String tablePrefix = "t" + UUID.randomUUID().toString().substring(0, 8) + "_";
+
+    private StorageBackend backend;
+
+    /**
+     * {@return the {@code storage.database} settings that select the backend under test}
+     */
+    protected abstract PluginConfig.Storage.Database settings();
 
     /**
      * {@return the order the backend loads entries in that were saved in the given order}
@@ -90,15 +106,29 @@ public abstract class EntityStoreContractTest {
     protected abstract List<String> loadOrder(List<String> saved);
 
     @BeforeEach
-    void startServer() {
+    void open() {
         MockBukkit.mock();
         // The stored chunk generator only resolves when its plugin is installed.
         MockBukkit.createMockPlugin("Terra");
+        backend = StorageBackend.connect(settings(), dataFolder, LOGGER);
     }
 
     @AfterEach
-    void stopServer() {
+    void close() {
+        backend.close();
         MockBukkit.unmock();
+    }
+
+    /**
+     * {@return the backend's store for the named collection} Every store of one name sees what the others wrote.
+     */
+    protected EntityStore store(String name) {
+        return backend.store(yamlStore(dataFolder, name));
+    }
+
+    protected static PluginConfig.Storage.Database settings(
+            String type, String host, int port, String database, String username, String password, String prefix) {
+        return new PluginConfig.Storage.Database(type, host, port, database, username, password, prefix);
     }
 
     @Test
@@ -227,6 +257,40 @@ public abstract class EntityStoreContractTest {
         assertEquals(Map.of("name", "broken"), store("worlds").loadAll().get("not-a-uuid"));
     }
 
+    @Test
+    void legacyYamlFiles_areImportedOnceAndKept() throws IOException {
+        for (String file : List.of("worlds.yml", "folders.yml")) {
+            try (InputStream in = getClass().getResourceAsStream("/upgrade/3.0.2/" + file)) {
+                Files.copy(in, new File(dataFolder, file).toPath());
+            }
+        }
+
+        EntityStore worlds = backend.store(YamlEntityStore.worlds(dataFolder, LOGGER));
+        Collection<Folder> folders = folders(backend.store(YamlEntityStore.folders(dataFolder, LOGGER)))
+                .load()
+                .join();
+
+        Map<String, Map<String, Object>> imported = worlds.loadAll();
+        assertEquals(7, imported.size());
+        assertEquals(
+                "lobby", imported.get("0e7a1aca-d915-4fb9-84b1-30f8b95cc373").get("name"));
+        assertEquals(4, folders.size());
+        assertEquals(
+                2,
+                folders.stream().filter(folder -> folder.getParent() != null).count(),
+                "parents were re-keyed to UUIDs before the import");
+        assertTrue(new File(dataFolder, "worlds.yml").exists());
+        assertTrue(new File(dataFolder, "worlds.yml.v3.bak").exists());
+
+        worlds.delete("0e7a1aca-d915-4fb9-84b1-30f8b95cc373");
+
+        assertEquals(
+                6,
+                backend.store(YamlEntityStore.worlds(dataFolder, LOGGER))
+                        .loadAll()
+                        .size());
+    }
+
     private BuildWorld minimalWorld() {
         return worlds(fixture("worlds", "/codec/worlds-4.0.yml")).load().join().stream()
                 .filter(world -> world.getName().equals("plain"))
@@ -268,7 +332,7 @@ public abstract class EntityStoreContractTest {
         return store;
     }
 
-    protected static EntityStore yamlStore(File folder, String name) {
+    protected static YamlEntityStore yamlStore(File folder, String name) {
         folder.mkdirs();
         return new YamlEntityStore(new YamlStore(folder, name + ".yml", LOGGER), name, LOGGER, null);
     }

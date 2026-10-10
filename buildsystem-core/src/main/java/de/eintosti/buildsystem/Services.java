@@ -31,6 +31,7 @@ import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
+import de.eintosti.buildsystem.storage.StorageBackend;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
 import de.eintosti.buildsystem.util.TaskScheduler;
@@ -44,6 +45,8 @@ import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import de.eintosti.buildsystem.world.download.WorldDownloadService;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
+import java.io.File;
+import java.util.logging.Logger;
 import org.bukkit.NamespacedKey;
 import org.jspecify.annotations.NullMarked;
 
@@ -63,6 +66,7 @@ public final class Services {
     private final Messages messages;
 
     private final PlayerLookupService playerLookupService;
+    private final StorageBackend storageBackend;
     private final WorldStorageImpl worldStorage;
     private final FolderStorageImpl folderStorage;
     private final NavigatorCategoryRegistryImpl navigatorCategoryRegistry;
@@ -97,11 +101,15 @@ public final class Services {
 
         this.playerLookupService =
                 new PlayerLookupService(plugin, taskScheduler.background(), taskScheduler.mainThread());
+        File dataFolder = plugin.getDataFolder();
+        Logger logger = plugin.getLogger();
+        this.storageBackend =
+                StorageBackend.connect(configService.current().storage().database(), dataFolder, logger);
         // The storages read the world context and category registry from here only once the stored worlds load.
         this.worldStorage =
-                new WorldStorageImpl(plugin, this, YamlEntityStore.worlds(plugin.getDataFolder(), plugin.getLogger()));
+                new WorldStorageImpl(plugin, this, storageBackend.store(YamlEntityStore.worlds(dataFolder, logger)));
         this.folderStorage = new FolderStorageImpl(
-                plugin, worldStorage, this, YamlEntityStore.folders(plugin.getDataFolder(), plugin.getLogger()));
+                plugin, worldStorage, this, storageBackend.store(YamlEntityStore.folders(dataFolder, logger)));
 
         this.navigatorCategoryRegistry = new NavigatorCategoryRegistryImpl(plugin, folderStorage);
         this.worldStatusRegistry =
@@ -114,7 +122,7 @@ public final class Services {
                         configService,
                         worldStorage,
                         taskScheduler,
-                        YamlEntityStore.players(plugin.getDataFolder(), plugin.getLogger())))
+                        storageBackend.store(YamlEntityStore.players(dataFolder, logger))))
                 .init();
         this.navigatorEditorService = new NavigatorEditorService();
         this.noClipService = new NoClipService(taskScheduler);
@@ -172,6 +180,13 @@ public final class Services {
 
     public ConfigService config() {
         return configService;
+    }
+
+    /**
+     * {@return the backend worlds, folders and players are kept in} Closed on disable, after the final saves.
+     */
+    public StorageBackend storage() {
+        return storageBackend;
     }
 
     public Messages messages() {

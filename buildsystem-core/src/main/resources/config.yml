@@ -133,6 +133,30 @@ world:
 # and selected by name where a feature needs one, e.g. world.backup.storage or
 # world.download.storage. A section only matters once something selects it.
 storage:
+  # Where worlds, folders and player settings are kept: yaml, sqlite, mysql,
+  # mariadb or postgresql. Read on startup only, so a change needs a
+  # restart. World folders always stay on disk, and categories, statuses, setup
+  # and spawn always stay in their YAML files.
+  # The first start with a database fills each empty table or collection from
+  # worlds.yml, folders.yml and players.yml. Those files are kept but no longer
+  # updated, so switching back to yaml loads them as they were at the switch.
+  # If the database cannot be reached, BuildSystem disables itself rather than
+  # fall back to yaml.
+  database:
+    type: yaml
+    # Not used by yaml or sqlite. Port 0 is the default port of the type.
+    host: localhost
+    port: 0
+    # The database to use. For sqlite, the name of the file in the plugin folder.
+    database: buildsystem
+    username: ''
+    # Can also be supplied as the BUILDSYSTEM_DATABASE_PASSWORD environment
+    # variable, which takes precedence and keeps the secret out of this file.
+    password: ''
+    # Every server needs its own prefix or its own database. Each server loads
+    # the data once on startup and keeps it in memory, so two servers sharing
+    # a prefix overwrite each other's worlds, folders and players.
+    table-prefix: buildsystem_
   s3:
     # Leave empty for Amazon S3. Set it to point at an S3-compatible service instead,
     # e.g. MinIO, Backblaze B2 or Cloudflare R2: "https://s3.example.com"
@@ -158,4 +182,4 @@ folder:
   override-projects: false
 
 # Internal, do not change manually!
-version: 6
+version: 7

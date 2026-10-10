@@ -59,6 +59,10 @@ public final class YamlStore {
         return configuration;
     }
 
+    public String fileName() {
+        return file.getName();
+    }
+
     /**
      * Re-reads the backing file from disk, creating an empty one when it does not yet exist.
      *

@@ -176,6 +176,8 @@ public class BuildSystemPlugin extends JavaPlugin {
 
         // Shut the shared background pool down only after the final saves above have completed.
         services.scheduler().shutdown();
+        // Every write was queued behind the final saves joined above, so none is left for the connection.
+        services.storage().close();
 
         // onEnable may have failed after the services were built, before these existed.
         if (this.integrations != null) {

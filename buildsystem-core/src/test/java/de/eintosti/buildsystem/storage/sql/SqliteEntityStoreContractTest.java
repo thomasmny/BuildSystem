@@ -17,36 +17,24 @@
  */
 package de.eintosti.buildsystem.storage.sql;
 
+import de.eintosti.buildsystem.config.PluginConfig;
 import java.io.File;
 import java.util.Properties;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.io.TempDir;
 
 class SqliteEntityStoreContractTest extends SqlEntityStoreContractTest {
 
-    @TempDir
-    File dataFolder;
-
-    private SqlDatabase database;
-
-    @BeforeEach
-    void connect() {
-        database = SqlDatabase.connect(
-                SqlDialect.SQLITE,
-                "jdbc:sqlite:" + new File(dataFolder, "buildsystem.db").getAbsolutePath(),
-                new Properties(),
-                PREFIX,
-                LOGGER);
-    }
-
-    @AfterEach
-    void close() {
-        database.close();
+    @Override
+    protected PluginConfig.Storage.Database settings() {
+        return settings("sqlite", "localhost", 0, "buildsystem", "", "", tablePrefix);
     }
 
     @Override
-    protected SqlDatabase database() {
-        return database;
+    protected SqlDatabase rawDatabase() {
+        return SqlDatabase.connect(
+                SqlDialect.SQLITE,
+                "jdbc:sqlite:" + new File(dataFolder, "buildsystem.db").getAbsolutePath(),
+                new Properties(),
+                tablePrefix,
+                LOGGER);
     }
 }

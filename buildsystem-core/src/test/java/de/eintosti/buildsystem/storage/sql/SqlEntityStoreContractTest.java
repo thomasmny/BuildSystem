@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.storage.sql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.storage.EntityStore;
 import de.eintosti.buildsystem.storage.EntityStoreContractTest;
 import de.eintosti.buildsystem.storage.StorageException;
@@ -28,21 +29,42 @@ import java.sql.ResultSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 
 /**
  * The contract, plus what only a table can get wrong: a batch that fails part way and a row that is not JSON.
  */
 public abstract class SqlEntityStoreContractTest extends EntityStoreContractTest {
 
-    protected static final String PREFIX = "test_";
-    private static final String TABLE = PREFIX + "players";
+    /**
+     * {@return a second connection to the database under test, for writing rows the store never would}
+     */
+    protected abstract SqlDatabase rawDatabase();
 
-    protected abstract SqlDatabase database();
+    /**
+     * {@return a connection to a database in a container, as {@code raw} or as the plugin would open it}
+     */
+    protected static SqlDatabase connect(
+            SqlDialect dialect, String scheme, JdbcDatabaseContainer<?> container, int port, String tablePrefix) {
+        Properties credentials = new Properties();
+        credentials.setProperty("user", container.getUsername());
+        credentials.setProperty("password", container.getPassword());
+        String url = "jdbc:" + scheme + "://" + container.getHost() + ":" + container.getMappedPort(port) + "/"
+                + container.getDatabaseName();
+        return SqlDatabase.connect(dialect, url, credentials, tablePrefix, LOGGER);
+    }
 
-    @Override
-    protected EntityStore store(String name) {
-        return database().collection(name);
+    protected PluginConfig.Storage.Database settings(String type, JdbcDatabaseContainer<?> container, int port) {
+        return settings(
+                type,
+                container.getHost(),
+                container.getMappedPort(port),
+                container.getDatabaseName(),
+                container.getUsername(),
+                container.getPassword(),
+                tablePrefix);
     }
 
     @Override
@@ -67,27 +89,32 @@ public abstract class SqlEntityStoreContractTest extends EntityStoreContractTest
     @Test
     void rowThatIsNotJson_isSkippedAndKeptThroughLaterSaves() {
         EntityStore players = store("players");
-        database().run(connection -> {
-            try (PreparedStatement statement =
-                    connection.prepareStatement("INSERT INTO " + TABLE + " (id, data) VALUES (?, ?)")) {
-                statement.setString(1, "garbled");
-                statement.setString(2, "{not json");
-                statement.executeUpdate();
-            }
-            return null;
-        });
+        String table = tablePrefix + "players";
+        SqlDatabase raw = rawDatabase();
+        try {
+            raw.run(connection -> {
+                try (PreparedStatement statement =
+                        connection.prepareStatement("INSERT INTO " + table + " (id, data) VALUES (?, ?)")) {
+                    statement.setString(1, "garbled");
+                    statement.setString(2, "{not json");
+                    statement.executeUpdate();
+                }
+                return null;
+            });
 
-        players.upsert(Map.of("fine", Map.of("n", "1")));
+            players.upsert(Map.of("fine", Map.of("n", "1")));
 
-        assertEquals(Map.of("fine", Map.of("n", "1")), players.loadAll());
-        String raw = database().run(connection -> {
-            try (PreparedStatement statement =
-                    connection.prepareStatement("SELECT data FROM " + TABLE + " WHERE id = 'garbled'")) {
-                ResultSet rows = statement.executeQuery();
-                rows.next();
-                return rows.getString(1);
-            }
-        });
-        assertEquals("{not json", raw);
+            assertEquals(Map.of("fine", Map.of("n", "1")), players.loadAll());
+            assertEquals("{not json", raw.run(connection -> {
+                try (PreparedStatement statement =
+                                connection.prepareStatement("SELECT data FROM " + table + " WHERE id = 'garbled'");
+                        ResultSet rows = statement.executeQuery()) {
+                    rows.next();
+                    return rows.getString(1);
+                }
+            }));
+        } finally {
+            raw.close();
+        }
     }
 }
