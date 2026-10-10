@@ -37,6 +37,13 @@ public interface EntityStore {
     SequencedMap<String, Map<String, Object>> loadAll();
 
     /**
+     * {@return whether nothing is stored}
+     */
+    default boolean isEmpty() {
+        return loadAll().isEmpty();
+    }
+
+    /**
      * Inserts or replaces the given entries, all of them or none.
      */
     void upsert(Map<String, Map<String, Object>> entries);
