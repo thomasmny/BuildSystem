@@ -24,6 +24,8 @@ import de.eintosti.buildsystem.api.world.access.WorldSetting;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
+import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldContext;
 import org.bukkit.entity.Player;
@@ -33,6 +35,8 @@ import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class WorldPermissionsImpl implements WorldPermissions {
+
+    private static final WorldProtectionPolicy POLICY = new WorldProtectionPolicy();
 
     private final WorldContext context;
 
@@ -86,29 +90,9 @@ public class WorldPermissionsImpl implements WorldPermissions {
             return true;
         }
 
-        if (canBypassBuildRestriction(player) || hasAdminPermission(player)) {
-            return true;
-        }
-
-        if (!buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()
-                && !player.hasPermission(Permissions.BYPASS_ARCHIVE)) {
-            return false;
-        }
-
-        if (setting != null) {
-            if (!setting.isEnabled(buildWorld.getData())) {
-                return player.hasPermission(setting.getBypassPermission());
-            }
-            if (player.hasPermission(setting.getBypassPermission())) {
-                return true;
-            }
-        }
-
-        Builders builders = buildWorld.getBuilders();
-        return builders.isCreator(player)
-                || builders.isBuilder(player)
-                || player.hasPermission(Permissions.BYPASS_BUILDERS)
-                || !buildWorld.getData().get(WorldDataKey.BUILDERS_ENABLED);
+        Denial denial =
+                setting == null ? POLICY.mayModify(player, buildWorld) : POLICY.mayModify(player, buildWorld, setting);
+        return denial == Denial.NONE;
     }
 
     @Override
