@@ -96,30 +96,65 @@ class AwsV4SignerTest {
                 AwsV4Signer.hex(AwsV4Signer.sha256(new byte[0])));
     }
 
+    // The expected values below were computed once with botocore 1.43.111 (S3SigV4Auth), an independent SigV4
+    // implementation, for the same keys, time and requests. Each request is built the way S3Client builds it.
+
+    private static final BucketEndpoint BUCKET = BucketEndpoint.forAws("examplebucket", "us-east-1");
+    private static final String KEY = "backups/1000.zip";
+
+    private static String signature(String method, String key, Map<String, String> query, String payload) {
+        AwsV4Signer signer = new AwsV4Signer(ACCESS_KEY, SECRET_KEY, "us-east-1");
+        String authorization = signer.sign(
+                        method,
+                        BUCKET.host(),
+                        BUCKET.pathOf(key),
+                        PercentEncoding.query(query),
+                        Map.of(),
+                        payload.getBytes(StandardCharsets.UTF_8),
+                        SIGNING_TIME)
+                .get("Authorization");
+        return authorization.substring(authorization.indexOf("Signature=") + "Signature=".length());
+    }
+
     @Test
-    @DisplayName("The signature covers the payload, so a changed body changes the signature")
-    void signatureCoversPayload() {
-        AwsV4Signer signer = new AwsV4Signer(ACCESS_KEY, SECRET_KEY, "eu-central-1");
+    @DisplayName("A PUT signs the hash of its payload")
+    void putWithPayloadMatchesBotocore() {
+        assertEquals(
+                "d7e7582c4503f7922b4aa459c0d2570d4b6dfaa13b164582ce0f2b9bb0f464ed",
+                signature("PUT", KEY, Map.of(), "Welcome to Amazon S3."));
+    }
 
-        String first = signer.sign(
-                        "PUT",
-                        "b.s3.eu-central-1.amazonaws.com",
-                        "/k.zip",
-                        "",
-                        Map.of(),
-                        "one".getBytes(StandardCharsets.UTF_8),
-                        SIGNING_TIME)
-                .get("Authorization");
-        String second = signer.sign(
-                        "PUT",
-                        "b.s3.eu-central-1.amazonaws.com",
-                        "/k.zip",
-                        "",
-                        Map.of(),
-                        "two".getBytes(StandardCharsets.UTF_8),
-                        SIGNING_TIME)
-                .get("Authorization");
+    @Test
+    @DisplayName("The multipart upload requests sign their query parameters")
+    void multipartRequestsMatchBotocore() {
+        Map<String, String> part = Map.of("partNumber", "2", "uploadId", "abc/def+ghi=");
+        assertEquals("uploads=", PercentEncoding.query(Map.of("uploads", "")));
+        assertEquals("partNumber=2&uploadId=abc%2Fdef%2Bghi%3D", PercentEncoding.query(part));
 
-        assertNotEquals(first, second, "payload must be part of what is signed");
+        assertEquals(
+                "1ecd4811f99f8558a34527535a2f839849ed8b2cdf101f54f21974fc818f64e8",
+                signature("POST", KEY, Map.of("uploads", ""), ""));
+        assertEquals(
+                "7b7613606f414f01213c0eec89153638cdbb0b3395644b419d6d92006b0ca7a5",
+                signature("PUT", KEY, part, "part two"));
+        assertEquals(
+                "7072033aeafdd0e02304d6733d431543e18be00dff019dfe0f61f671b051ccca",
+                signature(
+                        "POST",
+                        KEY,
+                        Map.of("uploadId", "abc/def+ghi="),
+                        "<CompleteMultipartUpload><Part><PartNumber>1</PartNumber><ETag>\"e1\"</ETag></Part>"
+                                + "</CompleteMultipartUpload>"));
+    }
+
+    @Test
+    @DisplayName("A key with a space, a plus and non-ASCII characters is encoded and signed like botocore")
+    void encodedKeyMatchesBotocore() {
+        String key = "backups/my world+1/\u00e9t\u00e9.zip";
+
+        assertEquals("/backups/my%20world%2B1/%C3%A9t%C3%A9.zip", BUCKET.pathOf(key));
+        assertEquals(
+                "66d111f58b667fc8d98a191f3ad6a30b83001b83a8016aedfe988179e6cdd893",
+                signature("GET", key, Map.of(), ""));
     }
 }
