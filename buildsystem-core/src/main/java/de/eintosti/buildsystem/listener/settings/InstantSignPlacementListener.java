@@ -37,6 +37,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class InstantSignPlacementListener implements Listener {
@@ -118,6 +119,13 @@ public class InstantSignPlacementListener implements Listener {
                 DirectionUtil.rotateBlock(adjacent, facing);
             }
         }
+    }
+
+    /**
+     * {@return the wall variant of a standing sign, or {@code null} if there is none}
+     */
+    static @Nullable Material wallSign(Material standingSign) {
+        return Material.matchMaterial(standingSign.name().replace("_SIGN", "_WALL_SIGN"));
     }
 
     private BlockFace getHangingSignDirection(PlayerInteractEvent event) {
