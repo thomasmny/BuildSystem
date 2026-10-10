@@ -33,6 +33,7 @@ import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.util.ArrayList;
@@ -65,7 +66,7 @@ public class ImportSubCommand extends AbstractSubCommand {
     }
 
     @Override
-    public void execute(Player player, String worldName, String[] args) {
+    public void execute(Player player, String input, String[] args) {
         if (!hasPermission(player)) {
             messages.sendPermissionError(player);
             return;
@@ -76,14 +77,25 @@ public class ImportSubCommand extends AbstractSubCommand {
             return;
         }
 
+        String worldName = WorldNames.fromInput(input, worldService.defaultNamespace());
         if (worldService.getWorldStorage().worldExists(worldName)) {
             messages.sendMessage(player, "worlds_import_world_is_imported");
             return;
         }
 
         // Validate the name before touching the filesystem so invalid input cannot probe directory existence
+        String namespace = WorldNames.namespace(worldName);
+        if (!WorldNames.isValidNamespace(namespace)) {
+            messages.sendMessage(player, "worlds_world_namespace_invalid", Placeholders.of("%namespace%", namespace));
+            return;
+        }
+        if (WorldNames.isNamespaced(worldName) && !WorldNames.namespacesSupported()) {
+            messages.sendMessage(player, "worlds_world_namespace_unsupported");
+            return;
+        }
+
         String invalidChar = StringCleaner.firstInvalidChar(
-                worldName, configService.current().world().invalidCharacters());
+                WorldNames.path(worldName), configService.current().world().invalidCharacters());
         if (invalidChar != null) {
             messages.sendMessage(
                     player,
@@ -216,21 +228,15 @@ public class ImportSubCommand extends AbstractSubCommand {
     public List<String> complete(Player player, String[] args) {
         List<String> result = new ArrayList<>();
         if (args.length == 2) {
-            String[] directories = FileUtils.worldDimensionsRoot().list((dir, name) -> {
-                if (StringCleaner.hasInvalidNameCharacters(
-                        name, configService.current().world().invalidCharacters())) {
-                    return false;
+            String invalidCharacters = configService.current().world().invalidCharacters();
+            for (String worldName : FileUtils.dimensionWorldNames()) {
+                if (StringCleaner.hasInvalidNameCharacters(WorldNames.path(worldName), invalidCharacters)
+                        || worldService.getWorldStorage().worldExists(worldName)) {
+                    continue;
                 }
-                return FileUtils.isWorldDirectory(new File(dir, name))
-                        && !worldService.getWorldStorage().worldExists(name);
-            });
-
-            if (directories != null) {
-                for (String dir : directories) {
-                    WorldsCompletions.addIfStartsWith(args[1], dir, result);
-                }
+                WorldsCompletions.addIfStartsWith(
+                        args[1], WorldNames.toInput(worldName, worldService.defaultNamespace()), result);
             }
-
             return result;
         }
 

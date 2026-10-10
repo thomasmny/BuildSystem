@@ -19,9 +19,11 @@ package de.eintosti.buildsystem.menu;
 
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.PlayerChatInput.InputRunnable;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.WorldNames;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -94,6 +96,35 @@ public final class Prompts {
             return null;
         }
         return sanitized;
+    }
+
+    /**
+     * Sanitizes a typed world name like {@link #sanitizeName}, keeping an optional {@code namespace:} prefix. A name
+     * typed without one is placed in {@code defaultNamespace}.
+     *
+     * @param player The player who typed the name
+     * @param input The raw input
+     * @param defaultNamespace The namespace of a name typed without one
+     * @return The world name, or {@code null} if it cannot be used (a message has already been sent)
+     */
+    public @Nullable String sanitizeWorldName(Player player, String input, String defaultNamespace) {
+        String worldName = WorldNames.fromInput(input.trim(), defaultNamespace);
+        String namespace = WorldNames.namespace(worldName);
+        if (!WorldNames.isValidNamespace(namespace)) {
+            messages.sendMessage(player, "worlds_world_namespace_invalid", Placeholders.of("%namespace%", namespace));
+            return null;
+        }
+        if (WorldNames.isNamespaced(worldName) && !WorldNames.namespacesSupported()) {
+            messages.sendMessage(player, "worlds_world_namespace_unsupported");
+            return null;
+        }
+
+        String path = sanitizeName(
+                player,
+                WorldNames.path(worldName),
+                "worlds_world_creation_invalid_characters",
+                "worlds_world_creation_name_bank");
+        return path == null ? null : WorldNames.of(namespace, path);
     }
 
     /**

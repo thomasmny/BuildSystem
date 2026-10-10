@@ -27,7 +27,6 @@ import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import java.io.File;
 import java.util.Locale;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -65,11 +64,11 @@ public class ImportAllSubCommand extends AbstractSubCommand {
             return;
         }
 
-        String[] directories = FileUtils.worldDimensionsRoot()
-                .list((dir, name) -> FileUtils.isWorldDirectory(new File(dir, name))
-                        && !worldService.getWorldStorage().worldExists(name));
+        String[] directories = FileUtils.dimensionWorldNames().stream()
+                .filter(name -> !worldService.getWorldStorage().worldExists(name))
+                .toArray(String[]::new);
 
-        if (directories == null || directories.length == 0) {
+        if (directories.length == 0) {
             messages.sendMessage(player, "worlds_importall_no_worlds");
             return;
         }

@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.color.ColorAPI;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import fr.mrmicky.fastboard.FastBoard;
 import java.util.HashMap;
@@ -131,8 +132,11 @@ public class SettingsService {
 
     @Contract("_ -> new")
     private Placeholders getPlaceholders(Player player) {
-        String worldName = player.getWorld().getName();
+        String worldName = WorldNames.of(player.getWorld());
         BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
+        if (buildWorld != null) {
+            worldName = buildWorld.getName();
+        }
 
         final String defaultVal = "§f-";
         String status = defaultVal;
@@ -191,7 +195,7 @@ public class SettingsService {
         if (!configService.current().settings().scoreboard()) {
             return;
         }
-        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
+        World bukkitWorld = WorldNames.bukkitWorld(buildWorld.getName());
         if (bukkitWorld == null) {
             return;
         }

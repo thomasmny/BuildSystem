@@ -23,10 +23,10 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.util.FileUtils;
+import de.eintosti.buildsystem.world.WorldNames;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
@@ -38,9 +38,9 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * In-memory index of the server's {@link BuildWorld}s, keyed both by UUID and by lower-cased name. Mutations
- * ({@link #addBuildWorld}, {@link #removeBuildWorld}, {@link #rename}) run on the main thread, but lookups may be called
- * off it: {@code AsyncPlayerPreLoginEvent} resolves a returning player's last world on Bukkit's async login thread. The
+ * In-memory index of the server's {@link BuildWorld}s, keyed both by UUID and by {@link WorldNames#id namespaced
+ * name}. Mutations ({@link #addBuildWorld}, {@link #removeBuildWorld}, {@link #rename}) run on the main thread, but
+ * lookups may be called off it: {@code AsyncPlayerPreLoginEvent} resolves a returning player's last world on Bukkit's async login thread. The
  * indexes are therefore {@link ConcurrentHashMap}s so concurrent reads stay safe and consistently published, and the
  * compound mutations are ordered so a concurrent reader never observes a world's two index entries out of step.
  */
@@ -65,7 +65,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
             return null;
         }
 
-        UUID uuid = this.uuidByName.get(name.toLowerCase(Locale.ROOT));
+        UUID uuid = this.uuidByName.get(WorldNames.id(name));
         if (uuid != null) {
             return this.buildWorldsByUuid.get(uuid);
         }
@@ -75,7 +75,7 @@ public abstract class WorldStorageImpl implements WorldStorage {
 
     @Override
     public @Nullable BuildWorld getBuildWorld(World world) {
-        return getBuildWorld(world.getName());
+        return getBuildWorld(WorldNames.of(world));
     }
 
     @Override
@@ -91,13 +91,13 @@ public abstract class WorldStorageImpl implements WorldStorage {
 
     public synchronized void addBuildWorld(BuildWorld buildWorld) {
         this.buildWorldsByUuid.put(buildWorld.getUniqueId(), buildWorld);
-        this.uuidByName.put(buildWorld.getName().toLowerCase(Locale.ROOT), buildWorld.getUniqueId());
+        this.uuidByName.put(WorldNames.id(buildWorld.getName()), buildWorld.getUniqueId());
     }
 
     public synchronized void removeBuildWorld(BuildWorld buildWorld) {
         UUID worldId = buildWorld.getUniqueId();
         this.buildWorldsByUuid.remove(worldId);
-        this.uuidByName.remove(buildWorld.getName().toLowerCase(Locale.ROOT));
+        this.uuidByName.remove(WorldNames.id(buildWorld.getName()));
 
         Folder assignedFolder = buildWorld.getFolder();
         if (assignedFolder != null) {
@@ -106,8 +106,8 @@ public abstract class WorldStorageImpl implements WorldStorage {
     }
 
     public synchronized void rename(BuildWorld buildWorld, String oldName, String newName) {
-        String oldKey = oldName.toLowerCase(Locale.ROOT);
-        String newKey = newName.toLowerCase(Locale.ROOT);
+        String oldKey = WorldNames.id(oldName);
+        String newKey = WorldNames.id(newName);
         // Publish the new name before dropping the old one so a concurrent (async) reader never sees the world vanish.
         // Guard the removal: a case-only rename maps both names to the same key, which must stay resolvable.
         this.uuidByName.put(newKey, buildWorld.getUniqueId());

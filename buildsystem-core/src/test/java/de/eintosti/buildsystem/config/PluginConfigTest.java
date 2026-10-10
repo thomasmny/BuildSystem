@@ -21,8 +21,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
+import java.util.Set;
 import java.util.logging.Logger;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 
@@ -56,6 +58,7 @@ class PluginConfigTest {
         assertTrue(cfg.settings().scoreboard());
         // World
         assertTrue(cfg.world().lockWeather());
+        assertEquals(NamespacedKey.MINECRAFT, cfg.world().defaultNamespace());
         assertEquals("^\\b$", cfg.world().invalidCharacters());
         assertEquals(30, cfg.world().importAllDelay());
         // World - Default
@@ -102,6 +105,27 @@ class PluginConfigTest {
         assertTrue(cfg.world().defaults().physicsException(PhysicsCategory.FLUID_FLOW));
         assertTrue(cfg.world().defaults().physicsException(PhysicsCategory.LEAF_DECAY));
         assertFalse(cfg.world().defaults().physicsException(PhysicsCategory.CONNECTIONS));
+    }
+
+    @Test
+    void defaultNamespace_isLowercased() {
+        assertEquals("maps", parse("world:\n  default-namespace: Maps").world().defaultNamespace());
+    }
+
+    @Test
+    void defaultNamespace_invalid_fallsBackToMinecraft() {
+        assertEquals(
+                NamespacedKey.MINECRAFT,
+                parse("world:\n  default-namespace: \"no spaces\"").world().defaultNamespace());
+        assertEquals(
+                NamespacedKey.MINECRAFT,
+                parse("world:\n  default-namespace: \"..\"").world().defaultNamespace());
+    }
+
+    @Test
+    void deletionBlacklist_namespacedEntry_keepsItsNamespace() {
+        PluginConfig cfg = parse("world:\n  deletion-blacklist:\n    - \"maps:Lobby\"\n    - world");
+        assertEquals(Set.of("maps:lobby", "minecraft:world"), cfg.world().deletionBlacklist());
     }
 
     @Test
@@ -231,10 +255,11 @@ class PluginConfigTest {
         assertFalse(cfg.world().lockWeather());
         assertEquals("[!]", cfg.world().invalidCharacters());
         assertEquals(60, cfg.world().importAllDelay());
-        assertTrue(cfg.world().deletionBlacklist().contains("world"));
+        assertTrue(cfg.world().deletionBlacklist().contains("minecraft:world"));
         assertEquals(1, cfg.world().deletionBlacklist().size());
         assertTrue(cfg.world().unload().enabled());
         assertEquals("00:30:00", cfg.world().unload().timeUntilUnload());
+        assertEquals(Set.of("minecraft:world"), cfg.world().unload().blacklistedWorlds());
         assertEquals(1000, cfg.world().defaults().worldBorderSize());
         assertEquals(org.bukkit.Difficulty.HARD, cfg.world().defaults().difficulty());
         assertEquals(100, cfg.world().defaults().time().sunrise());

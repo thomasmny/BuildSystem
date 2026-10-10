@@ -30,11 +30,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
@@ -212,13 +215,18 @@ class FileUtilsTest {
         bukkit.when(Bukkit::getWorldContainer).thenReturn(tempDir.toFile());
         World main = mock(World.class);
         when(main.getName()).thenReturn("world");
+        when(main.getKey()).thenReturn(NamespacedKey.minecraft("overworld"));
         bukkit.when(Bukkit::getWorlds).thenReturn(List.of(main));
         bukkit.when(() -> Bukkit.getWorld(anyString())).thenReturn(null);
         return bukkit;
     }
 
     private File dimensions() {
-        return new File(tempDir.toFile(), "world" + File.separator + "dimensions" + File.separator + "minecraft");
+        return dimensions(NamespacedKey.MINECRAFT);
+    }
+
+    private File dimensions(String namespace) {
+        return new File(tempDir.toFile(), "world" + File.separator + "dimensions" + File.separator + namespace);
     }
 
     @Test
@@ -255,6 +263,38 @@ class FileUtilsTest {
         Files.createDirectories(legacy.toPath());
         try (MockedStatic<Bukkit> bukkit = mockServer()) {
             assertEquals(legacy, FileUtils.worldFolder("Old"));
+        }
+    }
+
+    @Test
+    void worldFolder_namespacedWorld_resolvesItsNamespaceFolder() {
+        try (MockedStatic<Bukkit> bukkit = mockServer()) {
+            assertEquals(new File(dimensions("maps"), "lobby"), FileUtils.worldFolder("maps:Lobby"));
+        }
+    }
+
+    @Test
+    void worldFolder_namespacedWorld_ignoresFlatFolderOfTheSameName() throws IOException {
+        Files.createDirectories(tempDir.resolve("Lobby"));
+        try (MockedStatic<Bukkit> bukkit = mockServer()) {
+            assertEquals(new File(dimensions("maps"), "lobby"), FileUtils.worldFolder("maps:Lobby"));
+        }
+    }
+
+    @Test
+    void dimensionWorldNames_listsWorldsOfEveryValidNamespace() throws IOException {
+        for (File folder : List.of(
+                new File(dimensions(), "arena"),
+                new File(dimensions(), "overworld"),
+                new File(dimensions("maps"), "lobby"),
+                new File(dimensions("maps"), "the_end"),
+                new File(dimensions("Not Valid"), "hidden"))) {
+            Files.createDirectories(folder.toPath().resolve("region"));
+        }
+        Files.createDirectories(new File(dimensions("maps"), "empty").toPath());
+
+        try (MockedStatic<Bukkit> bukkit = mockServer()) {
+            assertEquals(Set.of("arena", "maps:lobby", "maps:the_end"), new HashSet<>(FileUtils.dimensionWorldNames()));
         }
     }
 

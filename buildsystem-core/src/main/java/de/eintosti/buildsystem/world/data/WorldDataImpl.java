@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.data.type.ConfigurableProperty;
 import de.eintosti.buildsystem.world.data.type.Overridable;
 import de.eintosti.buildsystem.world.data.type.PersistentProperty;
@@ -35,7 +36,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import org.bukkit.Bukkit;
 import org.bukkit.Difficulty;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -189,7 +189,7 @@ public class WorldDataImpl implements WorldData {
 
     @Override
     public @Nullable Location getCustomSpawnLocation() {
-        return CustomSpawn.parse(Bukkit.getWorld(worldName), get(WorldDataKey.CUSTOM_SPAWN));
+        return CustomSpawn.parse(WorldNames.bukkitWorld(worldName), get(WorldDataKey.CUSTOM_SPAWN));
     }
 
     public void setWorldName(String worldName) {

@@ -97,6 +97,8 @@ class WorldExporterTest {
         Files.writeString(world.resolve("dimensions/minecraft/other/marker"), "another world");
         Files.createDirectories(world.resolve("dimensions/minecraft/the_nether"));
         Files.writeString(world.resolve("dimensions/minecraft/the_nether/marker"), "own nether");
+        Files.createDirectories(world.resolve("dimensions/maps/lobby"));
+        Files.writeString(world.resolve("dimensions/maps/lobby/marker"), "a namespaced world");
 
         Path archive = tempDir.resolve("legacy.zip");
         WorldExporter.export(
@@ -111,6 +113,7 @@ class WorldExporterTest {
         assertTrue(entries.containsKey("legacy/region/r.0.0.mca"));
         assertTrue(entries.containsKey("legacy/dimensions/minecraft/the_nether/marker"));
         assertFalse(entries.containsKey("legacy/dimensions/minecraft/other/marker"));
+        assertFalse(entries.containsKey("legacy/dimensions/maps/lobby/marker"));
     }
 
     @Test

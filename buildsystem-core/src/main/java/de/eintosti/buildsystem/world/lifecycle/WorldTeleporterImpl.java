@@ -21,8 +21,8 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.world.WorldContext;
+import de.eintosti.buildsystem.world.WorldNames;
 import io.papermc.lib.PaperLib;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -56,7 +56,7 @@ public class WorldTeleporterImpl implements WorldTeleporter {
             hadToLoad = true;
         }
 
-        World bukkitWorld = Bukkit.getServer().getWorld(buildWorld.getName());
+        World bukkitWorld = WorldNames.bukkitWorld(buildWorld.getName());
         if (bukkitWorld == null) {
             context.messages().sendMessage(player, "worlds_tp_unknown_world");
             return;

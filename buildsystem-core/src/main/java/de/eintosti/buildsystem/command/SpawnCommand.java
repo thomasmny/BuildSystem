@@ -92,9 +92,7 @@ public class SpawnCommand extends CommandBase {
                                         .add("%x%", round(playerLocation.getX()))
                                         .add("%y%", round(playerLocation.getY()))
                                         .add("%z%", round(playerLocation.getZ()))
-                                        .add(
-                                                "%world%",
-                                                playerLocation.getWorld().getName())
+                                        .add("%world%", buildWorld.getName())
                                         .build());
                     }
                     case "remove" -> {

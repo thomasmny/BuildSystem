@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.UpdateChecker;
+import de.eintosti.buildsystem.world.WorldNames;
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -111,7 +112,7 @@ public class BuildSystemPlugin extends JavaPlugin {
             BuildPlayerImpl buildPlayer =
                     BuildPlayerImpl.of(services.player().getPlayerStorage().getBuildPlayer(pl));
             buildPlayer.getCachedValues().resetCachedValues(pl);
-            buildPlayer.setLogoutLocation(new LogoutLocation(pl.getWorld().getName(), pl.getLocation()));
+            buildPlayer.setLogoutLocation(new LogoutLocation(WorldNames.of(pl.getWorld()), pl.getLocation()));
 
             services.settings().hideScoreboard(pl);
             services.noClip().stopNoClip(pl.getUniqueId());

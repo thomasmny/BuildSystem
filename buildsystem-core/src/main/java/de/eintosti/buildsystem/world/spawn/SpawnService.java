@@ -23,11 +23,12 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.yaml.YamlSpawnStorage;
 import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import io.papermc.lib.PaperLib;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -112,17 +113,19 @@ public class SpawnService {
             return;
         }
 
+        // A namespaced world (maps:lobby) adds a separator, so the coordinates are read from the end.
         String[] parts = string.split(":");
-        if (parts.length != 6) {
+        int worldParts = parts.length - 5;
+        if (worldParts != 1 && worldParts != 2) {
             return;
         }
 
-        String worldName = parts[0];
-        double x = Double.parseDouble(parts[1]);
-        double y = Double.parseDouble(parts[2]);
-        double z = Double.parseDouble(parts[3]);
-        float yaw = Float.parseFloat(parts[4]);
-        float pitch = Float.parseFloat(parts[5]);
+        String worldName = String.join(":", Arrays.copyOfRange(parts, 0, worldParts));
+        double x = Double.parseDouble(parts[worldParts]);
+        double y = Double.parseDouble(parts[worldParts + 1]);
+        double z = Double.parseDouble(parts[worldParts + 2]);
+        float yaw = Float.parseFloat(parts[worldParts + 3]);
+        float pitch = Float.parseFloat(parts[worldParts + 4]);
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld == null) {
@@ -133,6 +136,6 @@ public class SpawnService {
 
         buildWorld.getLoader().load();
         this.spawnName = worldName;
-        this.spawn = new Location(Bukkit.getWorld(worldName), x, y, z, yaw, pitch);
+        this.spawn = new Location(WorldNames.bukkitWorld(worldName), x, y, z, yaw, pitch);
     }
 }

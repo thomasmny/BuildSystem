@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
 import java.util.ArrayList;
 import java.util.List;
@@ -125,7 +126,7 @@ public class WorldLoadBootstrap {
     private LoadResult preLoadWorld(BuildWorld buildWorld, boolean alwaysLoad) {
         String worldName = buildWorld.getName();
         boolean shouldPreLoad = alwaysLoad
-                || configService.current().world().unload().blacklistedWorlds().contains(worldName);
+                || configService.current().world().unload().blacklistedWorlds().contains(WorldNames.id(worldName));
         if (!shouldPreLoad) {
             return LoadResult.NOT_LOADED;
         }

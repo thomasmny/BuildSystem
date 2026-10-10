@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
@@ -54,9 +53,8 @@ public class BuildersSubCommand extends AbstractSubCommand {
             return List.of();
         }
 
-        WorldStorage worldStorage = worldService.getWorldStorage();
         return WorldsCompletions.permittedWorldNames(
-                player, worldStorage, getArgument().getPermission(), args[1]);
+                player, worldService, getArgument().getPermission(), args[1]);
     }
 
     @Override

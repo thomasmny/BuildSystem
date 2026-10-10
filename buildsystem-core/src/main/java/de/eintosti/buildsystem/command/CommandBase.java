@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.world.WorldNames;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
@@ -76,8 +77,14 @@ public abstract class CommandBase implements CommandExecutor, TabCompleter {
         return true;
     }
 
-    protected String worldNameFromArgs(Player player, String[] args, int index) {
-        return args.length <= index ? player.getWorld().getName() : args[index];
+    /**
+     * {@return the world named at {@code args[index]}, or the player's current world when it is missing} A name typed
+     * without a namespace is placed in {@code defaultNamespace}.
+     */
+    protected String worldNameFromArgs(Player player, String[] args, int index, String defaultNamespace) {
+        return args.length <= index
+                ? WorldNames.of(player.getWorld())
+                : WorldNames.fromInput(args[index], defaultNamespace);
     }
 
     protected static void addArgument(String input, String argument, List<String> list) {

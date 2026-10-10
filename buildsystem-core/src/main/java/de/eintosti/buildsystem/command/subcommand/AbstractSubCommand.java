@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.command.subcommand;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -52,7 +53,9 @@ public abstract class AbstractSubCommand implements SubCommand {
      */
     protected @Nullable BuildWorld requireWorld(
             Player player, String worldName, String[] args, int maxArgs, String messageKeyPrefix) {
-        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
+        BuildWorld buildWorld = worldService
+                .getWorldStorage()
+                .getBuildWorld(WorldNames.fromInput(worldName, worldService.defaultNamespace()));
         if (buildWorld != null
                 && !buildWorld
                         .getPermissions()

@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.i18n.Messages;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import org.bukkit.NamespacedKey;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -98,8 +99,9 @@ class CommandBaseTest {
         org.bukkit.World world = mock(org.bukkit.World.class);
         when(player.getWorld()).thenReturn(world);
         when(world.getName()).thenReturn("world");
+        when(world.getKey()).thenReturn(NamespacedKey.minecraft("overworld"));
 
-        String result = cmd.worldNameFromArgs(player, NO_ARGS, 0);
+        String result = cmd.worldNameFromArgs(player, NO_ARGS, 0, "maps");
 
         assertEquals("world", result);
     }
@@ -109,9 +111,18 @@ class CommandBaseTest {
         TestCommand cmd = new TestCommand(true);
         Player player = mock(Player.class);
 
-        String result = cmd.worldNameFromArgs(player, new String[] {"myWorld"}, 0);
+        String result = cmd.worldNameFromArgs(player, new String[] {"myWorld"}, 0, NamespacedKey.MINECRAFT);
 
         assertEquals("myWorld", result);
+    }
+
+    @Test
+    void worldNameFromArgs_bareName_isPlacedInDefaultNamespace() {
+        TestCommand cmd = new TestCommand(true);
+        Player player = mock(Player.class);
+
+        assertEquals("maps:lobby", cmd.worldNameFromArgs(player, new String[] {"lobby"}, 0, "maps"));
+        assertEquals("lobby", cmd.worldNameFromArgs(player, new String[] {"minecraft:lobby"}, 0, "maps"));
     }
 
     @Test

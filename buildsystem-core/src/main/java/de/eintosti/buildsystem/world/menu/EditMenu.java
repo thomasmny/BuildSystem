@@ -33,6 +33,7 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.*;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.Permissions;
+import de.eintosti.buildsystem.world.WorldNames;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -532,7 +533,7 @@ public class EditMenu extends ButtonMenu<EditMenu.EditButton> {
     }
 
     private void removeEntities(Player player) {
-        World bukkitWorld = Bukkit.getWorld(buildWorld.getName());
+        World bukkitWorld = WorldNames.bukkitWorld(buildWorld.getName());
         if (bukkitWorld == null) {
             return;
         }

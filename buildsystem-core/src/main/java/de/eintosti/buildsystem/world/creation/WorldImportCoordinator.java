@@ -27,8 +27,8 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import java.io.File;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -210,7 +210,7 @@ public class WorldImportCoordinator {
                     return;
                 }
 
-                String invalidChar = StringCleaner.firstInvalidChar(worldName, invalidCharacters);
+                String invalidChar = StringCleaner.firstInvalidChar(WorldNames.path(worldName), invalidCharacters);
                 if (invalidChar != null) {
                     listener.invalidName(worldName, invalidChar);
                     return;
@@ -235,9 +235,8 @@ public class WorldImportCoordinator {
     }
 
     private String[] scanImportableDirectories() {
-        String[] directories = FileUtils.worldDimensionsRoot()
-                .list((dir, name) ->
-                        FileUtils.isWorldDirectory(new File(dir, name)) && !worldStorage.worldExists(name));
-        return directories != null ? directories : new String[0];
+        return FileUtils.dimensionWorldNames().stream()
+                .filter(name -> !worldStorage.worldExists(name))
+                .toArray(String[]::new);
     }
 }

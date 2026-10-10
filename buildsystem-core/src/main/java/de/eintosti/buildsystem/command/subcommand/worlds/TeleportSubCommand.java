@@ -17,15 +17,13 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
-import org.bukkit.Bukkit;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -48,14 +46,15 @@ public class TeleportSubCommand extends AbstractSubCommand {
             return;
         }
 
-        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(args[1]);
+        BuildWorld buildWorld = worldService
+                .getWorldStorage()
+                .getBuildWorld(WorldNames.fromInput(args[1], worldService.defaultNamespace()));
         if (buildWorld == null) {
             messages.sendMessage(player, "worlds_tp_unknown_world");
             return;
         }
 
-        World bukkitWorld = Bukkit.getServer().getWorld(args[1]);
-        if (buildWorld.isLoaded() && bukkitWorld == null) {
+        if (buildWorld.isLoaded() && buildWorld.getWorld().isEmpty()) {
             messages.sendMessage(player, "worlds_tp_unknown_world");
             return;
         }
@@ -74,9 +73,8 @@ public class TeleportSubCommand extends AbstractSubCommand {
             return List.of();
         }
 
-        WorldStorage worldStorage = worldService.getWorldStorage();
         return WorldsCompletions.permittedWorldNames(
-                player, worldStorage, getArgument().getPermission(), args[1]);
+                player, worldService, getArgument().getPermission(), args[1]);
     }
 
     @Override

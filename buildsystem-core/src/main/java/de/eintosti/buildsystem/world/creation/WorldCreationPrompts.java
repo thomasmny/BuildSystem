@@ -77,8 +77,7 @@ public class WorldCreationPrompts {
     }
 
     private boolean nameStep(Prompts promptsInstance, Player player, Selection selection, String input) {
-        String name = promptsInstance.sanitizeName(
-                player, input, "worlds_world_creation_invalid_characters", "worlds_world_creation_name_bank");
+        String name = promptsInstance.sanitizeWorldName(player, input, worldService.defaultNamespace());
         if (name == null) {
             return false;
         }

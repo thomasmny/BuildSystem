@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.storage.yaml;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.world.WorldNames;
 import org.bukkit.Location;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -37,7 +38,7 @@ public class YamlSpawnStorage extends AbstractYamlStorage {
         getFile()
                 .set(
                         "spawn",
-                        location.getWorld().getName() + ":"
+                        WorldNames.of(location.getWorld()) + ":"
                                 + location.getX() + ":"
                                 + location.getY() + ":"
                                 + location.getZ() + ":"

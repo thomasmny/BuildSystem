@@ -24,6 +24,7 @@ import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldUnloader;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
+import de.eintosti.buildsystem.world.WorldNames;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
@@ -139,7 +140,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
                         .world()
                         .unload()
                         .blacklistedWorlds()
-                        .contains(buildWorld.getName())
+                        .contains(WorldNames.id(buildWorld.getName()))
                 || isSpawnWorld(bukkitWorld)) {
             return;
         }

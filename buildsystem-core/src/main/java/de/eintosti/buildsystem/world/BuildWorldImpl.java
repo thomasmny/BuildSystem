@@ -178,7 +178,7 @@ public final class BuildWorldImpl implements BuildWorld, HeadProfileSource {
      * @return An {@link Optional} containing the Bukkit world, or {@link Optional#empty()} if not loaded
      */
     public Optional<World> getWorld() {
-        return Optional.ofNullable(Bukkit.getWorld(name));
+        return Optional.ofNullable(WorldNames.bukkitWorld(name));
     }
 
     @Override
@@ -279,7 +279,7 @@ public final class BuildWorldImpl implements BuildWorld, HeadProfileSource {
         if (worldData.get(WorldDataKey.VISIBILITY).isPrivate() && creator != null) {
             return Profileable.of(creator.getUniqueId());
         }
-        return Profileable.username(name);
+        return Profileable.username(WorldNames.path(name));
     }
 
     /**

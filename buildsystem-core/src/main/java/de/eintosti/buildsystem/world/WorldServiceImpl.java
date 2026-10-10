@@ -115,31 +115,49 @@ public class WorldServiceImpl implements WorldService {
     @Override
     @Contract("_ -> new")
     public WorldBuilder newWorld(String name) {
-        validateWorldName(name);
-        return new WorldBuilderImpl(services.worldContext(), worldStorage, plugin.getDataFolder(), name);
+        String worldName = validateWorldName(name);
+        return new WorldBuilderImpl(services.worldContext(), worldStorage, plugin.getDataFolder(), worldName);
     }
 
     @Override
     @Contract("_ -> new")
     public WorldImporter importWorld(String name) {
-        validateWorldName(name);
-        return new WorldImporterImpl(services.worldContext(), worldStorage, name);
+        String worldName = validateWorldName(name);
+        return new WorldImporterImpl(services.worldContext(), worldStorage, worldName);
     }
 
     /**
-     * Rejects a world name that is reserved or would resolve outside the world container. Defense-in-depth: the
-     * menus sanitize names before they reach here, but both {@link #newWorld} and {@link #importWorld(String)} are
-     * public API, so a caller must not be able to create or import into a directory outside the world container
-     * (e.g. {@code plugins/}) by passing a crafted name.
+     * Rejects a world name that is reserved, lies in a namespace the server cannot use, or would resolve outside the
+     * world container. Defense-in-depth: the menus sanitize names before they reach here, but both {@link #newWorld}
+     * and {@link #importWorld(String)} are public API, so a caller must not be able to create or import into a
+     * directory outside the world container (e.g. {@code plugins/}) by passing a crafted name.
+     *
+     * @return The {@link WorldNames#normalize normalized} name
      */
-    private static void validateWorldName(String name) {
-        if (StringCleaner.isReservedName(name)) {
+    private static String validateWorldName(String name) {
+        String path = WorldNames.path(name);
+        if (StringCleaner.isReservedName(path)) {
             throw new IllegalArgumentException("World name '%s' is reserved and cannot be used".formatted(name));
         }
-        File worldDirectory = new File(Bukkit.getWorldContainer(), name);
+        String namespace = WorldNames.namespace(name);
+        if (!WorldNames.isValidNamespace(namespace)) {
+            throw new IllegalArgumentException("World name '%s' has an invalid namespace".formatted(name));
+        }
+        if (WorldNames.isNamespaced(name) && !WorldNames.namespacesSupported()) {
+            throw new UnsupportedOperationException("World namespaces require Paper: '%s'".formatted(name));
+        }
+        File worldDirectory = new File(Bukkit.getWorldContainer(), path);
         if (StringCleaner.isPathEscape(Bukkit.getWorldContainer(), worldDirectory)) {
             throw new IllegalArgumentException("World name '%s' resolves outside the world container".formatted(name));
         }
+        return WorldNames.normalize(name);
+    }
+
+    /**
+     * {@return the namespace a world name typed without one is placed in}
+     */
+    public String defaultNamespace() {
+        return services.config().current().world().defaultNamespace();
     }
 
     public void startWorldNameInput(
@@ -331,7 +349,7 @@ public class WorldServiceImpl implements WorldService {
      *
      * @param player The player who issued the world renaming
      * @param buildWorld The build world object
-     * @param newName The name the world should be renamed to
+     * @param newName The name the world should be renamed to, as the player typed it
      */
     public void renameWorld(Player player, BuildWorld buildWorld, String newName) {
         new WorldRenamer(
@@ -340,13 +358,14 @@ public class WorldServiceImpl implements WorldService {
                         worldStorage,
                         services.config(),
                         services.messages(),
+                        services.prompts(),
                         services.spawn(),
                         services.scheduler())
                 .rename(player, buildWorld, newName);
     }
 
     public List<Player> removePlayersFromWorld(String worldName, String messageKey) {
-        World worldToRemove = Bukkit.getWorld(worldName);
+        World worldToRemove = WorldNames.bukkitWorld(worldName);
         if (worldToRemove == null) {
             return List.of();
         }

@@ -22,11 +22,11 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.util.MaterialUtils;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jspecify.annotations.NullMarked;
@@ -200,7 +201,9 @@ public class ConfigService {
         PluginConfig.World.Unload unload = new PluginConfig.World.Unload(
                 config.getBoolean("world.unload.enabled", true),
                 Objects.requireNonNullElse(config.getString("world.unload.time-until-unload"), "01:00:00"),
-                new HashSet<>(config.getStringList("world.unload.blacklisted-worlds")));
+                config.getStringList("world.unload.blacklisted-worlds").stream()
+                        .map(WorldNames::id)
+                        .collect(Collectors.toSet()));
 
         PluginConfig.World.Backup.AutoBackup autoBackup = new PluginConfig.World.Backup.AutoBackup(
                 config.getBoolean("world.backup.auto-backup.enabled", true),
@@ -236,12 +239,15 @@ public class ConfigService {
                 Math.max(1, config.getInt("world.download.max-storage-mb", 8192)),
                 Math.max(1, config.getInt("world.download.max-concurrent-downloads", 3)));
 
+        // Unlike typed input, a bare name in a world list always means minecraft: the default lists protect the main
+        // worlds, which changing the default namespace must not quietly unprotect.
         Set<String> deletionBlacklist = config.getStringList("world.deletion-blacklist").stream()
-                .map(name -> name.toLowerCase(Locale.ROOT))
+                .map(WorldNames::id)
                 .collect(Collectors.toSet());
 
         return new PluginConfig.World(
                 config.getBoolean("world.lock-weather", true),
+                parseDefaultNamespace(config, logger),
                 // "^\\b$" is the regex config.yml ships. Written unescaped, "^\b$" is a literal backspace character
                 // instead, which is a different string even though both happen to match nothing in practice.
                 Objects.requireNonNullElse(config.getString("world.invalid-characters"), "^\\b$"),
@@ -253,6 +259,21 @@ public class ConfigService {
                 unload,
                 backup,
                 download);
+    }
+
+    private static String parseDefaultNamespace(FileConfiguration config, Logger logger) {
+        String namespace = Objects.requireNonNullElse(
+                        config.getString("world.default-namespace"), NamespacedKey.MINECRAFT)
+                .toLowerCase(Locale.ROOT);
+        if (!WorldNames.isValidNamespace(namespace)) {
+            logger.warning("Invalid default namespace \"" + namespace + "\". Defaulting to minecraft.");
+            return NamespacedKey.MINECRAFT;
+        }
+        if (!namespace.equals(NamespacedKey.MINECRAFT) && !WorldNames.namespacesSupported()) {
+            logger.warning("World namespaces require Paper. Defaulting to minecraft.");
+            return NamespacedKey.MINECRAFT;
+        }
+        return namespace;
     }
 
     private static PluginConfig.World.VoidBlock parseVoidBlock(FileConfiguration config, Logger logger) {

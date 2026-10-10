@@ -32,6 +32,7 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.util.Permissions;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.ArrayList;
@@ -117,7 +118,9 @@ public class FolderSubCommand extends AbstractSubCommand {
     }
 
     private void handleWorldFolderOperation(Player player, Folder folder, String operation, String worldName) {
-        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(worldName);
+        BuildWorld buildWorld = worldService
+                .getWorldStorage()
+                .getBuildWorld(WorldNames.fromInput(worldName, worldService.defaultNamespace()));
         if (buildWorld == null) {
             messages.sendMessage(player, "worlds_folder_unknown_world");
             return;
@@ -291,7 +294,8 @@ public class FolderSubCommand extends AbstractSubCommand {
                                     bw.getData().get(WorldDataKey.VISIBILITY),
                                     bw.getData().get(WorldDataKey.STATUS).getId()))
                     .filter(bw -> op.equals("add") ? !bw.isAssignedToFolder() : folder.containsWorld(bw))
-                    .forEach(bw -> WorldsCompletions.addIfStartsWith(args[3], bw.getName(), result));
+                    .forEach(bw -> WorldsCompletions.addIfStartsWith(
+                            args[3], WorldNames.toInput(bw.getName(), worldService.defaultNamespace()), result));
             return result;
         }
 

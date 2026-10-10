@@ -29,6 +29,7 @@ import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.world.WorldNames;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -97,7 +98,7 @@ public class PlayerQuitListener implements Listener {
 
         BuildPlayerImpl buildPlayer =
                 BuildPlayerImpl.of(playerManager.getPlayerStorage().getBuildPlayer(player));
-        buildPlayer.setLogoutLocation(new LogoutLocation(player.getWorld().getName(), player.getLocation()));
+        buildPlayer.setLogoutLocation(new LogoutLocation(WorldNames.of(player.getWorld()), player.getLocation()));
 
         CachedValues cachedValues = buildPlayer.getCachedValues();
         cachedValues.resetBuildStateIfPresent(player);

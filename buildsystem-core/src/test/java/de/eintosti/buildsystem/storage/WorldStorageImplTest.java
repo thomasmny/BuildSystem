@@ -30,6 +30,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
+import org.bukkit.NamespacedKey;
+import org.bukkit.World;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -184,6 +186,38 @@ class WorldStorageImplTest {
 
         assertSame(w, storage.getBuildWorld("india"));
         assertSame(w, storage.getBuildWorld("INDIA"));
+    }
+
+    @Test
+    void sameNameInDifferentNamespaces_areDistinctWorlds() {
+        BuildWorld plain = world("Lobby");
+        BuildWorld namespaced = world("maps:Lobby");
+        storage.addBuildWorld(plain);
+        storage.addBuildWorld(namespaced);
+
+        assertSame(plain, storage.getBuildWorld("lobby"));
+        assertSame(plain, storage.getBuildWorld("minecraft:LOBBY"));
+        assertSame(namespaced, storage.getBuildWorld("MAPS:lobby"));
+        assertNull(storage.getBuildWorld("other:lobby"));
+    }
+
+    @Test
+    void lookupByBukkitWorld_usesTheKeyOutsideMinecraft() {
+        BuildWorld plain = world("maps_lobby");
+        BuildWorld namespaced = world("maps:lobby");
+        storage.addBuildWorld(plain);
+        storage.addBuildWorld(namespaced);
+
+        // Paper names the world maps:lobby "maps_lobby", which must not resolve to the plain world of that name.
+        World keyed = mock(World.class);
+        when(keyed.getName()).thenReturn("maps_lobby");
+        when(keyed.getKey()).thenReturn(new NamespacedKey("maps", "lobby"));
+        assertSame(namespaced, storage.getBuildWorld(keyed));
+
+        World main = mock(World.class);
+        when(main.getName()).thenReturn("maps_lobby");
+        when(main.getKey()).thenReturn(NamespacedKey.minecraft("maps_lobby"));
+        assertSame(plain, storage.getBuildWorld(main));
     }
 
     @Test

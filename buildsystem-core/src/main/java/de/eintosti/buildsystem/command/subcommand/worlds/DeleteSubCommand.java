@@ -23,9 +23,9 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
-import java.util.Locale;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -49,11 +49,7 @@ public class DeleteSubCommand extends AbstractSubCommand {
             return;
         }
 
-        if (configService
-                .current()
-                .world()
-                .deletionBlacklist()
-                .contains(buildWorld.getName().toLowerCase(Locale.ROOT))) {
+        if (configService.current().world().deletionBlacklist().contains(WorldNames.id(buildWorld.getName()))) {
             messages.sendMessage(player, "worlds_delete_forbidden");
             return;
         }
@@ -67,10 +63,7 @@ public class DeleteSubCommand extends AbstractSubCommand {
             return List.of();
         }
         return WorldsCompletions.deletableWorldNames(
-                player,
-                worldService.getWorldStorage(),
-                configService.current().world().deletionBlacklist(),
-                args[1]);
+                player, worldService, configService.current().world().deletionBlacklist(), args[1]);
     }
 
     @Override

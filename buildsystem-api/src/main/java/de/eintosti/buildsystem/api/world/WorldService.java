@@ -59,8 +59,13 @@ public interface WorldService {
      *         .build();
      * }</pre>
      *
+     * <p>A name like {@code maps:lobby} creates the world in the {@code maps} namespace, which requires Paper. A name
+     * without a namespace is in {@code minecraft}.
+     *
      * @param name The name of the world to create
      * @return A new {@link WorldBuilder} for the specified world name
+     * @throws UnsupportedOperationException If the name has a namespace other than {@code minecraft} and the server is
+     *     not Paper
      * @since 4.0.0
      */
     WorldBuilder newWorld(String name);
@@ -69,8 +74,12 @@ public interface WorldService {
      * Opens a {@link WorldImporter} to adopt an existing world directory (located under the server's world container by
      * the given name) as a {@link BuildWorld}.
      *
+     * <p>A name like {@code maps:lobby} imports {@code dimensions/maps/lobby}, which requires Paper.
+     *
      * @param name The name of the existing world directory to import
      * @return A new {@link WorldImporter} for the specified world name
+     * @throws UnsupportedOperationException If the name has a namespace other than {@code minecraft} and the server is
+     *     not Paper
      * @since 4.0.0
      */
     WorldImporter importWorld(String name);

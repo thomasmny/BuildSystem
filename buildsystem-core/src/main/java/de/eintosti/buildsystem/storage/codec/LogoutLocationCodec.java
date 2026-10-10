@@ -18,13 +18,15 @@
 package de.eintosti.buildsystem.storage.codec;
 
 import de.eintosti.buildsystem.player.LogoutLocation;
+import java.util.Arrays;
 import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Codec for a player's {@link LogoutLocation}, persisted as the string {@code world:x:y:z:yaw:pitch} produced by
- * {@link LogoutLocation#toString()}.
+ * {@link LogoutLocation#toString()}. A namespaced world ({@code maps:lobby}) adds one more separator, so the
+ * coordinates are read from the end.
  *
  * <p>Centralizes the parsing that previously lived inline in the player storage and fails <em>soft</em>: a blank or
  * malformed value yields {@code null} (logged) instead of propagating a {@link NumberFormatException} into the load
@@ -35,7 +37,7 @@ public final class LogoutLocationCodec {
 
     private static final Logger LOGGER = Logger.getLogger(LogoutLocationCodec.class.getName());
     private static final String DELIMITER = ":";
-    private static final int EXPECTED_PARTS = 6;
+    private static final int COORDINATE_PARTS = 5;
 
     private LogoutLocationCodec() {}
 
@@ -61,20 +63,21 @@ public final class LogoutLocationCodec {
         }
 
         String[] parts = raw.split(DELIMITER);
-        if (parts.length != EXPECTED_PARTS) {
-            LOGGER.warning("Ignoring malformed logout location '" + raw + "': expected " + EXPECTED_PARTS
-                    + " ':'-separated values but found " + parts.length);
+        int worldParts = parts.length - COORDINATE_PARTS;
+        if (worldParts != 1 && worldParts != 2) {
+            LOGGER.warning("Ignoring malformed logout location '" + raw + "': expected a world and " + COORDINATE_PARTS
+                    + " ':'-separated values but found " + parts.length + " values");
             return null;
         }
 
         try {
             return new LogoutLocation(
-                    parts[0],
-                    Double.parseDouble(parts[1]),
-                    Double.parseDouble(parts[2]),
-                    Double.parseDouble(parts[3]),
-                    Float.parseFloat(parts[4]),
-                    Float.parseFloat(parts[5]));
+                    String.join(DELIMITER, Arrays.copyOfRange(parts, 0, worldParts)),
+                    Double.parseDouble(parts[worldParts]),
+                    Double.parseDouble(parts[worldParts + 1]),
+                    Double.parseDouble(parts[worldParts + 2]),
+                    Float.parseFloat(parts[worldParts + 3]),
+                    Float.parseFloat(parts[worldParts + 4]));
         } catch (NumberFormatException e) {
             LOGGER.warning("Ignoring malformed logout location '" + raw + "': " + e.getMessage());
             return null;

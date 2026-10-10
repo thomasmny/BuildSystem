@@ -22,6 +22,7 @@ import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.creation.GenerationDataStore.WorldGenerationData;
 import de.eintosti.buildsystem.world.creation.generator.VoidGenerator;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
@@ -104,6 +105,11 @@ public class BukkitWorldFactory {
     }
 
     public @Nullable World generate(VersionCheck versionCheck) {
+        if (WorldNames.isNamespaced(worldName) && !WorldNames.namespacesSupported()) {
+            logger.warning("\"%s\" is in a namespace, which requires Paper. Skipping...".formatted(worldName));
+            return null;
+        }
+
         if (versionCheck == VersionCheck.REQUIRED && versionGuard.isDataVersionTooHigh()) {
             logger.warning("\"%s\" was created in a newer version of Minecraft (%s > %s). Skipping..."
                     .formatted(worldName, versionGuard.parseDataVersion(), versionGuard.getServerDataVersion()));
@@ -124,7 +130,7 @@ public class BukkitWorldFactory {
     }
 
     private WorldCreator createWorldCreator() {
-        WorldCreator worldCreator = new WorldCreator(worldName);
+        WorldCreator worldCreator = WorldNames.creator(worldName);
         if (seed != null) {
             worldCreator.seed(seed);
         }

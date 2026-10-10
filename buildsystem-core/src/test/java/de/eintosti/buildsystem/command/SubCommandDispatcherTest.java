@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -48,6 +49,7 @@ class SubCommandDispatcherTest {
         World world = mock(World.class);
         when(player.getWorld()).thenReturn(world);
         when(world.getName()).thenReturn("currentWorld");
+        when(world.getKey()).thenReturn(NamespacedKey.minecraft("currentworld"));
 
         Argument fooArg = stubArg("foo", "perm.foo");
         fooCmd = mock(SubCommand.class);
@@ -83,7 +85,7 @@ class SubCommandDispatcherTest {
 
         dispatcher.dispatch(player, new String[] {"foo"});
 
-        verify(fooCmd).execute(player, "currentWorld", new String[] {"foo"});
+        verify(fooCmd).execute(player, "minecraft:currentWorld", new String[] {"foo"});
     }
 
     @Test
@@ -122,7 +124,7 @@ class SubCommandDispatcherTest {
         dispatcher.dispatch(player, new String[] {"foo"});
 
         // The real subcommand runs; the like-named category shortcut never does.
-        verify(fooCmd).execute(player, "currentWorld", new String[] {"foo"});
+        verify(fooCmd).execute(player, "minecraft:currentWorld", new String[] {"foo"});
         verify(dynamicFoo, never()).execute(any(), any(), any());
     }
 
@@ -135,7 +137,7 @@ class SubCommandDispatcherTest {
         boolean result = dispatcher.dispatch(player, new String[] {"public"});
 
         assertTrue(result);
-        verify(publicShortcut).execute(player, "currentWorld", new String[] {"public"});
+        verify(publicShortcut).execute(player, "minecraft:currentWorld", new String[] {"public"});
         verify(messages, never()).sendMessage(any(Player.class), anyString());
     }
 

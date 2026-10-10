@@ -24,12 +24,12 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.Permissions;
+import de.eintosti.buildsystem.world.WorldNames;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.ToIntFunction;
 import java.util.logging.Logger;
-import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -86,8 +86,9 @@ public class TimeCommand extends CommandBase {
             return;
         }
 
-        String worldName = worldNameFromArgs(player, args, 0);
-        World world = Bukkit.getWorld(worldName);
+        String worldName = worldNameFromArgs(
+                player, args, 0, configService.current().world().defaultNamespace());
+        World world = WorldNames.bukkitWorld(worldName);
         if (world == null) {
             messages.sendMessage(player, variant.label + "_unknown_world");
             return;
@@ -106,7 +107,7 @@ public class TimeCommand extends CommandBase {
 
         Time time = configService.current().world().defaults().time();
         world.setTime(variant.tick.applyAsInt(time));
-        messages.sendMessage(player, variant.label + "_set", Placeholders.of("%world%", world.getName()));
+        messages.sendMessage(player, variant.label + "_set", Placeholders.of("%world%", WorldNames.of(world)));
     }
 
     @Override
@@ -118,7 +119,12 @@ public class TimeCommand extends CommandBase {
             case "night":
                 worldStorage.getBuildWorlds().stream()
                         .filter(world -> world.getPermissions().canPerformCommand(player, Permissions.command(lc)))
-                        .forEach(world -> addArgument(args[0], world.getName(), list));
+                        .forEach(world -> addArgument(
+                                args[0],
+                                WorldNames.toInput(
+                                        world.getName(),
+                                        configService.current().world().defaultNamespace()),
+                                list));
                 break;
         }
         return list;

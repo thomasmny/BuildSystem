@@ -49,10 +49,10 @@ public final class CommandRegistrar {
         register("build", new BuildCommand(messages, logger, services.player()));
         register("buildsystem", new BuildSystemCommand(messages, logger));
         register("config", new ConfigCommand(messages, logger, plugin));
-        register("explosions", new ExplosionsCommand(messages, logger, worldStorage));
+        register("explosions", new ExplosionsCommand(messages, logger, services.config(), worldStorage));
         register("gamemode", new GamemodeCommand(messages, logger));
-        register("noai", new NoAICommand(messages, logger, worldStorage));
-        register("physics", new PhysicsCommand(messages, logger, worldStorage));
+        register("noai", new NoAICommand(messages, logger, services.config(), worldStorage));
+        register("physics", new PhysicsCommand(messages, logger, services.config(), worldStorage));
         register("settings", new SettingsCommand(messages, logger, menus));
         register("setup", new SetupCommand(messages, logger, menus));
         register("skull", new SkullCommand(messages, logger, services.menuItems()));

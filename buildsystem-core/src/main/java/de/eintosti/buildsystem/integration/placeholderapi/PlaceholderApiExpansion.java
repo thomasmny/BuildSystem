@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.world.WorldNames;
 import java.util.Locale;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import org.bukkit.entity.Player;
@@ -132,7 +133,7 @@ public class PlaceholderApiExpansion extends PlaceholderExpansion {
     }
 
     private @Nullable String worldPlaceholder(Player player, String identifier) {
-        String worldName = player.getWorld().getName();
+        String worldName = WorldNames.of(player.getWorld());
         if (identifier.contains("_")) {
             String[] splitString = identifier.split("_");
             worldName = splitString[1];

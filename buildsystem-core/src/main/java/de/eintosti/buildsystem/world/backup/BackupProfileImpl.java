@@ -35,6 +35,7 @@ import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.WorldFlush;
+import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.File;
@@ -184,7 +185,7 @@ public class BackupProfileImpl implements BackupProfile {
         World world = optionalWorld.get();
 
         // Restoring wipes the world folder before extracting. For the server's default world that folder is the
-        // level-name directory, which since Paper 26.1 holds every other world under dimensions/minecraft, so the
+        // level-name directory, which since Paper 26.1 holds every other world under dimensions/, so the
         // wipe would take the whole server with it. Bukkit also refuses to unload the default world, so the unload
         // that is supposed to precede the wipe silently does nothing.
         if (Bukkit.getWorlds().getFirst().equals(world)) {
@@ -257,7 +258,7 @@ public class BackupProfileImpl implements BackupProfile {
         removedPlayers.stream().filter(Objects::nonNull).forEach(worldTeleporter::teleport);
 
         if (isSpawn) {
-            spawn.setWorld(Bukkit.getWorld(worldName));
+            spawn.setWorld(WorldNames.bukkitWorld(worldName));
             spawnService.set(spawn, worldName);
         }
 

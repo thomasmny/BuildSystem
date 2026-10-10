@@ -112,12 +112,12 @@ public class PlayerJoinListener implements Listener {
         teleportToCorrectLocation(player, buildPlayer);
         navigatorService.giveNavigator(player);
 
-        String worldName = player.getWorld().getName();
-        BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
+        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
         if (buildWorld != null) {
             WorldData worldData = buildWorld.getData();
             if (!worldData.get(WorldDataKey.PHYSICS) && player.hasPermission(Permissions.PHYSICS_MESSAGE)) {
-                messages.sendMessage(player, "physics_deactivated_in_world", Placeholders.of("%world%", worldName));
+                messages.sendMessage(
+                        player, "physics_deactivated_in_world", Placeholders.of("%world%", buildWorld.getName()));
             }
 
             if (configService.current().settings().archive().vanish()
