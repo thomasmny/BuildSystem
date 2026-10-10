@@ -17,15 +17,21 @@
  */
 package de.eintosti.buildsystem.util;
 
-import com.google.common.base.Preconditions;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpHeaders;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.OptionalLong;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.regex.Matcher;
@@ -35,69 +41,68 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Checks the latest GitHub release of BuildSystem against the installed version.
+ * Checks the newest stable GitHub release of BuildSystem against the installed version.
  *
  * @author Parker Hawke - Choco
  */
 @NullMarked
 public final class UpdateChecker {
 
-    private static final URI LATEST_RELEASE =
-            URI.create("https://api.github.com/repos/thomasmny/BuildSystem/releases/latest");
-    private static final String RELEASES_PAGE = "https://github.com/thomasmny/BuildSystem/releases";
-    private static final Pattern DECIMAL_SCHEME_PATTERN = Pattern.compile("\\d+(?:\\.\\d+)*");
+    /**
+     * The release list by repository id, which keeps working if the repository is renamed or transferred. The
+     * {@code /latest} endpoint is not used because it returns whichever release was marked latest, which may be a patch
+     * for an older major version.
+     */
+    private static final URI RELEASES =
+            URI.create("https://api.github.com/repositories/303399172/releases?per_page=20");
+
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
     private static final Duration CACHE_FOR = Duration.ofHours(1);
 
     private final JavaPlugin plugin;
     private final ReleaseRequest request;
     private final Executor executor;
-    private final Duration cacheFor;
 
     private @Nullable CompletableFuture<UpdateResult> lastCheck;
     private long lastCheckAt;
 
     /**
-     * The last release GitHub sent, kept so a {@code 304 Not Modified} can reuse it.
+     * When GitHub allows the next request after a rate-limited one, or {@code null} if it did not say.
      */
-    private volatile @Nullable Release lastRelease;
+    private volatile @Nullable Instant retryAt;
 
     public UpdateChecker(JavaPlugin plugin, Executor executor) {
-        this(plugin, githubRequest(plugin.getDescription().getVersion()), executor, CACHE_FOR);
+        this(plugin, githubRequest(plugin.getDescription().getVersion()), executor);
     }
 
-    UpdateChecker(JavaPlugin plugin, ReleaseRequest request, Executor executor, Duration cacheFor) {
+    UpdateChecker(JavaPlugin plugin, ReleaseRequest request, Executor executor) {
         this.plugin = plugin;
         this.request = request;
         this.executor = executor;
-        this.cacheFor = cacheFor;
     }
 
     private static ReleaseRequest githubRequest(String pluginVersion) {
-        HttpClient httpClient = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
-        return etag -> {
-            HttpRequest.Builder builder = HttpRequest.newBuilder(LATEST_RELEASE)
-                    .timeout(TIMEOUT)
-                    .header("Accept", "application/vnd.github+json")
-                    .header("X-GitHub-Api-Version", "2022-11-28")
-                    .header("User-Agent", "BuildSystem/" + pluginVersion)
-                    .GET();
-            if (etag != null) {
-                builder.header("If-None-Match", etag);
-            }
-            return httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
-        };
+        HttpClient httpClient = HttpClient.newBuilder()
+                .connectTimeout(TIMEOUT)
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
+        HttpRequest request = HttpRequest.newBuilder(RELEASES)
+                .timeout(TIMEOUT)
+                .header("Accept", "application/vnd.github+json")
+                .header("X-GitHub-Api-Version", "2022-11-28")
+                .header("User-Agent", "BuildSystem/" + pluginVersion)
+                .GET()
+                .build();
+        return () -> httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
     /**
-     * Fetches the latest release, sending the given ETag as {@code If-None-Match} when there is one.
+     * Fetches the release list.
      */
     @FunctionalInterface
     interface ReleaseRequest {
-        HttpResponse<String> send(@Nullable String etag) throws IOException, InterruptedException;
+        HttpResponse<String> send() throws IOException, InterruptedException;
     }
-
-    private record Release(@Nullable String etag, String version, String url) {}
 
     /**
      * {@return the plugin's current version} Exposed so callers can render it (e.g. in an update-available message)
@@ -108,103 +113,193 @@ public final class UpdateChecker {
     }
 
     /**
-     * {@return the higher of two dotted version numbers, or {@code null} if either has no number in it}
-     */
-    private static @Nullable String compareVersions(String first, String second) {
-        String[] firstSplit = splitVersionInfo(first), secondSplit = splitVersionInfo(second);
-        if (firstSplit == null || secondSplit == null) {
-            return null;
-        }
-
-        for (int i = 0; i < Math.min(firstSplit.length, secondSplit.length); i++) {
-            int currentValue = NumberUtils.toInt(firstSplit[i]), newestValue = NumberUtils.toInt(secondSplit[i]);
-            if (newestValue > currentValue) {
-                return second;
-            } else if (newestValue < currentValue) {
-                return first;
-            }
-        }
-
-        return (secondSplit.length > firstSplit.length) ? second : first;
-    }
-
-    private static String @Nullable [] splitVersionInfo(String version) {
-        Matcher matcher = DECIMAL_SCHEME_PATTERN.matcher(version);
-        return matcher.find() ? matcher.group().split("\\.") : null;
-    }
-
-    /**
-     * Requests an update check from GitHub. The request runs on the executor given to the constructor. An answer is
-     * reused for an hour, so a player joining does not cost a request each time; a failed check is retried on the next
-     * call.
+     * Requests an update check from GitHub on the executor given to the constructor. An answer is reused for an hour,
+     * so a player joining does not cost a request each time. A failed check is retried on the next call, or once the
+     * time GitHub gave for a rate limit has passed.
      *
      * @return a future update result
      */
     public synchronized CompletableFuture<UpdateResult> requestUpdateCheck() {
         long now = System.nanoTime();
-        boolean reusable = lastCheck != null
-                && now - lastCheckAt < cacheFor.toNanos()
-                && (!lastCheck.isDone() || lastCheck.join().getReason().isAnswer());
-        if (!reusable) {
+        if (!isReusable(now)) {
             lastCheck = CompletableFuture.supplyAsync(this::check, executor);
             lastCheckAt = now;
         }
         return lastCheck;
     }
 
+    private boolean isReusable(long now) {
+        if (lastCheck == null) {
+            return false;
+        }
+        if (!lastCheck.isDone()) {
+            return true;
+        }
+        if (lastCheck.join().reason().isAnswer()) {
+            return now - lastCheckAt < CACHE_FOR.toNanos();
+        }
+        Instant until = retryAt;
+        return until != null && Instant.now().isBefore(until);
+    }
+
     /**
      * Never throws, so a cached check can always be read.
      */
     private UpdateResult check() {
-        Release cached = lastRelease;
+        HttpResponse<String> response;
         try {
-            HttpResponse<String> response = request.send(cached == null ? null : cached.etag());
-            int status = response.statusCode();
-            // A 304 confirms the cached release and does not count against GitHub's rate limit.
-            Release release = status == 200 ? parse(response) : status == 304 ? cached : null;
-            if (release == null) {
-                return new UpdateResult(
-                        switch (status) {
-                            case 401 -> UpdateReason.UNAUTHORIZED_QUERY;
-                            case 403, 429 -> UpdateReason.RATE_LIMITED;
-                            default -> UpdateReason.UNKNOWN_ERROR;
-                        });
-            }
-            lastRelease = release;
-            return compare(release);
+            response = request.send();
         } catch (IOException e) {
-            return new UpdateResult(UpdateReason.COULD_NOT_CONNECT);
+            return new UpdateResult(UpdateReason.COULD_NOT_CONNECT, null);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            return new UpdateResult(UpdateReason.COULD_NOT_CONNECT);
-        } catch (RuntimeException e) {
-            // A body that is not JSON or lacks the expected fields.
-            return new UpdateResult(UpdateReason.INVALID_JSON);
+            return new UpdateResult(UpdateReason.COULD_NOT_CONNECT, null);
         }
-    }
 
-    private static Release parse(HttpResponse<String> response) {
-        JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
-        String tag = json.get("tag_name").getAsString();
-        return new Release(
-                response.headers().firstValue("ETag").orElse(null),
-                tag.startsWith("v") ? tag.substring(1) : tag,
-                json.get("html_url").getAsString());
-    }
-
-    private UpdateResult compare(Release release) {
-        String pluginVersion = getCurrentVersion();
-        String latest = compareVersions(pluginVersion, release.version());
-        if (latest == null) {
-            return new UpdateResult(UpdateReason.UNSUPPORTED_VERSION_SCHEME);
-        }
-        if (latest.equals(pluginVersion)) {
+        int status = response.statusCode();
+        retryAt = status == 403 || status == 429 ? retryAt(response.headers()) : null;
+        if (status != 200) {
             return new UpdateResult(
-                    pluginVersion.equals(release.version())
-                            ? UpdateReason.UP_TO_DATE
-                            : UpdateReason.UNRELEASED_VERSION);
+                    switch (status) {
+                        case 401 -> UpdateReason.UNAUTHORIZED_QUERY;
+                        case 403, 429 -> UpdateReason.RATE_LIMITED;
+                        default -> UpdateReason.UNKNOWN_ERROR;
+                    },
+                    null);
         }
-        return new UpdateResult(UpdateReason.NEW_UPDATE, release.version(), release.url());
+
+        List<Release> releases;
+        try {
+            releases = parse(response.body());
+        } catch (RuntimeException e) {
+            return new UpdateResult(UpdateReason.INVALID_JSON, null);
+        }
+
+        try {
+            return compare(releases);
+        } catch (RuntimeException e) {
+            return new UpdateResult(UpdateReason.UNKNOWN_ERROR, null);
+        }
+    }
+
+    /**
+     * {@return when GitHub allows the next request} {@code Retry-After} counts seconds from now, and
+     * {@code x-ratelimit-reset} is a Unix time.
+     */
+    private static @Nullable Instant retryAt(HttpHeaders headers) {
+        try {
+            OptionalLong retryAfter = headers.firstValueAsLong("retry-after");
+            if (retryAfter.isPresent()) {
+                return Instant.now().plusSeconds(retryAfter.getAsLong());
+            }
+            OptionalLong reset = headers.firstValueAsLong("x-ratelimit-reset");
+            return reset.isPresent() ? Instant.ofEpochSecond(reset.getAsLong()) : null;
+        } catch (NumberFormatException e) {
+            // Retry-After may also be an HTTP date; the next request then simply tries again.
+            return null;
+        }
+    }
+
+    /**
+     * {@return the stable releases in the list} Drafts, pre-releases and tags that are not version numbers are left
+     * out, and a leading {@code v} is stripped from the tag.
+     */
+    private static List<Release> parse(String body) {
+        List<Release> releases = new ArrayList<>();
+        for (JsonElement element : JsonParser.parseString(body).getAsJsonArray()) {
+            JsonObject release = element.getAsJsonObject();
+            if (release.get("draft").getAsBoolean() || release.get("prerelease").getAsBoolean()) {
+                continue;
+            }
+            String tag = release.get("tag_name").getAsString();
+            String version = tag.startsWith("v") ? tag.substring(1) : tag;
+            if (Version.parse(version) != null) {
+                releases.add(new Release(version, release.get("html_url").getAsString()));
+            }
+        }
+        return releases;
+    }
+
+    private UpdateResult compare(List<Release> releases) {
+        Version installed = Version.parse(getCurrentVersion());
+        if (installed == null) {
+            return new UpdateResult(UpdateReason.UNSUPPORTED_VERSION_SCHEME, null);
+        }
+
+        Release newest = releases.stream()
+                .max(Comparator.comparing(release -> Version.parse(release.version())))
+                .orElse(null);
+        if (newest == null) {
+            return new UpdateResult(UpdateReason.UP_TO_DATE, null);
+        }
+
+        int comparison = Version.parse(newest.version()).compareTo(installed);
+        UpdateReason reason = comparison > 0
+                ? UpdateReason.NEW_UPDATE
+                : comparison == 0 ? UpdateReason.UP_TO_DATE : UpdateReason.UNRELEASED_VERSION;
+        return new UpdateResult(reason, newest);
+    }
+
+    /**
+     * A dotted version number. Missing parts count as zero, and a version with a suffix such as {@code -SNAPSHOT} is
+     * older than the same numbers without one.
+     */
+    private record Version(int[] numbers, boolean suffixed) implements Comparable<Version> {
+
+        private static final Pattern NUMBERS = Pattern.compile("\\d+(?:\\.\\d+)*");
+
+        static @Nullable Version parse(String version) {
+            Matcher matcher = NUMBERS.matcher(version);
+            if (!matcher.lookingAt()) {
+                return null;
+            }
+            String[] parts = matcher.group().split("\\.");
+            int[] numbers = new int[parts.length];
+            for (int i = 0; i < parts.length; i++) {
+                numbers[i] = NumberUtils.toInt(parts[i]);
+            }
+            return new Version(numbers, matcher.end() < version.length());
+        }
+
+        @Override
+        public int compareTo(Version other) {
+            for (int i = 0; i < Math.max(numbers.length, other.numbers.length); i++) {
+                int comparison = Integer.compare(part(i), other.part(i));
+                if (comparison != 0) {
+                    return comparison;
+                }
+            }
+            return Boolean.compare(other.suffixed, suffixed);
+        }
+
+        private int part(int index) {
+            return index < numbers.length ? numbers[index] : 0;
+        }
+    }
+
+    /**
+     * A stable GitHub release.
+     *
+     * @param version The tag without a leading {@code v}
+     * @param url The release page
+     */
+    public record Release(String version, String url) {}
+
+    /**
+     * The outcome of an update check.
+     *
+     * @param reason Why the check ended the way it did
+     * @param release The newest stable release, or {@code null} if the check failed or there is none
+     */
+    public record UpdateResult(
+            UpdateReason reason, @Nullable Release release) {
+
+        /**
+         * {@return the release to update to, or {@code null} unless it is newer than the installed version}
+         */
+        public @Nullable Release newerRelease() {
+            return reason == UpdateReason.NEW_UPDATE ? release : null;
+        }
     }
 
     /**
@@ -233,7 +328,7 @@ public final class UpdateChecker {
         UNAUTHORIZED_QUERY,
 
         /**
-         * GitHub's rate limit was reached. The check is retried on the next request.
+         * GitHub's rate limit was reached. The check is retried once GitHub allows it.
          */
         RATE_LIMITED,
 
@@ -266,67 +361,6 @@ public final class UpdateChecker {
                 case NEW_UPDATE, UNRELEASED_VERSION, UNSUPPORTED_VERSION_SCHEME, UP_TO_DATE -> true;
                 case COULD_NOT_CONNECT, INVALID_JSON, UNAUTHORIZED_QUERY, RATE_LIMITED, UNKNOWN_ERROR -> false;
             };
-        }
-    }
-
-    /**
-     * Represents a result for an update query performed by {@link UpdateChecker#requestUpdateCheck()}.
-     */
-    public final class UpdateResult {
-
-        private final UpdateReason reason;
-        private final String newestVersion;
-        private final String releaseUrl;
-
-        private UpdateResult(UpdateReason reason, String newestVersion, String releaseUrl) {
-            this.reason = reason;
-            this.newestVersion = newestVersion;
-            this.releaseUrl = releaseUrl;
-        }
-
-        private UpdateResult(UpdateReason reason) {
-            Preconditions.checkArgument(
-                    reason != UpdateReason.NEW_UPDATE,
-                    "Reasons that require updates must also provide the latest version String");
-
-            this.reason = reason;
-            this.newestVersion = plugin.getDescription().getVersion();
-            this.releaseUrl = RELEASES_PAGE;
-        }
-
-        /**
-         * Get the constant reason of this result.
-         *
-         * @return the reason
-         */
-        public UpdateReason getReason() {
-            return reason;
-        }
-
-        /**
-         * Check whether this result requires the user to update.
-         *
-         * @return {@code true} if requires update, {@code false} otherwise
-         */
-        public boolean requiresUpdate() {
-            return reason == UpdateReason.NEW_UPDATE;
-        }
-
-        /**
-         * Get the latest version of the plugin. This may be the currently installed version, it may not be. This
-         * depends entirely on the result of the update.
-         *
-         * @return the newest version of the plugin
-         */
-        public String getNewestVersion() {
-            return newestVersion;
-        }
-
-        /**
-         * {@return the GitHub page of the newest release, or of all releases unless an update is available}
-         */
-        public String getReleaseUrl() {
-            return releaseUrl;
         }
     }
 }

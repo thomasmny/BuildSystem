@@ -166,11 +166,11 @@ public class BuildSystemPlugin extends JavaPlugin {
                                 return;
                             }
 
-                            if (result.requiresUpdate()) {
+                            UpdateChecker.Release update = result.newerRelease();
+                            if (update != null) {
                                 Bukkit.getConsoleSender()
                                         .sendMessage("%s[BuildSystem] Great! a new update is available: %sv%s"
-                                                .formatted(
-                                                        ChatColor.YELLOW, ChatColor.GREEN, result.getNewestVersion()));
+                                                .formatted(ChatColor.YELLOW, ChatColor.GREEN, update.version()));
                                 Bukkit.getConsoleSender()
                                         .sendMessage("%s ➥ Your current version: %s%s"
                                                 .formatted(
@@ -179,11 +179,11 @@ public class BuildSystemPlugin extends JavaPlugin {
                                                         this.getDescription().getVersion()));
                                 Bukkit.getConsoleSender()
                                         .sendMessage("%s ➥ Download: %s%s"
-                                                .formatted(ChatColor.YELLOW, ChatColor.AQUA, result.getReleaseUrl()));
+                                                .formatted(ChatColor.YELLOW, ChatColor.AQUA, update.url()));
                                 return;
                             }
 
-                            UpdateChecker.UpdateReason reason = result.getReason();
+                            UpdateChecker.UpdateReason reason = result.reason();
                             switch (reason) {
                                 case COULD_NOT_CONNECT,
                                         INVALID_JSON,

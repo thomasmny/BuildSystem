@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -29,134 +30,144 @@ import de.eintosti.buildsystem.util.UpdateChecker.UpdateResult;
 import java.io.IOException;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpResponse;
-import java.time.Duration;
-import java.util.ArrayDeque;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 @NullMarked
 class UpdateCheckerTest {
 
-    private static final String RELEASE_URL = "https://github.com/thomasmny/BuildSystem/releases/tag/4.1.0";
-
     private final List<Runnable> submitted = new ArrayList<>();
-    private final Deque<HttpResponse<String>> responses = new ArrayDeque<>();
-    private final List<@Nullable String> sentEtags = new ArrayList<>();
+    private int requests;
 
-    @Test
-    void newerTag_isAnUpdateWithItsReleasePage() {
-        responses.add(release("4.1.0"));
+    @ParameterizedTest(name = "{0} against {1}: {2}")
+    @CsvSource({
+        "4.0.0, 4.1.0, NEW_UPDATE",
+        "4.0.0, 4.0.0, UP_TO_DATE",
+        "4.0.0, v4.0.0, UP_TO_DATE",
+        "4.0, 4.0.0, UP_TO_DATE",
+        "4.1.0-SNAPSHOT, 4.1.0, NEW_UPDATE",
+        "4.1.0, 4.0.0, UNRELEASED_VERSION",
+        "4.1.0, 4.1.0-rc1, UNRELEASED_VERSION",
+        "4.0.0, 4.0.1-hotfix, NEW_UPDATE",
+        "dev, 4.0.0, UNSUPPORTED_VERSION_SCHEME"
+    })
+    void installedVersion_isComparedWithTheNewestTag(String installed, String tag, UpdateReason expected) {
+        UpdateChecker checker = checker(installed, response(200, releases(release(tag, false, false)), Map.of()));
 
-        UpdateResult result = check(checker(Duration.ofHours(1)));
-
-        assertEquals(UpdateReason.NEW_UPDATE, result.getReason());
-        assertEquals("4.1.0", result.getNewestVersion());
-        assertEquals(RELEASE_URL, result.getReleaseUrl());
+        assertEquals(expected, check(checker).reason());
     }
 
     @Test
-    void sameTag_isUpToDate() {
-        responses.add(release("4.0.0"));
+    void newestStableRelease_isPicked_whateverItsPositionInTheList() {
+        UpdateChecker checker = checker(
+                "4.0.0",
+                response(
+                        200,
+                        releases(
+                                release("3.9.9", false, false),
+                                release("4.1.0", false, false),
+                                release("5.0.0", true, false),
+                                release("4.2.0", false, true),
+                                release("4.0.5", false, false),
+                                release("nightly", false, false)),
+                        Map.of()));
 
-        assertEquals(
-                UpdateReason.UP_TO_DATE, check(checker(Duration.ofHours(1))).getReason());
+        UpdateResult result = check(checker);
+
+        assertEquals(UpdateReason.NEW_UPDATE, result.reason());
+        assertEquals(new UpdateChecker.Release("4.1.0", url("4.1.0")), result.newerRelease());
     }
 
     @Test
-    void leadingV_isIgnored() {
-        responses.add(release("v4.0.0"));
+    void upToDate_hasNoNewerRelease() {
+        UpdateChecker checker = checker("4.0.0", response(200, releases(release("4.0.0", false, false)), Map.of()));
 
-        assertEquals(
-                UpdateReason.UP_TO_DATE, check(checker(Duration.ofHours(1))).getReason());
+        assertNull(check(checker).newerRelease());
     }
 
     @Test
     void answer_isReusedForAnHour() {
-        responses.add(release("4.0.0"));
-        UpdateChecker checker = checker(Duration.ofHours(1));
+        UpdateChecker checker = checker("4.0.0", response(200, releases(release("4.0.0", false, false)), Map.of()));
 
         CompletableFuture<UpdateResult> first = checker.requestUpdateCheck();
         runSubmitted();
 
         assertSame(first, checker.requestUpdateCheck());
-        assertEquals(1, sentEtags.size());
+        assertEquals(1, requests);
     }
 
     @Test
-    void notModified_reusesTheCachedReleaseAndSendsItsEtag() {
-        responses.add(release("4.1.0"));
-        responses.add(response(304, "", null));
-        UpdateChecker checker = checker(Duration.ZERO);
-
-        check(checker);
-        UpdateResult result = check(checker);
-
-        assertEquals(UpdateReason.NEW_UPDATE, result.getReason());
-        assertEquals(RELEASE_URL, result.getReleaseUrl());
-        assertEquals(Arrays.asList(null, "\"etag\""), sentEtags);
-    }
-
-    @Test
-    void rateLimit_isAFailureThatIsRetried() {
-        responses.add(response(403, "{\"message\": \"API rate limit exceeded\"}", null));
-        UpdateChecker checker = checker(Duration.ofHours(1));
+    void rateLimit_isNotRetriedBeforeTheReset() {
+        String reset = String.valueOf(Instant.now().plusSeconds(3600).getEpochSecond());
+        UpdateChecker checker = checker("4.0.0", response(403, "{}", Map.of("x-ratelimit-reset", List.of(reset))));
 
         CompletableFuture<UpdateResult> first = checker.requestUpdateCheck();
         runSubmitted();
 
-        assertEquals(UpdateReason.RATE_LIMITED, first.join().getReason());
+        assertEquals(UpdateReason.RATE_LIMITED, first.join().reason());
+        assertSame(first, checker.requestUpdateCheck());
+    }
+
+    @Test
+    void rateLimit_withAPassedRetryAfter_isRetried() {
+        UpdateChecker checker = checker("4.0.0", response(429, "{}", Map.of("retry-after", List.of("0"))));
+
+        CompletableFuture<UpdateResult> first = checker.requestUpdateCheck();
+        runSubmitted();
+
+        assertEquals(UpdateReason.RATE_LIMITED, first.join().reason());
         assertNotSame(first, checker.requestUpdateCheck());
     }
 
     @Test
     void malformedJson_isAFailureThatIsRetried() {
-        responses.add(response(200, "{\"tag_name\": ", null));
-        UpdateChecker checker = checker(Duration.ofHours(1));
+        UpdateChecker checker = checker("4.0.0", response(200, "[{\"tag_name\": ", Map.of()));
 
         CompletableFuture<UpdateResult> first = checker.requestUpdateCheck();
         runSubmitted();
 
-        assertEquals(UpdateReason.INVALID_JSON, first.join().getReason());
+        assertEquals(UpdateReason.INVALID_JSON, first.join().reason());
         assertNotSame(first, checker.requestUpdateCheck());
     }
 
     @Test
     void unreachableGitHub_isAFailureThatIsRetried() {
         UpdateChecker checker = new UpdateChecker(
-                plugin(),
-                etag -> {
+                plugin("4.0.0"),
+                () -> {
                     throw new IOException("offline");
                 },
-                submitted::add,
-                Duration.ofHours(1));
+                submitted::add);
 
         CompletableFuture<UpdateResult> first = checker.requestUpdateCheck();
         runSubmitted();
 
-        assertEquals(UpdateReason.COULD_NOT_CONNECT, first.join().getReason());
+        assertEquals(UpdateReason.COULD_NOT_CONNECT, first.join().reason());
         assertNotSame(first, checker.requestUpdateCheck());
     }
 
-    private UpdateChecker checker(Duration cacheFor) {
-        ReleaseRequest request = etag -> {
-            sentEtags.add(etag);
-            return responses.removeFirst();
+    private UpdateChecker checker(String installed, HttpResponse<String> response) {
+        ReleaseRequest request = () -> {
+            requests++;
+            return response;
         };
-        return new UpdateChecker(plugin(), request, submitted::add, cacheFor);
+        return new UpdateChecker(plugin(installed), request, submitted::add);
     }
 
-    private static JavaPlugin plugin() {
+    private static JavaPlugin plugin(String version) {
         JavaPlugin plugin = mock(JavaPlugin.class);
-        when(plugin.getDescription()).thenReturn(new PluginDescriptionFile("BuildSystem", "4.0.0", "Main"));
+        when(plugin.getDescription()).thenReturn(new PluginDescriptionFile("BuildSystem", version, "Main"));
         return plugin;
     }
 
@@ -172,18 +183,25 @@ class UpdateCheckerTest {
         tasks.forEach(Runnable::run);
     }
 
-    private static HttpResponse<String> release(String tag) {
-        return response(200, "{\"tag_name\": \"%s\", \"html_url\": \"%s\"}".formatted(tag, RELEASE_URL), "\"etag\"");
+    private static String url(String tag) {
+        return "https://github.com/thomasmny/BuildSystem/releases/tag/" + tag;
+    }
+
+    private static String release(String tag, boolean draft, boolean prerelease) {
+        return "{\"tag_name\": \"%s\", \"html_url\": \"%s\", \"draft\": %b, \"prerelease\": %b}"
+                .formatted(tag, url(tag), draft, prerelease);
+    }
+
+    private static String releases(String... releases) {
+        return Arrays.stream(releases).collect(Collectors.joining(", ", "[", "]"));
     }
 
     @SuppressWarnings("unchecked")
-    private static HttpResponse<String> response(int status, String body, @Nullable String etag) {
+    private static HttpResponse<String> response(int status, String body, Map<String, List<String>> headers) {
         HttpResponse<String> response = mock(HttpResponse.class);
         when(response.statusCode()).thenReturn(status);
         when(response.body()).thenReturn(body);
-        when(response.headers())
-                .thenReturn(
-                        HttpHeaders.of(etag == null ? Map.of() : Map.of("ETag", List.of(etag)), (name, value) -> true));
+        when(response.headers()).thenReturn(HttpHeaders.of(headers, (name, value) -> true));
         return response;
     }
 }
