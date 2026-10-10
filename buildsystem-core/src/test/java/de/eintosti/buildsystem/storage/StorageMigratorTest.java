@@ -379,6 +379,29 @@ class StorageMigratorTest {
     }
 
     @Test
+    void migrate_toATypeWithAnInvalidBlock_failsWithThatBlocksError() {
+        String error = "storage.mysql.host must be a host name, an IP address or an IPv6 address in brackets";
+        PluginConfig.Storage.Database settings = new PluginConfig.Storage.Database(
+                StorageType.SQLITE, prefix, Map.of(), Map.of(StorageType.MYSQL, error));
+
+        CompletableFuture<Boolean> preview = migrator.holdsData(StorageType.MYSQL, settings);
+        CompletableFuture<Map<EntityKind, Integer>> migration = migrator.migrate(StorageType.MYSQL, settings);
+        runAll();
+
+        assertEquals(
+                error,
+                assertThrows(CompletionException.class, preview::join)
+                        .getCause()
+                        .getMessage());
+        assertEquals(
+                error,
+                assertThrows(CompletionException.class, migration::join)
+                        .getCause()
+                        .getMessage());
+        assertFalse(migrator.running());
+    }
+
+    @Test
     void location_ofMySqlAndMariaDbWithTheSameBlock_isTheSame() {
         PluginConfig.Storage.Database settings = new PluginConfig.Storage.Database(
                 StorageType.MYSQL,
