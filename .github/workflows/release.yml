@@ -26,6 +26,14 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      - name: Refuse a SNAPSHOT tag
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          case "$TAG" in
+            *-SNAPSHOT) echo "::error::Refusing to publish the SNAPSHOT version $TAG."; exit 1 ;;
+          esac
+
       - name: Build with Gradle
         run: ./gradlew build
 
@@ -46,13 +54,11 @@ jobs:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
           MODRINTH_PROJECT_ID: ${{ vars.MODRINTH_PROJECT_ID || secrets.MODRINTH_PROJECT_ID }}
           MODRINTH_CHANGELOG: ${{ github.event.release.body }}
-          TAG: ${{ github.event.release.tag_name }}
+          # A GitHub pre-release goes to Modrinth as a beta.
+          MODRINTH_VERSION_TYPE: ${{ github.event.release.prerelease && 'beta' || 'release' }}
         run: |
           if [ -z "$MODRINTH_TOKEN" ] || [ -z "$MODRINTH_PROJECT_ID" ]; then
             echo "::notice::MODRINTH_TOKEN or MODRINTH_PROJECT_ID is not set, so the release was not published to Modrinth."
             exit 0
           fi
-          case "$TAG" in
-            *-SNAPSHOT) echo "::error::Refusing to publish the SNAPSHOT version $TAG to Modrinth."; exit 1 ;;
-          esac
           ./gradlew modrinth
