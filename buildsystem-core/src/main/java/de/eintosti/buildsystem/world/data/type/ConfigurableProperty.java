@@ -126,8 +126,12 @@ public class ConfigurableProperty<T> implements PersistentProperty<T> {
         }
     }
 
+    /**
+     * {@inheritDoc} Always the base value: an active {@link Overridable} only changes what {@link #get()} reads, and
+     * must never be written over the stored value.
+     */
     @Override
     public Object getConfigFormat() {
-        return this.configFormatter.apply(this.get());
+        return this.configFormatter.apply(this.value);
     }
 }
