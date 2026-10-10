@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.world.menu;
+package de.eintosti.buildsystem.world;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -34,8 +34,9 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * The chat prompts for editing a world's project, permission and builders, shared by the {@code /worlds} subcommands
- * and the world editor menus. {@code then} runs when a prompt is finished or cancelled: the commands close the
- * inventory, the menus reopen themselves.
+ * and the world editor menus. {@code then} is what happens next: the commands close the inventory, the menus reopen
+ * themselves. It runs when a prompt is answered or cancelled, and after a refused permission. A refused builder (an
+ * unknown name, the creator, or someone already added) closes the inventory instead and skips {@code then}.
  */
 @NullMarked
 public final class WorldPrompts {

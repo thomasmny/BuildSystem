@@ -48,7 +48,6 @@ import de.eintosti.buildsystem.world.menu.NavigatorMenu;
 import de.eintosti.buildsystem.world.menu.PhysicsMenu;
 import de.eintosti.buildsystem.world.menu.SetupMenu;
 import de.eintosti.buildsystem.world.menu.StatusMenu;
-import de.eintosti.buildsystem.world.menu.WorldPrompts;
 import de.eintosti.buildsystem.world.menu.setup.CategoryEditorMenu;
 import de.eintosti.buildsystem.world.menu.setup.CategoryStatusesMenu;
 import de.eintosti.buildsystem.world.menu.setup.DefaultIconsMenu;
@@ -78,18 +77,11 @@ public final class Menus {
     private final BuildSystemPlugin plugin;
     private final Services services;
     private final TaskScheduler scheduler;
-    private final WorldPrompts worldPrompts;
 
     public Menus(BuildSystemPlugin plugin, Services services) {
         this.plugin = plugin;
         this.services = services;
         this.scheduler = services.scheduler();
-        this.worldPrompts = new WorldPrompts(
-                services.messages(),
-                services.prompts(),
-                services.settings(),
-                services.config(),
-                services.playerLookup());
     }
 
     public void openSpeed(Player player) {
@@ -200,19 +192,12 @@ public final class Menus {
         new BuilderMenu(services.messages(), services.menuItems(), this, buildWorld, player).open(player);
     }
 
-    /**
-     * {@return the world chat prompts the editor menus and the {@code /worlds} subcommands share}
-     */
-    public WorldPrompts worldPrompts() {
-        return worldPrompts;
-    }
-
     public void promptWorldProject(BuildWorld buildWorld, Player player) {
-        worldPrompts.promptProject(player, buildWorld, () -> reopenEdit(buildWorld, player));
+        services.worldPrompts().promptProject(player, buildWorld, () -> reopenEdit(buildWorld, player));
     }
 
     public void promptWorldPermission(BuildWorld buildWorld, Player player) {
-        worldPrompts.promptPermission(player, buildWorld, () -> reopenEdit(buildWorld, player));
+        services.worldPrompts().promptPermission(player, buildWorld, () -> reopenEdit(buildWorld, player));
     }
 
     public void promptAddBuilder(BuildWorld buildWorld, Player player) {
@@ -221,7 +206,7 @@ public final class Menus {
             services.messages().sendPermissionError(player);
             return;
         }
-        worldPrompts.promptAddBuilder(player, buildWorld, () -> openBuilder(buildWorld, player));
+        services.worldPrompts().promptAddBuilder(player, buildWorld, () -> openBuilder(buildWorld, player));
     }
 
     public void openNavigator(Player player) {

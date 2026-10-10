@@ -19,17 +19,22 @@ package de.eintosti.buildsystem.menu;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
+import de.eintosti.buildsystem.util.Permissions;
+import de.eintosti.buildsystem.world.WorldPrompts;
 import java.util.Optional;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -37,6 +42,8 @@ import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 
@@ -72,5 +79,25 @@ class MenusTest {
         verify(messages).getString("world_not_loaded", player);
         verify(player).sendTitle(" ", "not loaded", 5, 70, 20);
         verify(player, never()).openInventory(any(Inventory.class));
+    }
+
+    @ParameterizedTest(name = "permitted: {0}")
+    @ValueSource(booleans = {false, true})
+    void promptAddBuilder_needsAddBuilderInThatWorld(boolean permitted) {
+        Messages messages = mock(Messages.class);
+        WorldPrompts worldPrompts = mock(WorldPrompts.class);
+        Services services = mock(Services.class);
+        when(services.messages()).thenReturn(messages);
+        when(services.worldPrompts()).thenReturn(worldPrompts);
+        Player player = SoundlessPlayer.join(server, "Builder");
+        WorldPermissions permissions = mock(WorldPermissions.class);
+        when(permissions.canPerformCommand(player, Permissions.ADDBUILDER)).thenReturn(permitted);
+        BuildWorld buildWorld = mock(BuildWorld.class);
+        when(buildWorld.getPermissions()).thenReturn(permissions);
+
+        new Menus(mock(BuildSystemPlugin.class), services).promptAddBuilder(buildWorld, player);
+
+        verify(messages, permitted ? never() : times(1)).sendPermissionError(player);
+        verify(worldPrompts, permitted ? times(1) : never()).promptAddBuilder(eq(player), eq(buildWorld), any());
     }
 }

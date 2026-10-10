@@ -93,7 +93,7 @@ public class WorldsCommand extends CommandBase {
         this.dispatcher = new SubCommandDispatcher(
                 messages,
                 List.of(
-                        new AddBuilderSubCommand(messages, worldService, menus.worldPrompts()),
+                        new AddBuilderSubCommand(messages, worldService, services.worldPrompts()),
                         new BackupsSubCommand(messages, worldService, backupService, menus),
                         new BuildersSubCommand(messages, worldService, menus),
                         new DeleteSubCommand(messages, worldService, configService, menus),
@@ -112,8 +112,8 @@ public class WorldsCommand extends CommandBase {
                                 messages, worldService, configService, dataFolder, logger, scheduler),
                         new SetCreatorSubCommand(messages, worldService, playerLookupService, prompts, settingsService),
                         new SetItemSubCommand(messages, worldService),
-                        new SetPermissionSubCommand(messages, worldService, menus.worldPrompts()),
-                        new SetProjectSubCommand(messages, worldService, menus.worldPrompts()),
+                        new SetPermissionSubCommand(messages, worldService, services.worldPrompts()),
+                        new SetProjectSubCommand(messages, worldService, services.worldPrompts()),
                         new SetSpawnSubCommand(messages, worldService),
                         new SetStatusSubCommand(messages, worldService, menus),
                         new TeleportSubCommand(messages, worldService),

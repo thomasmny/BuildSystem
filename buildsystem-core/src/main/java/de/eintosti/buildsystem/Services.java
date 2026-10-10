@@ -32,6 +32,7 @@ import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldContext;
+import de.eintosti.buildsystem.world.WorldPrompts;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
@@ -77,6 +78,7 @@ public final class Services {
     private @Nullable Menus menus;
     private @Nullable Prompts prompts;
     private @Nullable WorldOperations worldOperations;
+    private @Nullable WorldPrompts worldPrompts;
     private @Nullable WorldContext worldContext;
 
     Services(BuildSystemPlugin plugin) {
@@ -144,8 +146,9 @@ public final class Services {
                 taskScheduler,
                 new NamespacedKey(plugin, "owner"),
                 new NamespacedKey(plugin, "category"));
-        this.prompts = new Prompts(messages(), config(), taskScheduler);
         this.menus = new Menus(plugin, this);
+        this.prompts = new Prompts(messages(), config(), taskScheduler);
+        this.worldPrompts = new WorldPrompts(messages(), prompts(), settings(), config(), playerLookup());
 
         // Load persisted worlds/folders last: world entities pull collaborators from a WorldContext that bundles
         // services created above (e.g. MenuItems, SpawnService), so the whole service graph must exist before loading.
@@ -237,6 +240,13 @@ public final class Services {
 
     public Prompts prompts() {
         return checkNotNull(prompts, "Prompts");
+    }
+
+    /**
+     * {@return the world chat prompts the editor menus and the {@code /worlds} subcommands share}
+     */
+    public WorldPrompts worldPrompts() {
+        return checkNotNull(worldPrompts, "WorldPrompts");
     }
 
     /**
