@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.storage.yaml.YamlSetupStorage;
 import de.eintosti.buildsystem.storage.yaml.YamlStatusStorage;
 import de.eintosti.buildsystem.util.StringUtils;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -73,6 +74,7 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
     private final Messages messages;
     private final Supplier<WorldServiceImpl> worldService;
     private final YamlStatusStorage storage;
+    private final Map<String, Material> legacyIcons;
     private final Map<String, WorldStatusImpl> statuses = new LinkedHashMap<>();
 
     public WorldStatusRegistryImpl(
@@ -84,6 +86,7 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
         this.messages = messages;
         this.worldService = worldService;
         this.storage = new YamlStatusStorage(plugin);
+        this.legacyIcons = new YamlSetupStorage(plugin).loadLegacyStatusIcons();
 
         this.statuses.putAll(storage.load());
         if (this.statuses.isEmpty()) {
@@ -116,12 +119,14 @@ public class WorldStatusRegistryImpl implements WorldStatusRegistry {
         // "status_<id>" message key (the message store never prunes user keys). When present, adopt it so the
         // server's renames/translations survive the move of status names from messages.yml into statuses.yml.
         String[] styledName = migrateLegacyName(id, displayName, color);
+        // Pre-4.0 servers kept the status icons in setup.yml, so an icon chosen in the /setup menu carries over too.
+        Material legacyIcon = legacyIcons.get(id);
         this.statuses.put(
                 id,
                 WorldStatusImpl.builder(id)
                         .displayName(styledName[1])
                         .color(styledName[0])
-                        .icon(icon)
+                        .icon(legacyIcon != null ? legacyIcon : icon)
                         .order(order)
                         .buildingAllowed(buildingAllowed)
                         .progressesTo(progressesTo)

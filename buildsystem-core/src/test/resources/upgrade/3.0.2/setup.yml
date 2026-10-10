@@ -1,0 +1,17 @@
+setup:
+  type:
+    normal: OAK_LOG
+    flat: GRASS_BLOCK
+    nether: NETHERRACK
+    end: END_STONE
+    void: GLASS
+    template: FILLED_MAP
+    imported: FURNACE
+    custom: FILLED_MAP
+  status:
+    not_started: RED_DYE
+    in_progress: ORANGE_DYE
+    almost_finished: LIME_DYE
+    finished: EMERALD_BLOCK
+    archive: CYAN_DYE
+    hidden: BONE_MEAL

@@ -7,3 +7,5 @@ are what that release really wrote, so do not edit them by hand. The throwaway g
   data folder, creating the worlds, folders, statuses, categories, players and spawn through 4.0.0's own API and
   services, editing `config.yml` and `messages.yml` on disk and reloading them as an admin would, then disabling the
   plugin to flush and copying the `.yml` files. A second 4.0.0 boot on the copy read every value back.
+- `3.0.2/`: generated the same way from tag `3.0.2` under MockBukkit 4.116.3 (v1.21) on Java 21. 3.0.2 has no
+  `statuses.yml` or `categories.yml`.
