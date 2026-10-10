@@ -42,6 +42,12 @@ public final class StorageBackend implements AutoCloseable {
      */
     public static final String SQLITE_FILE = "storage.db";
 
+    /**
+     * How long a remote backend waits for an answer before it gives up, so a connection that went silent cannot hang a
+     * save or the shutdown.
+     */
+    public static final int READ_TIMEOUT_SECONDS = 30;
+
     private final StorageType type;
     private final String location;
     private final @Nullable Database database;
@@ -72,28 +78,20 @@ public final class StorageBackend implements AutoCloseable {
                 switch (type) {
                     case YAML -> null;
                     case SQLITE -> sqlite(sqliteFile, prefix, logger);
-                    case MYSQL, MARIADB -> {
-                        Properties properties = credentials(settings.server(type));
-                        // The driver waits forever by default, PostgreSQL and MongoDB give up after 10 seconds.
-                        properties.setProperty("connectTimeout", "10000");
-                        properties.setProperty(
-                                "sslMode", settings.server(type).tls().mysqlSslMode());
-                        yield SqlDatabase.connect(
-                                SqlDialect.MYSQL, url("mysql", settings.server(type)), properties, prefix, logger);
-                    }
-                    case POSTGRESQL -> {
-                        Properties properties = credentials(settings.server(type));
-                        // Error details can quote a failing row, which has no place in the log.
-                        properties.setProperty("logServerErrorDetail", "false");
-                        properties.setProperty(
-                                "sslmode", settings.server(type).tls().postgresSslMode());
-                        yield SqlDatabase.connect(
-                                SqlDialect.POSTGRESQL,
-                                url("postgresql", settings.server(type)),
-                                properties,
+                    case MYSQL, MARIADB ->
+                        SqlDatabase.connect(
+                                SqlDialect.MYSQL,
+                                url("mysql", settings.server(type)),
+                                properties(settings.server(type)),
                                 prefix,
                                 logger);
-                    }
+                    case POSTGRESQL ->
+                        SqlDatabase.connect(
+                                SqlDialect.POSTGRESQL,
+                                url("postgresql", settings.server(type)),
+                                properties(settings.server(type)),
+                                prefix,
+                                logger);
                     case MONGODB -> {
                         PluginConfig.Storage.Database.Server server = settings.server(type);
                         yield MongoConnection.connect(
@@ -157,6 +155,29 @@ public final class StorageBackend implements AutoCloseable {
 
     private static String url(String scheme, PluginConfig.Storage.Database.Server server) {
         return "jdbc:" + scheme + "://" + server.host() + ":" + server.port() + "/" + server.database();
+    }
+
+    /**
+     * {@return the JDBC driver properties for a MySQL, MariaDB or PostgreSQL block}
+     */
+    static Properties properties(PluginConfig.Storage.Database.Server server) {
+        Properties properties = credentials(server);
+        switch (server.type()) {
+            case MYSQL, MARIADB -> {
+                // The driver waits forever by default, PostgreSQL and MongoDB give up after 10 seconds.
+                properties.setProperty("connectTimeout", "10000");
+                properties.setProperty("socketTimeout", String.valueOf(READ_TIMEOUT_SECONDS * 1000));
+                properties.setProperty("sslMode", server.tls().mysqlSslMode());
+            }
+            case POSTGRESQL -> {
+                // Error details can quote a failing row, which has no place in the log.
+                properties.setProperty("logServerErrorDetail", "false");
+                properties.setProperty("socketTimeout", String.valueOf(READ_TIMEOUT_SECONDS));
+                properties.setProperty("sslmode", server.tls().postgresSslMode());
+            }
+            default -> throw new IllegalArgumentException(server.type().displayName() + " does not use JDBC");
+        }
+        return properties;
     }
 
     private static Properties credentials(PluginConfig.Storage.Database.Server server) {

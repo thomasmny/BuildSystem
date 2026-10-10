@@ -27,6 +27,7 @@ import com.mongodb.client.MongoDatabase;
 import de.eintosti.buildsystem.storage.Database;
 import de.eintosti.buildsystem.storage.EntityKind;
 import de.eintosti.buildsystem.storage.EntityStore;
+import de.eintosti.buildsystem.storage.StorageBackend;
 import de.eintosti.buildsystem.storage.StorageException;
 import de.eintosti.buildsystem.storage.StorageTls;
 import java.util.ArrayList;
@@ -72,17 +73,7 @@ public final class MongoConnection implements Database {
             StorageTls tls,
             String collectionPrefix,
             Logger logger) {
-        MongoClientSettings.Builder settings = MongoClientSettings.builder()
-                .applyToClusterSettings(cluster -> cluster.hosts(List.of(new ServerAddress(host, port)))
-                        .serverSelectionTimeout(SERVER_TIMEOUT_SECONDS, TimeUnit.SECONDS))
-                // The driver cannot fall back to plain text, so prefer does what off does.
-                .applyToSslSettings(ssl -> ssl.enabled(tls == StorageTls.REQUIRE || tls == StorageTls.VERIFY)
-                        .invalidHostNameAllowed(tls == StorageTls.REQUIRE));
-        if (!username.isEmpty()) {
-            settings.credential(MongoCredential.createCredential(
-                    username, "admin", (password == null ? "" : password).toCharArray()));
-        }
-        MongoClient client = MongoClients.create(settings.build());
+        MongoClient client = MongoClients.create(settings(host, port, username, password, tls));
         try {
             MongoDatabase database = client.getDatabase(databaseName);
             database.runCommand(new Document("ping", 1));
@@ -91,6 +82,23 @@ public final class MongoConnection implements Database {
             client.close();
             throw new StorageException("Could not reach MongoDB: " + e.getMessage(), e);
         }
+    }
+
+    static MongoClientSettings settings(
+            String host, int port, String username, @Nullable String password, StorageTls tls) {
+        MongoClientSettings.Builder settings = MongoClientSettings.builder()
+                .applyToClusterSettings(cluster -> cluster.hosts(List.of(new ServerAddress(host, port)))
+                        .serverSelectionTimeout(SERVER_TIMEOUT_SECONDS, TimeUnit.SECONDS))
+                .applyToSocketSettings(
+                        socket -> socket.readTimeout(StorageBackend.READ_TIMEOUT_SECONDS, TimeUnit.SECONDS))
+                // The driver cannot fall back to plain text, so prefer does what off does.
+                .applyToSslSettings(ssl -> ssl.enabled(tls == StorageTls.REQUIRE || tls == StorageTls.VERIFY)
+                        .invalidHostNameAllowed(tls == StorageTls.REQUIRE));
+        if (!username.isEmpty()) {
+            settings.credential(MongoCredential.createCredential(
+                    username, "admin", (password == null ? "" : password).toCharArray()));
+        }
+        return settings.build();
     }
 
     @Override

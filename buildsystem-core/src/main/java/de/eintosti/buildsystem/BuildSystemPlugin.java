@@ -35,8 +35,15 @@ import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.WorldNames;
 import java.io.File;
+import java.time.Duration;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -46,6 +53,9 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.Nullable;
 
 public class BuildSystemPlugin extends JavaPlugin {
+
+    // Each remote backend gives up on a read after 30 seconds, so this leaves time for a few of them.
+    private static final Duration SAVE_TIMEOUT = Duration.ofSeconds(90);
 
     public static final int METRICS_ID = 7427;
     public static final String ADMIN_PERMISSION = Permissions.ADMIN;
@@ -175,11 +185,7 @@ public class BuildSystemPlugin extends JavaPlugin {
 
         // A migration holds writes back until it switches, which needs the main thread this blocks.
         services.storageMigrator().abort();
-        try {
-            saveBuildConfig().join();
-        } catch (CompletionException e) {
-            getLogger().severe("Error while waiting for saves: %s".formatted(e.getCause()));
-        }
+        awaitSaves(saveBuildConfig(), SAVE_TIMEOUT, getLogger());
 
         // Shut the shared background pool down only after the final saves above have completed.
         services.scheduler().shutdown();
@@ -257,11 +263,37 @@ public class BuildSystemPlugin extends JavaPlugin {
         }
     }
 
-    private CompletableFuture<Void> saveBuildConfig() {
-        CompletableFuture<Void> worldSave = services.world().save();
-        CompletableFuture<Void> playerSave = services.player().save();
-        CompletableFuture<Void> spawnSave = services.spawn().save();
-        return CompletableFuture.allOf(worldSave, playerSave, spawnSave);
+    private Map<String, CompletableFuture<Void>> saveBuildConfig() {
+        Map<String, CompletableFuture<Void>> saves = new LinkedHashMap<>();
+        saves.put("worlds", services.world().save());
+        saves.put("players", services.player().save());
+        saves.put("spawn", services.spawn().save());
+        return saves;
+    }
+
+    /**
+     * Waits for the final saves, but no longer than {@code timeout}, so a database that stopped answering cannot hang
+     * the shutdown. Logs the saves that did not finish.
+     *
+     * @param saves Each save by what it saves
+     */
+    static void awaitSaves(Map<String, CompletableFuture<Void>> saves, Duration timeout, Logger logger) {
+        try {
+            CompletableFuture.allOf(saves.values().toArray(CompletableFuture[]::new))
+                    .get(timeout.toMillis(), TimeUnit.MILLISECONDS);
+        } catch (ExecutionException e) {
+            logger.severe("Error while waiting for saves: %s".formatted(e.getCause()));
+        } catch (TimeoutException e) {
+            List<String> unfinished = saves.entrySet().stream()
+                    .filter(save -> !save.getValue().isDone())
+                    .map(Map.Entry::getKey)
+                    .toList();
+            logger.severe("Stopped waiting for saves after " + timeout.toSeconds() + " seconds. Not saved: "
+                    + String.join(", ", unfinished));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.severe("Interrupted while waiting for saves");
+        }
     }
 
     private CachedValues cachedValues(Player player) {
