@@ -18,7 +18,13 @@
 package de.eintosti.buildsystem.storage;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.storage.codec.Codec;
 import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
@@ -26,8 +32,10 @@ import de.eintosti.buildsystem.storage.yaml.YamlStore;
 import java.io.File;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.logging.Logger;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -81,5 +89,18 @@ class EntityCollectionTest {
         assertTrue(save.isDone() && delete.isDone());
         YamlConfiguration written = YamlConfiguration.loadConfiguration(new File(dataFolder, "entries.yml"));
         assertFalse(written.contains("entries.arena"), "the save must not bring the deleted entry back");
+    }
+
+    @Test
+    void replaceAll_isRefusedUntilTheEntriesLoad() {
+        Logger logger = Logger.getLogger("EntityCollectionTest");
+        EntityStore failing = mock(EntityStore.class);
+        when(failing.loadAll()).thenThrow(new StorageException("Could not load entries", null));
+        EntityCollection<Entry> file = new EntityCollection<>(failing, "entry", () -> CODEC, Runnable::run, logger);
+
+        assertThrows(CompletionException.class, file.replaceAll(List.of())::join);
+        assertThrows(CompletionException.class, file.load()::join);
+        assertThrows(CompletionException.class, file.replaceAll(List.of())::join);
+        verify(failing, never()).replaceAll(any());
     }
 }

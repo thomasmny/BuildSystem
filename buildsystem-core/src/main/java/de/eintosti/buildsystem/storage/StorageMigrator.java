@@ -127,6 +127,13 @@ public final class StorageMigrator {
      */
     public CompletableFuture<Map<EntityKind, Integer>> migrate(
             StorageType type, PluginConfig.Storage.Database settings) {
+        for (Part<?> part : parts) {
+            if (!part.collection().loaded()) {
+                return CompletableFuture.failedFuture(
+                        new IllegalStateException("The stored " + part.kind().id()
+                                + " have not loaded, so what is in memory may be incomplete. See the startup log."));
+            }
+        }
         if (!running.compareAndSet(false, true)) {
             return CompletableFuture.failedFuture(new IllegalStateException("A storage migration is already running"));
         }

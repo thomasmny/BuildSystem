@@ -51,6 +51,7 @@ public final class EntityCollection<T> {
 
     private @Nullable Codec<T> codec;
     private CompletableFuture<Void> lastWrite = CompletableFuture.completedFuture(null);
+    private volatile boolean loaded;
 
     /**
      * @param label What one entity is called in log messages
@@ -98,9 +99,14 @@ public final class EntityCollection<T> {
     }
 
     /**
-     * Replaces every stored entry with {@code values}, including entries that failed to load.
+     * Replaces every stored entry with {@code values}, including entries that failed to load. Refused until the stored
+     * entries have loaded, since what is in memory may then be missing some or all of them.
      */
     public CompletableFuture<Void> replaceAll(Collection<T> values) {
+        if (!loaded) {
+            return CompletableFuture.failedFuture(new StorageException(
+                    "Not replacing the stored " + label + " entries, since they have not loaded", null));
+        }
         Map<String, Map<String, Object>> serialized = serialize(values);
         return write(() -> store.replaceAll(serialized));
     }
@@ -131,6 +137,14 @@ public final class EntityCollection<T> {
         this.store = store;
     }
 
+    /**
+     * {@return whether the stored entries have loaded, so that what is in memory is all of them} False before the
+     * first load and after a failed one.
+     */
+    boolean loaded() {
+        return loaded;
+    }
+
     private synchronized CompletableFuture<Void> write(Runnable io) {
         CompletableFuture<Void> next =
                 lastWrite.handle((ignored, throwable) -> null).thenRunAsync(io, background);
@@ -151,20 +165,24 @@ public final class EntityCollection<T> {
      */
     public CompletableFuture<Map<String, T>> load(BiConsumer<Map<String, T>, ConfigurationSection> link) {
         return CompletableFuture.supplyAsync(
-                () -> {
-                    MemoryConfiguration root = new MemoryConfiguration();
-                    Map<String, T> loaded = new LinkedHashMap<>();
-                    store.loadAll().forEach((key, values) -> {
-                        ConfigurationSection section = root.createSection(key, values);
-                        try {
-                            loaded.put(key, codec().deserialize(key, section));
-                        } catch (Exception e) {
-                            logger.log(Level.WARNING, "Skipping " + label + " \"" + key + "\": could not be loaded", e);
-                        }
-                    });
-                    link.accept(loaded, root);
-                    return loaded;
-                },
-                background);
+                        () -> {
+                            MemoryConfiguration root = new MemoryConfiguration();
+                            Map<String, T> loaded = new LinkedHashMap<>();
+                            store.loadAll().forEach((key, values) -> {
+                                ConfigurationSection section = root.createSection(key, values);
+                                try {
+                                    loaded.put(key, codec().deserialize(key, section));
+                                } catch (Exception e) {
+                                    logger.log(
+                                            Level.WARNING,
+                                            "Skipping " + label + " \"" + key + "\": could not be loaded",
+                                            e);
+                                }
+                            });
+                            link.accept(loaded, root);
+                            return loaded;
+                        },
+                        background)
+                .whenComplete((entries, throwable) -> this.loaded = throwable == null);
     }
 }

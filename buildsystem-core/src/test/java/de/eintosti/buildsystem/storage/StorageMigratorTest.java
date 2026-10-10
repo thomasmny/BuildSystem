@@ -95,6 +95,8 @@ class StorageMigratorTest {
                 background::push,
                 mainThread::push,
                 LOGGER);
+        notes.load();
+        runAll();
     }
 
     @AfterEach
@@ -189,6 +191,26 @@ class StorageMigratorTest {
         CompletionException failure = assertThrows(CompletionException.class, migration::join);
         assertEquals(
                 "storage.postgresql.username is not set", failure.getCause().getMessage());
+    }
+
+    @Test
+    void migrate_beforeTheEntriesLoaded_isRefused() {
+        EntityCollection<Note> unloaded = new EntityCollection<>(
+                current.get().store(EntityKind.PLAYERS), "note", () -> CODEC, background::push, LOGGER);
+        StorageMigrator early = new StorageMigrator(
+                List.of(new StorageMigrator.Part<>(EntityKind.PLAYERS, unloaded, () -> live)),
+                current::get,
+                current::set,
+                dataFolder,
+                () -> liveConfig,
+                background::push,
+                mainThread::push,
+                LOGGER);
+
+        CompletableFuture<Map<EntityKind, Integer>> migration = early.migrate(StorageType.SQLITE, settings());
+
+        assertTrue(migration.isCompletedExceptionally());
+        assertFalse(new File(dataFolder, StorageBackend.SQLITE_FILE).exists());
     }
 
     @Test
