@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.storage;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.config.PluginConfig;
-import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -190,13 +189,14 @@ public final class StorageMigrator {
     public CompletableFuture<Boolean> holdsData(StorageType type, PluginConfig.Storage.Database settings) {
         return CompletableFuture.supplyAsync(
                 () -> {
+                    if (type == StorageType.SQLITE && !new File(dataFolder, StorageBackend.SQLITE_FILE).exists()) {
+                        // Connecting would create the file.
+                        return false;
+                    }
                     StorageBackend backend = StorageBackend.connect(type, settings, dataFolder, logger);
                     try {
                         for (Part<?> part : parts) {
-                            EntityStore store = backend.collection(part.kind());
-                            // Reading a YAML file that is not there would create it.
-                            boolean present = !(store instanceof YamlEntityStore yaml) || yaml.exists();
-                            if (present && !store.isEmpty()) {
+                            if (backend.holdsEntries(part.kind())) {
                                 return true;
                             }
                         }

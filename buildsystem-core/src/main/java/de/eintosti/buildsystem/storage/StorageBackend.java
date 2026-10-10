@@ -162,6 +162,20 @@ public final class StorageBackend implements AutoCloseable {
     }
 
     /**
+     * {@return whether entries of {@code kind} are stored here} Creates nothing, so that a later start still imports
+     * the YAML file into a table or collection that does not exist yet.
+     */
+    public boolean holdsEntries(EntityKind kind) {
+        if (database == null) {
+            YamlEntityStore yaml = kind.yaml(dataFolder, logger);
+            // Reading a YAML file that is not there would create it.
+            return yaml.exists() && !yaml.isEmpty();
+        }
+        // Once it exists, opening it creates nothing.
+        return database.exists(kind) && !database.collection(kind).isEmpty();
+    }
+
+    /**
      * {@return where entries of {@code kind} are kept} For a database, a table or collection created by this call is
      * first filled from the YAML file, read through the same path as a YAML load so a legacy file is migrated first. The file is left as it
      * is.

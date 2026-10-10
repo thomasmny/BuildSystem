@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -81,6 +82,8 @@ class StorageMigratorTest {
     private final List<Note> live = new ArrayList<>();
     private final YamlConfiguration liveConfig = new YamlConfiguration();
     private final AtomicReference<StorageBackend> current = new AtomicReference<>();
+    // Unique, so that a test against a shared database server starts without tables.
+    private final String prefix = "t" + UUID.randomUUID().toString().substring(0, 8) + "_";
     private EntityCollection<Note> notes;
     private StorageMigrator migrator;
 
@@ -293,6 +296,23 @@ class StorageMigratorTest {
     }
 
     @Test
+    void holdsData_createsNothing_soTheNextStartStillImportsTheYamlFile() {
+        live.add(new Note("a", 1));
+        notes.save(live);
+        runAll();
+
+        CompletableFuture<Boolean> preview = migrator.holdsData(target(), settings());
+        runAll();
+
+        assertFalse(preview.join());
+        try (StorageBackend started = StorageBackend.connect(target(), settings(), dataFolder, LOGGER)) {
+            assertEquals(
+                    List.of("a"),
+                    List.copyOf(started.store(EntityKind.PLAYERS).loadAll().keySet()));
+        }
+    }
+
+    @Test
     void migrate_whileOneRuns_isRefused() {
         CompletableFuture<Map<EntityKind, Integer>> first = migrator.migrate(target(), settings());
 
@@ -349,6 +369,6 @@ class StorageMigratorTest {
     }
 
     private PluginConfig.Storage.Database settings() {
-        return new PluginConfig.Storage.Database(StorageType.SQLITE, "buildsystem_", servers());
+        return new PluginConfig.Storage.Database(StorageType.SQLITE, prefix, servers());
     }
 }
