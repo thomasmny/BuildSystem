@@ -50,7 +50,7 @@ public class FolderContentMenu extends DisplayablesMenu {
                 player,
                 Options.builder()
                         .category(category)
-                        .title(context.menu()
+                        .title(context.menuContext()
                                 .messages()
                                 .getString("folder_title", player, Placeholders.of("%folder%", folder.getName())))
                         .build());

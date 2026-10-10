@@ -93,7 +93,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
     private final DisplayBar displayBar = new DisplayBar();
 
     protected DisplayablesMenu(DisplayablesContext context, Player player, Options options) {
-        super(context.menu(), 54, options.title());
+        super(context.menuContext(), 54, options.title());
         this.playerService = context.playerService();
         this.settingsManager = context.settingsService();
         WorldServiceImpl worldService = context.worldService();

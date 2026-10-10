@@ -31,7 +31,7 @@ import org.jspecify.annotations.NullMarked;
  * subclasses that forward to it — to a handful of parameters instead of a long, transposable row of services. The
  * {@link Menus} factory assembles one and hands it to each menu it opens.
  *
- * @param menu The messages, menu items and menu factory every menu uses
+ * @param menuContext The messages, menu items and menu factory every menu uses
  * @param playerService The player service
  * @param settingsService The settings service
  * @param worldService The world service, queried for its folder and world storages
@@ -40,7 +40,7 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public record DisplayablesContext(
-        MenuContext menu,
+        MenuContext menuContext,
         PlayerServiceImpl playerService,
         SettingsService settingsService,
         WorldServiceImpl worldService,

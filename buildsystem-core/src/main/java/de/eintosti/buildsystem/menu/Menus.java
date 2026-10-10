@@ -121,7 +121,7 @@ public final class Menus {
     }
 
     public void openBackupsConfirmation(Backup backup, Player player) {
-        Messages messages = services.messages();
+        Messages messages = context.messages();
         new ConfirmMenu(
                         context,
                         messages.getString("restore_backup_title", player),
@@ -171,7 +171,7 @@ public final class Menus {
         if (buildWorld.getWorld().isEmpty()) {
             player.closeInventory();
             player.playSound(player, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 1f);
-            player.sendTitle(" ", services.messages().getString("world_not_loaded", player), 5, 70, 20);
+            player.sendTitle(" ", context.messages().getString("world_not_loaded", player), 5, 70, 20);
             return false;
         }
 
@@ -195,7 +195,7 @@ public final class Menus {
     public void promptAddBuilder(BuildWorld buildWorld, Player player) {
         // The builder menu reaches this without the permission check /worlds addBuilder runs first.
         if (!buildWorld.getPermissions().canPerformCommand(player, Permissions.ADDBUILDER)) {
-            services.messages().sendPermissionError(player);
+            context.messages().sendPermissionError(player);
             return;
         }
         services.worldPrompts().promptAddBuilder(player, buildWorld, () -> openBuilder(buildWorld, player));
@@ -240,7 +240,7 @@ public final class Menus {
     }
 
     public void openDelete(BuildWorld buildWorld, Player player) {
-        Messages messages = services.messages();
+        Messages messages = context.messages();
         Placeholders world = Placeholders.of("%world%", buildWorld.getName());
         new ConfirmMenu(
                         context,
