@@ -19,7 +19,6 @@ essentialsx = "2.21.2"
 
 # Third Party
 annotations = "26.1.0"
-authlib = "3.13.56"
 eddsa = "0.3.0"
 bstats = "3.2.1"
 fastboard = "2.2.2"
@@ -51,7 +50,6 @@ essentialsx = { group = "net.essentialsx", name = "EssentialsX", version.ref = "
 
 # Third Party
 annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
-authlib = { group = "com.mojang", name = "authlib", version.ref = "authlib" }
 eddsa = { group = "net.i2p.crypto", name = "eddsa", version.ref = "eddsa" }
 bstats = { group = "org.bstats", name = "bstats-bukkit", version.ref = "bstats" }
 fastboard = { group = "fr.mrmicky", name = "fastboard", version.ref = "fastboard" }
