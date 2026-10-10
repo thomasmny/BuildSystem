@@ -22,8 +22,8 @@ import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * The sounds the plugin plays as feedback, one per kind of action, each with its own volume and pitch so that frequent
- * sounds stay quiet and a menu click never sounds like a fanfare.
+ * The sounds the plugin plays as feedback, one per kind of action, each with its own volume so that frequent sounds stay
+ * quiet and a menu click never sounds like a fanfare. Every sound plays at normal pitch.
  */
 @NullMarked
 public enum FeedbackSound {
@@ -68,12 +68,5 @@ public enum FeedbackSound {
      */
     public void play(Player player) {
         player.playSound(player, sound, volume, 1f);
-    }
-
-    /**
-     * {@return the Bukkit sound this plays}
-     */
-    public Sound sound() {
-        return sound;
     }
 }
