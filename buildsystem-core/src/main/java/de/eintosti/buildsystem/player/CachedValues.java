@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.player;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -42,9 +43,15 @@ public class CachedValues {
     private @Nullable Float walkSpeed;
     private @Nullable Float flySpeed;
 
-    private @Nullable GameMode archiveGameMode;
-    private @Nullable ItemStack @Nullable [] archiveInventory;
-    private @Nullable ItemStack @Nullable [] archiveArmor;
+    private @Nullable ArchiveState archiveState;
+
+    /**
+     * What an archive world took from the player. Stored with the player as well, so it survives a crash.
+     */
+    public record ArchiveState(
+            GameMode gameMode,
+            @Nullable ItemStack[] inventory,
+            @Nullable ItemStack[] armor) {}
 
     /**
      * Snapshots gamemode and inventory before build mode replaces them.
@@ -97,13 +104,24 @@ public class CachedValues {
      * Snapshots gamemode, inventory and armor before an archive world clears them.
      */
     public void saveArchiveState(Player player) {
-        this.archiveGameMode = player.getGameMode();
-        this.archiveInventory = player.getInventory().getContents();
-        this.archiveArmor = player.getInventory().getArmorContents();
+        PlayerInventory inventory = player.getInventory();
+        this.archiveState =
+                new ArchiveState(player.getGameMode(), inventory.getContents(), inventory.getArmorContents());
     }
 
     public boolean hasArchiveState() {
-        return archiveGameMode != null;
+        return archiveState != null;
+    }
+
+    public @Nullable ArchiveState getArchiveState() {
+        return archiveState;
+    }
+
+    /**
+     * Sets the snapshot a player's stored data held, which is handed back the next time they join.
+     */
+    public void setArchiveState(@Nullable ArchiveState archiveState) {
+        this.archiveState = archiveState;
     }
 
     /**
@@ -112,23 +130,16 @@ public class CachedValues {
      * @return Whether there was a snapshot to restore
      */
     public boolean resetArchiveStateIfPresent(Player player) {
-        boolean present = hasArchiveState();
-        if (this.archiveGameMode != null) {
-            player.setGameMode(archiveGameMode);
-            this.archiveGameMode = null;
+        ArchiveState state = this.archiveState;
+        if (state == null) {
+            return false;
         }
-
-        if (this.archiveInventory != null) {
-            player.getInventory().clear();
-            player.getInventory().setContents(archiveInventory);
-            this.archiveInventory = null;
-        }
-
-        if (this.archiveArmor != null) {
-            player.getInventory().setArmorContents(archiveArmor);
-            this.archiveArmor = null;
-        }
-        return present;
+        this.archiveState = null;
+        player.setGameMode(state.gameMode());
+        player.getInventory().clear();
+        player.getInventory().setContents(state.inventory());
+        player.getInventory().setArmorContents(state.armor());
+        return true;
     }
 
     public void resetCachedValues(Player player) {

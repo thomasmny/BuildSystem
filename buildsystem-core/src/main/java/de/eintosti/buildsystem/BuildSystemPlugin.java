@@ -101,11 +101,15 @@ public class BuildSystemPlugin extends JavaPlugin {
         services.world()
                 .worldsLoaded()
                 .thenRun(() -> Bukkit.getOnlinePlayers().forEach(pl -> {
-                    ArchiveMode.enterIfInArchiveWorld(
+                    BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(
+                            services.player().getPlayerStorage().getBuildPlayer(pl));
+                    if (ArchiveMode.enterIfInArchiveWorld(
                             pl,
-                            cachedValues(pl),
+                            buildPlayer.getCachedValues(),
                             services.world().getWorldStorage(),
-                            configService.current().settings().archive());
+                            configService.current().settings().archive())) {
+                        services.player().getPlayerStorage().save(buildPlayer);
+                    }
                     services.settings().updateVisibility(pl);
                 }));
 
@@ -135,6 +139,8 @@ public class BuildSystemPlugin extends JavaPlugin {
             return;
         }
 
+        // First, as on quit: otherwise the editor's copy would overwrite the inventory the snapshots below hand back.
+        services.navigatorEditor().restoreAll();
         Bukkit.getOnlinePlayers().forEach(pl -> {
             BuildPlayerImpl buildPlayer =
                     BuildPlayerImpl.of(services.player().getPlayerStorage().getBuildPlayer(pl));
@@ -148,7 +154,6 @@ public class BuildSystemPlugin extends JavaPlugin {
             services.navigator().closeNewNavigator(pl);
         });
         services.settings().showAllPlayers();
-        services.navigatorEditor().restoreAll();
 
         services.worldDownload().stop();
         services.backup().close();

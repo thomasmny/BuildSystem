@@ -103,6 +103,7 @@ class PlayerCodecTest {
         assertTrue(settings.isOpenTrapDoors());
         LogoutLocation logout = Objects.requireNonNull(player.getLogoutLocation());
         assertEquals("lobby:1.5:64.0:-3.25:90.0:-10.0", logout.toString());
+        assertFalse(player.getCachedValues().hasArchiveState());
     }
 
     @Test

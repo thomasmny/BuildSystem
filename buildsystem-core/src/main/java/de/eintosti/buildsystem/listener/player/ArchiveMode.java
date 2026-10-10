@@ -40,26 +40,30 @@ public final class ArchiveMode {
     /**
      * Enters archive mode for a player standing in a world where building is not allowed. Joining fires no world change,
      * and neither does the plugin enabling while players are online, so both come through here.
+     *
+     * @return Whether the player entered archive mode, so the new snapshot has to be stored
      */
-    public static void enterIfInArchiveWorld(
+    public static boolean enterIfInArchiveWorld(
             Player player,
             CachedValues cachedValues,
             WorldStorage worldStorage,
             PluginConfig.Settings.Archive archive) {
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        if (buildWorld != null && !buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
-            enter(player, cachedValues, archive);
-        }
+        return buildWorld != null
+                && !buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()
+                && enter(player, cachedValues, archive);
     }
 
     /**
      * Snapshots the player's gamemode, inventory and armor, then clears them and applies the archive settings. The
      * snapshot is handed back by {@link CachedValues#resetArchiveStateIfPresent(Player)}. Does nothing for a player
      * already in archive mode, whose snapshot would otherwise be replaced by the emptied inventory.
+     *
+     * @return Whether the player entered archive mode, so the new snapshot has to be stored
      */
-    static void enter(Player player, CachedValues cachedValues, PluginConfig.Settings.Archive archive) {
+    static boolean enter(Player player, CachedValues cachedValues, PluginConfig.Settings.Archive archive) {
         if (cachedValues.hasArchiveState()) {
-            return;
+            return false;
         }
         cachedValues.saveArchiveState(player);
 
@@ -81,6 +85,7 @@ public final class ArchiveMode {
         if (archive.vanish()) {
             addArchiveInvisibility(player);
         }
+        return true;
     }
 
     /**
@@ -106,10 +111,13 @@ public final class ArchiveMode {
      * <p>Only the archive's own invisibility is removed: endless, without particles, level one. Earlier versions saved
      * it into player data, so it is also removed from players who carry it without a snapshot. Any other invisibility,
      * such as a potion, is left alone.
+     *
+     * @return Whether there was a snapshot to hand back, so the stored one has to be cleared
      */
-    public static void exit(Player player, CachedValues cachedValues) {
-        cachedValues.resetArchiveStateIfPresent(player);
+    public static boolean exit(Player player, CachedValues cachedValues) {
+        boolean restored = cachedValues.resetArchiveStateIfPresent(player);
         removeArchiveInvisibility(player);
+        return restored;
     }
 
     private static void addArchiveInvisibility(Player player) {
