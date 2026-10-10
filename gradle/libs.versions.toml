@@ -10,6 +10,8 @@ junit = "6.1.3"
 mockito = "5.24.0"
 mockbukkit = "4.115.0"
 testcontainers = "2.0.5"
+# The driver Paper 26.3 bundles, for the storage tests.
+sqlite-jdbc = "3.49.1.0"
 
 # Plugins
 luckperms = "5.5"
@@ -37,6 +39,7 @@ mockito = { group = "org.mockito", name = "mockito-core", version.ref = "mockito
 mockbukkit = { group = "org.mockbukkit.mockbukkit", name = "mockbukkit-v26.1.2", version.ref = "mockbukkit" }
 paperapi = { group = "io.papermc.paper", name = "paper-api", version.ref = "paperapi" }
 testcontainers = { group = "org.testcontainers", name = "testcontainers", version.ref = "testcontainers" }
+sqlite-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version.ref = "sqlite-jdbc" }
 
 # Platform expectations
 spigot = { group = "org.spigotmc", name = "spigot-api", version.ref = "spigot" }

@@ -76,6 +76,7 @@ dependencies {
     testImplementation(libs.mockito)
     testImplementation(libs.mockbukkit)
     testImplementation(libs.testcontainers)
+    testRuntimeOnly(libs.sqlite.jdbc)
     // Test-only Bukkit API: MockBukkit requires the Paper API. The plugin itself targets spigot-api (compileOnly
     // above); paper-api is a strict superset and is confined to the test classpath, so the shipped plugin stays
     // spigot-only. Do NOT add paper-api to a non-test configuration.

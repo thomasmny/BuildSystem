@@ -1,0 +1,12 @@
+0a0a0a0a-0000-4000-8000-000000000003:
+  name: odd
+  uuid: 0a0a0a0a-0000-4000-8000-000000000003
+  type: NORMAL
+  date: 1700000000002
+  builders: ''
+  data:
+    status: retired
+    material: NOT_A_BLOCK
+    difficulty: BRUTAL
+    time-since-backup: 7
+    last-edited: 1700000000400

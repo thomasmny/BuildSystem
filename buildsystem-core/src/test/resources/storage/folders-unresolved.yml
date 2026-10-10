@@ -1,0 +1,10 @@
+0f0f0f0f-0000-4000-8000-000000000004:
+  name: Odd
+  uuid: 0f0f0f0f-0000-4000-8000-000000000004
+  creator: 0c0c0c0c-0000-4000-8000-000000000001,Alex
+  creation: 1700000000002
+  category: secret
+  material: NOT_A_BLOCK
+  permission: '-'
+  project: '-'
+  worlds: []
