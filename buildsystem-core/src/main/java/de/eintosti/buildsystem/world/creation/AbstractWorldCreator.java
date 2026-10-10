@@ -91,24 +91,16 @@ abstract class AbstractWorldCreator {
         return event.isCancelled();
     }
 
-    protected BuildWorld createAndRegisterBuildWorld() {
+    /**
+     * Generates the Bukkit world and only then registers the build world, so a generation that fails or throws leaves
+     * no registered world without a Bukkit world behind it.
+     *
+     * @param checkVersion Whether to refuse a world folder saved by a newer Minecraft version
+     * @return The registered world, or {@code null} when the Bukkit world could not be generated
+     */
+    protected @Nullable BuildWorld generateAndRegister(boolean checkVersion) {
         BuildWorldImpl newBuildWorld = new BuildWorldImpl(
                 context, worldName, creator, worldType, creationDate, privateWorld, customGenerator, folder);
-
-        if (folder != null) {
-            folder.addWorld(newBuildWorld);
-        }
-
-        newBuildWorld.getData().set(WorldDataKey.LAST_LOADED, System.currentTimeMillis());
-        worldStorage.addBuildWorld(newBuildWorld);
-        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostCreateEvent(newBuildWorld, isImport()));
-        return newBuildWorld;
-    }
-
-    protected @Nullable World generateBukkitWorld(boolean checkVersion) {
-        if (buildWorld == null) {
-            throw new IllegalStateException("BuildWorld must be set before generating the Bukkit world.");
-        }
 
         World world = new BukkitWorldFactory(
                         context.configService(),
@@ -123,10 +115,19 @@ abstract class AbstractWorldCreator {
                         !isImport())
                 .generate(
                         checkVersion ? BukkitWorldFactory.VersionCheck.REQUIRED : BukkitWorldFactory.VersionCheck.SKIP);
-        if (world != null) {
-            buildWorld.getUnloader().manageUnload();
+        if (world == null) {
+            return null;
         }
-        return world;
+
+        if (folder != null) {
+            folder.addWorld(newBuildWorld);
+        }
+        newBuildWorld.getData().set(WorldDataKey.LAST_LOADED, System.currentTimeMillis());
+        worldStorage.addBuildWorld(newBuildWorld);
+        newBuildWorld.getUnloader().manageUnload();
+        Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostCreateEvent(newBuildWorld, isImport()));
+        this.buildWorld = newBuildWorld;
+        return newBuildWorld;
     }
 
     protected final void notifyAudience(String key) {

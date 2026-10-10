@@ -107,10 +107,12 @@ public class WorldImporterImpl extends AbstractWorldCreator implements WorldImpo
             customGenerator = new CustomGeneratorImpl("BuildSystem", "void", null);
         }
 
-        buildWorld = createAndRegisterBuildWorld();
-        generateBukkitWorld(true);
+        BuildWorld imported = generateAndRegister(true);
+        if (imported == null) {
+            return null;
+        }
         context.logger().info("*** Imported world \"" + worldName + "\" ***");
-        return buildWorld;
+        return imported;
     }
 
     /**

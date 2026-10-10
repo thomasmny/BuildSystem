@@ -171,9 +171,7 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
                             .add("%type%", context.messages().getString(Messages.getMessageKey(worldType), audience))
                             .build());
         }
-        buildWorld = createAndRegisterBuildWorld();
-        generateBukkitWorld(false);
-        return true;
+        return generateAndRegister(false) != null;
     }
 
     private boolean createWorldFromTemplate() {
@@ -211,8 +209,6 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
             return false;
         }
 
-        buildWorld = createAndRegisterBuildWorld();
-        generateBukkitWorld(true);
-        return true;
+        return generateAndRegister(true) != null;
     }
 }

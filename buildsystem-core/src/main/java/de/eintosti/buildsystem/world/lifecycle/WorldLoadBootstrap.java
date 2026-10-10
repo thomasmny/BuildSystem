@@ -82,7 +82,16 @@ public class WorldLoadBootstrap {
 
                     List<BuildWorld> notLoaded = new ArrayList<>();
                     worldStorage.getBuildWorlds().forEach(buildWorld -> {
-                        if (preLoadWorld(buildWorld, loadAllWorlds) == LoadResult.FAILED) {
+                        LoadResult result;
+                        try {
+                            result = preLoadWorld(buildWorld, loadAllWorlds);
+                        } catch (RuntimeException e) {
+                            // One broken world must not stop the others from loading.
+                            plugin.getLogger()
+                                    .log(Level.SEVERE, "Failed to load world \"" + buildWorld.getName() + "\"", e);
+                            result = LoadResult.FAILED;
+                        }
+                        if (result == LoadResult.FAILED) {
                             notLoaded.add(buildWorld);
                         }
                     });
