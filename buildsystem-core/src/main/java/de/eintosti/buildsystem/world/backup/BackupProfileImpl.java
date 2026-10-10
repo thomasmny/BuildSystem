@@ -34,7 +34,6 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.WorldFlush;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import java.io.IOException;
 import java.util.Comparator;
@@ -59,7 +58,7 @@ public class BackupProfileImpl implements BackupProfile {
     private final TaskScheduler scheduler;
     private final ConfigService configService;
     private final Messages messages;
-    private final WorldServiceImpl worldService;
+    private final WorldOperations operations;
     private final Supplier<BackupStorage> storage;
     private final BuildWorld buildWorld;
 
@@ -81,14 +80,14 @@ public class BackupProfileImpl implements BackupProfile {
             TaskScheduler scheduler,
             ConfigService configService,
             Messages messages,
-            WorldServiceImpl worldService,
+            WorldOperations operations,
             Supplier<BackupStorage> storage,
             BuildWorld buildWorld) {
         this.plugin = plugin;
         this.scheduler = scheduler;
         this.configService = configService;
         this.messages = messages;
-        this.worldService = worldService;
+        this.operations = operations;
         this.storage = storage;
         this.buildWorld = buildWorld;
     }
@@ -107,7 +106,7 @@ public class BackupProfileImpl implements BackupProfile {
             CompletableFuture<Backup> next = this.pendingCreation
                     .handle((backup, throwable) -> null)
                     .thenComposeAsync(
-                            ignored -> worldService.operations().runExclusively(this.buildWorld, () -> {
+                            ignored -> operations.runExclusively(this.buildWorld, () -> {
                                 Optional<World> world = this.buildWorld.getWorld();
                                 world.ifPresent(WorldFlush::saveAndPauseWrites);
                                 return storeWithRetention()
@@ -187,7 +186,6 @@ public class BackupProfileImpl implements BackupProfile {
         // Only taking the world offline and loading it again happen on the main thread. The download, the
         // extraction and the folder swap run in the background, so a large world does not freeze the server.
         WorldRestore restore = new WorldRestore(FileUtils.worldFolder(worldName));
-        WorldOperations operations = worldService.operations();
         return operations
                 .runExclusively(
                         this.buildWorld,

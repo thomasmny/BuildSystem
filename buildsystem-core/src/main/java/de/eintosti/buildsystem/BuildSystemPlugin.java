@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.command.CommandRegistrar;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
+import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.integration.Integrations;
 import de.eintosti.buildsystem.listener.ListenerRegistrar;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
@@ -47,6 +48,8 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     private static final long CONFIG_SAVE_INTERVAL_TICKS = 5L * 60L * 20L;
 
+    private ConfigService configService;
+    private Messages messages;
     private Services services;
     private UpdateChecker updateChecker;
     private Integrations integrations;
@@ -55,21 +58,20 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        this.services = new Services(this);
-
-        ConfigService configService = this.services.createConfigService();
+        this.configService = new ConfigService(this);
         new ConfigMigrationManager(this).migrate();
         this.getConfig().options().copyDefaults(true);
         this.saveConfig();
         configService.load();
 
-        this.services.createMessages().load();
+        (this.messages = new Messages(this, configService)).load();
         createTemplateFolder();
     }
 
     @Override
     public void onEnable() {
-        this.services.initClasses();
+        this.services = new Services(this, configService, messages);
+        this.services.loadWorlds();
         this.updateChecker = new UpdateChecker(this, services.scheduler().background());
         performUpdateCheck();
 

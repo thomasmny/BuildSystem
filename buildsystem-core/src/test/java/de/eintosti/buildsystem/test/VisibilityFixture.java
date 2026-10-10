@@ -29,8 +29,8 @@ import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -69,7 +69,7 @@ public final class VisibilityFixture {
                 configService,
                 mock(Messages.class),
                 playerService,
-                mock(WorldServiceImpl.class));
+                mock(WorldStorageImpl.class));
     }
 
     /**

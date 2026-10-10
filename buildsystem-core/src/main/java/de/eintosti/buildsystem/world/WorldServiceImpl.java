@@ -80,12 +80,16 @@ public class WorldServiceImpl implements WorldService {
     private final WorldCreationPrompts creationPrompts;
     private final WorldImportCoordinator importCoordinator;
 
-    public WorldServiceImpl(BuildSystemPlugin plugin, Services services) {
+    public WorldServiceImpl(
+            BuildSystemPlugin plugin,
+            Services services,
+            WorldStorageImpl worldStorage,
+            FolderStorageImpl folderStorage) {
         this.plugin = plugin;
         this.services = services;
         this.messages = services.messages();
-        this.worldStorage = new WorldStorageImpl(plugin, services);
-        this.folderStorage = new FolderStorageImpl(plugin, this.worldStorage, services);
+        this.worldStorage = worldStorage;
+        this.folderStorage = folderStorage;
         this.loadBootstrap = new WorldLoadBootstrap(
                 plugin,
                 services.scheduler(),
@@ -93,7 +97,7 @@ public class WorldServiceImpl implements WorldService {
                 this.worldStorage,
                 services.config(),
                 () -> services.spawn().loadSpawnWorld());
-        this.creationPrompts = new WorldCreationPrompts(this, services::prompts, services.messages());
+        this.creationPrompts = new WorldCreationPrompts(this, services.prompts(), services.messages());
         this.importCoordinator =
                 new WorldImportCoordinator(plugin, this, this.worldStorage, services.config(), services.messages());
     }

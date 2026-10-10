@@ -47,7 +47,6 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.TaskScheduler;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.IOException;
@@ -149,10 +148,8 @@ class BackupProfileImplTest {
 
     private BackupProfileImpl profile(int maxBackupsPerWorld) {
         when(configService.current().world().backup().maxBackupsPerWorld()).thenReturn(maxBackupsPerWorld);
-        WorldServiceImpl worldService = mock(WorldServiceImpl.class);
-        when(worldService.operations()).thenReturn(operations);
         return new BackupProfileImpl(
-                plugin, inlineScheduler(), configService, messages, worldService, () -> backupStorage, buildWorld);
+                plugin, inlineScheduler(), configService, messages, operations, () -> backupStorage, buildWorld);
     }
 
     private static Backup backup(long creationTime) {

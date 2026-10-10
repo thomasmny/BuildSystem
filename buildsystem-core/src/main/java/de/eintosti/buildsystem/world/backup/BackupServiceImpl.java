@@ -30,7 +30,6 @@ import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.TaskScheduler;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.storage.LocalBackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.S3BackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.SftpBackupStorage;
@@ -62,7 +61,7 @@ public class BackupServiceImpl implements BackupService {
     private final TaskScheduler scheduler;
     private final ConfigService configService;
     private final Messages messages;
-    private final WorldServiceImpl worldService;
+    private final WorldOperations operations;
     private final ExecutorService executor;
     private final WorldStorage worldStorage;
 
@@ -85,16 +84,17 @@ public class BackupServiceImpl implements BackupService {
             TaskScheduler scheduler,
             ConfigService configService,
             Messages messages,
-            WorldServiceImpl worldService) {
+            WorldStorage worldStorage,
+            WorldOperations operations) {
         this.plugin = plugin;
         this.scheduler = scheduler;
         this.configService = configService;
         this.messages = messages;
-        this.worldService = worldService;
+        this.operations = operations;
         this.executor = Executors.newFixedThreadPool(
                 BACKUP_PROFILE_POOL_SIZE,
                 Thread.ofPlatform().name("BuildSystem-backup-", 0).daemon().factory());
-        this.worldStorage = worldService.getWorldStorage();
+        this.worldStorage = worldStorage;
         this.backupStorage =
                 createStorageOrFallback(configService.current().world().backup().storage());
         plugin.getLogger().info("Storing backups " + describe(this.backupStorage));
@@ -244,7 +244,7 @@ public class BackupServiceImpl implements BackupService {
             int elapsed = worldData.get(WorldDataKey.TIME_SINCE_BACKUP) + (int) UPDATE_PERIOD_SECONDS;
             if (elapsed > autoBackup.interval()) {
                 // A world another operation holds is backed up on a later tick, once it is free again.
-                if (backedUpOneThisTick || worldService.operations().isBusy(buildWorld)) {
+                if (backedUpOneThisTick || operations.isBusy(buildWorld)) {
                     worldData.set(WorldDataKey.TIME_SINCE_BACKUP, elapsed);
                     continue;
                 }
@@ -281,7 +281,6 @@ public class BackupServiceImpl implements BackupService {
     public void backup(Player player, BuildWorld buildWorld) {
         String worldName = buildWorld.getName();
         Placeholders worldPlaceholder = Placeholders.of("%world%", worldName);
-        WorldOperations operations = worldService.operations();
         getProfile(buildWorld)
                 .createBackup()
                 .whenCompleteAsync(
@@ -314,6 +313,6 @@ public class BackupServiceImpl implements BackupService {
      */
     private BackupProfile createProfile(BuildWorld buildWorld) {
         return new BackupProfileImpl(
-                plugin, scheduler, configService, messages, worldService, this::getStorage, buildWorld);
+                plugin, scheduler, configService, messages, operations, this::getStorage, buildWorld);
     }
 }

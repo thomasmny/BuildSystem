@@ -90,7 +90,7 @@ class WorldServiceImplDeleteTest {
         plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
         services = TestData.mockServices();
-        worldService = new WorldServiceImpl(plugin, services);
+        worldService = TestData.worldService(plugin, services);
     }
 
     private BuildWorldImpl registeredWorld(String name) {

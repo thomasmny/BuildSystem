@@ -30,6 +30,8 @@ import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.storage.FolderStorageImpl;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.WorldPrompts;
@@ -43,47 +45,112 @@ import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import org.bukkit.NamespacedKey;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
- * The plugin's service registry and composition context. Owns the service fields and constructs them in the exact
- * order the plugin lifecycle requires, and is injected into the composition roots (the menu/listener/command
- * registrars and the API facade) so they resolve collaborators from here rather than through the plugin God-object.
+ * The plugin's service registry and composition context. Constructs the services in the order the plugin lifecycle
+ * requires, handing each the collaborators it uses, and is injected into the composition roots (the menu/listener/
+ * command registrars and the API facade) so they resolve collaborators from here rather than through the plugin
+ * God-object.
+ *
+ * <p>The world and folder storages come first, since most services only need them rather than the world service.
  */
 @NullMarked
 public final class Services {
 
-    private final BuildSystemPlugin plugin;
     private final TaskScheduler taskScheduler;
+    private final ConfigService configService;
+    private final Messages messages;
 
-    private @Nullable ConfigService configService;
-    private @Nullable Messages messages;
+    private final PlayerLookupService playerLookupService;
+    private final WorldStorageImpl worldStorage;
+    private final FolderStorageImpl folderStorage;
+    private final NavigatorCategoryRegistryImpl navigatorCategoryRegistry;
+    private final WorldStatusRegistryImpl worldStatusRegistry;
+    private final CustomizableIcons customizableIcons;
+    private final CustomBlockManager customBlockManager;
+    private final PlayerServiceImpl playerService;
+    private final NavigatorEditorService navigatorEditorService;
+    private final NoClipService noClipService;
+    private final SpawnService spawnService;
+    private final WorldOperations worldOperations;
+    private final BackupServiceImpl backupService;
+    private final WorldDownloadService worldDownloadService;
+    private final SettingsService settingsService;
+    private final MenuItems menuItems;
+    private final NavigatorItems navigatorItems;
+    private final NavigatorService navigatorService;
+    private final Prompts prompts;
+    private final WorldPrompts worldPrompts;
+    private final WorldContext worldContext;
+    private final WorldServiceImpl worldService;
+    private final Menus menus;
 
-    private @Nullable NavigatorService navigatorService;
-    private @Nullable NavigatorEditorService navigatorEditorService;
-    private @Nullable CustomBlockManager customBlockManager;
-    private @Nullable PlayerServiceImpl playerService;
-    private @Nullable PlayerLookupService playerLookupService;
-    private @Nullable NoClipService noClipService;
-    private @Nullable SettingsService settingsService;
-    private @Nullable SpawnService spawnService;
-    private @Nullable WorldServiceImpl worldService;
-    private @Nullable BackupServiceImpl backupService;
-    private @Nullable WorldDownloadService worldDownloadService;
-    private @Nullable CustomizableIcons customizableIcons;
-    private @Nullable NavigatorCategoryRegistryImpl navigatorCategoryRegistry;
-    private @Nullable WorldStatusRegistryImpl worldStatusRegistry;
-    private @Nullable MenuItems menuItems;
-    private @Nullable NavigatorItems navigatorItems;
-    private @Nullable Menus menus;
-    private @Nullable Prompts prompts;
-    private @Nullable WorldOperations worldOperations;
-    private @Nullable WorldPrompts worldPrompts;
-    private @Nullable WorldContext worldContext;
-
-    Services(BuildSystemPlugin plugin) {
-        this.plugin = plugin;
+    /**
+     * Constructs every service. Called during {@code onEnable}, with the configuration and messages loaded in
+     * {@code onLoad}. The stored worlds and folders are loaded separately, by {@link #loadWorlds()}.
+     */
+    Services(BuildSystemPlugin plugin, ConfigService configService, Messages messages) {
         this.taskScheduler = new TaskScheduler(plugin);
+        this.configService = configService;
+        this.messages = messages;
+
+        this.playerLookupService =
+                new PlayerLookupService(plugin, taskScheduler.background(), taskScheduler.mainThread());
+        // The storages read the world context and category registry from here only once the stored worlds load.
+        this.worldStorage = new WorldStorageImpl(plugin, this);
+        this.folderStorage = new FolderStorageImpl(plugin, worldStorage, this);
+
+        this.navigatorCategoryRegistry = new NavigatorCategoryRegistryImpl(plugin, folderStorage);
+        this.worldStatusRegistry =
+                new WorldStatusRegistryImpl(plugin, navigatorCategoryRegistry, messages, worldStorage);
+        this.customizableIcons = new CustomizableIcons(plugin);
+
+        this.customBlockManager = new CustomBlockManager(plugin, taskScheduler, worldStorage);
+        (this.playerService = new PlayerServiceImpl(plugin, configService, worldStorage, taskScheduler)).init();
+        this.navigatorEditorService = new NavigatorEditorService();
+        this.noClipService = new NoClipService(taskScheduler);
+        this.spawnService = new SpawnService(plugin, worldStorage, taskScheduler);
+        this.worldOperations = new WorldOperations(messages, spawnService);
+        this.backupService =
+                new BackupServiceImpl(plugin, taskScheduler, configService, messages, worldStorage, worldOperations);
+        this.worldDownloadService = new WorldDownloadService(
+                configService, taskScheduler, worldOperations, plugin.getLogger(), plugin.getDataFolder());
+        this.settingsService =
+                new SettingsService(plugin, taskScheduler, configService, messages, playerService, worldStorage);
+        this.menuItems = new MenuItems(plugin, taskScheduler, messages, settingsService);
+        this.navigatorItems = new NavigatorItems(plugin, configService, messages);
+        this.navigatorService = new NavigatorService(
+                navigatorCategoryRegistry,
+                configService,
+                navigatorItems,
+                menuItems,
+                playerService,
+                messages,
+                taskScheduler,
+                new NamespacedKey(plugin, "owner"),
+                new NamespacedKey(plugin, "category"));
+        this.prompts = new Prompts(messages, configService, taskScheduler);
+        this.worldPrompts = new WorldPrompts(messages, prompts, settingsService, configService, playerLookupService);
+        this.worldContext = new WorldContext(
+                messages,
+                menuItems,
+                configService,
+                playerService,
+                spawnService,
+                worldStatusRegistry,
+                customizableIcons,
+                taskScheduler,
+                plugin.getLogger(),
+                worldOperations);
+        this.worldService = new WorldServiceImpl(plugin, this, worldStorage, folderStorage);
+        this.menus = new Menus(plugin, this);
+    }
+
+    /**
+     * Loads the stored folders and worlds. Last, since world entities pull collaborators from the {@link WorldContext}.
+     */
+    void loadWorlds() {
+        this.worldService.init();
     }
 
     /**
@@ -94,180 +161,97 @@ public final class Services {
         return taskScheduler;
     }
 
-    /**
-     * Creates the configuration service. Must be called first, during {@code onLoad}.
-     */
-    public ConfigService createConfigService() {
-        this.configService = new ConfigService(plugin);
-        return this.configService;
-    }
-
-    /**
-     * Creates the message service, which depends on the already-created {@link ConfigService}. Called during
-     * {@code onLoad}.
-     */
-    public Messages createMessages() {
-        this.messages = new Messages(plugin, config());
-        return this.messages;
-    }
-
-    /**
-     * Constructs the remaining services in the exact order required by the plugin lifecycle. Called during
-     * {@code onEnable}.
-     */
-    void initClasses() {
-        this.navigatorCategoryRegistry = new NavigatorCategoryRegistryImpl(plugin, this::world);
-        this.worldStatusRegistry =
-                new WorldStatusRegistryImpl(plugin, navigatorCategoryRegistry(), messages(), this::world);
-        this.customizableIcons = new CustomizableIcons(plugin);
-
-        this.customBlockManager = new CustomBlockManager(plugin, taskScheduler, this::world);
-        this.playerLookupService =
-                new PlayerLookupService(plugin, taskScheduler.background(), taskScheduler.mainThread());
-        (this.playerService = new PlayerServiceImpl(plugin, config(), this::world, taskScheduler)).init();
-        this.navigatorEditorService = new NavigatorEditorService();
-        this.noClipService = new NoClipService(taskScheduler);
-        this.worldService = new WorldServiceImpl(plugin, this);
-        this.spawnService = new SpawnService(plugin, world(), taskScheduler);
-        this.worldOperations = new WorldOperations(messages(), spawn());
-        this.backupService = new BackupServiceImpl(plugin, taskScheduler, config(), messages(), world());
-        this.worldDownloadService = new WorldDownloadService(
-                config(), taskScheduler, operations(), plugin.getLogger(), plugin.getDataFolder());
-        this.settingsService = new SettingsService(plugin, taskScheduler, config(), messages(), player(), world());
-        this.menuItems = new MenuItems(plugin, taskScheduler, messages(), settings());
-        this.navigatorItems = new NavigatorItems(plugin, config(), messages());
-        this.navigatorService = new NavigatorService(
-                navigatorCategoryRegistry(),
-                config(),
-                navigatorItems(),
-                menuItems(),
-                player(),
-                messages(),
-                taskScheduler,
-                new NamespacedKey(plugin, "owner"),
-                new NamespacedKey(plugin, "category"));
-        this.menus = new Menus(plugin, this);
-        this.prompts = new Prompts(messages(), config(), taskScheduler);
-        this.worldPrompts = new WorldPrompts(messages(), prompts(), settings(), config(), playerLookup());
-
-        // Load persisted worlds/folders last: world entities pull collaborators from a WorldContext that bundles
-        // services created above (e.g. MenuItems, SpawnService), so the whole service graph must exist before loading.
-        this.worldService.init();
-    }
-
-    private <T> T checkNotNull(@Nullable T service, String serviceName) {
-        if (service == null) {
-            throw new IllegalStateException(serviceName + " has not been initialized yet. Check the plugin lifecycle.");
-        }
-        return service;
-    }
-
     public ConfigService config() {
-        return checkNotNull(configService, "ConfigService");
+        return configService;
     }
 
     public Messages messages() {
-        return checkNotNull(messages, "Messages");
+        return messages;
     }
 
     public NavigatorService navigator() {
-        return checkNotNull(navigatorService, "NavigatorService");
+        return navigatorService;
     }
 
     public NavigatorEditorService navigatorEditor() {
-        return checkNotNull(navigatorEditorService, "NavigatorEditorService");
+        return navigatorEditorService;
     }
 
     public PlayerServiceImpl player() {
-        return checkNotNull(playerService, "PlayerServiceImpl");
+        return playerService;
     }
 
     public PlayerLookupService playerLookup() {
-        return checkNotNull(playerLookupService, "PlayerLookupService");
+        return playerLookupService;
     }
 
     public NoClipService noClip() {
-        return checkNotNull(noClipService, "NoClipService");
+        return noClipService;
     }
 
     public SettingsService settings() {
-        return checkNotNull(settingsService, "SettingsService");
+        return settingsService;
     }
 
     public SpawnService spawn() {
-        return checkNotNull(spawnService, "SpawnService");
+        return spawnService;
     }
 
     public WorldServiceImpl world() {
-        return checkNotNull(worldService, "WorldServiceImpl");
+        return worldService;
     }
 
     public WorldOperations operations() {
-        return checkNotNull(worldOperations, "WorldOperations");
+        return worldOperations;
     }
 
     public BackupServiceImpl backup() {
-        return checkNotNull(backupService, "BackupServiceImpl");
+        return backupService;
     }
 
     public WorldDownloadService worldDownload() {
-        return checkNotNull(worldDownloadService, "WorldDownloadService");
+        return worldDownloadService;
     }
 
     public CustomizableIcons customizableIcons() {
-        return checkNotNull(customizableIcons, "CustomizableIcons");
+        return customizableIcons;
     }
 
     public NavigatorCategoryRegistryImpl navigatorCategoryRegistry() {
-        return checkNotNull(navigatorCategoryRegistry, "NavigatorCategoryRegistryImpl");
+        return navigatorCategoryRegistry;
     }
 
     public WorldStatusRegistryImpl worldStatusRegistry() {
-        return checkNotNull(worldStatusRegistry, "WorldStatusRegistryImpl");
+        return worldStatusRegistry;
     }
 
     public MenuItems menuItems() {
-        return checkNotNull(menuItems, "MenuItems");
+        return menuItems;
     }
 
     public NavigatorItems navigatorItems() {
-        return checkNotNull(navigatorItems, "NavigatorItems");
+        return navigatorItems;
     }
 
     public Menus menus() {
-        return checkNotNull(menus, "Menus");
+        return menus;
     }
 
     public Prompts prompts() {
-        return checkNotNull(prompts, "Prompts");
+        return prompts;
     }
 
     /**
      * {@return the world chat prompts the editor menus and the {@code /worlds} subcommands share}
      */
     public WorldPrompts worldPrompts() {
-        return checkNotNull(worldPrompts, "WorldPrompts");
+        return worldPrompts;
     }
 
     /**
-     * The {@link WorldContext} bundling the collaborators world entities render and manage themselves with. Built lazily
-     * and cached: it is first needed when worlds load (the last step of {@link #initClasses()}), by which point every
-     * bundled service exists.
+     * {@return the collaborators world entities render and manage themselves with}
      */
     public WorldContext worldContext() {
-        if (worldContext == null) {
-            worldContext = new WorldContext(
-                    messages(),
-                    menuItems(),
-                    config(),
-                    player(),
-                    spawn(),
-                    worldStatusRegistry(),
-                    customizableIcons(),
-                    taskScheduler,
-                    plugin.getLogger(),
-                    operations());
-        }
         return worldContext;
     }
 }

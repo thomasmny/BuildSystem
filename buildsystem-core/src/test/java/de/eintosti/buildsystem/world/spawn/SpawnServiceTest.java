@@ -27,7 +27,6 @@ import static org.mockito.Mockito.when;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -52,20 +51,19 @@ class SpawnServiceTest {
     File dataFolder;
 
     private BuildSystemPlugin plugin;
-    private WorldServiceImpl worldService;
+    private WorldStorageImpl worldStorage;
 
     @BeforeEach
     void setUp() {
         plugin = mock(BuildSystemPlugin.class);
         when(plugin.getDataFolder()).thenReturn(dataFolder);
         when(plugin.getLogger()).thenReturn(Logger.getLogger("SpawnServiceTest"));
-        worldService = mock(WorldServiceImpl.class);
         // No build world is registered yet, just like during onEnable.
-        when(worldService.getWorldStorage()).thenReturn(mock(WorldStorageImpl.class));
+        worldStorage = mock(WorldStorageImpl.class);
     }
 
     private SpawnService newService() {
-        return new SpawnService(plugin, worldService, new TaskScheduler(mock(Plugin.class)));
+        return new SpawnService(plugin, worldStorage, new TaskScheduler(mock(Plugin.class)));
     }
 
     private void writeSpawn(String value) throws IOException {

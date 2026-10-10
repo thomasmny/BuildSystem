@@ -30,7 +30,6 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -67,10 +66,8 @@ class PlayerServiceLimitsTest {
         List<BuildWorld> owned = Collections.nCopies(ownedOfVisibility, mock(BuildWorld.class));
         WorldStorageImpl worldStorage = mock(WorldStorageImpl.class);
         when(worldStorage.getBuildWorldsCreatedByPlayer(any(), any())).thenReturn(owned);
-        WorldServiceImpl worldService = mock(WorldServiceImpl.class);
-        when(worldService.getWorldStorage()).thenReturn(worldStorage);
 
-        return new PlayerServiceImpl(plugin, configService, () -> worldService, mock(TaskScheduler.class));
+        return new PlayerServiceImpl(plugin, configService, worldStorage, mock(TaskScheduler.class));
     }
 
     private Player playerWith(String... permissionStrings) {
