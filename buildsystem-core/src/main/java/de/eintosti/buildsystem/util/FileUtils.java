@@ -24,7 +24,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -243,29 +242,24 @@ public final class FileUtils {
     }
 
     /**
-     * Moves a directory, including the files {@link #copy} skips. Fails when {@code target} already exists, so it
-     * never merges into another world's folder. Within one file system this is a rename; across file systems it falls
-     * back to copying and deleting.
+     * Moves a directory. Fails when {@code target} already exists, so it never merges into another world's folder.
+     * Within one file system this is a rename that keeps every file. Across file systems it falls back to
+     * {@link #copy}, which leaves out {@code uid.dat} and {@code session.lock}, and then deletes the source.
      *
      * @param source The directory to move
      * @param target Where it should end up; its parent directories are created
-     * @throws IOException If {@code target} exists or the move fails
+     * @throws FileAlreadyExistsException If {@code target} exists
+     * @throws IOException If the move fails
      */
     public static void moveDirectory(File source, File target) throws IOException {
-        Path from = source.toPath();
         Path to = target.toPath();
-        if (Files.exists(to)) {
-            throw new FileAlreadyExistsException(to.toString());
-        }
-
         Path parent = to.toAbsolutePath().getParent();
         if (parent != null) {
             Files.createDirectories(parent);
         }
         try {
-            Files.move(from, to);
-        } catch (DirectoryNotEmptyException | AtomicMoveNotSupportedException e) {
-            // A non-empty directory can only be renamed within its file system; anywhere else it has to be copied.
+            Files.move(source.toPath(), to);
+        } catch (DirectoryNotEmptyException e) {
             copy(source, target);
             deleteDirectory(source);
         }
