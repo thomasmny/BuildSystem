@@ -18,29 +18,27 @@
 package de.eintosti.buildsystem.storage.yaml;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.player.LogoutLocation;
-import de.eintosti.buildsystem.storage.codec.LogoutLocationCodec;
-import de.eintosti.buildsystem.world.WorldNames;
-import org.bukkit.Location;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class YamlSpawnStorage extends AbstractYamlStorage {
 
+    private static final String SPAWN_KEY = "spawn";
+
     public YamlSpawnStorage(BuildSystemPlugin plugin) {
         super(plugin, "spawn.yml");
     }
 
-    public void saveSpawn(@Nullable Location location) {
-        if (location == null || location.getWorld() == null) {
-            return;
-        }
+    public @Nullable String getSpawn() {
+        return getFile().getString(SPAWN_KEY);
+    }
 
-        getFile()
-                .set(
-                        "spawn",
-                        LogoutLocationCodec.format(new LogoutLocation(WorldNames.of(location.getWorld()), location)));
+    /**
+     * Writes the spawn, in the logout-location format, or removes it when {@code spawn} is {@code null}.
+     */
+    public void saveSpawn(@Nullable String spawn) {
+        getFile().set(SPAWN_KEY, spawn);
         saveFile();
     }
 }

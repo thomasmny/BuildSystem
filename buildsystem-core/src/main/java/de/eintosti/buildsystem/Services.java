@@ -124,7 +124,7 @@ public final class Services {
         this.navigatorEditorService = new NavigatorEditorService();
         this.noClipService = new NoClipService(taskScheduler);
         this.worldService = new WorldServiceImpl(plugin, this);
-        this.backupService = new BackupServiceImpl(plugin, taskScheduler, config(), messages(), world(), this::spawn);
+        this.backupService = new BackupServiceImpl(plugin, taskScheduler, config(), messages(), world());
         this.worldDownloadService =
                 new WorldDownloadService(config(), taskScheduler, plugin.getLogger(), plugin.getDataFolder());
         this.settingsService = new SettingsService(plugin, taskScheduler, config(), messages(), player(), world());

@@ -35,7 +35,6 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -114,7 +113,6 @@ class BackupProfileImplTest {
                 configService,
                 mock(Messages.class),
                 mock(WorldServiceImpl.class),
-                mock(SpawnService.class),
                 () -> backupStorage,
                 buildWorld);
     }

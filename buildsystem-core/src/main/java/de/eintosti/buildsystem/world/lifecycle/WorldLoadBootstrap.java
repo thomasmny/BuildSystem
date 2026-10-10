@@ -47,18 +47,24 @@ public class WorldLoadBootstrap {
     private final WorldStorageImpl worldStorage;
     private final ConfigService configService;
     private final TaskScheduler scheduler;
+    private final Runnable afterLoad;
 
+    /**
+     * @param afterLoad Runs on the main thread once the stored worlds are registered and pre-loaded
+     */
     public WorldLoadBootstrap(
             BuildSystemPlugin plugin,
             TaskScheduler scheduler,
             FolderStorageImpl folderStorage,
             WorldStorageImpl worldStorage,
-            ConfigService configService) {
+            ConfigService configService,
+            Runnable afterLoad) {
         this.plugin = plugin;
         this.scheduler = scheduler;
         this.folderStorage = folderStorage;
         this.worldStorage = worldStorage;
         this.configService = configService;
+        this.afterLoad = afterLoad;
     }
 
     public void loadWorlds() {
@@ -83,6 +89,7 @@ public class WorldLoadBootstrap {
                     notLoaded.forEach(worldStorage::removeBuildWorld);
 
                     plugin.getLogger().info("Loaded " + worlds.size() + " worlds from storage");
+                    afterLoad.run();
                 }))
                 .exceptionally(throwable -> {
                     plugin.getLogger().log(Level.SEVERE, "Failed to load worlds from storage", throwable);

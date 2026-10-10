@@ -91,7 +91,12 @@ public class WorldServiceImpl implements WorldService {
         this.worldStorage = new YamlWorldStorage(plugin, services);
         this.folderStorage = new YamlFolderStorage(plugin, this.worldStorage, services);
         this.loadBootstrap = new WorldLoadBootstrap(
-                plugin, services.scheduler(), this.folderStorage, this.worldStorage, services.config());
+                plugin,
+                services.scheduler(),
+                this.folderStorage,
+                this.worldStorage,
+                services.config(),
+                () -> services.spawn().loadSpawnWorld());
         this.creationPrompts = new WorldCreationPrompts(this, services::prompts, services.messages());
         this.importCoordinator =
                 new WorldImportCoordinator(plugin, this, this.worldStorage, services.config(), services.messages());

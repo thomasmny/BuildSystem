@@ -26,11 +26,9 @@ import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.WorldNames;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.Optional;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
-import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Contract;
@@ -141,7 +139,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
                         .unload()
                         .blacklistedWorlds()
                         .contains(WorldNames.id(buildWorld.getName()))
-                || isSpawnWorld(bukkitWorld)) {
+                || context.spawnService().isIn(buildWorld.getName())) {
             return;
         }
 
@@ -183,13 +181,5 @@ public class WorldUnloaderImpl implements WorldUnloader {
 
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostUnloadEvent(this.buildWorld));
         context.logger().info("*** Unloaded world \"" + this.buildWorld.getName() + "\" ***");
-    }
-
-    private boolean isSpawnWorld(World bukkitWorld) {
-        Location spawn = context.spawnService().getSpawn();
-        if (spawn == null) {
-            return false;
-        }
-        return Objects.equals(spawn.getWorld(), bukkitWorld);
     }
 }

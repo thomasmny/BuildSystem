@@ -208,17 +208,7 @@ public class WorldRenamer {
                 .filter(Objects::nonNull)
                 .forEach(pl -> PaperLib.teleportAsync(pl, spawnLocation.clone().add(0.5, 0, 0.5)));
 
-        Location oldSpawn = spawnService.getSpawn();
-        if (oldSpawn != null && Objects.equals(spawnService.getSpawnWorld(), oldWorld)) {
-            Location newSpawn = new Location(
-                    newWorld,
-                    oldSpawn.getX(),
-                    oldSpawn.getY(),
-                    oldSpawn.getZ(),
-                    oldSpawn.getYaw(),
-                    oldSpawn.getPitch());
-            spawnService.set(newSpawn, sanitizedNewName);
-        }
+        spawnService.renameWorld(oldName, sanitizedNewName);
 
         messages.sendMessage(
                 player,

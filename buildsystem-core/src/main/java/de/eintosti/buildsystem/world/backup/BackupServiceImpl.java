@@ -35,7 +35,6 @@ import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.storage.LocalBackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.S3BackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.SftpBackupStorage;
-import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
@@ -44,7 +43,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -64,7 +62,6 @@ public class BackupServiceImpl implements BackupService {
     private final ConfigService configService;
     private final Messages messages;
     private final WorldServiceImpl worldService;
-    private final Supplier<SpawnService> spawnService;
     private final ExecutorService executor;
     private final WorldStorage worldStorage;
 
@@ -84,14 +81,12 @@ public class BackupServiceImpl implements BackupService {
             TaskScheduler scheduler,
             ConfigService configService,
             Messages messages,
-            WorldServiceImpl worldService,
-            Supplier<SpawnService> spawnService) {
+            WorldServiceImpl worldService) {
         this.plugin = plugin;
         this.scheduler = scheduler;
         this.configService = configService;
         this.messages = messages;
         this.worldService = worldService;
-        this.spawnService = spawnService;
         this.executor = Executors.newFixedThreadPool(BACKUP_PROFILE_POOL_SIZE);
         this.worldStorage = worldService.getWorldStorage();
         this.backupStorage =
@@ -317,13 +312,6 @@ public class BackupServiceImpl implements BackupService {
      */
     private BackupProfile createProfile(BuildWorld buildWorld) {
         return new BackupProfileImpl(
-                plugin,
-                scheduler,
-                configService,
-                messages,
-                worldService,
-                spawnService.get(),
-                this::getStorage,
-                buildWorld);
+                plugin, scheduler, configService, messages, worldService, this::getStorage, buildWorld);
     }
 }
