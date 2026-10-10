@@ -54,6 +54,10 @@ public class WorldTeleporterImpl implements WorldTeleporter {
         if (hadToLoad) {
             buildWorld.getLoader().loadForPlayer(player);
             if (!buildWorld.isLoaded()) {
+                // loadForPlayer already said so when the world is busy.
+                if (!context.operations().isBusy(buildWorld)) {
+                    context.messages().sendMessage(player, "worlds_tp_unknown_world");
+                }
                 return;
             }
         }
