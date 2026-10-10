@@ -17,12 +17,12 @@
  */
 package de.eintosti.buildsystem.listener.player;
 
-import com.cryptomorin.xseries.XPotion;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.player.CachedValues;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -62,7 +62,7 @@ final class ArchiveMode {
 
         if (archive.vanish()) {
             player.addPotionEffect(
-                    new PotionEffect(XPotion.INVISIBILITY.get(), PotionEffect.INFINITE_DURATION, 0, false, false),
+                    new PotionEffect(PotionEffectType.INVISIBILITY, PotionEffect.INFINITE_DURATION, 0, false, false),
                     false);
         }
     }
@@ -78,9 +78,9 @@ final class ArchiveMode {
      */
     static void exit(Player player, CachedValues cachedValues) {
         cachedValues.resetArchiveStateIfPresent(player);
-        PotionEffect invisibility = player.getPotionEffect(XPotion.INVISIBILITY.get());
+        PotionEffect invisibility = player.getPotionEffect(PotionEffectType.INVISIBILITY);
         if (invisibility != null && isArchiveInvisibility(invisibility)) {
-            player.removePotionEffect(XPotion.INVISIBILITY.get());
+            player.removePotionEffect(PotionEffectType.INVISIBILITY);
         }
     }
 
