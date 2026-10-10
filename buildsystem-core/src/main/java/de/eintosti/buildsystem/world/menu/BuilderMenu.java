@@ -32,11 +32,8 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
-import de.eintosti.buildsystem.player.PlayerLookupService;
-import de.eintosti.buildsystem.util.TaskScheduler;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -58,9 +55,6 @@ public class BuilderMenu extends PaginatedMenu {
 
     private final MenuItems menuItems;
     private final Menus menus;
-    private final PlayerLookupService playerLookupService;
-    private final TaskScheduler scheduler;
-    private final Logger logger;
     private final BuildWorld buildWorld;
     private final NamespacedKey builderNameKey;
 
@@ -68,18 +62,12 @@ public class BuilderMenu extends PaginatedMenu {
             Messages messages,
             MenuItems menuItems,
             Menus menus,
-            PlayerLookupService playerLookupService,
-            TaskScheduler scheduler,
-            Logger logger,
             NamespacedKey builderNameKey,
             BuildWorld buildWorld,
             Player player) {
         super(messages, 27, messages.getString("worldeditor_builders_title", player));
         this.menuItems = menuItems;
         this.menus = menus;
-        this.playerLookupService = playerLookupService;
-        this.scheduler = scheduler;
-        this.logger = logger;
         this.builderNameKey = builderNameKey;
         this.buildWorld = buildWorld;
     }
@@ -96,11 +84,6 @@ public class BuilderMenu extends PaginatedMenu {
 
         menuItems.fillRange(player, inv, 0, 9);
         menuItems.fillRange(player, inv, 18, 27);
-        // The builder row is a list, not a decorated grid: seats with no builder stay empty rather than showing
-        // filler panes. It still has to be reset on every pass, or heads from the previous page linger.
-        for (int slot = FIRST_BUILDER_SLOT; slot < FIRST_BUILDER_SLOT + MAX_BUILDERS_PER_PAGE; slot++) {
-            inv.setItem(slot, null);
-        }
 
         register(SLOT_CREATOR_INFO, creatorInfoButton());
         register(SLOT_ADD_BUILDER, addBuilderButton());
@@ -195,7 +178,7 @@ public class BuilderMenu extends PaginatedMenu {
                         returnToEditor(player);
                         return;
                     }
-                    removeBuilder(player, builder.getName());
+                    removeBuilder(player, builder);
                 })
                 .build();
     }
@@ -217,28 +200,15 @@ public class BuilderMenu extends PaginatedMenu {
 
     private void returnToEditor(Player player) {
         if (buildWorld.getPermissions().canPerformCommand(player, WorldsArgument.EDIT.getPermission())) {
-            XSound.BLOCK_CHEST_OPEN.play(player);
             menus.openEdit(buildWorld, player);
         }
     }
 
-    private void removeBuilder(Player player, String builderName) {
-        playerLookupService
-                .lookupUniqueId(builderName)
-                .thenAccept(builderId -> scheduler.run(() -> {
-                    if (builderId == null) {
-                        player.closeInventory();
-                        messages.sendMessage(player, "worlds_removebuilder_error");
-                        logger.warning("Could not find UUID for " + builderName);
-                        return;
-                    }
-
-                    buildWorld.getBuilders().removeBuilder(builderId);
-                    XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
-                    messages.sendMessage(
-                            player, "worlds_removebuilder_removed", Placeholders.of("%builder%", builderName));
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
-                    populate(player);
-                }));
+    private void removeBuilder(Player player, Builder builder) {
+        buildWorld.getBuilders().removeBuilder(builder);
+        XSound.ENTITY_ENDERMAN_TELEPORT.play(player);
+        messages.sendMessage(player, "worlds_removebuilder_removed", Placeholders.of("%builder%", builder.getName()));
+        XSound.ENTITY_CHICKEN_EGG.play(player);
+        populate(player);
     }
 }

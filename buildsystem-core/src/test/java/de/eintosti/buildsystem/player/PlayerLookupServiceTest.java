@@ -18,12 +18,17 @@
 package de.eintosti.buildsystem.player;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mockStatic;
 
+import de.eintosti.buildsystem.util.ServerModeChecker;
+import de.eintosti.buildsystem.util.ServerModeChecker.ServerMode;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 /**
  * Pins the offline-safe behavior of {@link PlayerLookupService}: cached lookups resolve without scheduling, names are
@@ -61,5 +66,18 @@ class PlayerLookupServiceTest {
         String undashed = PlayerLookupService.toUndashed(uuid);
         assertEquals("069a79f444e94726a5befca90e38aaf5", undashed);
         assertEquals(uuid, PlayerLookupService.fromUndashed(undashed));
+    }
+
+    @Test
+    void namesMojangCannotHaveAreRejectedBeforeAnyRequest() {
+        // Neither name forms a valid URI, so without the check URI.create throws and the null plugin fails the log
+        // call. Neither can reach Mojang if the check is removed.
+        PlayerLookupService service = new PlayerLookupService(null, Runnable::run);
+        try (MockedStatic<ServerModeChecker> mode = mockStatic(ServerModeChecker.class)) {
+            mode.when(ServerModeChecker::getServerMode).thenReturn(ServerMode.ONLINE);
+
+            assertNull(service.lookupUniqueIdBlocking("two words"));
+            assertNull(service.lookupUniqueIdBlocking("a^b"));
+        }
     }
 }

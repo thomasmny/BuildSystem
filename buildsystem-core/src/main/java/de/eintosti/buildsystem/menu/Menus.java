@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.menu;
 
+import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -130,7 +131,36 @@ public final class Menus {
         new BackupsConfirmationMenu(services.messages(), backup, player).open(player);
     }
 
+    /**
+     * Opens the world editor with the chest sound, or tells the player the world is not loaded.
+     */
     public void openEdit(BuildWorld buildWorld, Player player) {
+        if (showEdit(buildWorld, player)) {
+            XSound.BLOCK_CHEST_OPEN.play(player);
+        }
+    }
+
+    /**
+     * Opens the world editor again after an action inside it, without the opening sound.
+     */
+    public void reopenEdit(BuildWorld buildWorld, Player player) {
+        showEdit(buildWorld, player);
+    }
+
+    /**
+     * Every way into the editor goes through here, so a world that unloaded while a menu or chat prompt was open never
+     * reaches the menu.
+     *
+     * @return {@code true} if the editor opened, {@code false} if the world is not loaded
+     */
+    private boolean showEdit(BuildWorld buildWorld, Player player) {
+        if (buildWorld.getWorld().isEmpty()) {
+            player.closeInventory();
+            XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
+            player.sendTitle(" ", services.messages().getString("world_not_loaded", player), 5, 70, 20);
+            return false;
+        }
+
         new EditMenu(
                         services.messages(),
                         services.player(),
@@ -141,19 +171,11 @@ public final class Menus {
                         buildWorld,
                         player)
                 .open(player);
+        return true;
     }
 
     public void openBuilder(BuildWorld buildWorld, Player player) {
-        new BuilderMenu(
-                        services.messages(),
-                        services.menuItems(),
-                        this,
-                        services.playerLookup(),
-                        scheduler,
-                        plugin.getLogger(),
-                        builderNameKey,
-                        buildWorld,
-                        player)
+        new BuilderMenu(services.messages(), services.menuItems(), this, builderNameKey, buildWorld, player)
                 .open(player);
     }
 

@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
@@ -45,13 +44,7 @@ public class EditSubCommand extends AbstractSubCommand {
             return;
         }
 
-        if (buildWorld.isLoaded()) {
-            XSound.BLOCK_CHEST_OPEN.play(player);
-            menus.openEdit(buildWorld, player);
-        } else {
-            XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            player.sendTitle(" ", messages.getString("world_not_loaded", player), 5, 70, 20);
-        }
+        menus.openEdit(buildWorld, player);
     }
 
     @Override

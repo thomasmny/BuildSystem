@@ -35,6 +35,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
@@ -51,6 +52,10 @@ public final class PlayerLookupService {
     private static final String UUID_URL = "https://api.mojang.com/users/profiles/minecraft/%s";
     private static final String PROFILE_URL = "https://sessionserver.mojang.com/session/minecraft/profile/%s";
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
+    /**
+     * The names a Mojang account can have. Anything else cannot be looked up and would not even form a valid URL.
+     */
+    private static final Pattern MOJANG_NAME = Pattern.compile("[A-Za-z0-9_]{1,16}");
 
     private final JavaPlugin plugin;
     private final HttpClient httpClient;
@@ -129,12 +134,16 @@ public final class PlayerLookupService {
             return uuid;
         }
 
+        if (!MOJANG_NAME.matcher(name).matches()) {
+            return null;
+        }
+
         JsonObject json = requestJson(UUID_URL.formatted(name));
         if (json == null || !json.has("id")) {
             return null;
         }
         UUID uuid = fromUndashed(json.get("id").getAsString());
-        cacheUser(uuid, name);
+        cacheUser(uuid, json.has("name") ? json.get("name").getAsString() : name);
         return uuid;
     }
 

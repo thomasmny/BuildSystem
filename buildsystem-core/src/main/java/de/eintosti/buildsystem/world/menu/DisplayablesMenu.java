@@ -55,7 +55,6 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
 
     protected static final int MAX_WORLDS_PER_PAGE = 36;
     protected static final int FIRST_WORLD_SLOT = 9;
-    protected static final int LAST_WORLD_SLOT = 44;
 
     protected static final int SLOT_NO_WORLDS = 22;
     protected static final int SLOT_WORLD_SORT = 45;
@@ -198,16 +197,11 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
         register(SLOT_PREVIOUS_PAGE, previousPageButton(SkullTextures.PREVIOUS_PAGE, MAX_WORLDS_PER_PAGE));
         register(SLOT_NEXT_PAGE, nextPageButton(SkullTextures.NEXT_PAGE, MAX_WORLDS_PER_PAGE));
 
-        for (int i = FIRST_WORLD_SLOT; i <= LAST_WORLD_SLOT; i++) {
-            inv.setItem(i, null);
-        }
-
+        registerPageItems(FIRST_WORLD_SLOT, MAX_WORLDS_PER_PAGE, displayables, this::displayableButton);
         if (displayables.isEmpty() && noWorldsMessage != null) {
             ItemBuilder.skull(Profileable.detect(NO_WORLDS_SKULL_PROFILE))
                     .name(noWorldsMessage)
                     .into(inv, SLOT_NO_WORLDS);
-        } else {
-            registerPageItems(FIRST_WORLD_SLOT, MAX_WORLDS_PER_PAGE, displayables, this::displayableButton);
         }
 
         renderButtons(player);
@@ -370,14 +364,7 @@ public abstract class DisplayablesMenu extends PaginatedMenu {
             return;
         }
 
-        if (buildWorld.isLoaded()) {
-            XSound.BLOCK_CHEST_OPEN.play(player);
-            menus.openEdit(buildWorld, player);
-        } else {
-            player.closeInventory();
-            XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
-            player.sendTitle(" ", messages.getString("world_not_loaded", player), 5, 70, 20);
-        }
+        menus.openEdit(buildWorld, player);
     }
 
     /**

@@ -148,7 +148,6 @@ public class StatusMenu extends ButtonMenu<MenuButton> {
             return;
         }
 
-        XSound.BLOCK_CHEST_OPEN.play(player);
         menus.openEdit(buildWorld, player);
     }
 }

@@ -112,13 +112,14 @@ public class ConfigService {
     static PluginConfig parse(FileConfiguration config, Logger logger, XMaterial worldEditWand) {
         PluginConfig.Storage storage = StorageSettingsFactory.fromConfig(config);
         return new PluginConfig(
-                parseSettings(config, worldEditWand),
+                parseSettings(config, worldEditWand, logger),
                 storage,
                 parseWorld(config, storage, logger),
                 parseFolder(config));
     }
 
-    private static PluginConfig.Settings parseSettings(FileConfiguration config, XMaterial worldEditWand) {
+    private static PluginConfig.Settings parseSettings(
+            FileConfiguration config, XMaterial worldEditWand, Logger logger) {
         PluginConfig.Settings.Archive archive = new PluginConfig.Settings.Archive(
                 config.getBoolean("settings.archive.vanish", true),
                 config.getBoolean("settings.archive.change-gamemode", true),
@@ -136,8 +137,7 @@ public class ConfigService {
                 config.getBoolean("settings.builder.block-worldedit-non-builder", true), worldEditWand);
 
         PluginConfig.Settings.Navigator navigator = new PluginConfig.Settings.Navigator(
-                XMaterial.valueOf(Objects.requireNonNullElse(config.getString("settings.navigator.item"), "CLOCK")),
-                config.getBoolean("settings.navigator.give-item-on-join", true));
+                parseNavigatorItem(config, logger), config.getBoolean("settings.navigator.give-item-on-join", true));
 
         return new PluginConfig.Settings(
                 config.getBoolean("settings.update-checker", true),
@@ -184,8 +184,7 @@ public class ConfigService {
 
         PluginConfig.World.Defaults defaults = new PluginConfig.World.Defaults(
                 config.getInt("world.defaults.worldborder-size", 6000000),
-                Difficulty.valueOf(Objects.requireNonNullElse(config.getString("world.defaults.difficulty"), "PEACEFUL")
-                        .toUpperCase(Locale.ROOT)),
+                parseDifficulty(config, logger),
                 gameRules,
                 permission,
                 time,
@@ -286,6 +285,28 @@ public class ConfigService {
                     return Material.GOLD_BLOCK;
                 });
         return new PluginConfig.World.VoidBlock(enabled, material);
+    }
+
+    private static XMaterial parseNavigatorItem(FileConfiguration config, Logger logger) {
+        String raw = Objects.requireNonNullElse(config.getString("settings.navigator.item"), "CLOCK");
+        return XMaterial.matchXMaterial(raw)
+                .filter(XMaterial::isSupported)
+                .filter(material -> material.get().isItem())
+                .orElseGet(() -> {
+                    logger.warning("Invalid navigator item \"" + raw + "\". Defaulting to CLOCK.");
+                    return XMaterial.CLOCK;
+                });
+    }
+
+    private static Difficulty parseDifficulty(FileConfiguration config, Logger logger) {
+        String raw = Objects.requireNonNullElse(config.getString("world.defaults.difficulty"), "PEACEFUL");
+        return Arrays.stream(Difficulty.values())
+                .filter(difficulty -> difficulty.name().equalsIgnoreCase(raw))
+                .findAny()
+                .orElseGet(() -> {
+                    logger.warning("Invalid default difficulty \"" + raw + "\". Defaulting to PEACEFUL.");
+                    return Difficulty.PEACEFUL;
+                });
     }
 
     private static List<GameRuleEntry<?>> parseGameRules(FileConfiguration config, Logger logger) {

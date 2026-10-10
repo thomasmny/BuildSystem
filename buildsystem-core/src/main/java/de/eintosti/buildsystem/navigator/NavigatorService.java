@@ -161,16 +161,17 @@ public class NavigatorService {
 
     private ArmorStand spawnArmorStand(Player player, NavigatorCategory category, float angle) {
         Location location = calculatePosition(player, angle);
-        ArmorStand armorStand = location.getWorld().spawn(location, ArmorStand.class);
-        armorStand.setVisible(false);
-        armorStand.setGravity(false);
-        armorStand.setCanPickupItems(false);
+        ArmorStand armorStand = location.getWorld().spawn(location, ArmorStand.class, stand -> {
+            stand.setPersistent(false);
+            stand.setVisible(false);
+            stand.setGravity(false);
+            stand.setCanPickupItems(false);
+
+            PersistentDataContainer pdc = stand.getPersistentDataContainer();
+            pdc.set(ownerKey, PersistentDataType.STRING, player.getUniqueId().toString());
+            pdc.set(categoryKey, PersistentDataType.STRING, category.getId());
+        });
         applyHelmet(player, category, armorStand);
-
-        PersistentDataContainer pdc = armorStand.getPersistentDataContainer();
-        pdc.set(ownerKey, PersistentDataType.STRING, player.getUniqueId().toString());
-        pdc.set(categoryKey, PersistentDataType.STRING, category.getId());
-
         return armorStand;
     }
 

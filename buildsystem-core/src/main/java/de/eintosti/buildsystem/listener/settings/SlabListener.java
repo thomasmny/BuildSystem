@@ -69,7 +69,7 @@ public class SlabListener implements Listener {
 
         event.setCancelled(true);
 
-        if (isTopHalf(player)) {
+        if (hitsTopHalf(player, block)) {
             slab.setType(Slab.Type.BOTTOM);
         } else {
             slab.setType(Slab.Type.TOP);
@@ -78,11 +78,12 @@ public class SlabListener implements Listener {
         block.setBlockData(slab);
     }
 
-    public boolean isTopHalf(Player player) {
+    /**
+     * {@return whether the player is aiming at the upper half of {@code block}} Measured from the block's own height, so
+     * it holds below y=0 too.
+     */
+    static boolean hitsTopHalf(Player player, Block block) {
         RayTraceResult result = player.rayTraceBlocks(6);
-        if (result == null) {
-            return false;
-        }
-        return Math.abs(result.getHitPosition().getY() % 1) < 0.5;
+        return result != null && result.getHitPosition().getY() - block.getY() >= 0.5;
     }
 }

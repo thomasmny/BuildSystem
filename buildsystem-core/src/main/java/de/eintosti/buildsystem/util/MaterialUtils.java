@@ -41,4 +41,20 @@ public final class MaterialUtils {
         }
         return XMaterial.matchXMaterial(name).map(XMaterial::get).orElse(null);
     }
+
+    /**
+     * Maps a standing or hanging sign to the variant placed against a wall, for example {@code OAK_SIGN} to
+     * {@code OAK_WALL_SIGN} and {@code OAK_HANGING_SIGN} to {@code OAK_WALL_HANGING_SIGN}.
+     *
+     * @param sign The sign item's material
+     * @return The wall variant, or {@code null} if {@code sign} is not a standing or hanging sign
+     */
+    public static @Nullable Material wallVariant(Material sign) {
+        String name = sign.name();
+        if (!name.endsWith("_SIGN") || name.contains("_WALL_")) {
+            return null;
+        }
+        String suffix = name.endsWith("_HANGING_SIGN") ? "_HANGING_SIGN" : "_SIGN";
+        return Material.matchMaterial(name.substring(0, name.length() - suffix.length()) + "_WALL" + suffix);
+    }
 }

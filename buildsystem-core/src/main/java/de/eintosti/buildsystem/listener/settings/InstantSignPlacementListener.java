@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import de.eintosti.buildsystem.util.DirectionUtil;
+import de.eintosti.buildsystem.util.MaterialUtils;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -80,7 +81,7 @@ public class InstantSignPlacementListener implements Listener {
         }
 
         Block adjacent = clickedBlock.getRelative(blockFace);
-        if (adjacent.getType() != XMaterial.AIR.get()) {
+        if (!adjacent.getType().isAir()) {
             return;
         }
 
@@ -111,11 +112,12 @@ public class InstantSignPlacementListener implements Listener {
                 DirectionUtil.rotateBlock(adjacent, getHangingSignDirection(event));
             }
             case NORTH, EAST, SOUTH, WEST -> {
-                String woodType = xMaterial.name().replace("_HANGING", "").replace("_SIGN", "");
-                String block = isHangingSign ? "_WALL_HANGING_SIGN" : "_WALL_SIGN";
-                BlockFace facing = isHangingSign ? getHangingSignDirection(event) : blockFace;
-                XMaterial.matchXMaterial(woodType + block).ifPresent(value -> adjacent.setType(value.get()));
-                DirectionUtil.rotateBlock(adjacent, facing);
+                Material wallSign = MaterialUtils.wallVariant(material);
+                if (wallSign == null) {
+                    return;
+                }
+                adjacent.setType(wallSign);
+                DirectionUtil.rotateBlock(adjacent, isHangingSign ? getHangingSignDirection(event) : blockFace);
             }
         }
     }
