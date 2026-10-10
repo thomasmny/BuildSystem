@@ -116,6 +116,23 @@ class PlayerCodecArchiveSnapshotTest {
     }
 
     @Test
+    void missingArmor_isReadAsFourEmptySlots() {
+        String key = CodecSamples.PLAYER_ID.toString();
+        String yaml = CodecSamples.toYaml(Map.of(key, Map.of("archive-snapshot", Map.of("gamemode", "CREATIVE"))));
+
+        BuildPlayerImpl loaded = codec.deserialize(key, CodecSamples.section(yaml, key));
+
+        assertEquals(
+                4,
+                Objects.requireNonNull(loaded.getCachedValues().getArchiveState())
+                        .armor()
+                        .length);
+        PlayerMock rejoined = new PlayerMock(server, "Archived");
+        assertTrue(loaded.getCachedValues().resetArchiveStateIfPresent(rejoined));
+        assertEquals(GameMode.CREATIVE, rejoined.getGameMode());
+    }
+
+    @Test
     void playerWithoutSnapshot_writesNoSnapshot() {
         BuildPlayerImpl player = new BuildPlayerImpl(CodecSamples.PLAYER_ID, new SettingsImpl());
 

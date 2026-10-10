@@ -140,8 +140,9 @@ public final class PlayerCodec implements Codec<BuildPlayer> {
     }
 
     /**
-     * Uses Bukkit's own item serialization, which Spigot and Paper both read back. The items are copied here, on the
-     * main thread, because the file is written later off it.
+     * Uses Bukkit's own item serialization, which the same server reads back. Items written on Paper do not load on
+     * Spigot, so a snapshot does not survive switching from Paper to Spigot. The items are copied here, on the main
+     * thread, because the file is written later off it.
      */
     private static Map<String, Object> serializeArchiveState(ArchiveState state) {
         Map<String, Object> serialized = new LinkedHashMap<>();
@@ -158,8 +159,11 @@ public final class PlayerCodec implements Codec<BuildPlayer> {
     }
 
     private ArchiveState parseArchiveState(ConfigurationSection section) {
+        // A hand-edited file may list fewer armor slots, which setArmorContents would refuse on join.
         return new ArchiveState(
-                parseGameMode(section.getString("gamemode")), items(section, "inventory"), items(section, "armor"));
+                parseGameMode(section.getString("gamemode")),
+                items(section, "inventory"),
+                Arrays.copyOf(items(section, "armor"), 4));
     }
 
     private static @Nullable ItemStack[] items(ConfigurationSection section, String key) {
