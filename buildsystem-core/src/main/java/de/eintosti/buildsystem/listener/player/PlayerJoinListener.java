@@ -220,13 +220,15 @@ public class PlayerJoinListener implements Listener {
                 .requestUpdateCheck()
                 .whenCompleteAsync(
                         (result, e) -> {
-                            if (result == null || !result.requiresUpdate()) {
+                            UpdateChecker.Release update = result == null ? null : result.newerRelease();
+                            if (update == null) {
                                 return;
                             }
 
                             Placeholders placeholders = Placeholders.of()
-                                    .add("%new_version%", result.getNewestVersion())
+                                    .add("%new_version%", update.version())
                                     .add("%current_version%", updateChecker.getCurrentVersion())
+                                    .add("%release_url%", update.url())
                                     .build();
                             player.sendMessage(String.join(
                                     "\n", messages.getStringList("update_available", player, placeholders)));

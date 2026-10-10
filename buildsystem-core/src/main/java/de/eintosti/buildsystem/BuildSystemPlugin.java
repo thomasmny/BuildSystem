@@ -42,7 +42,6 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class BuildSystemPlugin extends JavaPlugin {
 
-    public static final int SPIGOT_ID = 60441;
     public static final int METRICS_ID = 7427;
     public static final String ADMIN_PERMISSION = Permissions.ADMIN;
 
@@ -71,8 +70,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         this.services.initClasses();
-        this.updateChecker =
-                new UpdateChecker(this, SPIGOT_ID, services.scheduler().background());
+        this.updateChecker = new UpdateChecker(this, services.scheduler().background());
         performUpdateCheck();
 
         new CommandRegistrar(this, services).registerAll();
@@ -168,25 +166,29 @@ public class BuildSystemPlugin extends JavaPlugin {
                                 return;
                             }
 
-                            if (result.requiresUpdate()) {
+                            UpdateChecker.Release update = result.newerRelease();
+                            if (update != null) {
                                 Bukkit.getConsoleSender()
                                         .sendMessage("%s[BuildSystem] Great! a new update is available: %sv%s"
-                                                .formatted(
-                                                        ChatColor.YELLOW, ChatColor.GREEN, result.getNewestVersion()));
+                                                .formatted(ChatColor.YELLOW, ChatColor.GREEN, update.version()));
                                 Bukkit.getConsoleSender()
                                         .sendMessage("%s ➥ Your current version: %s%s"
                                                 .formatted(
                                                         ChatColor.YELLOW,
                                                         ChatColor.RED,
                                                         this.getDescription().getVersion()));
+                                Bukkit.getConsoleSender()
+                                        .sendMessage("%s ➥ Download: %s%s"
+                                                .formatted(ChatColor.YELLOW, ChatColor.AQUA, update.url()));
                                 return;
                             }
 
-                            UpdateChecker.UpdateReason reason = result.getReason();
+                            UpdateChecker.UpdateReason reason = result.reason();
                             switch (reason) {
                                 case COULD_NOT_CONNECT,
                                         INVALID_JSON,
                                         UNAUTHORIZED_QUERY,
+                                        RATE_LIMITED,
                                         UNKNOWN_ERROR,
                                         UNSUPPORTED_VERSION_SCHEME ->
                                     Bukkit.getConsoleSender()

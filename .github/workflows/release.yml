@@ -1,0 +1,64 @@
+name: Attach jar to release
+
+on:
+  release:
+    types: [ published ]
+
+permissions:
+  contents: write
+
+jobs:
+  upload:
+    if: github.repository_owner_id == 29168243
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Git Repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6
+        with:
+          java-version: 25
+          distribution: 'temurin'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Refuse a SNAPSHOT tag
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          case "$TAG" in
+            *-SNAPSHOT) echo "::error::Refusing to publish the SNAPSHOT version $TAG."; exit 1 ;;
+          esac
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      # buildsystem-core's shadowJar writes the plugin jar as BuildSystem-<version>.jar. Requiring the tag's version
+      # keeps a SNAPSHOT jar off a release.
+      - name: Upload jar to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          jar="build/libs/BuildSystem-${TAG#v}.jar"
+          [ -f "$jar" ] || { echo "Expected $jar; is the version in gradle.properties bumped?"; ls build/libs; exit 1; }
+          gh release upload "$TAG" "$jar" --clobber --repo "$GITHUB_REPOSITORY"
+
+      # Needs the MODRINTH_TOKEN secret and the MODRINTH_PROJECT_ID variable or secret; see the README.
+      - name: Publish to Modrinth
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          MODRINTH_PROJECT_ID: ${{ vars.MODRINTH_PROJECT_ID || secrets.MODRINTH_PROJECT_ID }}
+          MODRINTH_CHANGELOG: ${{ github.event.release.body }}
+          # A GitHub pre-release goes to Modrinth as a beta.
+          MODRINTH_VERSION_TYPE: ${{ github.event.release.prerelease && 'beta' || 'release' }}
+        run: |
+          if [ -z "$MODRINTH_TOKEN" ] || [ -z "$MODRINTH_PROJECT_ID" ]; then
+            echo "::notice::MODRINTH_TOKEN or MODRINTH_PROJECT_ID is not set, so the release was not published to Modrinth."
+            exit 0
+          fi
+          ./gradlew modrinth

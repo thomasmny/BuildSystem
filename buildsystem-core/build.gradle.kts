@@ -8,6 +8,7 @@ plugins {
     id("com.gradleup.shadow") version "9.6.1"
     id("de.eldoria.plugin-yml.bukkit") version "0.9.0"
     id("xyz.jpenilla.run-paper") version "3.1.0"
+    id("com.modrinth.minotaur") version "2.10.0"
 }
 
 project.description = "Core"
@@ -115,6 +116,29 @@ tasks.named<ShadowJar>("shadowJar") {
     relocate("net.i2p.crypto", "$shadePath.eddsa")
     relocate("org.bstats", "$shadePath.bstats")
     relocate("org.slf4j", "$shadePath.slf4j")
+}
+
+// Run by .github/workflows/release.yml when a GitHub release is published.
+modrinth {
+    token.set(providers.environmentVariable("MODRINTH_TOKEN"))
+    projectId.set(providers.environmentVariable("MODRINTH_PROJECT_ID"))
+    versionNumber.set(project.version.toString())
+    versionType.set(providers.environmentVariable("MODRINTH_VERSION_TYPE").orElse("release"))
+    uploadFile.set(tasks.named<ShadowJar>("shadowJar"))
+    gameVersions.addAll(providers.gradleProperty("modrinthGameVersions").map { it.split(",") })
+    loaders.addAll("bukkit", "spigot", "paper", "purpur")
+    changelog.set(providers.environmentVariable("MODRINTH_CHANGELOG").orElse(""))
+    dependencies {
+        optional.project("essentialsx")
+        optional.project("luckperms")
+        optional.project("placeholderapi")
+        optional.project("worldedit")
+        optional.project("axiom-paper-plugin")
+    }
+}
+
+tasks.modrinth {
+    notCompatibleWithConfigurationCache("Minotaur reads the project while the task runs")
 }
 
 tasks.runServer {
