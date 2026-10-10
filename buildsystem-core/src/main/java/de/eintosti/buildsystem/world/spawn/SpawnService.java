@@ -21,17 +21,16 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.player.LogoutLocation;
+import de.eintosti.buildsystem.storage.codec.LogoutLocationCodec;
 import de.eintosti.buildsystem.storage.yaml.YamlSpawnStorage;
 import de.eintosti.buildsystem.util.TaskScheduler;
-import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import io.papermc.lib.PaperLib;
-import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -107,26 +106,13 @@ public class SpawnService {
     }
 
     private void load() {
-        FileConfiguration configuration = spawnStorage.getFile();
-        String string = configuration.getString("spawn");
-        if (string == null || string.trim().isEmpty()) {
+        // Same world:x:y:z:yaw:pitch format as a logout location, so the namespaced-name handling is shared.
+        LogoutLocation stored = LogoutLocationCodec.parse(spawnStorage.getFile().getString("spawn"));
+        if (stored == null) {
             return;
         }
 
-        // A namespaced world (maps:lobby) adds a separator, so the coordinates are read from the end.
-        String[] parts = string.split(":");
-        int worldParts = parts.length - 5;
-        if (worldParts != 1 && worldParts != 2) {
-            return;
-        }
-
-        String worldName = String.join(":", Arrays.copyOfRange(parts, 0, worldParts));
-        double x = Double.parseDouble(parts[worldParts]);
-        double y = Double.parseDouble(parts[worldParts + 1]);
-        double z = Double.parseDouble(parts[worldParts + 2]);
-        float yaw = Float.parseFloat(parts[worldParts + 3]);
-        float pitch = Float.parseFloat(parts[worldParts + 4]);
-
+        String worldName = stored.worldName();
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld == null) {
             plugin.getLogger()
@@ -136,6 +122,6 @@ public class SpawnService {
 
         buildWorld.getLoader().load();
         this.spawnName = worldName;
-        this.spawn = new Location(WorldNames.bukkitWorld(worldName), x, y, z, yaw, pitch);
+        this.spawn = stored.location();
     }
 }

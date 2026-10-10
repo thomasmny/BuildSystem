@@ -18,6 +18,8 @@
 package de.eintosti.buildsystem.storage.yaml;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.player.LogoutLocation;
+import de.eintosti.buildsystem.storage.codec.LogoutLocationCodec;
 import de.eintosti.buildsystem.world.WorldNames;
 import org.bukkit.Location;
 import org.jspecify.annotations.NullMarked;
@@ -38,12 +40,7 @@ public class YamlSpawnStorage extends AbstractYamlStorage {
         getFile()
                 .set(
                         "spawn",
-                        WorldNames.of(location.getWorld()) + ":"
-                                + location.getX() + ":"
-                                + location.getY() + ":"
-                                + location.getZ() + ":"
-                                + location.getYaw() + ":"
-                                + location.getPitch());
+                        LogoutLocationCodec.format(new LogoutLocation(WorldNames.of(location.getWorld()), location)));
         saveFile();
     }
 }
