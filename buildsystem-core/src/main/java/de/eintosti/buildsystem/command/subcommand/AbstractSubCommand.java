@@ -20,15 +20,14 @@ package de.eintosti.buildsystem.command.subcommand;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.command.Completions;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.PlayerLookupService;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -132,17 +131,16 @@ public abstract class AbstractSubCommand implements SubCommand {
         }
 
         List<String> result = new ArrayList<>();
-        WorldStorageImpl worldStorage = worldService.getWorldStorage();
-        for (BuildWorld world : worldStorage.getBuildWorlds()) {
-            String worldPermission = world.getData().get(WorldDataKey.PERMISSION);
-            String name = worldStorage.typedName(world.getName());
-            if ((player.hasPermission(worldPermission) || worldPermission.equals("-"))
-                    && world.getPermissions()
-                            .canPerformCommand(player, getArgument().getPermission())
-                    && StringUtil.startsWithIgnoreCase(name, args[1])) {
-                result.add(name);
-            }
-        }
+        Completions.addWorldNames(
+                args[1],
+                worldService.getWorldStorage(),
+                world -> {
+                    String worldPermission = world.getData().get(WorldDataKey.PERMISSION);
+                    return (worldPermission.equals("-") || player.hasPermission(worldPermission))
+                            && world.getPermissions()
+                                    .canPerformCommand(player, getArgument().getPermission());
+                },
+                result);
         return result;
     }
 }

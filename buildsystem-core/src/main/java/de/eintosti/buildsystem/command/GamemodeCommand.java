@@ -79,7 +79,7 @@ public class GamemodeCommand extends CommandBase {
             Arrays.stream(GameMode.values())
                     .map(gameMode -> gameMode.name().toLowerCase(Locale.ROOT))
                     .filter(gameModeName -> player.hasPermission(Permissions.gamemode(gameModeName)))
-                    .forEach(gameModeName -> addArgument(args[0], gameModeName, list));
+                    .forEach(gameModeName -> Completions.addMatching(args[0], gameModeName, list));
         } else if (args.length == 2) {
             String gameModeName =
                     switch (args[0].toLowerCase(Locale.ROOT)) {
@@ -91,7 +91,7 @@ public class GamemodeCommand extends CommandBase {
                     };
 
             if (gameModeName != null && player.hasPermission(Permissions.gamemodeOther(gameModeName))) {
-                Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[1], pl.getName(), list));
+                Bukkit.getOnlinePlayers().forEach(pl -> Completions.addMatching(args[1], pl.getName(), list));
             }
         }
 

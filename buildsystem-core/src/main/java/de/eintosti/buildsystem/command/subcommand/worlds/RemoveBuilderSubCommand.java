@@ -21,6 +21,7 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.command.Completions;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -119,7 +120,7 @@ public class RemoveBuilderSubCommand extends AbstractSubCommand {
         }
 
         List<String> result = new ArrayList<>();
-        builders.getBuilderNames().forEach(name -> WorldsCompletions.addIfStartsWith(args[1], name, result));
+        builders.getBuilderNames().forEach(name -> Completions.addMatching(args[1], name, result));
         return result;
     }
 

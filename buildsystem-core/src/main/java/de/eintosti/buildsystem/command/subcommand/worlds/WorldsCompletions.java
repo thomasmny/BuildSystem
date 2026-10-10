@@ -17,14 +17,12 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.command.Completions;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -42,21 +40,12 @@ final class WorldsCompletions {
     static List<String> deletableWorldNames(
             Player player, WorldServiceImpl worldService, Set<String> deletionBlacklist, String input) {
         List<String> result = new ArrayList<>();
-        WorldStorageImpl worldStorage = worldService.getWorldStorage();
-        for (BuildWorld world : worldStorage.getBuildWorlds()) {
-            if (deletionBlacklist.contains(WorldNames.id(world.getName()))) {
-                continue;
-            }
-            if (world.getPermissions().canPerformCommand(player, Permissions.DELETE)) {
-                addIfStartsWith(input, worldStorage.typedName(world.getName()), result);
-            }
-        }
+        Completions.addWorldNames(
+                input,
+                worldService.getWorldStorage(),
+                world -> !deletionBlacklist.contains(WorldNames.id(world.getName()))
+                        && world.getPermissions().canPerformCommand(player, Permissions.DELETE),
+                result);
         return result;
-    }
-
-    static void addIfStartsWith(String input, String candidate, List<String> result) {
-        if (input.isEmpty() || candidate.toLowerCase(Locale.ROOT).startsWith(input.toLowerCase(Locale.ROOT))) {
-            result.add(candidate);
-        }
     }
 }

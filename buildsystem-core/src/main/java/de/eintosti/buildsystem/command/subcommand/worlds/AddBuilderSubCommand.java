@@ -21,6 +21,7 @@ import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
+import de.eintosti.buildsystem.command.Completions;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -141,7 +142,7 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
         Builders builders = buildWorld.getBuilders();
         Bukkit.getOnlinePlayers().stream()
                 .filter(pl -> !builders.isBuilder(pl) && !builders.isCreator(pl))
-                .forEach(pl -> WorldsCompletions.addIfStartsWith(args[1], pl.getName(), result));
+                .forEach(pl -> Completions.addMatching(args[1], pl.getName(), result));
         return result;
     }
 

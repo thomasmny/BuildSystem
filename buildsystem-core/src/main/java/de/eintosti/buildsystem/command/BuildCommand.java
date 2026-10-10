@@ -76,7 +76,7 @@ public class BuildCommand extends CommandBase {
         }
 
         if (args.length == 1 && player.hasPermission(Permissions.BUILD_OTHER)) {
-            Bukkit.getOnlinePlayers().forEach(pl -> addArgument(args[0], pl.getName(), list));
+            Bukkit.getOnlinePlayers().forEach(pl -> Completions.addMatching(args[0], pl.getName(), list));
         }
 
         return list;

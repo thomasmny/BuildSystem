@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.command.Completions;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -87,7 +88,7 @@ public class BackupsSubCommand extends AbstractSubCommand {
 
         if (player.hasPermission(Permissions.BACKUP_CREATE)) {
             List<String> result = new ArrayList<>();
-            WorldsCompletions.addIfStartsWith(args[1], "create", result);
+            Completions.addMatching(args[1], "create", result);
             return result;
         }
 

@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.Generator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.command.Completions;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.config.ConfigService;
@@ -218,8 +219,7 @@ public class ImportSubCommand extends AbstractSubCommand {
                 if (StringCleaner.hasInvalidNameCharacters(WorldNames.path(worldName), invalidCharacters)) {
                     continue;
                 }
-                WorldsCompletions.addIfStartsWith(
-                        args[1], worldService.getWorldStorage().typedNewName(worldName), result);
+                Completions.addMatching(args[1], worldService.getWorldStorage().typedNewName(worldName), result);
             }
             return result;
         }
@@ -239,12 +239,12 @@ public class ImportSubCommand extends AbstractSubCommand {
         if (args.length % 2 == 1) {
             flags.keySet().stream()
                     .filter(key -> !Lists.newArrayList(args).contains(key))
-                    .forEach(key -> WorldsCompletions.addIfStartsWith(args[args.length - 1], key, result));
+                    .forEach(key -> Completions.addMatching(args[args.length - 1], key, result));
         } else {
             List<String> values = flags.get(args[args.length - 2]);
             if (values != null) {
                 for (String v : values) {
-                    WorldsCompletions.addIfStartsWith(args[args.length - 1], v, result);
+                    Completions.addMatching(args[args.length - 1], v, result);
                 }
             }
         }

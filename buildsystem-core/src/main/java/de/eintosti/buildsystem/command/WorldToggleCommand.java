@@ -116,7 +116,11 @@ public class WorldToggleCommand extends CommandBase {
     protected List<String> complete(Player player, String label, String[] args) {
         List<String> list = new ArrayList<>();
         if (args.length == 1) {
-            addWorldArguments(player, args[0], worldStorage, toggle.permission, list);
+            Completions.addWorldNames(
+                    args[0],
+                    worldStorage,
+                    world -> world.getPermissions().canPerformCommand(player, toggle.permission),
+                    list);
         }
         return list;
     }

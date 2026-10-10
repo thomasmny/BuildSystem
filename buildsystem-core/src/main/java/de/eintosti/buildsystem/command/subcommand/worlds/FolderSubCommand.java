@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Displayable;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.command.Completions;
 import de.eintosti.buildsystem.command.subcommand.AbstractSubCommand;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -262,7 +263,7 @@ public class FolderSubCommand extends AbstractSubCommand {
         if (args.length == 2) {
             folderStorage.getFolders().stream()
                     .map(Displayable::getName)
-                    .forEach(name -> WorldsCompletions.addIfStartsWith(args[1], name, result));
+                    .forEach(name -> Completions.addMatching(args[1], name, result));
             return result;
         }
 
@@ -276,7 +277,7 @@ public class FolderSubCommand extends AbstractSubCommand {
                     entry("setItem", Permissions.FOLDER_SETITEM));
             subCmds.entrySet().stream()
                     .filter(e -> player.hasPermission(e.getValue()))
-                    .forEach(e -> WorldsCompletions.addIfStartsWith(args[2], e.getKey(), result));
+                    .forEach(e -> Completions.addMatching(args[2], e.getKey(), result));
             return result;
         }
 
@@ -297,7 +298,7 @@ public class FolderSubCommand extends AbstractSubCommand {
                                     bw.getData().get(WorldDataKey.VISIBILITY),
                                     bw.getData().get(WorldDataKey.STATUS).getId()))
                     .filter(bw -> op.equals("add") ? !bw.isAssignedToFolder() : folder.containsWorld(bw))
-                    .forEach(bw -> WorldsCompletions.addIfStartsWith(
+                    .forEach(bw -> Completions.addMatching(
                             args[3], worldService.getWorldStorage().typedName(bw.getName()), result));
             return result;
         }
