@@ -70,7 +70,6 @@ dependencies {
     implementation(libs.paperlib)
     implementation(libs.sftp)
     implementation(libs.xseries)
-    implementation(libs.zip4j)
 
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
@@ -124,7 +123,6 @@ tasks.named<ShadowJar>("shadowJar") {
     relocate("dev.dewy.nbt", "$shadePath.nbt")
     relocate("fr.mrmicky.fastboard", "$shadePath.fastboard")
     relocate("io.papermc.lib", "$shadePath.paperlib")
-    relocate("net.lingala.zip4j", "$shadePath.zip4j")
     relocate("org.apache.commons.logging", "$shadePath.apache.commons.logging")
     relocate("org.apache.sshd", "$shadePath.sshd")
     relocate("net.i2p.crypto", "$shadePath.eddsa")

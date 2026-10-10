@@ -21,33 +21,71 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostCreateEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.test.TestData;
+import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
+import java.io.File;
+import org.bukkit.Difficulty;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.WorldCreator;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 
 @NullMarked
 class WorldImporterImplTest {
 
+    @TempDir
+    File worldContainer;
+
+    private final WorldContext context = TestData.worldContext();
     private ServerMock server;
     private WorldStorageImpl worldStorage;
 
     @BeforeEach
     void setUp() {
-        server = MockBukkit.mock();
+        // MockBukkit has no world container and its worlds have no folder; the import needs both.
+        server = MockBukkit.mock(new ServerMock() {
+            @Override
+            public File getWorldContainer() {
+                return worldContainer;
+            }
+
+            @Override
+            public @Nullable World createWorld(WorldCreator creator) {
+                World created = super.createWorld(creator);
+                if (created == null) {
+                    return null;
+                }
+                World world = spy(created);
+                doReturn(new File(worldContainer, creator.name())).when(world).getWorldFolder();
+                return world;
+            }
+        });
         worldStorage = mock(WorldStorageImpl.class);
+        PluginConfig.World.Defaults defaults =
+                context.configService().current().world().defaults();
+        when(defaults.permission().publicPermission()).thenReturn("-");
+        when(defaults.difficulty()).thenReturn(Difficulty.PEACEFUL);
+        when(context.customizableIcons().getIcon(any())).thenReturn(Material.GRASS_BLOCK);
     }
 
     @AfterEach
@@ -57,7 +95,7 @@ class WorldImporterImplTest {
 
     @Test
     void importWithPluginGenerator_registersAnImportedWorld() {
-        BuildWorld imported = new WorldImporterImpl(TestData.worldContext(), worldStorage, "terra_world")
+        BuildWorld imported = new WorldImporterImpl(context, worldStorage, "terra_world")
                 .customGenerator(new CustomGeneratorImpl("Terra", "Terra", null))
                 .build();
 
@@ -71,7 +109,7 @@ class WorldImporterImplTest {
     @Test
     void failedGeneration_leavesNoRegisteredWorld() {
         // Not a valid world key, so the server refuses to create it.
-        BuildWorld imported = new WorldImporterImpl(TestData.worldContext(), worldStorage, "maps:not valid").build();
+        BuildWorld imported = new WorldImporterImpl(context, worldStorage, "maps:not valid").build();
 
         assertNull(imported);
         verify(worldStorage).removeBuildWorld(any());

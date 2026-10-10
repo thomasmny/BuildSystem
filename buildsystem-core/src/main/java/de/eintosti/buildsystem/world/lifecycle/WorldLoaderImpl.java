@@ -22,14 +22,18 @@ import de.eintosti.buildsystem.api.event.world.BuildWorldPostLoadEvent;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldLoader;
 import de.eintosti.buildsystem.i18n.Placeholders;
+import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
+import de.eintosti.buildsystem.world.backup.WorldRestore;
 import de.eintosti.buildsystem.world.creation.BukkitWorldFactory;
+import java.nio.file.Path;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class WorldLoaderImpl implements WorldLoader {
@@ -61,6 +65,14 @@ public class WorldLoaderImpl implements WorldLoader {
                     .sendMessage(player, "worlds_world_busy", Placeholders.of("%world%", this.buildWorld.getName()));
             return;
         }
+        if (failedRestore() != null) {
+            context.messages()
+                    .sendMessage(
+                            player,
+                            "worlds_world_restore_failed",
+                            Placeholders.of("%world%", this.buildWorld.getName()));
+            return;
+        }
 
         player.closeInventory();
         player.sendTitle(
@@ -75,12 +87,21 @@ public class WorldLoaderImpl implements WorldLoader {
     }
 
     /**
-     * Loads the world, unless it is loaded already or an operation such as a rename or restore is working on its
-     * folder. Loading then would create a fresh world at a path that is about to move or be replaced.
+     * Loads the world, unless it is loaded already, an operation such as a rename or restore is working on its folder,
+     * or a restore that went wrong left the folder missing or half replaced. Loading then would create a fresh world at
+     * that path.
      */
     @Override
     public void load() {
         if (this.buildWorld.isLoaded() || this.context.operations().isBusy(this.buildWorld)) {
+            return;
+        }
+        Path leftover = failedRestore();
+        if (leftover != null) {
+            this.context
+                    .logger()
+                    .severe("Not loading world \"" + this.buildWorld.getName() + "\": a restore that went wrong left "
+                            + leftover + ". Put the world folder back from it, then delete it.");
             return;
         }
 
@@ -103,5 +124,9 @@ public class WorldLoaderImpl implements WorldLoader {
 
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostLoadEvent(this.buildWorld));
         this.buildWorld.getUnloader().resetUnloadTask();
+    }
+
+    private @Nullable Path failedRestore() {
+        return WorldRestore.pendingRestore(FileUtils.worldFolder(this.buildWorld.getName()));
     }
 }

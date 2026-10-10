@@ -39,6 +39,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
@@ -70,6 +71,13 @@ public final class WorldCodec implements Codec<BuildWorld> {
 
     // The data keys come straight from WorldDataKey (see dataPath); only the pre-4.0 private boolean has no key.
     private static final String LEGACY_PRIVATE = "private";
+
+    private static final Set<WorldDataKey<?>> PARSED_SEPARATELY = Set.of(
+            WorldDataKey.STATUS,
+            WorldDataKey.CUSTOM_SPAWN,
+            WorldDataKey.DIFFICULTY,
+            WorldDataKey.MATERIAL,
+            WorldDataKey.VISIBILITY);
 
     private final WorldContext context;
     private final PlayerLookupService playerLookup;
@@ -170,7 +178,9 @@ public final class WorldCodec implements Codec<BuildWorld> {
         }
 
         for (WorldDataKey<?> key : WorldDataSchema.keys()) {
-            readPlain(data, section, key);
+            if (!PARSED_SEPARATELY.contains(key)) {
+                readPlain(data, section, key);
+            }
         }
         data.set(WorldDataKey.CUSTOM_SPAWN, parseCustomSpawn(section));
         data.set(WorldDataKey.DIFFICULTY, parseDifficulty(section, worldName));
@@ -180,8 +190,8 @@ public final class WorldCodec implements Codec<BuildWorld> {
     }
 
     /**
-     * Reads a string, boolean or number key, keeping the value already in {@code data} when the key is absent. Keys of
-     * other types are parsed by their own methods.
+     * Reads a string, boolean or number key, keeping the value already in {@code data} when the key is absent. A key of
+     * any other type needs its own parse method and a place in {@link #PARSED_SEPARATELY}.
      */
     private static <T> void readPlain(WorldDataImpl data, ConfigurationSection section, WorldDataKey<T> key) {
         String path = dataPath(key);
@@ -192,7 +202,9 @@ public final class WorldCodec implements Codec<BuildWorld> {
                     case Integer fallback -> section.getInt(path, fallback);
                     case Long fallback -> section.getLong(path, fallback);
                     case String fallback -> section.getString(path, fallback);
-                    default -> current;
+                    default ->
+                        throw new IllegalStateException("No reader for world data key " + key.id() + " of type "
+                                + key.type().getSimpleName());
                 };
         data.set(key, key.type().cast(value));
     }

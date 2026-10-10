@@ -22,8 +22,15 @@ import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.util.FileUtils;
+import de.eintosti.buildsystem.util.WorldArchive;
 import de.eintosti.buildsystem.world.backup.BackupImpl;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -203,21 +210,24 @@ public class SftpBackupStorage extends AbstractBackupStorage {
             String remotePath = backupDirectory + backupName(timestamp);
             String tempRemotePath = remotePath + ".part";
 
-            byte[] zipBytes = FileUtils.zipWorldToMemory(buildWorld);
-
-            SftpClient sftp = getSftpClient();
-            createDirectoryIfNotExists(sftp, backupDirectory);
-
+            Path archive = tmpDownloadPath.resolve(UUID.randomUUID() + ".zip");
             try {
-                try (OutputStream out = sftp.write(tempRemotePath);
-                        BufferedOutputStream bufferedOut = new BufferedOutputStream(out, BUFFER_SIZE)) {
-                    bufferedOut.write(zipBytes);
-                    bufferedOut.flush();
+                WorldArchive.write(buildWorld, archive);
+
+                SftpClient sftp = getSftpClient();
+                createDirectoryIfNotExists(sftp, backupDirectory);
+                try {
+                    try (OutputStream out = sftp.write(tempRemotePath);
+                            BufferedOutputStream bufferedOut = new BufferedOutputStream(out, BUFFER_SIZE)) {
+                        Files.copy(archive, bufferedOut);
+                    }
+                    sftp.rename(tempRemotePath, remotePath, SftpClient.CopyMode.Overwrite);
+                } catch (IOException e) {
+                    removePartialUpload(sftp, tempRemotePath, e);
+                    throw e;
                 }
-                sftp.rename(tempRemotePath, remotePath, SftpClient.CopyMode.Overwrite);
-            } catch (IOException e) {
-                removePartialUpload(sftp, tempRemotePath, e);
-                throw e;
+            } finally {
+                Files.deleteIfExists(archive);
             }
 
             logDuration(buildWorld, timestamp);

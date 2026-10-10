@@ -21,10 +21,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -35,25 +39,32 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupStorage;
+import de.eintosti.buildsystem.api.world.lifecycle.WorldLoader;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldUnloader;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
+import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.bukkit.Bukkit;
@@ -67,6 +78,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 
 /**
@@ -124,6 +136,7 @@ class BackupProfileImplTest {
     private static TaskScheduler inlineScheduler() {
         TaskScheduler scheduler = mock(TaskScheduler.class);
         lenient().when(scheduler.mainThread()).thenReturn(Runnable::run);
+        lenient().when(scheduler.background()).thenReturn(Runnable::run);
         lenient()
                 .doAnswer(invocation -> {
                     invocation.getArgument(0, Runnable.class).run();
@@ -240,6 +253,7 @@ class BackupProfileImplTest {
         verify(player).teleport(stoodAt);
         verify(messages).sendMessage(eq(player), eq("worlds_world_unload_failed"), any(Placeholders.class));
         assertEquals("current", Files.readString(worldFolder.resolve("level.dat")));
+        assertFalse(Files.exists(tempDir.resolve(".buildsystem-restore")), "the staging folder is cleaned up");
         assertFalse(operations.isBusy(buildWorld));
     }
 
@@ -284,5 +298,153 @@ class BackupProfileImplTest {
             zip.closeEntry();
         }
         return archive;
+    }
+
+    /**
+     * Makes {@link #buildWorld} a loaded world {@code arena} in {@code worldFolder} that really unloads, whose backup
+     * is the given archive from {@code backups/}.
+     *
+     * @return The backup to restore
+     */
+    private Backup unloadableArenaWithBackup(Path worldFolder, String archiveName) throws IOException {
+        Files.createDirectories(worldFolder);
+        Files.writeString(worldFolder.resolve("level.dat"), "current");
+        loadedWorld(worldFolder);
+        World world = buildWorld.getWorld().orElseThrow();
+        AtomicBoolean loaded = new AtomicBoolean(true);
+        bukkit.when(() -> Bukkit.getWorld("arena")).thenAnswer(invocation -> loaded.get() ? world : null);
+        WorldUnloader unloader = mock(WorldUnloader.class);
+        doAnswer(invocation -> {
+                    loaded.set(false);
+                    return null;
+                })
+                .when(unloader)
+                .forceUnload(any());
+        when(buildWorld.getUnloader()).thenReturn(unloader);
+        lenient().when(buildWorld.getLoader()).thenReturn(mock(WorldLoader.class));
+        lenient().when(plugin.getLogger()).thenReturn(Logger.getLogger("BackupProfileImplTest"));
+        lenient().when(messages.formatDateTime(anyLong())).thenReturn("now");
+
+        Path archive = tempDir.resolve(archiveName);
+        try (InputStream in = Objects.requireNonNull(getClass().getResourceAsStream("/backups/" + archiveName))) {
+            Files.copy(in, archive);
+        }
+        Backup backup = backup(1L);
+        when(backupStorage.downloadBackup(backup)).thenReturn(CompletableFuture.completedFuture(archive.toFile()));
+        return backup;
+    }
+
+    @Test
+    void restoringALocalBackupFromAnEarlierVersion_putsTheWorldBackInPlace() throws Exception {
+        Path worldFolder = tempDir.resolve("arena");
+        Backup backup = unloadableArenaWithBackup(worldFolder, "zip4j-local.zip");
+
+        profile(3).restoreBackup(backup, mock(Player.class)).get(5, TimeUnit.SECONDS);
+
+        assertEquals("level-data", Files.readString(worldFolder.resolve("level.dat")));
+        assertFalse(Files.exists(worldFolder.resolve("legacy")));
+        assertFalse(Files.exists(tempDir.resolve(".buildsystem-restore")), "the old folder and staging are cleaned up");
+        verify(buildWorld.getLoader()).load();
+        assertFalse(operations.isBusy(buildWorld));
+    }
+
+    @Test
+    void restoreAfterAFailedRollback_isRefusedBeforeTheWorldGoesOffline() throws Exception {
+        Path worldFolder = tempDir.resolve("arena");
+        Backup backup = unloadableArenaWithBackup(worldFolder, "zip4j-remote.zip");
+        Path leftOver =
+                Files.createDirectories(tempDir.resolve(".buildsystem-restore").resolve("arena.replaced"));
+        Files.writeString(leftOver.resolve("level.dat"), "only copy");
+        Player player = mock(Player.class);
+
+        profile(3)
+                .restoreBackup(backup, player)
+                .handle((ignored, throwable) -> null)
+                .get(5, TimeUnit.SECONDS);
+
+        assertEquals("only copy", Files.readString(leftOver.resolve("level.dat")));
+        assertEquals("current", Files.readString(worldFolder.resolve("level.dat")));
+        verify(buildWorld.getUnloader(), never()).forceUnload(any());
+        verify(buildWorld.getLoader(), never()).load();
+        verify(messages).sendMessage(player, "worlds_backup_restoration_failed");
+    }
+
+    @Test
+    void restoreWhoseSwapFails_loadsTheOldWorldAndBringsThePlayersBack() throws Exception {
+        Path worldFolder = tempDir.resolve("arena");
+        Backup backup = unloadableArenaWithBackup(worldFolder, "zip4j-remote.zip");
+        Player inside = mock(Player.class);
+        when(inside.teleport(any(Location.class))).thenReturn(true);
+        when(inside.getLocation()).thenReturn(new Location(null, 1, 64, 1));
+        when(buildWorld.getWorld().orElseThrow().getPlayers()).thenReturn(List.of(inside));
+        // Losing the extracted backup while the world unloads makes moving it in fail.
+        WorldUnloader unloader = buildWorld.getUnloader();
+        doAnswer(invocation -> {
+                    bukkit.when(() -> Bukkit.getWorld("arena")).thenReturn(null);
+                    try (Stream<Path> staged = Files.list(tempDir.resolve(".buildsystem-restore"))) {
+                        for (Path folder : staged.toList()) {
+                            FileUtils.deleteDirectory(folder);
+                        }
+                    }
+                    return null;
+                })
+                .when(unloader)
+                .forceUnload(any());
+        Player player = mock(Player.class);
+
+        profile(3)
+                .restoreBackup(backup, player)
+                .handle((ignored, throwable) -> null)
+                .get(5, TimeUnit.SECONDS);
+
+        assertEquals("current", Files.readString(worldFolder.resolve("level.dat")));
+        verify(buildWorld.getLoader()).load();
+        verify(buildWorld.getTeleporter()).teleport(inside);
+        verify(messages).sendMessage(player, "worlds_backup_restoration_failed");
+        verify(messages, never())
+                .sendMessage(eq(player), eq("worlds_backup_restoration_successful"), any(Placeholders.class));
+        assertFalse(operations.isBusy(buildWorld));
+    }
+
+    @Test
+    void restoreWhoseOldWorldCannotBePutBack_leavesTheWorldUnloaded() throws Exception {
+        Path worldFolder = tempDir.resolve("arena");
+        Backup backup = unloadableArenaWithBackup(worldFolder, "zip4j-remote.zip");
+        Player inside = mock(Player.class);
+        when(inside.teleport(any(Location.class))).thenReturn(true);
+        when(inside.getLocation()).thenReturn(new Location(null, 1, 64, 1));
+        when(buildWorld.getWorld().orElseThrow().getPlayers()).thenReturn(List.of(inside));
+        Player player = mock(Player.class);
+
+        try (MockedConstruction<WorldRestore> restores = mockConstruction(WorldRestore.class, (restore, context) -> {
+            doThrow(new IOException("second rename failed")).when(restore).swap();
+            when(restore.worldIsBack()).thenReturn(false);
+            when(restore.replaced()).thenReturn(tempDir.resolve(".buildsystem-restore/arena.replaced"));
+        })) {
+            profile(3)
+                    .restoreBackup(backup, player)
+                    .handle((ignored, throwable) -> null)
+                    .get(5, TimeUnit.SECONDS);
+
+            assertEquals(1, restores.constructed().size());
+        }
+
+        verify(buildWorld.getLoader(), never()).load();
+        verify(buildWorld.getTeleporter(), never()).teleport(any(Player.class));
+        verify(messages).sendMessage(player, "worlds_backup_restoration_failed");
+        assertFalse(operations.isBusy(buildWorld));
+    }
+
+    @Test
+    void backupThatFailsToStore_deletesNoOlderBackup() {
+        List<Backup> existing = List.of(backup(1L), backup(2L), backup(3L));
+        when(backupStorage.listBackups(buildWorld)).thenReturn(CompletableFuture.completedFuture(existing));
+        when(backupStorage.storeBackup(buildWorld))
+                .thenReturn(CompletableFuture.failedFuture(new IOException("disk full")));
+
+        CompletableFuture<Backup> result = profile(3).createBackup();
+
+        assertThrows(Exception.class, () -> result.get(5, TimeUnit.SECONDS));
+        verify(backupStorage, never()).deleteBackup(any());
     }
 }

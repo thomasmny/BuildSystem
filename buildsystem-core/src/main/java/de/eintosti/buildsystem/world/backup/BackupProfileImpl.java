@@ -32,12 +32,10 @@ import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.FileUtils;
-import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.WorldFlush;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
-import java.io.File;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
@@ -47,8 +45,6 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 import java.util.logging.Level;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.model.FileHeader;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -126,22 +122,23 @@ public class BackupProfileImpl implements BackupProfile {
     }
 
     /**
-     * Deletes any archives over the retention cap, stores the new one, and announces it.
+     * Stores the new archive, announces it, then deletes the archives it pushed over the retention cap. A backup that
+     * fails to store deletes nothing.
      */
     private CompletableFuture<Backup> storeWithRetention() {
         BackupStorage backupStorage = this.storage.get();
         return backupStorage
                 .listBackups(this.buildWorld)
-                .thenCompose(backups -> deleteExcess(backupStorage, backups))
-                .thenCompose(ignored -> backupStorage.storeBackup(this.buildWorld))
-                .thenApply(backup -> {
-                    fireEventSync(new BackupCreatedEvent(buildWorld, backup));
-                    return backup;
-                });
+                .thenCompose(backups -> backupStorage
+                        .storeBackup(this.buildWorld)
+                        .thenCompose(backup -> {
+                            fireEventSync(new BackupCreatedEvent(buildWorld, backup));
+                            return deleteExcess(backupStorage, backups).thenApply(ignored -> backup);
+                        }));
     }
 
     /**
-     * Deletes the oldest archives that the incoming backup would push over
+     * Deletes the oldest archives in {@code backups}, taken before the new one was stored, that it pushed over
      * {@link PluginConfig.World.Backup#maxBackupsPerWorld() the per-world cap}.
      */
     private CompletableFuture<Void> deleteExcess(BackupStorage backupStorage, List<Backup> backups) {
@@ -187,9 +184,9 @@ public class BackupProfileImpl implements BackupProfile {
             return CompletableFuture.completedFuture(null);
         }
 
-        // Download off the main thread, then apply the restore back on the main thread. Blocking the
-        // download here would freeze the entire server for the duration of a remote (S3/SFTP) fetch.
-        // The world is loaded again once the operation has let go of it, by the same load anyone else would use.
+        // Only taking the world offline and loading it again happen on the main thread. The download, the
+        // extraction and the folder swap run in the background, so a large world does not freeze the server.
+        WorldRestore restore = new WorldRestore(FileUtils.worldFolder(worldName));
         WorldOperations operations = worldService.operations();
         return operations
                 .runExclusively(
@@ -197,18 +194,37 @@ public class BackupProfileImpl implements BackupProfile {
                         () -> this.storage
                                 .get()
                                 .downloadBackup(backup)
+                                .thenAcceptAsync(
+                                        backupFile -> unchecked(() -> restore.stage(backupFile)),
+                                        scheduler.background())
+                                // The players are only moved once the backup is here and extracted, so a failed
+                                // download leaves them in place.
                                 .thenApplyAsync(
-                                        backupFile -> {
+                                        ignored -> operations.takeOffline(
+                                                this.buildWorld,
+                                                "worlds_backup_restoration_in_progress",
+                                                SaveBehavior.DISCARD),
+                                        mainThreadExecutor())
+                                .thenApplyAsync(
+                                        removedPlayers -> {
                                             try {
-                                                return replaceWorldFolder(worldName, backupFile);
+                                                restore.swap();
+                                                return new Swapped(removedPlayers, null, true);
                                             } catch (IOException e) {
-                                                throw new CompletionException(e);
+                                                return new Swapped(removedPlayers, e, restore.worldIsBack());
                                             }
                                         },
-                                        mainThreadExecutor()))
-                .thenAccept(removedPlayers -> reloadRestoredWorld(backup, player, removedPlayers))
+                                        scheduler.background()))
+                .thenAcceptAsync(swapped -> reloadRestoredWorld(backup, player, restore, swapped), mainThreadExecutor())
                 .whenCompleteAsync(
                         (ignored, throwable) -> {
+                            scheduler.background().execute(() -> {
+                                try {
+                                    restore.cleanUp();
+                                } catch (IOException e) {
+                                    plugin.getLogger().log(Level.WARNING, "Could not clean up after a restore", e);
+                                }
+                            });
                             if (throwable != null && !operations.reportRefusal(player, worldName, throwable)) {
                                 plugin.getLogger()
                                         .log(
@@ -222,45 +238,45 @@ public class BackupProfileImpl implements BackupProfile {
     }
 
     /**
-     * Takes the world offline and replaces its folder with the backup. Must run on the main thread, since it unloads
-     * the world.
+     * The outcome of moving a backup into place, taken back to the main thread.
      *
-     * @return The players moved out of the world, to bring back once it is loaded again
+     * @param failure Why the swap failed, or {@code null} if the backup is in place
+     * @param worldIsBack Whether the world folder holds a whole world, the backup or the old one put back
      */
-    private List<Player> replaceWorldFolder(String worldName, File backupFile) throws IOException {
-        File targetDirectory = FileUtils.worldFolder(worldName);
+    private record Swapped(
+            List<Player> removedPlayers, @Nullable IOException failure, boolean worldIsBack) {}
 
-        // Must happen before the world is deleted: a corrupt archive would otherwise only be detected once there
-        // was nothing left to restore.
-        validateBackup(backupFile, targetDirectory);
+    @FunctionalInterface
+    private interface IoAction {
+        void run() throws IOException;
+    }
 
-        // The players are only moved once the archive is here and valid, so a failed download leaves them in place.
-        List<Player> removedPlayers = worldService
-                .operations()
-                .takeOffline(this.buildWorld, "worlds_backup_restoration_in_progress", SaveBehavior.DISCARD);
+    private static void unchecked(IoAction action) {
         try {
-            FileUtils.deleteDirectory(targetDirectory);
+            action.run();
         } catch (IOException e) {
-            // Extracting over a half-deleted world would produce a corrupt mix of both.
-            throw new IOException(
-                    "Aborting restore: failed to delete world directory %s".formatted(targetDirectory), e);
+            throw new CompletionException(e);
         }
-
-        if (!targetDirectory.isDirectory() && !targetDirectory.mkdirs()) {
-            throw new IOException("Failed to create world directory for restore: " + targetDirectory.getAbsolutePath());
-        }
-        extractBackup(backupFile, targetDirectory);
-        return removedPlayers;
     }
 
     /**
-     * Loads the restored world and brings its players back. Runs on the main thread, right after the restore has
-     * released the world.
+     * Loads the world again and brings its players back, unless a failed swap could not put the old world back. Runs on
+     * the main thread, right after the restore has released the world.
      */
-    private void reloadRestoredWorld(Backup backup, Player player, List<Player> removedPlayers) {
+    private void reloadRestoredWorld(Backup backup, Player player, WorldRestore restore, Swapped swapped) {
+        @Nullable IOException failure = swapped.failure();
+        if (!swapped.worldIsBack()) {
+            // Loading now would generate an empty world in the old world's place.
+            throw new CompletionException(
+                    new IOException("The world stays unloaded, its old folder is " + restore.replaced(), failure));
+        }
+
         this.buildWorld.getLoader().load();
         WorldTeleporter worldTeleporter = this.buildWorld.getTeleporter();
-        removedPlayers.forEach(worldTeleporter::teleport);
+        swapped.removedPlayers().forEach(worldTeleporter::teleport);
+        if (failure != null) {
+            throw new CompletionException(failure);
+        }
 
         Bukkit.getPluginManager().callEvent(new BackupRestoredEvent(this.buildWorld, backup));
 
@@ -268,45 +284,6 @@ public class BackupProfileImpl implements BackupProfile {
                 player,
                 "worlds_backup_restoration_successful",
                 Placeholders.of("%timestamp%", messages.formatDateTime(backup.creationTime())));
-    }
-
-    /**
-     * Checks that {@code backupFile} is a readable archive and that no entry's resolved path escapes
-     * {@code targetDirectory} (zip-slip / path traversal).
-     *
-     * <p>Called before the world is deleted, so a corrupt archive fails the restore while the world is still
-     * intact. Reading the central directory is what detects truncation.
-     *
-     * @param backupFile The downloaded archive
-     * @param targetDirectory The directory the archive would be extracted into
-     * @throws IOException If the archive cannot be read or an entry escapes the target directory
-     */
-    private void validateBackup(File backupFile, File targetDirectory) throws IOException {
-        try (ZipFile zip = new ZipFile(backupFile)) {
-            List<FileHeader> headers = zip.getFileHeaders();
-            if (headers.isEmpty()) {
-                throw new IOException(
-                        "Refusing to restore backup: archive contains no entries: %s".formatted(backupFile));
-            }
-
-            for (FileHeader header : headers) {
-                File resolved = new File(targetDirectory, header.getFileName());
-                if (StringCleaner.isPathEscape(targetDirectory, resolved)) {
-                    throw new IOException("Refusing to restore backup: archive entry escapes the world directory: %s"
-                            .formatted(header.getFileName()));
-                }
-            }
-        }
-    }
-
-    /**
-     * Extracts a backup archive into {@code targetDirectory}. Entries are validated by
-     * {@link #validateBackup(File, File)} before the world is deleted.
-     */
-    private void extractBackup(File backupFile, File targetDirectory) throws IOException {
-        try (ZipFile zip = new ZipFile(backupFile)) {
-            zip.extractAll(targetDirectory.getPath());
-        }
     }
 
     /**
