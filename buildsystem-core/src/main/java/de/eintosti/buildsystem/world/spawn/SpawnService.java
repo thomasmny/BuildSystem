@@ -50,6 +50,12 @@ public class SpawnService {
 
     private @Nullable LogoutLocation spawn;
 
+    /**
+     * Set when the spawn changes. A stored spawn that fails to parse loads as no spawn, and writing that back on the
+     * next periodic save would erase it, so the file is only written after a change.
+     */
+    private volatile boolean dirty;
+
     public SpawnService(BuildSystemPlugin plugin, WorldServiceImpl worldService, TaskScheduler scheduler) {
         this.plugin = plugin;
         this.worldStorage = worldService.getWorldStorage();
@@ -119,14 +125,6 @@ public class SpawnService {
     }
 
     /**
-     * {@return the name of the world the spawn is in, or {@code null} when no spawn is set}
-     */
-    public @Nullable String getSpawnWorldName() {
-        LogoutLocation stored = this.spawn;
-        return stored != null ? stored.worldName() : null;
-    }
-
-    /**
      * {@return whether the spawn is set inside the given world}
      */
     public boolean isIn(String worldName) {
@@ -136,6 +134,7 @@ public class SpawnService {
 
     public void set(Location location, String worldName) {
         this.spawn = new LogoutLocation(worldName, location);
+        this.dirty = true;
     }
 
     /**
@@ -145,14 +144,23 @@ public class SpawnService {
         LogoutLocation stored = this.spawn;
         if (stored != null && isIn(oldName)) {
             this.spawn = stored.withWorldName(newName);
+            this.dirty = true;
         }
     }
 
     public void remove() {
         this.spawn = null;
+        this.dirty = true;
     }
 
+    /**
+     * Writes the spawn when it changed since the last save.
+     */
     public CompletableFuture<Void> save() {
+        if (!dirty) {
+            return CompletableFuture.completedFuture(null);
+        }
+        dirty = false;
         LogoutLocation stored = this.spawn;
         String formatted = stored != null ? LogoutLocationCodec.format(stored) : null;
         return CompletableFuture.runAsync(() -> spawnStorage.saveSpawn(formatted), background);

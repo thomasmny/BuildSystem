@@ -83,7 +83,7 @@ class SpawnServiceTest {
         SpawnService service = newService();
 
         assertTrue(service.spawnExists());
-        assertEquals("lobby", service.getSpawnWorldName());
+        assertTrue(service.isIn("lobby"));
     }
 
     @Test
@@ -92,7 +92,7 @@ class SpawnServiceTest {
 
         SpawnService service = newService();
 
-        assertEquals("maps:lobby", service.getSpawnWorldName());
+        assertTrue(service.isIn("maps:lobby"));
     }
 
     @Test
@@ -100,7 +100,7 @@ class SpawnServiceTest {
         SpawnService service = newService();
 
         assertFalse(service.spawnExists());
-        assertNull(service.getSpawnWorldName());
+        assertFalse(service.isIn("lobby"));
     }
 
     @Test
@@ -110,7 +110,7 @@ class SpawnServiceTest {
         service.save().join();
 
         assertEquals("lobby:1.5:70.0:-2.5:45.0:10.0", readSpawnFile().getString("spawn"));
-        assertEquals("lobby", newService().getSpawnWorldName());
+        assertTrue(newService().isIn("lobby"));
     }
 
     @Test
@@ -124,6 +124,17 @@ class SpawnServiceTest {
         assertFalse(service.spawnExists());
         assertNull(readSpawnFile().getString("spawn"));
         assertFalse(newService().spawnExists());
+    }
+
+    @Test
+    void unparseableSpawn_isLeftOnDiskBySaving() throws IOException {
+        writeSpawn("lobby:not-a-number");
+        SpawnService service = newService();
+
+        service.save().join();
+
+        assertFalse(service.spawnExists());
+        assertEquals("lobby:not-a-number", readSpawnFile().getString("spawn"));
     }
 
     @Test
@@ -142,8 +153,9 @@ class SpawnServiceTest {
 
         service.renameWorld("lobby", "hub");
 
-        assertEquals("hub", service.getSpawnWorldName());
+        assertTrue(service.isIn("hub"));
+        assertFalse(service.isIn("lobby"));
         service.renameWorld("other", "elsewhere");
-        assertEquals("hub", service.getSpawnWorldName());
+        assertTrue(service.isIn("hub"));
     }
 }
