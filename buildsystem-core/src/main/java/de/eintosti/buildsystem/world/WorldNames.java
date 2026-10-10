@@ -98,19 +98,25 @@ public final class WorldNames {
     }
 
     /**
-     * {@return the world name a player means by {@code input}} A bare name is placed in {@code defaultNamespace}.
+     * {@return the name of a new world a player typed} A bare name is placed in {@code defaultNamespace}.
      */
     public static String fromInput(String input, String defaultNamespace) {
-        return input.indexOf(SEPARATOR) < 0 ? of(defaultNamespace, input) : of(namespace(input), path(input));
+        return isQualified(input) ? normalize(input) : of(defaultNamespace, input);
     }
 
     /**
-     * {@return what a player types to reach a world} The inverse of {@link #fromInput}: the namespace is only left out
-     * when it is the default one.
+     * {@return whether {@code input} names its namespace, {@code minecraft} included}
      */
-    public static String toInput(String worldName, String defaultNamespace) {
-        String namespace = namespace(worldName);
-        return namespace.equals(defaultNamespace) ? path(worldName) : namespace + SEPARATOR + path(worldName);
+    public static boolean isQualified(String input) {
+        return input.indexOf(SEPARATOR) >= 0;
+    }
+
+    /**
+     * {@return {@code worldName} with its namespace spelled out, {@code minecraft} included} Typed back, it always
+     * means this one world.
+     */
+    public static String qualified(String worldName) {
+        return namespace(worldName) + SEPARATOR + path(worldName);
     }
 
     /**
@@ -121,14 +127,6 @@ public final class WorldNames {
         return isNamespaced(worldName)
                 ? namespace(worldName) + "_" + path(worldName).toLowerCase(Locale.ROOT)
                 : path(worldName);
-    }
-
-    /**
-     * {@return what a player types to reach a loaded world, whatever the default namespace}
-     */
-    public static String toInput(World world) {
-        String worldName = of(world);
-        return namespace(worldName) + SEPARATOR + path(worldName);
     }
 
     public static boolean isValidNamespace(String namespace) {

@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.command.subcommand;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -41,7 +40,8 @@ public abstract class AbstractSubCommand implements SubCommand {
 
     /**
      * Runs the shared preamble for subcommands that act on a named world: permission (checked before existence so
-     * unpermitted players cannot probe which world names exist), argument count, then existence.
+     * unpermitted players cannot probe which world names exist), argument count, then existence. A name typed without a
+     * namespace is resolved as {@link WorldServiceImpl#resolveWorldName} describes.
      *
      * @param player The command sender
      * @param worldName The world name argument
@@ -53,9 +53,13 @@ public abstract class AbstractSubCommand implements SubCommand {
      */
     protected @Nullable BuildWorld requireWorld(
             Player player, String worldName, String[] args, int maxArgs, String messageKeyPrefix) {
-        BuildWorld buildWorld = worldService
-                .getWorldStorage()
-                .getBuildWorld(WorldNames.fromInput(worldName, worldService.defaultNamespace()));
+        String resolvedName =
+                worldService.resolveWorldName(player, worldName, getArgument().getPermission());
+        if (resolvedName == null) {
+            return null;
+        }
+
+        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(resolvedName);
         if (buildWorld != null
                 && !buildWorld
                         .getPermissions()

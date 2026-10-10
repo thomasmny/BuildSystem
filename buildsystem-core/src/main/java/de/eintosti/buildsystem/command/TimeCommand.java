@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldNames;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -39,12 +40,14 @@ import org.jspecify.annotations.Nullable;
 public class TimeCommand extends CommandBase {
 
     private final ConfigService configService;
+    private final WorldServiceImpl worldService;
     private final WorldStorageImpl worldStorage;
 
-    public TimeCommand(Messages messages, Logger logger, ConfigService configService, WorldStorageImpl worldStorage) {
+    public TimeCommand(Messages messages, Logger logger, ConfigService configService, WorldServiceImpl worldService) {
         super(messages, logger, true);
         this.configService = configService;
-        this.worldStorage = worldStorage;
+        this.worldService = worldService;
+        this.worldStorage = worldService.getWorldStorage();
     }
 
     /**
@@ -86,8 +89,10 @@ public class TimeCommand extends CommandBase {
             return;
         }
 
-        String worldName = worldNameFromArgs(
-                player, args, 0, configService.current().world().defaultNamespace());
+        String worldName = worldNameFromArgs(player, args, 0, worldService, variant.permission);
+        if (worldName == null) {
+            return;
+        }
         World world = WorldNames.bukkitWorld(worldName);
         if (world == null) {
             messages.sendMessage(player, variant.label + "_unknown_world");
@@ -117,13 +122,7 @@ public class TimeCommand extends CommandBase {
         switch (lc) {
             case "day":
             case "night":
-                addWorldArguments(
-                        player,
-                        args[0],
-                        worldStorage.getBuildWorlds(),
-                        Permissions.command(lc),
-                        configService.current().world().defaultNamespace(),
-                        list);
+                addWorldArguments(player, args[0], worldStorage, Permissions.command(lc), list);
                 break;
         }
         return list;

@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -100,29 +101,24 @@ class CommandBaseTest {
         when(player.getWorld()).thenReturn(world);
         when(world.getName()).thenReturn("world");
         when(world.getKey()).thenReturn(NamespacedKey.minecraft("overworld"));
+        WorldServiceImpl worldService = mock(WorldServiceImpl.class);
 
-        String result = cmd.worldNameFromArgs(player, NO_ARGS, 0, "maps");
+        String result = cmd.worldNameFromArgs(player, NO_ARGS, 0, worldService, null);
 
         assertEquals("world", result);
+        verifyNoInteractions(worldService);
     }
 
     @Test
-    void worldNameFromArgs_argsPresent_returnsArgAtIndex() {
+    void worldNameFromArgs_argsPresent_resolvesTheTypedName() {
         TestCommand cmd = new TestCommand(true);
         Player player = mock(Player.class);
+        WorldServiceImpl worldService = mock(WorldServiceImpl.class);
+        when(worldService.resolveWorldName(player, "lobby", "perm")).thenReturn("maps:lobby");
 
-        String result = cmd.worldNameFromArgs(player, new String[] {"myWorld"}, 0, NamespacedKey.MINECRAFT);
+        String result = cmd.worldNameFromArgs(player, new String[] {"lobby"}, 0, worldService, "perm");
 
-        assertEquals("myWorld", result);
-    }
-
-    @Test
-    void worldNameFromArgs_bareName_isPlacedInDefaultNamespace() {
-        TestCommand cmd = new TestCommand(true);
-        Player player = mock(Player.class);
-
-        assertEquals("maps:lobby", cmd.worldNameFromArgs(player, new String[] {"lobby"}, 0, "maps"));
-        assertEquals("lobby", cmd.worldNameFromArgs(player, new String[] {"minecraft:lobby"}, 0, "maps"));
+        assertEquals("maps:lobby", result);
     }
 
     @Test

@@ -78,7 +78,8 @@ public class WorldCreationPrompts {
     }
 
     private boolean nameStep(Prompts promptsInstance, Player player, Selection selection, String input) {
-        String name = promptsInstance.sanitizeWorldName(player, input, worldService.defaultNamespace());
+        String name = promptsInstance.sanitizeWorldName(
+                player, worldService.getWorldStorage().newWorldName(input.trim()));
         if (name == null) {
             return false;
         }

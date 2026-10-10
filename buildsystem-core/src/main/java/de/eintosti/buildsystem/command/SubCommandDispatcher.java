@@ -71,7 +71,7 @@ public final class SubCommandDispatcher {
         }
 
         // Convention: /worlds <sub> <world> — args[1] is the world name as typed when present
-        String worldName = args.length >= 2 ? args[1] : WorldNames.toInput(player.getWorld());
+        String worldName = args.length >= 2 ? args[1] : WorldNames.qualified(WorldNames.of(player.getWorld()));
         subCommand.execute(player, worldName, args);
         return true;
     }

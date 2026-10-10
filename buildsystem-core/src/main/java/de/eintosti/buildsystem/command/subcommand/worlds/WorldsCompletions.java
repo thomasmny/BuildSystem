@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -42,12 +43,12 @@ final class WorldsCompletions {
     static List<String> permittedWorldNames(
             Player player, WorldServiceImpl worldService, @Nullable String commandPermission, String input) {
         List<String> result = new ArrayList<>();
-        String defaultNamespace = worldService.defaultNamespace();
-        for (BuildWorld world : worldService.getWorldStorage().getBuildWorlds()) {
+        WorldStorageImpl worldStorage = worldService.getWorldStorage();
+        for (BuildWorld world : worldStorage.getBuildWorlds()) {
             String worldPerm = world.getData().get(WorldDataKey.PERMISSION);
             if ((player.hasPermission(worldPerm) || worldPerm.equalsIgnoreCase("-"))
                     && world.getPermissions().canPerformCommand(player, commandPermission)) {
-                addIfStartsWith(input, WorldNames.toInput(world.getName(), defaultNamespace), result);
+                addIfStartsWith(input, worldStorage.typedName(world.getName()), result);
             }
         }
         return result;
@@ -61,13 +62,13 @@ final class WorldsCompletions {
     static List<String> deletableWorldNames(
             Player player, WorldServiceImpl worldService, Set<String> deletionBlacklist, String input) {
         List<String> result = new ArrayList<>();
-        String defaultNamespace = worldService.defaultNamespace();
-        for (BuildWorld world : worldService.getWorldStorage().getBuildWorlds()) {
+        WorldStorageImpl worldStorage = worldService.getWorldStorage();
+        for (BuildWorld world : worldStorage.getBuildWorlds()) {
             if (deletionBlacklist.contains(WorldNames.id(world.getName()))) {
                 continue;
             }
             if (world.getPermissions().canPerformCommand(player, Permissions.DELETE)) {
-                addIfStartsWith(input, WorldNames.toInput(world.getName(), defaultNamespace), result);
+                addIfStartsWith(input, worldStorage.typedName(world.getName()), result);
             }
         }
         return result;

@@ -29,8 +29,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
@@ -52,9 +54,14 @@ public abstract class WorldStorageImpl implements WorldStorage {
 
     private final ConcurrentHashMap<UUID, BuildWorld> buildWorldsByUuid;
     private final ConcurrentHashMap<String, UUID> uuidByName;
+    private final Supplier<String> defaultNamespace;
 
-    protected WorldStorageImpl(Logger logger) {
+    /**
+     * @param defaultNamespace Supplies {@code world.default-namespace}, read on every use so a config reload applies
+     */
+    protected WorldStorageImpl(Logger logger, Supplier<String> defaultNamespace) {
         this.logger = logger;
+        this.defaultNamespace = defaultNamespace;
         this.buildWorldsByUuid = new ConcurrentHashMap<>();
         this.uuidByName = new ConcurrentHashMap<>();
     }
@@ -120,6 +127,63 @@ public abstract class WorldStorageImpl implements WorldStorage {
         if (!oldKey.equals(newKey)) {
             this.uuidByName.remove(oldKey);
         }
+    }
+
+    /**
+     * {@return the stored worlds a player means by {@code input}} A name with a namespace matches exactly. A name
+     * without one matches that name in any namespace, so old worlds keep working after the default namespace changes;
+     * when several match, the one in the default namespace wins, then the one in {@code minecraft}. More than one
+     * result means the name is ambiguous.
+     */
+    public List<BuildWorld> matchWorlds(String input) {
+        if (WorldNames.isQualified(input)) {
+            BuildWorld buildWorld = getBuildWorld(input);
+            return buildWorld == null ? List.of() : List.of(buildWorld);
+        }
+
+        List<BuildWorld> matches = worldsWithPath(input);
+        if (matches.size() > 1) {
+            for (String namespace : List.of(defaultNamespace.get(), NamespacedKey.MINECRAFT)) {
+                for (BuildWorld match : matches) {
+                    if (WorldNames.namespace(match.getName()).equals(namespace)) {
+                        return List.of(match);
+                    }
+                }
+            }
+        }
+        return matches;
+    }
+
+    /**
+     * {@return the shortest name a player can type for an existing world} That is its name without a namespace when no
+     * other world shares it, otherwise {@code namespace:name}.
+     */
+    public String typedName(String worldName) {
+        return worldsWithPath(WorldNames.path(worldName)).size() > 1
+                ? WorldNames.qualified(worldName)
+                : WorldNames.path(worldName);
+    }
+
+    /**
+     * {@return the name of a new world a player typed} A name without a namespace is placed in the default namespace.
+     */
+    public String newWorldName(String input) {
+        return WorldNames.fromInput(input, defaultNamespace.get());
+    }
+
+    /**
+     * {@return what a player types to give a new world this name} The inverse of {@link #newWorldName}.
+     */
+    public String typedNewName(String worldName) {
+        return WorldNames.namespace(worldName).equals(defaultNamespace.get())
+                ? WorldNames.path(worldName)
+                : WorldNames.qualified(worldName);
+    }
+
+    private List<BuildWorld> worldsWithPath(String path) {
+        return getBuildWorlds().stream()
+                .filter(buildWorld -> WorldNames.path(buildWorld.getName()).equalsIgnoreCase(path))
+                .toList();
     }
 
     /**

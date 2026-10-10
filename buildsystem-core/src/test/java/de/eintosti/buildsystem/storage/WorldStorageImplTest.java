@@ -50,11 +50,12 @@ class WorldStorageImplTest {
     @TempDir
     Path tempDir;
 
+    private String defaultNamespace = NamespacedKey.MINECRAFT;
     private WorldStorageImpl storage;
 
     @BeforeEach
     void setUp() {
-        storage = new WorldStorageImpl(Logger.getLogger("test")) {
+        storage = new WorldStorageImpl(Logger.getLogger("test"), () -> defaultNamespace) {
             @Override
             public CompletableFuture<Void> save(BuildWorld object) {
                 return CompletableFuture.completedFuture(null);
@@ -303,6 +304,68 @@ class WorldStorageImplTest {
         bukkit.when(Bukkit::getWorlds).thenReturn(List.of(main));
         bukkit.when(() -> Bukkit.getWorld(anyString())).thenReturn(null);
         return bukkit;
+    }
+
+    @Test
+    void matchWorlds_bareName_findsAUniqueWorldInAnyNamespace() {
+        BuildWorld arena = world("events:Arena");
+        storage.addBuildWorld(arena);
+
+        assertEquals(List.of(arena), storage.matchWorlds("arena"));
+        assertEquals(List.of(arena), storage.matchWorlds("EVENTS:arena"));
+        assertEquals(List.of(), storage.matchWorlds("minecraft:arena"));
+        assertEquals(List.of(), storage.matchWorlds("lobby"));
+    }
+
+    @Test
+    void matchWorlds_bareName_prefersTheDefaultNamespaceThenMinecraft() {
+        BuildWorld plain = world("Lobby");
+        BuildWorld maps = world("maps:Lobby");
+        storage.addBuildWorld(plain);
+        storage.addBuildWorld(maps);
+        storage.addBuildWorld(world("events:Lobby"));
+
+        defaultNamespace = "maps";
+        assertEquals(List.of(maps), storage.matchWorlds("lobby"));
+        defaultNamespace = "other";
+        assertEquals(List.of(plain), storage.matchWorlds("lobby"));
+    }
+
+    @Test
+    void matchWorlds_bareName_isAmbiguousWithoutAPreferredWorld() {
+        BuildWorld events = world("events:Lobby");
+        BuildWorld games = world("games:Lobby");
+        storage.addBuildWorld(events);
+        storage.addBuildWorld(games);
+
+        assertEquals(2, storage.matchWorlds("lobby").size());
+        assertEquals(List.of(games), storage.matchWorlds("games:lobby"));
+    }
+
+    @Test
+    void typedName_isTheBarePathOnlyWhenNoOtherWorldSharesIt() {
+        storage.addBuildWorld(world("events:Arena"));
+        storage.addBuildWorld(world("Lobby"));
+        storage.addBuildWorld(world("maps:Lobby"));
+
+        assertEquals("Arena", storage.typedName("events:Arena"));
+        assertEquals("minecraft:Lobby", storage.typedName("Lobby"));
+        assertEquals("maps:Lobby", storage.typedName("maps:Lobby"));
+    }
+
+    @Test
+    void newWorldName_placesBareNamesInTheDefaultNamespace() {
+        defaultNamespace = "maps";
+
+        assertEquals("maps:lobby", storage.newWorldName("lobby"));
+        assertEquals("Lobby", storage.newWorldName("minecraft:Lobby"));
+        assertEquals("events:lobby", storage.newWorldName("Events:lobby"));
+        for (String worldName : List.of("Lobby", "maps:Lobby", "events:Arena")) {
+            String typed = storage.typedNewName(worldName);
+            assertEquals(worldName, storage.newWorldName(typed), typed);
+        }
+        assertEquals("Lobby", storage.typedNewName("maps:Lobby"));
+        assertEquals("minecraft:Lobby", storage.typedNewName("Lobby"));
     }
 
     @Test

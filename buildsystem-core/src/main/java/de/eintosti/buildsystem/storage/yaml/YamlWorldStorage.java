@@ -49,7 +49,7 @@ public class YamlWorldStorage extends WorldStorageImpl {
     private @Nullable WorldCodec codec;
 
     public YamlWorldStorage(BuildSystemPlugin plugin, Services services) {
-        super(plugin.getLogger());
+        super(plugin.getLogger(), () -> services.config().current().world().defaultNamespace());
         this.services = services;
         this.store = new YamlStore(plugin.getDataFolder(), "worlds.yml", plugin.getLogger());
         this.config = store.config();

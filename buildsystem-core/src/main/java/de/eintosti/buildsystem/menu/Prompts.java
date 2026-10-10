@@ -99,16 +99,14 @@ public final class Prompts {
     }
 
     /**
-     * Sanitizes a typed world name like {@link #sanitizeName}, keeping an optional {@code namespace:} prefix. A name
-     * typed without one is placed in {@code defaultNamespace}.
+     * Sanitizes the name of a new world like {@link #sanitizeName}, keeping its namespace.
      *
      * @param player The player who typed the name
-     * @param input The raw input
-     * @param defaultNamespace The namespace of a name typed without one
+     * @param worldName The name, already placed in a namespace (see {@link
+     *     de.eintosti.buildsystem.storage.WorldStorageImpl#newWorldName})
      * @return The world name, or {@code null} if it cannot be used (a message has already been sent)
      */
-    public @Nullable String sanitizeWorldName(Player player, String input, String defaultNamespace) {
-        String worldName = WorldNames.fromInput(input.trim(), defaultNamespace);
+    public @Nullable String sanitizeWorldName(Player player, String worldName) {
         if (!checkNamespace(player, worldName)) {
             return null;
         }

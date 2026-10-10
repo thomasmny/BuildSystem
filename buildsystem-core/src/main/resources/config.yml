@@ -27,7 +27,9 @@ settings:
 
 world:
   lock-weather: true
-  # The namespace of a world whose name is typed without one, e.g. "lobby" instead of "maps:lobby".
+  # The namespace a new world goes into when its name is typed without one, e.g. "lobby" instead of "maps:lobby".
+  # This applies to creating, renaming and importing. An existing world is found by its name in any namespace;
+  # when several share a name, the one in this namespace wins, then the one in minecraft.
   # Namespaces other than minecraft require Paper.
   default-namespace: minecraft
   invalid-characters: "^\\b$"

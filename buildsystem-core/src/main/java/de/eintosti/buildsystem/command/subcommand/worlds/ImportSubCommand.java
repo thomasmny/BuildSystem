@@ -81,7 +81,7 @@ public class ImportSubCommand extends AbstractSubCommand {
             return;
         }
 
-        String worldName = WorldNames.fromInput(input, worldService.defaultNamespace());
+        String worldName = worldService.getWorldStorage().newWorldName(input);
         if (worldService.getWorldStorage().worldExists(worldName)) {
             messages.sendMessage(player, "worlds_import_world_is_imported");
             return;
@@ -232,7 +232,7 @@ public class ImportSubCommand extends AbstractSubCommand {
                     continue;
                 }
                 WorldsCompletions.addIfStartsWith(
-                        args[1], WorldNames.toInput(worldName, worldService.defaultNamespace()), result);
+                        args[1], worldService.getWorldStorage().typedNewName(worldName), result);
             }
             return result;
         }

@@ -75,15 +75,11 @@ class WorldNamesTest {
     }
 
     @Test
-    void toInput_roundTripsThroughFromInput() {
-        for (String defaultNamespace : new String[] {NamespacedKey.MINECRAFT, "maps"}) {
-            for (String worldName : new String[] {"Lobby", "maps:Lobby", "events:Arena"}) {
-                String typed = WorldNames.toInput(worldName, defaultNamespace);
-                assertEquals(worldName, WorldNames.fromInput(typed, defaultNamespace), typed);
-            }
-        }
-        assertEquals("minecraft:Lobby", WorldNames.toInput("Lobby", "maps"));
-        assertEquals("Lobby", WorldNames.toInput("maps:Lobby", "maps"));
+    void qualified_spellsOutEveryNamespace() {
+        assertEquals("minecraft:Lobby", WorldNames.qualified("Lobby"));
+        assertEquals("maps:Lobby", WorldNames.qualified("maps:Lobby"));
+        assertTrue(WorldNames.isQualified("minecraft:Lobby"));
+        assertFalse(WorldNames.isQualified("Lobby"));
     }
 
     @Test
@@ -119,13 +115,11 @@ class WorldNamesTest {
         when(namespaced.getName()).thenReturn("maps_lobby");
         when(namespaced.getKey()).thenReturn(new NamespacedKey("maps", "lobby"));
         assertEquals("maps:lobby", WorldNames.of(namespaced));
-        assertEquals("maps:lobby", WorldNames.toInput(namespaced));
 
         World main = mock(World.class);
         when(main.getName()).thenReturn("world");
         when(main.getKey()).thenReturn(NamespacedKey.minecraft("overworld"));
         assertEquals("world", WorldNames.of(main));
-        assertEquals("minecraft:world", WorldNames.toInput(main));
     }
 
     @Test

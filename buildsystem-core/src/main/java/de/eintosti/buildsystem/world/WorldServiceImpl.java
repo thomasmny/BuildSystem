@@ -163,10 +163,41 @@ public class WorldServiceImpl implements WorldService {
     }
 
     /**
-     * {@return the namespace a world name typed without one is placed in}
+     * Resolves what a player typed to the name of an existing world, as {@link WorldStorageImpl#matchWorlds} does.
+     * When the name is ambiguous the player is told which names to type instead, limited to the worlds they may run
+     * {@code permission} in so the reply does not reveal the others.
+     *
+     * @param player The player who typed the name
+     * @param input What they typed
+     * @param permission The command permission the world is checked against, or {@code null} for none
+     * @return The world's name; {@code input} itself when no stored world matches, so a world BuildSystem does not
+     *     manage can still be named; or {@code null} when the name is ambiguous (a message has already been sent)
      */
-    public String defaultNamespace() {
-        return services.config().current().world().defaultNamespace();
+    public @Nullable String resolveWorldName(Player player, String input, @Nullable String permission) {
+        List<BuildWorld> matches = worldStorage.matchWorlds(input);
+        if (matches.isEmpty()) {
+            return WorldNames.normalize(input);
+        }
+        if (matches.size() == 1) {
+            return matches.getFirst().getName();
+        }
+
+        List<String> permitted = matches.stream()
+                .filter(buildWorld -> buildWorld.getPermissions().canPerformCommand(player, permission))
+                .map(buildWorld -> WorldNames.qualified(buildWorld.getName()))
+                .toList();
+        if (permitted.isEmpty()) {
+            messages.sendPermissionError(player);
+        } else {
+            messages.sendMessage(
+                    player,
+                    "worlds_world_ambiguous",
+                    Placeholders.of()
+                            .add("%world%", input)
+                            .add("%worlds%", String.join(", ", permitted))
+                            .build());
+        }
+        return null;
     }
 
     public void startWorldNameInput(

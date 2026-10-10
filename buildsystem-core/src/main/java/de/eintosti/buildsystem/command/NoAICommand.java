@@ -20,12 +20,12 @@ package de.eintosti.buildsystem.command;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
-import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldNames;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -37,19 +37,21 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public class NoAICommand extends CommandBase {
 
-    private final ConfigService configService;
+    private final WorldServiceImpl worldService;
     private final WorldStorageImpl worldStorage;
 
-    public NoAICommand(Messages messages, Logger logger, ConfigService configService, WorldStorageImpl worldStorage) {
+    public NoAICommand(Messages messages, Logger logger, WorldServiceImpl worldService) {
         super(messages, logger, true);
-        this.configService = configService;
-        this.worldStorage = worldStorage;
+        this.worldService = worldService;
+        this.worldStorage = worldService.getWorldStorage();
     }
 
     @Override
     protected void run(Player player, String label, String[] args) {
-        String worldName = worldNameFromArgs(
-                player, args, 0, configService.current().world().defaultNamespace());
+        String worldName = worldNameFromArgs(player, args, 0, worldService, Permissions.NOAI);
+        if (worldName == null) {
+            return;
+        }
         BuildWorld buildWorld = worldStorage.getBuildWorld(worldName);
         if (buildWorld != null && !buildWorld.getPermissions().canPerformCommand(player, Permissions.NOAI)) {
             messages.sendPermissionError(player);
@@ -67,13 +69,7 @@ public class NoAICommand extends CommandBase {
     protected List<String> complete(Player player, String label, String[] args) {
         List<String> list = new ArrayList<>();
         if (args.length == 1) {
-            addWorldArguments(
-                    player,
-                    args[0],
-                    worldStorage.getBuildWorlds(),
-                    Permissions.NOAI,
-                    configService.current().world().defaultNamespace(),
-                    list);
+            addWorldArguments(player, args[0], worldStorage, Permissions.NOAI, list);
         }
         return list;
     }
