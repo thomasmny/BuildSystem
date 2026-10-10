@@ -27,13 +27,13 @@ import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import de.eintosti.buildsystem.util.DirectionUtil;
+import de.eintosti.buildsystem.util.MaterialUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -91,13 +91,11 @@ public class DisabledInteractionsListener implements Listener {
             return;
         }
 
-        // Denying the interacted block is what keeps a container from opening.
+        // Cancelling denies the interacted block too, which is what keeps a container from opening.
         event.setCancelled(true);
-        event.setUseItemInHand(Event.Result.DENY);
-        event.setUseInteractedBlock(Event.Result.DENY);
 
         Material placed = XTag.SIGNS.isTagged(xMaterial) && event.getBlockFace() != BlockFace.UP
-                ? InstantSignPlacementListener.wallSign(material)
+                ? MaterialUtils.wallVariant(material)
                 : material;
         if (placed == null || !placed.isBlock()) {
             return;
