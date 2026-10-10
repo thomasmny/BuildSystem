@@ -15,12 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package de.eintosti.buildsystem.storage.yaml;
+package de.eintosti.buildsystem.storage;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.eintosti.buildsystem.storage.codec.Codec;
+import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
+import de.eintosti.buildsystem.storage.yaml.YamlStore;
 import java.io.File;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -34,7 +36,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 @NullMarked
-class YamlEntityFileTest {
+class EntityCollectionTest {
 
     @TempDir
     File dataFolder;
@@ -62,15 +64,13 @@ class YamlEntityFileTest {
     void aDeleteAfterASave_isWrittenAfterIt() {
         // Runs the most recently submitted task first, the worst order a thread pool could pick.
         Deque<Runnable> queued = new ArrayDeque<>();
-        Logger logger = Logger.getLogger("YamlEntityFileTest");
-        YamlEntityFile<Entry> file = new YamlEntityFile<>(
-                new YamlStore(dataFolder, "entries.yml", logger),
-                "entries",
+        Logger logger = Logger.getLogger("EntityCollectionTest");
+        EntityCollection<Entry> file = new EntityCollection<>(
+                new YamlEntityStore(new YamlStore(dataFolder, "entries.yml", logger), "entries", logger, null),
                 "entry",
                 () -> CODEC,
                 queued::push,
-                logger,
-                null);
+                logger);
 
         CompletableFuture<Void> save = file.save(new Entry("arena"));
         CompletableFuture<Void> delete = file.delete(new Entry("arena"));

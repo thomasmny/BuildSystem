@@ -23,6 +23,7 @@ import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.storage.EntityStore;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
@@ -50,11 +51,12 @@ public class PlayerServiceImpl implements PlayerService {
             BuildSystemPlugin plugin,
             ConfigService configService,
             WorldStorageImpl worldStorage,
-            TaskScheduler scheduler) {
+            TaskScheduler scheduler,
+            EntityStore store) {
         this.plugin = plugin;
         this.configService = configService;
         this.worldStorage = worldStorage;
-        this.playerStorage = new PlayerStorageImpl(plugin, scheduler);
+        this.playerStorage = new PlayerStorageImpl(plugin, scheduler, store);
         this.maxWorldsResolver = new MaxWorldsResolver(plugin.getLogger());
         this.buildModePlayers = ConcurrentHashMap.newKeySet();
     }

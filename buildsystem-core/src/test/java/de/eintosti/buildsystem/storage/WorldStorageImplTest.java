@@ -56,7 +56,8 @@ class WorldStorageImplTest {
 
     @BeforeEach
     void setUp() {
-        storage = new WorldStorageImpl(Logger.getLogger("test"), () -> defaultNamespace, TestData.noopEntityFile());
+        storage =
+                new WorldStorageImpl(Logger.getLogger("test"), () -> defaultNamespace, TestData.noopEntityCollection());
     }
 
     private BuildWorld world(String name) {

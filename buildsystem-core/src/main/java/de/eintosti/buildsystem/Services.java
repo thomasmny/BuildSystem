@@ -32,6 +32,7 @@ import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.WorldPrompts;
@@ -97,8 +98,10 @@ public final class Services {
         this.playerLookupService =
                 new PlayerLookupService(plugin, taskScheduler.background(), taskScheduler.mainThread());
         // The storages read the world context and category registry from here only once the stored worlds load.
-        this.worldStorage = new WorldStorageImpl(plugin, this);
-        this.folderStorage = new FolderStorageImpl(plugin, worldStorage, this);
+        this.worldStorage =
+                new WorldStorageImpl(plugin, this, YamlEntityStore.worlds(plugin.getDataFolder(), plugin.getLogger()));
+        this.folderStorage = new FolderStorageImpl(
+                plugin, worldStorage, this, YamlEntityStore.folders(plugin.getDataFolder(), plugin.getLogger()));
 
         this.navigatorCategoryRegistry = new NavigatorCategoryRegistryImpl(plugin, folderStorage);
         this.worldStatusRegistry =
@@ -106,7 +109,13 @@ public final class Services {
         this.customizableIcons = new CustomizableIcons(plugin);
 
         this.customBlockManager = new CustomBlockManager(plugin, taskScheduler, worldStorage);
-        (this.playerService = new PlayerServiceImpl(plugin, configService, worldStorage, taskScheduler)).init();
+        (this.playerService = new PlayerServiceImpl(
+                        plugin,
+                        configService,
+                        worldStorage,
+                        taskScheduler,
+                        YamlEntityStore.players(plugin.getDataFolder(), plugin.getLogger())))
+                .init();
         this.navigatorEditorService = new NavigatorEditorService();
         this.noClipService = new NoClipService(taskScheduler);
         this.spawnService = new SpawnService(plugin, worldStorage, taskScheduler);

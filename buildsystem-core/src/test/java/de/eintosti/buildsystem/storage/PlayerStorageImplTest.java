@@ -37,7 +37,7 @@ class PlayerStorageImplTest {
 
     @BeforeEach
     void setUp() {
-        storage = new PlayerStorageImpl(Logger.getLogger("test"), TestData.noopEntityFile());
+        storage = new PlayerStorageImpl(Logger.getLogger("test"), TestData.noopEntityCollection());
     }
 
     @Test

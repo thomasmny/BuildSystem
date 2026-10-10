@@ -78,7 +78,8 @@ class YamlWorldStorageRoundTripTest {
     }
 
     private WorldStorageImpl newStorage() {
-        return new WorldStorageImpl(plugin, services);
+        return new WorldStorageImpl(
+                plugin, services, YamlEntityStore.worlds(plugin.getDataFolder(), plugin.getLogger()));
     }
 
     private BuildWorldImpl sampleWorld(UUID uuid, String name) {
@@ -251,7 +252,8 @@ class YamlWorldStorageRoundTripTest {
         when(strict.worldContext()).thenThrow(new IllegalStateException("service not initialized yet"));
         when(strict.playerLookup()).thenThrow(new IllegalStateException("service not initialized yet"));
 
-        assertDoesNotThrow(() -> new WorldStorageImpl(plugin, strict));
+        assertDoesNotThrow(() -> new WorldStorageImpl(
+                plugin, strict, YamlEntityStore.worlds(plugin.getDataFolder(), plugin.getLogger())));
     }
 
     @Test
