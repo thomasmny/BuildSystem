@@ -17,14 +17,21 @@
  */
 package de.eintosti.buildsystem.storage;
 
+import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
 import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
+import de.eintosti.buildsystem.storage.codec.PlayerCodec;
+import de.eintosti.buildsystem.storage.yaml.YamlEntityFile;
+import de.eintosti.buildsystem.storage.yaml.YamlStore;
+import de.eintosti.buildsystem.util.TaskScheduler;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -41,15 +48,55 @@ import org.jspecify.annotations.Nullable;
  * data wins over any blank entry a concurrent lookup may have created in the brief load window.
  */
 @NullMarked
-public abstract class PlayerStorageImpl implements PlayerStorage {
+public class PlayerStorageImpl implements PlayerStorage {
 
     protected final Logger logger;
 
     private final ConcurrentHashMap<UUID, BuildPlayer> buildPlayers;
+    private final YamlEntityFile<BuildPlayer> file;
 
-    protected PlayerStorageImpl(Logger logger) {
+    public PlayerStorageImpl(BuildSystemPlugin plugin, TaskScheduler scheduler) {
+        this(
+                plugin.getLogger(),
+                new YamlEntityFile<>(
+                        new YamlStore(plugin.getDataFolder(), "players.yml", plugin.getLogger()),
+                        "players",
+                        "player",
+                        () -> new PlayerCodec(plugin.getLogger()),
+                        scheduler.background(),
+                        plugin.getLogger(),
+                        null));
+    }
+
+    PlayerStorageImpl(Logger logger, YamlEntityFile<BuildPlayer> file) {
         this.logger = logger;
         this.buildPlayers = new ConcurrentHashMap<>();
+        this.file = file;
+    }
+
+    @Override
+    public CompletableFuture<Void> save(BuildPlayer buildPlayer) {
+        return file.save(buildPlayer);
+    }
+
+    @Override
+    public CompletableFuture<Void> save(Collection<BuildPlayer> buildPlayers) {
+        return file.save(buildPlayers);
+    }
+
+    @Override
+    public CompletableFuture<Collection<BuildPlayer>> load() {
+        return file.load().thenApply(loaded -> new ArrayList<>(loaded.values()));
+    }
+
+    @Override
+    public CompletableFuture<Void> delete(BuildPlayer buildPlayer) {
+        return file.delete(buildPlayer);
+    }
+
+    @Override
+    public CompletableFuture<Void> delete(String playerKey) {
+        return file.delete(playerKey);
     }
 
     public void loadPlayers() {

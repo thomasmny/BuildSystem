@@ -132,7 +132,7 @@ public final class FolderCodec implements Codec<Folder> {
      * @param section The folder's configuration section
      * @return The parent folder's UUID, or {@code null} when the folder has no parent
      */
-    public @Nullable String parentReference(ConfigurationSection section) {
+    public static @Nullable String parentReference(ConfigurationSection section) {
         return section.getString(PARENT);
     }
 

@@ -25,7 +25,6 @@ import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.storage.yaml.YamlPlayerStorage;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.Collections;
@@ -57,7 +56,7 @@ public class PlayerServiceImpl implements PlayerService {
         this.plugin = plugin;
         this.configService = configService;
         this.worldService = worldService;
-        this.playerStorage = new YamlPlayerStorage(plugin, scheduler);
+        this.playerStorage = new PlayerStorageImpl(plugin, scheduler);
         this.maxWorldsResolver = new MaxWorldsResolver(plugin.getLogger());
         this.buildModePlayers = ConcurrentHashMap.newKeySet();
     }

@@ -17,19 +17,27 @@
  */
 package de.eintosti.buildsystem.storage;
 
+import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.storage.codec.WorldCodec;
+import de.eintosti.buildsystem.storage.migration.StorageMigration;
+import de.eintosti.buildsystem.storage.yaml.YamlEntityFile;
+import de.eintosti.buildsystem.storage.yaml.YamlStore;
 import de.eintosti.buildsystem.util.FileUtils;
 import de.eintosti.buildsystem.world.WorldNames;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -52,22 +60,63 @@ import org.jspecify.annotations.Nullable;
  * compound mutations are ordered so a concurrent reader never observes a world's two index entries out of step.
  */
 @NullMarked
-public abstract class WorldStorageImpl implements WorldStorage {
+public class WorldStorageImpl implements WorldStorage {
 
     protected final Logger logger;
 
     private final ConcurrentHashMap<UUID, BuildWorld> buildWorldsByUuid;
     private final ConcurrentHashMap<String, UUID> uuidByName;
     private final Supplier<String> defaultNamespace;
+    private final YamlEntityFile<BuildWorld> file;
+
+    public WorldStorageImpl(BuildSystemPlugin plugin, Services services) {
+        this(
+                plugin.getLogger(),
+                () -> services.config().current().world().defaultNamespace(),
+                new YamlEntityFile<>(
+                        new YamlStore(plugin.getDataFolder(), "worlds.yml", plugin.getLogger()),
+                        "worlds",
+                        "world",
+                        () -> new WorldCodec(services.worldContext(), services.playerLookup()),
+                        services.scheduler().background(),
+                        plugin.getLogger(),
+                        StorageMigration::migrateWorlds));
+    }
 
     /**
      * @param defaultNamespace Supplies {@code world.default-namespace}, read on every use so a config reload applies
      */
-    protected WorldStorageImpl(Logger logger, Supplier<String> defaultNamespace) {
+    WorldStorageImpl(Logger logger, Supplier<String> defaultNamespace, YamlEntityFile<BuildWorld> file) {
         this.logger = logger;
         this.defaultNamespace = defaultNamespace;
         this.buildWorldsByUuid = new ConcurrentHashMap<>();
         this.uuidByName = new ConcurrentHashMap<>();
+        this.file = file;
+    }
+
+    @Override
+    public CompletableFuture<Void> save(BuildWorld buildWorld) {
+        return file.save(buildWorld);
+    }
+
+    @Override
+    public CompletableFuture<Void> save(Collection<BuildWorld> buildWorlds) {
+        return file.save(buildWorlds);
+    }
+
+    @Override
+    public CompletableFuture<Collection<BuildWorld>> load() {
+        return file.load().thenApply(loaded -> new ArrayList<>(loaded.values()));
+    }
+
+    @Override
+    public CompletableFuture<Void> delete(BuildWorld buildWorld) {
+        return file.delete(buildWorld);
+    }
+
+    @Override
+    public CompletableFuture<Void> delete(String worldKey) {
+        return file.delete(worldKey);
     }
 
     @Override

@@ -24,13 +24,12 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.test.TestData;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -57,32 +56,7 @@ class WorldStorageImplTest {
 
     @BeforeEach
     void setUp() {
-        storage = new WorldStorageImpl(Logger.getLogger("test"), () -> defaultNamespace) {
-            @Override
-            public CompletableFuture<Void> save(BuildWorld object) {
-                return CompletableFuture.completedFuture(null);
-            }
-
-            @Override
-            public CompletableFuture<Void> save(Collection<BuildWorld> objects) {
-                return CompletableFuture.completedFuture(null);
-            }
-
-            @Override
-            public CompletableFuture<Collection<BuildWorld>> load() {
-                return CompletableFuture.completedFuture(List.of());
-            }
-
-            @Override
-            public CompletableFuture<Void> delete(BuildWorld object) {
-                return CompletableFuture.completedFuture(null);
-            }
-
-            @Override
-            public CompletableFuture<Void> delete(String key) {
-                return CompletableFuture.completedFuture(null);
-            }
-        };
+        storage = new WorldStorageImpl(Logger.getLogger("test"), () -> defaultNamespace, TestData.noopEntityFile());
     }
 
     private BuildWorld world(String name) {

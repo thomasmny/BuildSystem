@@ -24,6 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 
 import de.eintosti.buildsystem.api.event.folder.FolderCreatedEvent;
 import de.eintosti.buildsystem.api.event.folder.FolderDeletedEvent;
@@ -31,9 +33,9 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.storage.yaml.YamlEntityFile;
 import de.eintosti.buildsystem.test.TestData;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -59,33 +61,14 @@ class FolderStorageImplTest {
         WorldStorage worldStorage = Mockito.mock(WorldStorage.class);
         creator = Builder.of(UUID.randomUUID(), "TestPlayer");
 
-        storage = new FolderStorageImpl(logger, worldStorage) {
-            @Override
-            public CompletableFuture<Collection<Folder>> load() {
-                return CompletableFuture.completedFuture(List.of());
-            }
-
-            @Override
-            public CompletableFuture<Void> save(Folder folder) {
-                return CompletableFuture.completedFuture(null);
-            }
-
-            @Override
-            public CompletableFuture<Void> save(Collection<Folder> folders) {
-                return CompletableFuture.completedFuture(null);
-            }
-
-            @Override
-            public CompletableFuture<Void> delete(Folder folder) {
-                deletedFromStorage.add(folder);
-                return CompletableFuture.completedFuture(null);
-            }
-
-            @Override
-            public CompletableFuture<Void> delete(String folderKey) {
-                return CompletableFuture.completedFuture(null);
-            }
-
+        YamlEntityFile<Folder> file = TestData.noopEntityFile();
+        doAnswer(invocation -> {
+                    deletedFromStorage.add(invocation.getArgument(0));
+                    return CompletableFuture.completedFuture(null);
+                })
+                .when(file)
+                .delete(any(Folder.class));
+        storage = new FolderStorageImpl(logger, worldStorage, TestData::worldContext, file) {
             @Override
             protected Folder newFolder(
                     String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {

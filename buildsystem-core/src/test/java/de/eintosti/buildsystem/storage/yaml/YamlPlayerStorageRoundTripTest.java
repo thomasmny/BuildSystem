@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
+import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import java.io.File;
 import java.util.Collection;
@@ -49,8 +50,8 @@ class YamlPlayerStorageRoundTripTest {
         scheduler = new TaskScheduler(plugin);
     }
 
-    private YamlPlayerStorage newStorage() {
-        return new YamlPlayerStorage(plugin, scheduler);
+    private PlayerStorageImpl newStorage() {
+        return new PlayerStorageImpl(plugin, scheduler);
     }
 
     private BuildPlayerImpl samplePlayer(UUID uuid) {

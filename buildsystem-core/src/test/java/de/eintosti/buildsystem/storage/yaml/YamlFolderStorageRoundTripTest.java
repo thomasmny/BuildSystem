@@ -26,6 +26,7 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
@@ -36,13 +37,14 @@ import java.util.List;
 import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.event.Event;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 /**
- * Round-trip tests for {@link YamlFolderStorage}: a folder serialized and saved must deserialize back with all fields
+ * Round-trip tests for {@link FolderStorageImpl}: a folder serialized and saved must deserialize back with all fields
  * intact, including parent references resolved in the second load pass.
  */
 class YamlFolderStorageRoundTripTest {
@@ -64,8 +66,8 @@ class YamlFolderStorageRoundTripTest {
         worldStorage = Mockito.mock(WorldStorage.class);
     }
 
-    private YamlFolderStorage newStorage() {
-        return new YamlFolderStorage(plugin, worldStorage, services);
+    private FolderStorageImpl newStorage() {
+        return new FolderStorageImpl(plugin, worldStorage, services);
     }
 
     private FolderImpl folder(String name, NavigatorCategory category, List<UUID> worlds) {
@@ -123,6 +125,38 @@ class YamlFolderStorageRoundTripTest {
 
         Folder loaded = findByName(newStorage().load().join(), "Legacy");
         assertNotNull(loaded.getUniqueId());
+    }
+
+    @Test
+    void removedFolder_isGoneAfterARestart() {
+        FolderImpl kept = folder("Kept", TestData.PUBLIC, List.of());
+        FolderImpl removed = folder("Removed", TestData.PUBLIC, List.of());
+        newStorage().save(List.of(kept, removed)).join();
+
+        FolderStorageImpl storage = new FolderStorageImpl(plugin, worldStorage, services) {
+            @Override
+            protected void fireEvent(Event event) {}
+        };
+        storage.loadFolders();
+        storage.removeFolder("Removed");
+        // Queued behind the delete, so joining it means the delete has been written too.
+        storage.save(storage.getFolders()).join();
+
+        Collection<Folder> afterRestart = newStorage().load().join();
+        assertEquals(List.of("Kept"), afterRestart.stream().map(Folder::getName).toList());
+    }
+
+    @Test
+    void deleteRightAfterSave_isNeverUndoneByTheSave() {
+        FolderStorageImpl storage = newStorage();
+        for (int i = 0; i < 50; i++) {
+            FolderImpl folder = folder("Folder" + i, TestData.PUBLIC, List.of());
+            storage.save(folder);
+            storage.delete(folder);
+        }
+        storage.save(List.of()).join();
+
+        assertTrue(newStorage().load().join().isEmpty());
     }
 
     @Test
