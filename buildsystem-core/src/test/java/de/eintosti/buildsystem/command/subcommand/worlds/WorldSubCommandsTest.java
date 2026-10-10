@@ -22,9 +22,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,6 +39,7 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
 import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.PlayerChatInput.InputRunnable;
@@ -53,6 +56,7 @@ import de.eintosti.buildsystem.world.download.WorldDownloadService;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -286,6 +290,51 @@ class WorldSubCommandsTest {
 
         assertEquals(List.of("Lobby"), edit.complete(player, new String[] {"edit", "lo"}));
         assertEquals(List.of(), edit.complete(player, new String[] {"edit", "lo", "x"}));
+    }
+
+    private void deletionBlacklist(String... ids) {
+        PluginConfig config = mock(PluginConfig.class, RETURNS_DEEP_STUBS);
+        when(config.world().deletionBlacklist()).thenReturn(Set.of(ids));
+        when(configService.current()).thenReturn(config);
+    }
+
+    @Test
+    void delete_blacklistedWorld_isRefused() {
+        deletionBlacklist("minecraft:world");
+        when(buildWorld.getName()).thenReturn("World");
+
+        new DeleteSubCommand(messages, worldService, configService, menus)
+                .execute(player, buildWorld, new String[] {"delete", "World"});
+
+        verify(messages).sendMessage(player, "worlds_delete_forbidden");
+        verify(menus, never()).openDelete(any(), any());
+    }
+
+    @Test
+    void delete_sameNameInAnotherNamespace_opensTheDeleteMenu() {
+        deletionBlacklist("minecraft:world");
+        when(buildWorld.getName()).thenReturn("maps:world");
+
+        new DeleteSubCommand(messages, worldService, configService, menus)
+                .execute(player, buildWorld, new String[] {"delete", "maps:world"});
+
+        verify(menus).openDelete(buildWorld, player);
+        verify(messages, never()).sendMessage(player, "worlds_delete_forbidden");
+    }
+
+    @Test
+    void deleteCompletion_leavesOutBlacklistedWorlds() {
+        deletionBlacklist("minecraft:world");
+        BuildWorld blacklisted = buildWorld(true);
+        BuildWorld deletable = buildWorld(true);
+        when(deletable.getName()).thenReturn("workshop");
+        when(worldStorage.getBuildWorlds()).thenReturn(List.of(blacklisted, deletable));
+        when(worldStorage.typedNames()).thenReturn(Function.identity());
+
+        assertEquals(
+                List.of("workshop"),
+                new DeleteSubCommand(messages, worldService, configService, menus)
+                        .complete(player, new String[] {"delete", "wo"}));
     }
 
     private BuildWorld buildWorld(boolean permitted) {
