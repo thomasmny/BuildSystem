@@ -17,8 +17,7 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.navigator.NavigatorService;
@@ -32,22 +31,18 @@ import org.jspecify.annotations.NullMarked;
  * subclasses that forward to it — to a handful of parameters instead of a long, transposable row of services. The
  * {@link Menus} factory assembles one and hands it to each menu it opens.
  *
- * @param messages The message service
+ * @param menu The messages, menu items and menu factory every menu uses
  * @param playerService The player service
  * @param settingsService The settings service
  * @param worldService The world service, queried for its folder and world storages
- * @param menuItems The shared menu-item renderer
  * @param prompts The chat-input prompt factory
  * @param navigatorService The navigator service
- * @param menus The menu factory/navigation hub
  */
 @NullMarked
 public record DisplayablesContext(
-        Messages messages,
+        MenuContext menu,
         PlayerServiceImpl playerService,
         SettingsService settingsService,
         WorldServiceImpl worldService,
-        MenuItems menuItems,
         Prompts prompts,
-        NavigatorService navigatorService,
-        Menus menus) {}
+        NavigatorService navigatorService) {}

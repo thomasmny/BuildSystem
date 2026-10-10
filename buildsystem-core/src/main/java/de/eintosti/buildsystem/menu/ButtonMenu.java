@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.menu;
 
-import de.eintosti.buildsystem.i18n.Messages;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -53,12 +52,12 @@ public abstract class ButtonMenu extends Menu {
     /**
      * Creates the menu and its backing inventory.
      *
-     * @param messages The message provider
+     * @param context The shared menu collaborators
      * @param size The inventory size in slots (a multiple of 9)
      * @param title The inventory title shown to the player
      */
-    protected ButtonMenu(Messages messages, int size, String title) {
-        super(messages, size, title);
+    protected ButtonMenu(MenuContext context, int size, String title) {
+        super(context, size, title);
     }
 
     /**

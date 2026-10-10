@@ -53,12 +53,13 @@ public class CategoryWorldsMenu extends DisplayablesMenu {
                 player,
                 Options.builder()
                         .category(category)
-                        .title(context.messages()
+                        .title(context.menu()
+                                .messages()
                                 .getString(
                                         "category_title",
                                         player,
                                         Placeholders.of("%category%", category.getDisplayName())))
-                        .emptyMessage(context.messages().getString("world_navigator_no_worlds", player))
+                        .emptyMessage(context.menu().messages().getString("world_navigator_no_worlds", player))
                         .build());
         this.worldStatusRegistry = worldStatusRegistry;
     }

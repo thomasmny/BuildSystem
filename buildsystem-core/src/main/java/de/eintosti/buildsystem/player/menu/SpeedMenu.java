@@ -18,11 +18,11 @@
 package de.eintosti.buildsystem.player.menu;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.player.settings.SettingsService;
@@ -51,8 +51,8 @@ public class SpeedMenu extends ButtonMenu {
 
     private final SettingsService settingsService;
 
-    public SpeedMenu(Messages messages, SettingsService settingsService, Player player) {
-        super(messages, 27, messages.getString("speed_title", player));
+    public SpeedMenu(MenuContext context, SettingsService settingsService, Player player) {
+        super(context, 27, context.messages().getString("speed_title", player));
         this.settingsService = settingsService;
 
         SPEED_BY_SLOT.forEach((slot, option) -> register(slot, speedButton(option)));

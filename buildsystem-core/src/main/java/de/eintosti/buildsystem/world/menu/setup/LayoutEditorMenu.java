@@ -20,11 +20,10 @@ package de.eintosti.buildsystem.world.menu.setup;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.display.Registry;
 import de.eintosti.buildsystem.api.world.display.RegistryEntry;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.Menu;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
@@ -98,28 +97,22 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
 
     private final int previewSize;
     private final LayoutMessages keys;
-    protected final MenuItems menuItems;
-    protected final Menus menus;
     protected final Prompts prompts;
     private final TaskScheduler scheduler;
     private final NavigatorEditorService navigatorEditorService;
     private final Held held = new Held();
 
     protected LayoutEditorMenu(
-            Messages messages,
+            MenuContext context,
             int previewSize,
             String title,
             LayoutMessages keys,
-            MenuItems menuItems,
-            Menus menus,
             TaskScheduler scheduler,
             Prompts prompts,
             NavigatorEditorService navigatorEditorService) {
-        super(messages, previewSize, title);
+        super(context, previewSize, title);
         this.previewSize = previewSize;
         this.keys = keys;
-        this.menuItems = menuItems;
-        this.menus = menus;
         this.scheduler = scheduler;
         this.prompts = prompts;
         this.navigatorEditorService = navigatorEditorService;

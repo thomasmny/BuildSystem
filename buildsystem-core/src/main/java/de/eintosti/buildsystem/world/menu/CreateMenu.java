@@ -21,12 +21,10 @@ import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.FileUtils;
@@ -72,8 +70,6 @@ public class CreateMenu extends PaginatedMenu {
             BuildWorldType.END, "create_end_world",
             BuildWorldType.VOID, "create_void_world");
 
-    private final MenuItems menuItems;
-    private final Menus menus;
     private final WorldServiceImpl worldService;
     private final CustomizableIcons customizableIcons;
     private final File dataFolder;
@@ -87,9 +83,7 @@ public class CreateMenu extends PaginatedMenu {
     private File @Nullable [] templateFiles;
 
     public CreateMenu(
-            Messages messages,
-            MenuItems menuItems,
-            Menus menus,
+            MenuContext context,
             WorldServiceImpl worldService,
             CustomizableIcons customizableIcons,
             File dataFolder,
@@ -97,9 +91,7 @@ public class CreateMenu extends PaginatedMenu {
             Visibility visibility,
             @Nullable Folder folder,
             Player player) {
-        super(messages, 45, messages.getString("create_title", player));
-        this.menuItems = menuItems;
-        this.menus = menus;
+        super(context, 45, context.messages().getString("create_title", player));
         this.worldService = worldService;
         this.customizableIcons = customizableIcons;
         this.dataFolder = dataFolder;

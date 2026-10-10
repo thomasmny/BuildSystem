@@ -19,11 +19,9 @@ package de.eintosti.buildsystem.world.menu;
 
 import com.cryptomorin.xseries.XGameRule;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.Arrays;
@@ -51,17 +49,12 @@ public class GameRulesMenu extends PaginatedMenu {
     private static final int SLOT_PREVIOUS_PAGE = 36;
     private static final int SLOT_NEXT_PAGE = 44;
 
-    private final MenuItems menuItems;
     private final Logger logger;
-    private final Menus menus;
     private final BuildWorld buildWorld;
 
-    public GameRulesMenu(
-            Messages messages, MenuItems menuItems, Logger logger, Menus menus, BuildWorld buildWorld, Player player) {
-        super(messages, 45, messages.getString("worldeditor_gamerules_title", player));
-        this.menuItems = menuItems;
+    public GameRulesMenu(MenuContext context, Logger logger, BuildWorld buildWorld, Player player) {
+        super(context, 45, context.messages().getString("worldeditor_gamerules_title", player));
         this.logger = logger;
-        this.menus = menus;
         this.buildWorld = buildWorld;
     }
 

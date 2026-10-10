@@ -30,6 +30,7 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.player.settings.SettingsService;
@@ -76,11 +77,9 @@ class StatusMenuTest {
         when(buildWorld.getData()).thenReturn(data);
 
         return new StatusMenu(
-                messages,
+                new MenuContext(messages, mock(MenuItems.class), mock(Menus.class)),
                 registry,
                 mock(SettingsService.class),
-                mock(MenuItems.class),
-                mock(Menus.class),
                 buildWorld,
                 server.addPlayer());
     }

@@ -18,12 +18,11 @@
 package de.eintosti.buildsystem.world.menu.setup;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.util.color.ColorAPI;
@@ -66,7 +65,6 @@ public class MaterialPickerMenu extends ButtonMenu {
             .sorted(Comparator.comparing(Enum::name))
             .toList();
 
-    private final MenuItems menuItems;
     private final Prompts prompts;
     private final Consumer<Material> onPick;
     private final Runnable onBack;
@@ -75,14 +73,8 @@ public class MaterialPickerMenu extends ButtonMenu {
     private int topRow = 0;
 
     public MaterialPickerMenu(
-            Messages messages,
-            MenuItems menuItems,
-            Prompts prompts,
-            Player player,
-            Consumer<Material> onPick,
-            Runnable onBack) {
-        super(messages, INVENTORY_SIZE, messages.getString("setup_item_picker_title", player));
-        this.menuItems = menuItems;
+            MenuContext context, Prompts prompts, Player player, Consumer<Material> onPick, Runnable onBack) {
+        super(context, INVENTORY_SIZE, context.messages().getString("setup_item_picker_title", player));
         this.prompts = prompts;
         this.onPick = onPick;
         this.onBack = onBack;

@@ -76,47 +76,45 @@ public final class Menus {
     private final BuildSystemPlugin plugin;
     private final Services services;
     private final TaskScheduler scheduler;
+    private final MenuContext context;
 
     public Menus(BuildSystemPlugin plugin, Services services) {
         this.plugin = plugin;
         this.services = services;
         this.scheduler = services.scheduler();
+        this.context = new MenuContext(services.messages(), services.menuItems(), this);
     }
 
     public void openSpeed(Player player) {
-        new SpeedMenu(services.messages(), services.settings(), player).open(player);
+        new SpeedMenu(context, services.settings(), player).open(player);
     }
 
     public void openBlocks(Player player) {
-        new CustomBlockMenu(services.messages(), services.menuItems(), player).open(player);
+        new CustomBlockMenu(context, player).open(player);
     }
 
     public void openDesign(Player player) {
-        new DesignMenu(services.messages(), services.settings(), services.menuItems(), this, player).open(player);
+        new DesignMenu(context, services.settings(), player).open(player);
     }
 
     public void openSettings(Player player) {
         new SettingsMenu(
-                        services.messages(),
+                        context,
                         services.settings(),
                         services.config(),
-                        services.menuItems(),
                         services.navigator(),
                         services.noClip(),
-                        this,
                         player)
                 .open(player);
     }
 
     public void openBackups(BuildWorld buildWorld, Player player) {
         new BackupsMenu(
-                        services.messages(),
+                        context,
                         services.backup(),
-                        services.menuItems(),
                         services.config(),
                         plugin.getLogger(),
                         scheduler,
-                        this,
                         buildWorld,
                         player)
                 .open(player);
@@ -125,7 +123,7 @@ public final class Menus {
     public void openBackupsConfirmation(Backup backup, Player player) {
         Messages messages = services.messages();
         new ConfirmMenu(
-                        messages,
+                        context,
                         messages.getString("restore_backup_title", player),
                         new ConfirmMenu.Choice(
                                 ItemBuilder.of(Material.LIME_DYE)
@@ -177,21 +175,13 @@ public final class Menus {
             return false;
         }
 
-        new EditMenu(
-                        services.messages(),
-                        services.player(),
-                        services.menuItems(),
-                        services.config(),
-                        services.prompts(),
-                        this,
-                        buildWorld,
-                        player)
+        new EditMenu(context, services.player(), services.config(), services.prompts(), buildWorld, player)
                 .open(player);
         return true;
     }
 
     public void openBuilder(BuildWorld buildWorld, Player player) {
-        new BuilderMenu(services.messages(), services.menuItems(), this, buildWorld, player).open(player);
+        new BuilderMenu(context, buildWorld, player).open(player);
     }
 
     public void promptWorldProject(BuildWorld buildWorld, Player player) {
@@ -212,8 +202,7 @@ public final class Menus {
     }
 
     public void openNavigator(Player player) {
-        new NavigatorMenu(services.messages(), services.menuItems(), this, services.navigatorCategoryRegistry(), player)
-                .open(player);
+        new NavigatorMenu(context, services.navigatorCategoryRegistry(), player).open(player);
     }
 
     public void openCategoryWorlds(NavigatorCategory category, Player player) {
@@ -229,21 +218,17 @@ public final class Menus {
      */
     private DisplayablesContext displayablesContext() {
         return new DisplayablesContext(
-                services.messages(),
+                context,
                 services.player(),
                 services.settings(),
                 services.world(),
-                services.menuItems(),
                 services.prompts(),
-                services.navigator(),
-                this);
+                services.navigator());
     }
 
     public void openCreate(CreateMenu.Page page, Visibility visibility, @Nullable Folder folder, Player player) {
         new CreateMenu(
-                        services.messages(),
-                        services.menuItems(),
-                        this,
+                        context,
                         services.world(),
                         services.customizableIcons(),
                         plugin.getDataFolder(),
@@ -258,7 +243,7 @@ public final class Menus {
         Messages messages = services.messages();
         Placeholders world = Placeholders.of("%world%", buildWorld.getName());
         new ConfirmMenu(
-                        messages,
+                        context,
                         messages.getString("delete_title", player),
                         new ConfirmMenu.Choice(
                                 ItemBuilder.of(Material.LIME_DYE)
@@ -279,29 +264,25 @@ public final class Menus {
     }
 
     public void openGameRules(BuildWorld buildWorld, Player player) {
-        new GameRulesMenu(services.messages(), services.menuItems(), plugin.getLogger(), this, buildWorld, player)
-                .open(player);
+        new GameRulesMenu(context, plugin.getLogger(), buildWorld, player).open(player);
     }
 
     public void openPhysics(BuildWorld buildWorld, Player player) {
-        new PhysicsMenu(services.messages(), services.menuItems(), this, buildWorld, player).open(player);
+        new PhysicsMenu(context, buildWorld, player).open(player);
     }
 
     public void openMaterialPicker(Player player, Consumer<Material> onPick, Runnable onBack) {
-        new MaterialPickerMenu(services.messages(), services.menuItems(), services.prompts(), player, onPick, onBack)
-                .open(player);
+        new MaterialPickerMenu(context, services.prompts(), player, onPick, onBack).open(player);
     }
 
     public void openDyePicker(Player player, String currentToken, Consumer<String> onPick, Runnable onBack) {
-        new DyePickerMenu(services.messages(), services.menuItems(), player, currentToken, onPick, onBack).open(player);
+        new DyePickerMenu(context, player, currentToken, onPick, onBack).open(player);
     }
 
     public void openCategoryEditor(NavigatorCategory category, Player player) {
         new CategoryEditorMenu(
-                        services.messages(),
+                        context,
                         services.prompts(),
-                        this,
-                        services.menuItems(),
                         services.navigatorCategoryRegistry(),
                         services.worldStatusRegistry(),
                         player,
@@ -310,43 +291,26 @@ public final class Menus {
     }
 
     public void openStatusEditor(BuildWorldStatus status, Player player) {
-        new StatusEditorMenu(
-                        services.messages(),
-                        services.prompts(),
-                        this,
-                        services.menuItems(),
-                        services.worldStatusRegistry(),
-                        player,
-                        status)
-                .open(player);
+        new StatusEditorMenu(context, services.prompts(), services.worldStatusRegistry(), player, status).open(player);
     }
 
     public void openCategoryStatuses(NavigatorCategory category, Player player) {
         new CategoryStatusesMenu(
-                        services.messages(),
-                        services.menuItems(),
-                        this,
-                        services.navigatorCategoryRegistry(),
-                        services.worldStatusRegistry(),
-                        player,
-                        category)
+                        context, services.navigatorCategoryRegistry(), services.worldStatusRegistry(), player, category)
                 .open(player);
     }
 
     public void openSetup(Player player) {
-        new SetupMenu(services.messages(), services.menuItems(), this, player).open(player);
+        new SetupMenu(context, player).open(player);
     }
 
     public void openDefaultIcons(Player player) {
-        new DefaultIconsMenu(services.messages(), services.menuItems(), this, services.customizableIcons(), player)
-                .open(player);
+        new DefaultIconsMenu(context, services.customizableIcons(), player).open(player);
     }
 
     public void openNavigatorLayout(Player player) {
         new NavigatorLayoutMenu(
-                        services.messages(),
-                        services.menuItems(),
-                        this,
+                        context,
                         scheduler,
                         services.prompts(),
                         services.navigatorCategoryRegistry(),
@@ -357,9 +321,7 @@ public final class Menus {
 
     public void openStatusLayout(Player player) {
         new StatusLayoutMenu(
-                        services.messages(),
-                        services.menuItems(),
-                        this,
+                        context,
                         scheduler,
                         services.prompts(),
                         services.worldStatusRegistry(),
@@ -370,20 +332,10 @@ public final class Menus {
 
     public void openDeletionConfirm(
             Player player, String infoName, List<String> infoLore, Runnable onConfirm, Runnable onCancel) {
-        new DeletionConfirmMenu(
-                        services.messages(), services.menuItems(), player, infoName, infoLore, onConfirm, onCancel)
-                .open(player);
+        new DeletionConfirmMenu(context, player, infoName, infoLore, onConfirm, onCancel).open(player);
     }
 
     public void openStatus(BuildWorld buildWorld, Player player) {
-        new StatusMenu(
-                        services.messages(),
-                        services.worldStatusRegistry(),
-                        services.settings(),
-                        services.menuItems(),
-                        this,
-                        buildWorld,
-                        player)
-                .open(player);
+        new StatusMenu(context, services.worldStatusRegistry(), services.settings(), buildWorld, player).open(player);
     }
 }

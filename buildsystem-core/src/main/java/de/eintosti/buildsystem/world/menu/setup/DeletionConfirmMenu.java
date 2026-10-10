@@ -18,11 +18,10 @@
 package de.eintosti.buildsystem.world.menu.setup;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.List;
 import org.bukkit.Material;
@@ -45,18 +44,14 @@ public class DeletionConfirmMenu extends ButtonMenu {
     private static final int SLOT_INFO = 13;
     private static final int SLOT_CANCEL = 15;
 
-    private final MenuItems menuItems;
-
     public DeletionConfirmMenu(
-            Messages messages,
-            MenuItems menuItems,
+            MenuContext context,
             Player player,
             String infoName,
             List<String> infoLore,
             Runnable onConfirm,
             Runnable onCancel) {
-        super(messages, INVENTORY_SIZE, messages.getString("setup_confirm_title", player));
-        this.menuItems = menuItems;
+        super(context, INVENTORY_SIZE, context.messages().getString("setup_confirm_title", player));
 
         register(SLOT_CONFIRM, createChoiceButton(SkullTextures.CONFIRM, "setup_confirm_yes", onConfirm));
         register(SLOT_CANCEL, createChoiceButton(SkullTextures.CANCEL, "setup_confirm_no", onCancel));

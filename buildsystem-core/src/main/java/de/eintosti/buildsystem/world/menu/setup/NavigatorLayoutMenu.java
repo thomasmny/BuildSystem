@@ -20,10 +20,8 @@ package de.eintosti.buildsystem.world.menu.setup;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.Registry;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
@@ -68,21 +66,17 @@ public class NavigatorLayoutMenu extends LayoutEditorMenu<NavigatorCategory> {
     private final SettingsButton settingsButton = new SettingsButton();
 
     public NavigatorLayoutMenu(
-            Messages messages,
-            MenuItems menuItems,
-            Menus menus,
+            MenuContext context,
             TaskScheduler scheduler,
             Prompts prompts,
             NavigatorCategoryRegistryImpl navigatorCategoryRegistry,
             NavigatorEditorService navigatorEditorService,
             Player player) {
         super(
-                messages,
+                context,
                 NAVIGATOR_SIZE,
-                messages.getString("setup_navigator_title", player),
+                context.messages().getString("setup_navigator_title", player),
                 MESSAGES,
-                menuItems,
-                menus,
                 scheduler,
                 prompts,
                 navigatorEditorService);

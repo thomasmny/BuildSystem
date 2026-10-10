@@ -20,12 +20,10 @@ package de.eintosti.buildsystem.world.menu.setup;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
@@ -55,23 +53,20 @@ public class CategoryEditorMenu extends RegistryEditorMenu {
     private final SkullStateProcessor skullProcessor;
 
     public CategoryEditorMenu(
-            Messages messages,
+            MenuContext context,
             Prompts prompts,
-            Menus menus,
-            MenuItems menuItems,
             NavigatorCategoryRegistryImpl navigatorCategoryRegistry,
             WorldStatusRegistryImpl worldStatusRegistry,
             Player player,
             NavigatorCategory category) {
         super(
-                messages,
+                context,
                 prompts,
-                menus,
-                menuItems,
-                messages.getString(
-                        "setup_category_editor_title",
-                        player,
-                        Placeholders.of("%category%", ColorAPI.process(category.getStyledName()))));
+                context.messages()
+                        .getString(
+                                "setup_category_editor_title",
+                                player,
+                                Placeholders.of("%category%", ColorAPI.process(category.getStyledName()))));
 
         this.registry = navigatorCategoryRegistry;
         this.worldStatusRegistry = worldStatusRegistry;

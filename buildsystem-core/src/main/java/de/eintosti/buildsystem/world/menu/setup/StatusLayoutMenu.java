@@ -19,10 +19,8 @@ package de.eintosti.buildsystem.world.menu.setup;
 
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.display.Registry;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.util.TaskScheduler;
@@ -56,21 +54,17 @@ public class StatusLayoutMenu extends LayoutEditorMenu<BuildWorldStatus> {
     private final WorldStatusRegistryImpl registry;
 
     public StatusLayoutMenu(
-            Messages messages,
-            MenuItems menuItems,
-            Menus menus,
+            MenuContext context,
             TaskScheduler scheduler,
             Prompts prompts,
             WorldStatusRegistryImpl worldStatusRegistry,
             NavigatorEditorService navigatorEditorService,
             Player player) {
         super(
-                messages,
+                context,
                 WorldStatusRegistryImpl.STATUS_MENU_SIZE,
-                messages.getString("setup_statuses_title", player),
+                context.messages().getString("setup_statuses_title", player),
                 MESSAGES,
-                menuItems,
-                menus,
                 scheduler,
                 prompts,
                 navigatorEditorService);

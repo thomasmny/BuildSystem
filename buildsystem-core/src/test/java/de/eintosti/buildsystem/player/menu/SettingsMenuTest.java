@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.navigator.NavigatorService;
@@ -91,13 +92,11 @@ class SettingsMenuTest {
 
     private SettingsMenu menu() {
         return new SettingsMenu(
-                messages,
+                new MenuContext(messages, mock(MenuItems.class), menus),
                 settingsService,
                 configService,
-                mock(MenuItems.class),
                 mock(NavigatorService.class),
                 mock(NoClipService.class),
-                menus,
                 player);
     }
 

@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.menu;
 
 import com.cryptomorin.xseries.profiles.objects.Profileable;
-import de.eintosti.buildsystem.i18n.Messages;
 import java.util.List;
 import java.util.function.Function;
 import org.bukkit.Sound;
@@ -48,12 +47,12 @@ public abstract class PaginatedMenu extends ButtonMenu {
     private int page = 0;
 
     /**
-     * @param messages The message provider (see {@link Menu})
+     * @param context The shared menu collaborators
      * @param size The inventory size in slots
      * @param title The inventory title
      */
-    protected PaginatedMenu(Messages messages, int size, String title) {
-        super(messages, size, title);
+    protected PaginatedMenu(MenuContext context, int size, String title) {
+        super(context, size, title);
     }
 
     /**

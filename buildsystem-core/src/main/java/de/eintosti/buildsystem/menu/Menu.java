@@ -51,17 +51,21 @@ import org.jspecify.annotations.NullMarked;
 public abstract class Menu implements InventoryHolder {
 
     protected final Messages messages;
+    protected final MenuItems menuItems;
+    protected final Menus menus;
     private final Inventory inventory;
 
     /**
      * Creates the menu and its backing inventory, with this menu as the inventory holder.
      *
-     * @param messages The message provider used for permission errors and (by subclasses) item text
+     * @param context The messages, menu items and menu factory every menu uses
      * @param size The inventory size in slots (a multiple of 9)
      * @param title The inventory title shown to the player
      */
-    protected Menu(Messages messages, int size, String title) {
-        this.messages = messages;
+    protected Menu(MenuContext context, int size, String title) {
+        this.messages = context.messages();
+        this.menuItems = context.menuItems();
+        this.menus = context.menus();
         this.inventory = Bukkit.createInventory(this, size, title);
     }
 

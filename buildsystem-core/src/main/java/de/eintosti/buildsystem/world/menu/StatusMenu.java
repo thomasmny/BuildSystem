@@ -21,13 +21,11 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.color.ColorAPI;
@@ -49,25 +47,20 @@ import org.jspecify.annotations.NullMarked;
 public class StatusMenu extends ButtonMenu {
 
     private final SettingsService settingsService;
-    private final MenuItems menuItems;
-    private final Menus menus;
     private final BuildWorld buildWorld;
 
     public StatusMenu(
-            Messages messages,
+            MenuContext context,
             WorldStatusRegistry worldStatusRegistry,
             SettingsService settingsService,
-            MenuItems menuItems,
-            Menus menus,
             BuildWorld buildWorld,
             Player player) {
         super(
-                messages,
+                context,
                 WorldStatusRegistryImpl.STATUS_MENU_SIZE,
-                messages.getString("status_title", player, Placeholders.of("%world%", formatWorldName(buildWorld))));
+                context.messages()
+                        .getString("status_title", player, Placeholders.of("%world%", formatWorldName(buildWorld))));
         this.settingsService = settingsService;
-        this.menuItems = menuItems;
-        this.menus = menus;
         this.buildWorld = buildWorld;
 
         for (BuildWorldStatus status : worldStatusRegistry.getAll()) {

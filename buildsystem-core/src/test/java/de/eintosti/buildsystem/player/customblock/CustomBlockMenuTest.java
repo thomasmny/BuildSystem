@@ -28,7 +28,9 @@ import static org.mockito.Mockito.when;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ItemBuilder;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
 import java.util.Arrays;
 import java.util.List;
@@ -129,7 +131,8 @@ class CustomBlockMenuTest {
     }
 
     private void click(int slot) {
-        CustomBlockMenu menu = new CustomBlockMenu(messages, mock(MenuItems.class), player);
+        CustomBlockMenu menu =
+                new CustomBlockMenu(new MenuContext(messages, mock(MenuItems.class), mock(Menus.class)), player);
         menu.handleClick(new InventoryClickEvent(
                 player.openInventory(menu.getInventory()),
                 SlotType.CONTAINER,

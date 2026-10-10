@@ -18,12 +18,10 @@
 package de.eintosti.buildsystem.world.menu.setup;
 
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.data.WorldStatusImpl;
@@ -48,22 +46,19 @@ public class StatusEditorMenu extends RegistryEditorMenu {
     private final WorldStatusImpl status;
 
     public StatusEditorMenu(
-            Messages messages,
+            MenuContext context,
             Prompts prompts,
-            Menus menus,
-            MenuItems menuItems,
             WorldStatusRegistryImpl worldStatusRegistry,
             Player player,
             BuildWorldStatus status) {
         super(
-                messages,
+                context,
                 prompts,
-                menus,
-                menuItems,
-                messages.getString(
-                        "setup_status_editor_title",
-                        player,
-                        Placeholders.of("%status%", ColorAPI.process(status.getStyledName()))));
+                context.messages()
+                        .getString(
+                                "setup_status_editor_title",
+                                player,
+                                Placeholders.of("%status%", ColorAPI.process(status.getStyledName()))));
 
         this.registry = worldStatusRegistry;
         this.status = (WorldStatusImpl) status;

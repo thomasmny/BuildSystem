@@ -28,6 +28,9 @@ import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
+import de.eintosti.buildsystem.menu.MenuContext;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
 import de.eintosti.buildsystem.util.Permissions;
@@ -143,7 +146,10 @@ class SpeedMenuTest {
     }
 
     private void click(int slot) {
-        SpeedMenu menu = new SpeedMenu(messages, mock(SettingsService.class), player);
+        SpeedMenu menu = new SpeedMenu(
+                new MenuContext(messages, mock(MenuItems.class), mock(Menus.class)),
+                mock(SettingsService.class),
+                player);
         menu.handleClick(new InventoryClickEvent(
                 player.openInventory(menu.getInventory()),
                 SlotType.CONTAINER,

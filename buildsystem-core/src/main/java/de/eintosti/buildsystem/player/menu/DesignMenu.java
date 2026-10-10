@@ -19,12 +19,11 @@ package de.eintosti.buildsystem.player.menu;
 
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.Settings;
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.menu.MenuItems;
-import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -66,15 +65,10 @@ public class DesignMenu extends ButtonMenu {
     private record ColorEntry(String messageKey, DesignColor color) {}
 
     private final SettingsService settingsService;
-    private final MenuItems menuItems;
-    private final Menus menus;
 
-    public DesignMenu(
-            Messages messages, SettingsService settingsService, MenuItems menuItems, Menus menus, Player player) {
-        super(messages, 36, messages.getString("design_title", player));
+    public DesignMenu(MenuContext context, SettingsService settingsService, Player player) {
+        super(context, 36, context.messages().getString("design_title", player));
         this.settingsService = settingsService;
-        this.menuItems = menuItems;
-        this.menus = menus;
 
         COLOR_SLOTS.forEach((slot, entry) -> register(slot, colorButton(entry)));
     }

@@ -17,11 +17,10 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
-import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
-import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.MenuContext;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.List;
 import java.util.function.Consumer;
@@ -77,20 +76,13 @@ public class DyePickerMenu extends ButtonMenu {
     private static final int INVENTORY_SIZE = 45;
     private static final int SLOT_BACK = 36;
 
-    private final MenuItems menuItems;
     private final String currentToken;
     private final Consumer<String> onPick;
     private final Runnable onBack;
 
     public DyePickerMenu(
-            Messages messages,
-            MenuItems menuItems,
-            Player player,
-            String currentToken,
-            Consumer<String> onPick,
-            Runnable onBack) {
-        super(messages, INVENTORY_SIZE, messages.getString("setup_color_picker_title", player));
-        this.menuItems = menuItems;
+            MenuContext context, Player player, String currentToken, Consumer<String> onPick, Runnable onBack) {
+        super(context, INVENTORY_SIZE, context.messages().getString("setup_color_picker_title", player));
         this.currentToken = currentToken;
         this.onPick = onPick;
         this.onBack = onBack;
