@@ -79,6 +79,15 @@ public final class WorldDataSchema {
     }
 
     /**
+     * {@return the value a key has when nothing sets it}
+     *
+     * @param key Any key but {@link WorldDataKey#STATUS}
+     */
+    public static <T> T fallback(WorldDataKey<T> key) {
+        return key.type().cast(FALLBACKS.get(key));
+    }
+
+    /**
      * {@return data for the named world with every key at its fallback}
      *
      * @param status The world's status, which has no fixed fallback

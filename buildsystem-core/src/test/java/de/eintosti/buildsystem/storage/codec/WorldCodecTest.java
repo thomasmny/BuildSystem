@@ -34,7 +34,9 @@ import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import org.bukkit.Difficulty;
@@ -67,6 +69,17 @@ class WorldCodecTest {
     @AfterEach
     void tearDown() {
         MockBukkit.unmock();
+    }
+
+    @Test
+    void writtenWorlds_keepTheirKeysInDeclarationOrder() {
+        BuildWorldImpl full = CodecSamples.fullWorld(context);
+        BuildWorldImpl minimal = CodecSamples.minimalWorld(context);
+        Map<String, Map<String, Object>> entries = new LinkedHashMap<>();
+        entries.put(codec.key(full), codec.serialize(full));
+        entries.put(codec.key(minimal), codec.serialize(minimal));
+
+        assertEquals(CodecSamples.resource("worlds-written.yml"), CodecSamples.toYaml(entries));
     }
 
     @Test

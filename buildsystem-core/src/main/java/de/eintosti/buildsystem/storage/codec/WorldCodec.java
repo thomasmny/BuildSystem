@@ -19,21 +19,22 @@ package de.eintosti.buildsystem.storage.codec;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
-import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.player.PlayerLookupService;
+import de.eintosti.buildsystem.storage.codec.FieldCodec.Field;
+import de.eintosti.buildsystem.storage.codec.FieldCodec.Reader;
 import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataSchema;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -49,33 +50,101 @@ import org.jspecify.annotations.Nullable;
  * {@link Codec} for {@link BuildWorld}s, mapping a world to and from its section. Since v4 the section is keyed by the
  * world's UUID and the name is carried as a {@code name} field (a rename is then a field update, not a key move).
  *
- * <p>The bulk of a world's state lives under the nested {@code data} section, whose keys come straight from
- * {@link WorldDataKey} via {@link #dataPath}, and the set of keys from {@link WorldDataSchema}, so there is no parallel
- * key list to keep in sync. Reads are defensive: unknown enums fall back to safe defaults and a
- * single unparseable entry surfaces as an exception for the storage to skip rather than aborting the whole load.
+ * <p>The settings live under the nested {@code data} section, one field per {@link WorldDataSchema} key. Reads are
+ * defensive: unknown enums fall back to safe defaults and a single unparseable entry surfaces as an exception for the
+ * storage to skip rather than aborting the whole load.
  */
 @NullMarked
 public final class WorldCodec implements Codec<BuildWorld> {
 
-    private static final String NAME = "name";
-    private static final String UUID_KEY = "uuid";
-    private static final String CREATOR = "creator";
-    private static final String CREATOR_ID = "creator-id";
-    private static final String TYPE = "type";
-    private static final String DATE = "date";
-    private static final String BUILDERS = "builders";
-    private static final String CHUNK_GENERATOR = "chunk-generator";
-    private static final String DATA = "data";
-
-    // The data keys come straight from WorldDataKey (see dataPath); only the pre-4.0 private boolean has no key.
-    private static final String LEGACY_PRIVATE = "private";
-
     private final WorldContext context;
     private final PlayerLookupService playerLookup;
+    private final FieldCodec<BuildWorld, ReadWorld> fields;
 
     public WorldCodec(WorldContext context, PlayerLookupService playerLookup) {
         this.context = context;
         this.playerLookup = playerLookup;
+        this.fields = new FieldCodec<>(fields());
+    }
+
+    private List<Field<BuildWorld, ReadWorld, ?>> fields() {
+        List<Field<BuildWorld, ReadWorld, ?>> fields = new ArrayList<>();
+        fields.add(FieldCodec.writeOnly("name", BuildWorld::getName));
+        fields.add(FieldCodec.writeOnly("uuid", world -> world.getUniqueId().toString()));
+        fields.add(new Field<>(
+                "creator",
+                world -> {
+                    Builder creator = world.getBuilders().getCreator();
+                    return creator == null ? null : creator.toString();
+                },
+                this::readCreator,
+                (read, creator) -> read.creator = creator));
+        fields.add(
+                new Field<>("type", world -> world.getType().name(), this::readType, (read, type) -> read.type = type));
+        fields.add(new Field<>(
+                "date",
+                BuildWorld::getCreation,
+                (section, key) -> section.isLong(key) ? section.getLong(key) : -1L,
+                (read, date) -> read.date = date));
+        fields.add(new Field<>(
+                "builders",
+                world -> BuilderListCodec.format(world.getBuilders().getAllBuilders()),
+                (section, key) -> BuilderListCodec.parse(section.getString(key)),
+                (read, builders) -> read.builders = builders));
+        fields.add(new Field<>(
+                "chunk-generator",
+                world -> world.getCustomGenerator() == null
+                        ? null
+                        : world.getCustomGenerator().toString(),
+                WorldCodec::readGenerator,
+                (read, generator) -> read.generator = generator));
+
+        Map<WorldDataKey<?>, Field<BuildWorld, ReadWorld, ?>> special = new HashMap<>();
+        special.put(WorldDataKey.CUSTOM_SPAWN, dataField(WorldDataKey.CUSTOM_SPAWN, WorldCodec::readSpawn));
+        special.put(WorldDataKey.DIFFICULTY, dataField(WorldDataKey.DIFFICULTY, this::readDifficulty));
+        special.put(WorldDataKey.MATERIAL, dataField(WorldDataKey.MATERIAL, this::readMaterial));
+        special.put(WorldDataKey.VISIBILITY, dataField(WorldDataKey.VISIBILITY, WorldCodec::readVisibility));
+        for (PhysicsCategory category : PhysicsCategory.values()) {
+            // An absent exception takes the configured default, not the schema's.
+            special.put(
+                    category.key(),
+                    dataField(category.key(), (section, key) -> section.getBoolean(key, physicsDefault(category))));
+        }
+
+        fields.add(dataField(WorldDataKey.STATUS, this::readStatus));
+        for (WorldDataKey<?> key : WorldDataSchema.keys()) {
+            if (!key.equals(WorldDataKey.STATUS)) {
+                fields.add(special.containsKey(key) ? special.get(key) : plainField(key));
+            }
+        }
+        return fields;
+    }
+
+    private static <V> Field<BuildWorld, ReadWorld, V> dataField(WorldDataKey<V> key, Reader<V> reader) {
+        return new Field<>(
+                "data." + key.id(),
+                world -> WorldDataSchema.toYaml(
+                        ((WorldDataImpl) world.getData()).storedValues().get(key)),
+                reader,
+                (read, value) -> read.data.set(key, value));
+    }
+
+    /**
+     * A string, boolean or number field, falling back to the schema's value when the key is absent.
+     */
+    private static <V> Field<BuildWorld, ReadWorld, V> plainField(WorldDataKey<V> key) {
+        Class<V> type = key.type();
+        Object fallback = WorldDataSchema.fallback(key);
+        if (type == Boolean.class) {
+            return dataField(key, (section, path) -> type.cast(section.getBoolean(path, (Boolean) fallback)));
+        } else if (type == Integer.class) {
+            return dataField(key, (section, path) -> type.cast(section.getInt(path, (Integer) fallback)));
+        } else if (type == Long.class) {
+            return dataField(key, (section, path) -> type.cast(section.getLong(path, (Long) fallback)));
+        } else if (type == String.class) {
+            return dataField(key, (section, path) -> type.cast(section.getString(path, (String) fallback)));
+        }
+        throw new IllegalStateException("No reader for world data key " + key.id() + " of type " + type);
     }
 
     @Override
@@ -85,138 +154,73 @@ public final class WorldCodec implements Codec<BuildWorld> {
 
     @Override
     public Map<String, Object> serialize(BuildWorld buildWorld) {
-        Map<String, Object> world = new HashMap<>();
-
-        world.put(NAME, buildWorld.getName());
-        world.put(UUID_KEY, buildWorld.getUniqueId().toString());
-        Builders builders = buildWorld.getBuilders();
-        if (builders.getCreator() != null) {
-            world.put(CREATOR, builders.getCreator().toString());
-        }
-        world.put(TYPE, buildWorld.getType().name());
-        world.put(DATA, serializeWorldData((WorldDataImpl) buildWorld.getData()));
-        world.put(DATE, buildWorld.getCreation());
-        world.put(BUILDERS, BuilderListCodec.format(builders.getAllBuilders()));
-        if (buildWorld.getCustomGenerator() != null) {
-            world.put(CHUNK_GENERATOR, buildWorld.getCustomGenerator().toString());
-        }
-
-        return world;
-    }
-
-    /**
-     * Serializes the property map, splitting dotted key ids (e.g. {@code physics-exceptions.fluid-flow}) into nested
-     * maps. The storage writes this map verbatim via {@code config.set}, which does not interpret dots inside map
-     * keys, so the nesting has to happen here for the file to gain real sections. Ids nest one section level deep,
-     * which is all the catalog uses.
-     */
-    private Map<String, Object> serializeWorldData(WorldDataImpl worldData) {
-        Map<String, Object> data = new HashMap<>();
-        Map<String, Map<String, Object>> sections = new HashMap<>();
-        worldData.storedValues().forEach((key, value) -> {
-            String id = key.id();
-            Object yaml = WorldDataSchema.toYaml(value);
-            int dot = id.indexOf('.');
-            if (dot < 0) {
-                data.put(id, yaml);
-                return;
-            }
-            sections.computeIfAbsent(id.substring(0, dot), section -> new HashMap<>())
-                    .put(id.substring(dot + 1), yaml);
-        });
-        data.putAll(sections);
-        return data;
+        return fields.serialize(buildWorld);
     }
 
     @Override
     public BuildWorldImpl deserialize(String key, ConfigurationSection section) {
-        // v4 keys sections by UUID and carries the name as a field; fall back to the key for pre-migration safety.
-        UUID uuid = UUID.fromString(key);
-        String name = section.getString(NAME, key);
-        Builder creator = parseCreator(name, section);
-        BuildWorldType worldType = parseType(name, section);
-        WorldDataImpl worldData = parseWorldData(name, section);
-        long creationDate = section.isLong(DATE) ? section.getLong(DATE) : -1;
-        List<Builder> builders = BuilderListCodec.parse(section.getString(BUILDERS));
-        String generatorName = section.getString(CHUNK_GENERATOR);
-        CustomGeneratorImpl customGenerator =
-                generatorName != null ? CustomGeneratorImpl.stored(generatorName, name) : null;
-
+        String name = worldName(section);
+        ReadWorld read = new ReadWorld(
+                WorldDataSchema.create(name, context.statusRegistry().getDefault()));
+        fields.read(section, read);
         return new BuildWorldImpl(
                 context,
-                uuid,
+                UUID.fromString(key),
                 name,
-                worldType,
-                worldData,
-                creator,
-                builders,
-                creationDate,
-                customGenerator,
+                read.type,
+                read.data,
+                read.creator,
+                read.builders,
+                read.date,
+                read.generator,
                 null // The folder is set later.
                 );
     }
 
-    private WorldDataImpl parseWorldData(String worldName, ConfigurationSection section) {
-        WorldDataImpl data = WorldDataSchema.create(worldName, parseStatus(section, worldName));
-        PluginConfig.World.Defaults defaults =
-                context.configService().current().world().defaults();
-        for (PhysicsCategory category : PhysicsCategory.values()) {
-            // An absent exception takes the configured default, not the schema's.
-            data.set(category.key(), defaults.physicsException(category));
-        }
-
-        for (WorldDataKey<?> key : WorldDataSchema.keys()) {
-            readPlain(data, section, key);
-        }
-        data.set(WorldDataKey.CUSTOM_SPAWN, parseCustomSpawn(section));
-        data.set(WorldDataKey.DIFFICULTY, parseDifficulty(section, worldName));
-        data.set(WorldDataKey.MATERIAL, parseMaterial(section, worldName));
-        data.set(WorldDataKey.VISIBILITY, parseVisibility(section));
-        return data;
-    }
-
     /**
-     * Reads a string, boolean or number key, keeping the value already in {@code data} when the key is absent. Keys of
-     * other types are parsed by their own methods.
+     * The fields read from a world's section, until the world is built from them.
      */
-    @SuppressWarnings("unchecked")
-    private static void readPlain(WorldDataImpl data, ConfigurationSection section, WorldDataKey<?> key) {
-        String path = dataPath(key);
-        Class<?> type = key.type();
-        if (type == Boolean.class) {
-            WorldDataKey<Boolean> booleanKey = (WorldDataKey<Boolean>) key;
-            data.set(booleanKey, section.getBoolean(path, data.get(booleanKey)));
-        } else if (type == Integer.class) {
-            WorldDataKey<Integer> intKey = (WorldDataKey<Integer>) key;
-            data.set(intKey, section.getInt(path, data.get(intKey)));
-        } else if (type == Long.class) {
-            WorldDataKey<Long> longKey = (WorldDataKey<Long>) key;
-            data.set(longKey, section.getLong(path, data.get(longKey)));
-        } else if (type == String.class) {
-            WorldDataKey<String> stringKey = (WorldDataKey<String>) key;
-            data.set(stringKey, section.getString(path, data.get(stringKey)));
+    private static final class ReadWorld {
+
+        private final WorldDataImpl data;
+        private @Nullable Builder creator;
+        private BuildWorldType type = BuildWorldType.UNKNOWN;
+        private long date = -1;
+        private List<Builder> builders = List.of();
+        private @Nullable CustomGeneratorImpl generator;
+
+        private ReadWorld(WorldDataImpl data) {
+            this.data = data;
         }
     }
 
     /**
-     * {@return the nested {@code data.<id>} path for a key} The data keys are owned by {@link WorldDataKey}, so the
-     * codec never duplicates the on-disk strings.
+     * {@return the world's name} Falls back to the section's key for files written before the name was a field.
      */
-    private static String dataPath(WorldDataKey<?> key) {
-        return DATA + "." + key.id();
+    private static String worldName(ConfigurationSection section) {
+        return section.getString("name", section.getName());
+    }
+
+    private boolean physicsDefault(PhysicsCategory category) {
+        return context.configService().current().world().defaults().physicsException(category);
+    }
+
+    private static @Nullable CustomGeneratorImpl readGenerator(ConfigurationSection section, String key) {
+        String generator = section.getString(key);
+        return generator == null ? null : CustomGeneratorImpl.stored(generator, worldName(section));
     }
 
     /**
-     * Reads a world's custom spawn. It is serialized under {@code data.spawn} (its property key), but pre-property-map
-     * files stored it at the top-level {@code spawn} key, so that location is the fallback.
+     * Reads a world's custom spawn. Files from before the settings moved under {@code data} stored it at the top-level
+     * {@code spawn} key, so that is the fallback.
      */
-    private String parseCustomSpawn(ConfigurationSection section) {
-        String dataSpawn = section.getString(dataPath(WorldDataKey.CUSTOM_SPAWN));
+    private static String readSpawn(ConfigurationSection section, String key) {
+        String dataSpawn = section.getString(key);
         return dataSpawn != null ? dataSpawn : section.getString(WorldDataKey.CUSTOM_SPAWN.id(), "");
     }
 
-    private BuildWorldType parseType(String worldName, ConfigurationSection section) {
-        String raw = section.getString(TYPE);
+    private BuildWorldType readType(ConfigurationSection section, String key) {
+        String raw = section.getString(key);
         if (raw == null) {
             return BuildWorldType.UNKNOWN;
         }
@@ -225,7 +229,8 @@ public final class WorldCodec implements Codec<BuildWorld> {
             return BuildWorldType.valueOf(raw);
         } catch (IllegalArgumentException e) {
             context.logger()
-                    .warning("Unknown world type \"" + raw + "\" for \"" + worldName + "\". Defaulting to UNKNOWN.");
+                    .warning("Unknown world type \"" + raw + "\" for \"" + worldName(section)
+                            + "\". Defaulting to UNKNOWN.");
             return BuildWorldType.UNKNOWN;
         }
     }
@@ -234,13 +239,14 @@ public final class WorldCodec implements Codec<BuildWorld> {
      * Resolves a world's {@link Difficulty}, falling back to {@link Difficulty#PEACEFUL} when the persisted value is
      * unknown. Like the other enums, an unparseable difficulty must not abort the world's load.
      */
-    private Difficulty parseDifficulty(ConfigurationSection section, String worldName) {
-        String raw = section.getString(dataPath(WorldDataKey.DIFFICULTY), Difficulty.PEACEFUL.name());
+    private Difficulty readDifficulty(ConfigurationSection section, String key) {
+        String raw = section.getString(key, Difficulty.PEACEFUL.name());
         try {
             return Difficulty.valueOf(raw.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             context.logger()
-                    .warning("Unknown difficulty \"" + raw + "\" for \"" + worldName + "\". Defaulting to PEACEFUL.");
+                    .warning("Unknown difficulty \"" + raw + "\" for \"" + worldName(section)
+                            + "\". Defaulting to PEACEFUL.");
             return Difficulty.PEACEFUL;
         }
     }
@@ -249,9 +255,9 @@ public final class WorldCodec implements Codec<BuildWorld> {
      * Resolves a world's status from its persisted id, migrating pre-4.0 enum names (e.g. {@code NOT_STARTED}) to the
      * equivalent lower-case status id. Falls back to the registry default when the id is unknown.
      */
-    private BuildWorldStatus parseStatus(ConfigurationSection section, String worldName) {
+    private BuildWorldStatus readStatus(ConfigurationSection section, String key) {
         WorldStatusRegistry registry = context.statusRegistry();
-        String raw = section.getString(dataPath(WorldDataKey.STATUS));
+        String raw = section.getString(key);
         if (raw == null) {
             return registry.getDefault();
         }
@@ -259,7 +265,7 @@ public final class WorldCodec implements Codec<BuildWorld> {
         String id = raw.toLowerCase(Locale.ROOT);
         return registry.get(id).orElseGet(() -> {
             context.logger()
-                    .warning("Unknown status \"" + raw + "\" for \"" + worldName + "\". Defaulting to "
+                    .warning("Unknown status \"" + raw + "\" for \"" + worldName(section) + "\". Defaulting to "
                             + registry.getDefault().getId() + ".");
             return registry.getDefault();
         });
@@ -269,8 +275,8 @@ public final class WorldCodec implements Codec<BuildWorld> {
      * Resolves a world's {@link Visibility}, reading the {@code visibility} key and migrating the pre-4.0
      * {@code private} boolean when the new key is absent.
      */
-    private Visibility parseVisibility(ConfigurationSection section) {
-        String raw = section.getString(dataPath(WorldDataKey.VISIBILITY));
+    private static Visibility readVisibility(ConfigurationSection section, String key) {
+        String raw = section.getString(key);
         if (raw != null) {
             try {
                 return Visibility.valueOf(raw.toUpperCase(Locale.ROOT));
@@ -278,30 +284,31 @@ public final class WorldCodec implements Codec<BuildWorld> {
                 // Fall through to the legacy private flag.
             }
         }
-        return Visibility.matchVisibility(section.getBoolean(DATA + "." + LEGACY_PRIVATE));
+        return Visibility.matchVisibility(section.getBoolean("data.private"));
     }
 
-    private Material parseMaterial(ConfigurationSection section, String worldName) {
-        String itemString = section.getString(dataPath(WorldDataKey.MATERIAL));
+    private Material readMaterial(ConfigurationSection section, String key) {
+        String itemString = section.getString(key);
         if (itemString == null) {
-            context.logger().warning("Could not find material for \"" + worldName + "\". Defaulting to BEDROCK.");
+            context.logger()
+                    .warning("Could not find material for \"" + worldName(section) + "\". Defaulting to BEDROCK.");
             return Material.BEDROCK;
         }
 
         Material material = MaterialUtils.match(itemString);
         if (material == null) {
-            context.logger().warning("Unknown material found for \"" + worldName + "\" (" + itemString + ").");
+            context.logger().warning("Unknown material found for \"" + worldName(section) + "\" (" + itemString + ").");
             context.logger().warning("Defaulting back to BEDROCK.");
             return Material.BEDROCK;
         }
         return material;
     }
 
-    private @Nullable Builder parseCreator(String worldName, ConfigurationSection section) {
-        final String creator = section.getString(CREATOR);
+    private @Nullable Builder readCreator(ConfigurationSection section, String key) {
+        final String creator = section.getString(key);
 
         // Previously, creator name & id were stored separately
-        final String oldCreatorId = section.isString(CREATOR_ID) ? section.getString(CREATOR_ID) : null;
+        final String oldCreatorId = section.isString("creator-id") ? section.getString("creator-id") : null;
         if (oldCreatorId != null) {
             if (creator == null || creator.equals("-")) {
                 return null;

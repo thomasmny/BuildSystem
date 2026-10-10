@@ -41,7 +41,11 @@ final class FieldCodec<T, B> {
 
     @SafeVarargs
     FieldCodec(Field<T, B, ?>... fields) {
-        this.fields = List.of(fields);
+        this(List.of(fields));
+    }
+
+    FieldCodec(List<Field<T, B, ?>> fields) {
+        this.fields = List.copyOf(fields);
     }
 
     /**
