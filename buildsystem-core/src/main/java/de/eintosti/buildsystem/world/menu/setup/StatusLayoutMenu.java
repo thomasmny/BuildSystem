@@ -94,6 +94,11 @@ public class StatusLayoutMenu extends LayoutEditorMenu<BuildWorldStatus> {
     }
 
     @Override
+    protected boolean refusesLastEntry() {
+        return true;
+    }
+
+    @Override
     protected void reopen(Player player) {
         menus.openStatusLayout(player);
     }

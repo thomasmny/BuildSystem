@@ -60,6 +60,8 @@ class StatusLayoutMenuTest {
 
     private ServerMock server;
     private MockedStatic<ItemBuilder> itemBuilder;
+    private Messages messages;
+    private SoundlessPlayer player;
 
     @BeforeEach
     void setUp() {
@@ -69,6 +71,9 @@ class StatusLayoutMenuTest {
         itemBuilder
                 .when(() -> ItemBuilder.skull(any(Profileable.class)))
                 .thenAnswer(invocation -> ItemBuilder.of(Material.PLAYER_HEAD));
+        messages = mock(Messages.class);
+        when(messages.getString(anyString(), any())).thenReturn("text");
+        player = SoundlessPlayer.join(server, "Admin");
     }
 
     @AfterEach
@@ -79,56 +84,45 @@ class StatusLayoutMenuTest {
 
     @Test
     void droppingTheLastStatusOnTheBinTellsThePlayerWhy() {
-        BuildWorldStatus status = mock(BuildWorldStatus.class);
-        when(status.getId()).thenReturn("only");
-        when(status.getSlot()).thenReturn(STATUS_SLOT);
-        when(status.isShown()).thenReturn(true);
-        when(status.getIcon()).thenReturn(Material.STONE);
-        when(status.getStyledName()).thenReturn("Only");
-        WorldStatusRegistryImpl registry = mock(WorldStatusRegistryImpl.class);
-        when(registry.getAll()).thenReturn(List.of(status));
-        when(registry.delete("only")).thenReturn(false);
+        WorldStatusRegistryImpl registry = registryOf(status("only", STATUS_SLOT));
 
-        Messages messages = mock(Messages.class);
-        when(messages.getString(anyString(), any())).thenReturn("text");
-        SoundlessPlayer player = SoundlessPlayer.join(server, "Admin");
-        StatusLayoutMenu menu = new StatusLayoutMenu(
-                messages,
-                mock(MenuItems.class),
-                mock(Menus.class),
-                mock(TaskScheduler.class),
-                mock(Prompts.class),
-                registry,
-                mock(NavigatorEditorService.class),
-                player);
-        menu.open(player);
-        InventoryView view = player.getOpenInventory();
+        dropOnTheBin(registry, STATUS_SLOT);
 
-        menu.handleClick(new InventoryClickEvent(
-                view, SlotType.CONTAINER, STATUS_SLOT, ClickType.LEFT, InventoryAction.PICKUP_ALL));
-        int deleteRawSlot = view.getTopInventory().getSize() + 27 + DELETE_SLOT;
-        menu.handleClick(new InventoryClickEvent(
-                view, SlotType.QUICKBAR, deleteRawSlot, ClickType.LEFT, InventoryAction.PLACE_ALL));
-
-        verify(registry).delete("only");
+        verify(registry, never()).delete("only");
         verify(messages).sendMessage(player, "setup_delete_last");
     }
 
     @Test
     void deletingAnotherStatusStaysSilent() {
-        BuildWorldStatus status = mock(BuildWorldStatus.class);
-        when(status.getId()).thenReturn("one");
-        when(status.getSlot()).thenReturn(STATUS_SLOT);
-        when(status.isShown()).thenReturn(true);
-        when(status.getIcon()).thenReturn(Material.STONE);
-        when(status.getStyledName()).thenReturn("One");
-        WorldStatusRegistryImpl registry = mock(WorldStatusRegistryImpl.class);
-        when(registry.getAll()).thenReturn(List.of(status));
+        WorldStatusRegistryImpl registry = registryOf(status("one", STATUS_SLOT), status("two", STATUS_SLOT + 1));
         when(registry.delete("one")).thenReturn(true);
 
-        Messages messages = mock(Messages.class);
-        when(messages.getString(anyString(), any())).thenReturn("text");
-        SoundlessPlayer player = SoundlessPlayer.join(server, "Admin");
+        dropOnTheBin(registry, STATUS_SLOT);
+
+        verify(registry).delete("one");
+        verify(messages, never()).sendMessage(player, "setup_delete_last");
+    }
+
+    private static BuildWorldStatus status(String id, int slot) {
+        BuildWorldStatus status = mock(BuildWorldStatus.class);
+        when(status.getId()).thenReturn(id);
+        when(status.getSlot()).thenReturn(slot);
+        when(status.isShown()).thenReturn(true);
+        when(status.getIcon()).thenReturn(Material.STONE);
+        when(status.getStyledName()).thenReturn(id);
+        return status;
+    }
+
+    private static WorldStatusRegistryImpl registryOf(BuildWorldStatus... statuses) {
+        WorldStatusRegistryImpl registry = mock(WorldStatusRegistryImpl.class);
+        when(registry.getAll()).thenReturn(List.of(statuses));
+        return registry;
+    }
+
+    /**
+     * Picks up the status in {@code slot} and drops it on the bin in the player's hotbar.
+     */
+    private void dropOnTheBin(WorldStatusRegistryImpl registry, int slot) {
         StatusLayoutMenu menu = new StatusLayoutMenu(
                 messages,
                 mock(MenuItems.class),
@@ -141,13 +135,10 @@ class StatusLayoutMenuTest {
         menu.open(player);
         InventoryView view = player.getOpenInventory();
 
-        menu.handleClick(new InventoryClickEvent(
-                view, SlotType.CONTAINER, STATUS_SLOT, ClickType.LEFT, InventoryAction.PICKUP_ALL));
+        menu.handleClick(
+                new InventoryClickEvent(view, SlotType.CONTAINER, slot, ClickType.LEFT, InventoryAction.PICKUP_ALL));
         int deleteRawSlot = view.getTopInventory().getSize() + 27 + DELETE_SLOT;
         menu.handleClick(new InventoryClickEvent(
                 view, SlotType.QUICKBAR, deleteRawSlot, ClickType.LEFT, InventoryAction.PLACE_ALL));
-
-        verify(registry).delete("one");
-        verify(messages, never()).sendMessage(player, "setup_delete_last");
     }
 }
