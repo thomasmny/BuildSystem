@@ -28,21 +28,8 @@ import org.junit.jupiter.api.Test;
 class SettingsImplTest {
 
     @Test
-    void builderDefaultsMatchTheNoArgConstructor() {
-        SettingsImpl viaBuilder = SettingsImpl.builder().build();
-        SettingsImpl viaNoArg = new SettingsImpl();
-
-        assertEquals(viaNoArg.getNavigatorType(), viaBuilder.getNavigatorType());
-        assertEquals(viaNoArg.getDesignColor(), viaBuilder.getDesignColor());
-        assertEquals(viaNoArg.isScoreboard(), viaBuilder.isScoreboard());
-        assertEquals(viaNoArg.isSpawnTeleport(), viaBuilder.isSpawnTeleport());
-        assertEquals(viaNoArg.isClearInventory(), viaBuilder.isClearInventory());
-        assertEquals(viaNoArg.isNightVision(), viaBuilder.isNightVision());
-    }
-
-    @Test
-    void defaultsApplyWhenOptionsAreLeftUnset() {
-        SettingsImpl settings = SettingsImpl.builder().build();
+    void newSettings_haveTheDefaults() {
+        SettingsImpl settings = new SettingsImpl();
 
         assertEquals(NavigatorType.OLD, settings.getNavigatorType());
         assertEquals(DesignColor.BLACK, settings.getDesignColor());
@@ -52,34 +39,5 @@ class SettingsImplTest {
         assertFalse(settings.isNightVision());
         assertFalse(settings.isNoClip());
         assertFalse(settings.isClearInventory());
-    }
-
-    @Test
-    void nullEnumsKeepTheirDefaults() {
-        SettingsImpl settings =
-                SettingsImpl.builder().navigatorType(null).designColor(null).build();
-
-        assertEquals(NavigatorType.OLD, settings.getNavigatorType());
-        assertEquals(DesignColor.BLACK, settings.getDesignColor());
-    }
-
-    @Test
-    void settersBindByNameAndOverrideDefaults() {
-        SettingsImpl settings = SettingsImpl.builder()
-                .navigatorType(NavigatorType.NEW)
-                .designColor(DesignColor.RED)
-                .scoreboard(false)
-                .nightVision(true)
-                .noClip(true)
-                .build();
-
-        assertEquals(NavigatorType.NEW, settings.getNavigatorType());
-        assertEquals(DesignColor.RED, settings.getDesignColor());
-        assertFalse(settings.isScoreboard());
-        assertTrue(settings.isNightVision());
-        assertTrue(settings.isNoClip());
-        // Untouched options retain their defaults.
-        assertTrue(settings.isSpawnTeleport());
-        assertFalse(settings.isHidePlayers());
     }
 }

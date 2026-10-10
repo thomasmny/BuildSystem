@@ -24,23 +24,23 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
 
 import de.eintosti.buildsystem.api.event.folder.FolderCreatedEvent;
 import de.eintosti.buildsystem.api.event.folder.FolderDeletedEvent;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.storage.yaml.YamlEntityFile;
 import de.eintosti.buildsystem.test.TestData;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import org.bukkit.event.Event;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -59,39 +59,14 @@ class FolderStorageImplTest {
         WorldStorage worldStorage = Mockito.mock(WorldStorage.class);
         creator = Builder.of(UUID.randomUUID(), "TestPlayer");
 
-        storage = new FolderStorageImpl(logger, worldStorage) {
-            @Override
-            public CompletableFuture<Collection<Folder>> load() {
-                return CompletableFuture.completedFuture(List.of());
-            }
-
-            @Override
-            public CompletableFuture<Void> save(Folder folder) {
-                return CompletableFuture.completedFuture(null);
-            }
-
-            @Override
-            public CompletableFuture<Void> save(Collection<Folder> folders) {
-                return CompletableFuture.completedFuture(null);
-            }
-
-            @Override
-            public CompletableFuture<Void> delete(Folder folder) {
-                deletedFromStorage.add(folder);
-                return CompletableFuture.completedFuture(null);
-            }
-
-            @Override
-            public CompletableFuture<Void> delete(String folderKey) {
-                return CompletableFuture.completedFuture(null);
-            }
-
-            @Override
-            protected Folder newFolder(
-                    String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
-                return new SimpleTestFolder(name, category, creator);
-            }
-
+        YamlEntityFile<Folder> file = TestData.noopEntityFile();
+        doAnswer(invocation -> {
+                    deletedFromStorage.add(invocation.getArgument(0));
+                    return CompletableFuture.completedFuture(null);
+                })
+                .when(file)
+                .delete(any(Folder.class));
+        storage = new FolderStorageImpl(logger, worldStorage, TestData::worldContext, file) {
             @Override
             protected void fireEvent(Event event) {
                 firedEvents.add(event);
@@ -140,10 +115,16 @@ class FolderStorageImplTest {
     }
 
     @Test
-    void setName_updatesFolderName() {
+    void renamedFolder_isFoundAndRemovedUnderItsNewName() {
         Folder folder = storage.createFolder("Original", TestData.PUBLIC, creator);
+
         folder.setName("Renamed");
-        assertEquals("Renamed", folder.getName());
+
+        assertSame(folder, storage.getFolder("renamed"));
+        assertNull(storage.getFolder("Original"));
+        storage.removeFolder("Renamed");
+        assertTrue(storage.getFolders().isEmpty());
+        assertEquals(List.of(folder), deletedFromStorage);
     }
 
     @Test
@@ -180,149 +161,6 @@ class FolderStorageImplTest {
 
         assertEquals(2, deletedFromStorage.size());
         assertTrue(deletedFromStorage.containsAll(List.of(parent, child)));
-    }
-
-    // Minimal Folder implementation for tests
-    @NullMarked
-    private static final class SimpleTestFolder implements Folder {
-        private final UUID uuid = UUID.randomUUID();
-        private String name;
-        private final NavigatorCategory category;
-        private final Builder creator;
-
-        private @Nullable Folder parent;
-
-        SimpleTestFolder(String name, NavigatorCategory category, Builder creator) {
-            this.name = name;
-            this.category = category;
-            this.creator = creator;
-        }
-
-        @Override
-        public UUID getUniqueId() {
-            return uuid;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public NavigatorCategory getCategory() {
-            return category;
-        }
-
-        @Override
-        public Builder getCreator() {
-            return creator;
-        }
-
-        @Override
-        public long getCreation() {
-            return 0;
-        }
-
-        @Override
-        public @Nullable Folder getParent() {
-            return parent;
-        }
-
-        @Override
-        public void setParent(@Nullable Folder parent) {
-            this.parent = parent;
-        }
-
-        @Override
-        public boolean hasParent() {
-            return parent != null;
-        }
-
-        @Override
-        public List<UUID> getWorldUUIDs() {
-            return List.of();
-        }
-
-        @Override
-        public List<Folder> getSubFolders() {
-            return List.of();
-        }
-
-        @Override
-        public int getWorldCount() {
-            return 0;
-        }
-
-        @Override
-        public boolean containsWorld(de.eintosti.buildsystem.api.world.BuildWorld w) {
-            return false;
-        }
-
-        @Override
-        public boolean containsWorld(UUID uuid) {
-            return false;
-        }
-
-        @Override
-        public void addWorld(de.eintosti.buildsystem.api.world.BuildWorld w) {}
-
-        @Override
-        public void removeWorld(de.eintosti.buildsystem.api.world.BuildWorld w) {}
-
-        @Override
-        public void removeWorld(UUID uuid) {}
-
-        @Override
-        public boolean canView(org.bukkit.entity.Player player) {
-            return true;
-        }
-
-        @Override
-        public String getPermission() {
-            return "-";
-        }
-
-        @Override
-        public void setPermission(String p) {}
-
-        @Override
-        public String getProject() {
-            return "-";
-        }
-
-        @Override
-        public void setProject(String p) {}
-
-        @Override
-        public org.bukkit.Material getIcon() {
-            return org.bukkit.Material.CHEST;
-        }
-
-        @Override
-        public void setIcon(org.bukkit.Material m) {}
-
-        @Override
-        public @Nullable String getIconSkullTexture() {
-            return null;
-        }
-
-        @Override
-        public void setIconSkullTexture(@Nullable String skullTexture) {}
-
-        @Override
-        public String getDisplayName(org.bukkit.entity.Player player) {
-            return name;
-        }
-
-        @Override
-        public List<String> getLore(org.bukkit.entity.Player player) {
-            return List.of();
-        }
     }
 
     @Test

@@ -22,9 +22,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.test.TestData;
+import java.util.ArrayList;
+import java.util.List;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
@@ -32,9 +35,7 @@ import org.junit.jupiter.api.Test;
 class WorldDataAccessorTest {
 
     private static WorldDataImpl worldData() {
-        return new WorldDataImpl.WorldDataBuilder("test")
-                .withStatus(TestData.NOT_STARTED)
-                .build();
+        return WorldDataSchema.create("test", TestData.NOT_STARTED);
     }
 
     @Test
@@ -73,17 +74,6 @@ class WorldDataAccessorTest {
     }
 
     @Test
-    void physicsCategories_builderSeedsIndividualValues() {
-        WorldDataImpl data = new WorldDataImpl.WorldDataBuilder("test")
-                .withStatus(TestData.NOT_STARTED)
-                .withPhysicsCategory(PhysicsCategory.CONNECTIONS, true)
-                .build();
-
-        assertTrue(data.get(PhysicsCategory.CONNECTIONS.key()));
-        assertFalse(data.get(PhysicsCategory.BLOCK_UPDATES.key()));
-    }
-
-    @Test
     void get_returnsTheKeyTypedValue() {
         WorldDataImpl data = worldData();
 
@@ -101,9 +91,52 @@ class WorldDataAccessorTest {
     }
 
     @Test
-    void getAllData_isUnmodifiable() {
+    void storedValues_isUnmodifiable() {
         WorldDataImpl data = worldData();
         assertThrows(
-                UnsupportedOperationException.class, () -> data.getAllData().clear());
+                UnsupportedOperationException.class, () -> data.storedValues().clear());
+    }
+
+    @Test
+    void statusChange_notifiesListenerWithOldAndNewStatus() {
+        WorldDataImpl data = worldData();
+        List<BuildWorldStatus> observed = new ArrayList<>();
+        data.setStatusChangeListener((previous, next) -> {
+            observed.add(previous);
+            observed.add(next);
+        });
+
+        data.set(WorldDataKey.STATUS, TestData.FINISHED);
+
+        assertEquals(List.of(TestData.NOT_STARTED, TestData.FINISHED), observed);
+    }
+
+    @Test
+    void settingTheSameStatus_doesNotNotify() {
+        WorldDataImpl data = worldData();
+        List<BuildWorldStatus> observed = new ArrayList<>();
+        data.setStatusChangeListener((previous, next) -> observed.add(next));
+
+        data.set(WorldDataKey.STATUS, TestData.NOT_STARTED);
+        data.set(WorldDataKey.PHYSICS, false);
+
+        assertTrue(observed.isEmpty());
+    }
+
+    @Test
+    void override_changesWhatIsReadButNotWhatIsStored() {
+        WorldDataImpl data = worldData();
+        data.set(WorldDataKey.PERMISSION, "own.permission");
+        data.setOverride(key -> key.equals(WorldDataKey.PERMISSION) ? "folder.permission" : null);
+
+        assertEquals("folder.permission", data.get(WorldDataKey.PERMISSION));
+        assertEquals("own.permission", data.storedValues().get(WorldDataKey.PERMISSION));
+        assertEquals("-", data.get(WorldDataKey.PROJECT));
+    }
+
+    @Test
+    void everySchemaKey_hasAValue() {
+        WorldDataImpl data = worldData();
+        assertEquals(WorldDataSchema.keys(), data.storedValues().keySet());
     }
 }

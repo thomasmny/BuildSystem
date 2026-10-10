@@ -35,6 +35,7 @@ import de.eintosti.buildsystem.test.SoundlessPlayer;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
+import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,9 +74,7 @@ class PhysicsMenuTest {
         player = SoundlessPlayer.join(MockBukkit.mock(), "Alex");
         messages = mock(Messages.class);
         when(messages.getString(anyString(), any())).thenReturn("Title");
-        data = new WorldDataImpl.WorldDataBuilder("world")
-                .withStatus(TestData.NOT_STARTED)
-                .build();
+        data = WorldDataSchema.create("world", TestData.NOT_STARTED);
         buildWorld = mock(BuildWorld.class);
         when(buildWorld.getData()).thenReturn(data);
     }

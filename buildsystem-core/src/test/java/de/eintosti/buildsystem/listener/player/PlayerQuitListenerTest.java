@@ -25,7 +25,6 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
@@ -37,6 +36,7 @@ import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.PlayerLookupService;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
@@ -74,7 +74,7 @@ class PlayerQuitListenerTest {
     private SettingsImpl settings;
     private BuildPlayerImpl buildPlayer;
     private PlayerQuitListener listener;
-    private PlayerService playerService;
+    private PlayerServiceImpl playerService;
     private SettingsService settingsService;
 
     @BeforeEach
@@ -84,8 +84,13 @@ class PlayerQuitListenerTest {
         settings = new SettingsImpl();
         buildPlayer = new BuildPlayerImpl(UUID.randomUUID(), settings);
 
-        playerService = mock(PlayerService.class, RETURNS_DEEP_STUBS);
+        playerService = mock(PlayerServiceImpl.class, RETURNS_DEEP_STUBS);
         when(playerService.getPlayerStorage().getBuildPlayer(any(Player.class))).thenReturn(buildPlayer);
+        // What PlayerServiceImpl.endBuildSession does for a player in build mode.
+        when(playerService.endBuildSession(any(Player.class))).thenAnswer(invocation -> {
+            buildPlayer.getCachedValues().resetBuildStateIfPresent(invocation.getArgument(0));
+            return true;
+        });
         when(playerService.getPlayerStorage().createBuildPlayer(any(Player.class)))
                 .thenReturn(buildPlayer);
         settingsService = mock(SettingsService.class);

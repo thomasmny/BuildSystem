@@ -35,12 +35,14 @@ import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
-import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
+import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
@@ -53,7 +55,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
- * Round-trip and parse-error tests for {@link YamlWorldStorage}. Establishes the contract for the on-disk
+ * Round-trip and parse-error tests for {@link WorldStorageImpl}. Establishes the contract for the on-disk
  * {@code worlds.yml} format: a world serialized and saved must deserialize back with all fields intact; malformed enum
  * data falls back to a safe default; and an entry that cannot be parsed at all is skipped so the remaining worlds still
  * load (one bad row never aborts the whole load).
@@ -75,26 +77,22 @@ class YamlWorldStorageRoundTripTest {
         context = services.worldContext();
     }
 
-    private YamlWorldStorage newStorage() {
-        return new YamlWorldStorage(plugin, services);
+    private WorldStorageImpl newStorage() {
+        return new WorldStorageImpl(plugin, services);
     }
 
     private BuildWorldImpl sampleWorld(UUID uuid, String name) {
         Builder creator = Builder.of(UUID.randomUUID(), "Creator");
         Builder extraBuilder = Builder.of(UUID.randomUUID(), "Helper");
-        WorldDataImpl data = new WorldDataBuilder(name)
-                .withStatus(TestData.FINISHED)
-                .withDifficulty(Difficulty.NORMAL)
-                .withMaterial(Material.GRASS_BLOCK)
-                .withPermission("buildsystem.test")
-                .withProject("MyProject")
-                .withVisibility(Visibility.ADDED_PLAYERS)
-                .withBlockBreaking(true)
-                .withExplosions(true)
-                .withTimeSinceBackup(42)
-                .withPermissionOverrideEnabled(() -> false)
-                .withProjectOverrideEnabled(() -> false)
-                .build();
+        WorldDataImpl data = WorldDataSchema.create(name, TestData.FINISHED);
+        data.set(WorldDataKey.DIFFICULTY, Difficulty.NORMAL);
+        data.set(WorldDataKey.MATERIAL, Material.GRASS_BLOCK);
+        data.set(WorldDataKey.PERMISSION, "buildsystem.test");
+        data.set(WorldDataKey.PROJECT, "MyProject");
+        data.set(WorldDataKey.VISIBILITY, Visibility.ADDED_PLAYERS);
+        data.set(WorldDataKey.BLOCK_BREAKING, true);
+        data.set(WorldDataKey.EXPLOSIONS, true);
+        data.set(WorldDataKey.TIME_SINCE_BACKUP, 42);
         return new BuildWorldImpl(
                 context,
                 uuid,
@@ -138,14 +136,11 @@ class YamlWorldStorageRoundTripTest {
 
     @Test
     void save_inOverridingFolder_keepsTheWorldsOwnPermissionAndProject() {
+        when(context.configService().current().folder()).thenReturn(new PluginConfig.Folder(true, true));
         UUID uuid = UUID.randomUUID();
-        WorldDataImpl data = new WorldDataBuilder("FolderWorld")
-                .withStatus(TestData.FINISHED)
-                .withPermission("build.secret")
-                .withProject("OwnProject")
-                .withPermissionOverrideEnabled(() -> true)
-                .withProjectOverrideEnabled(() -> true)
-                .build();
+        WorldDataImpl data = WorldDataSchema.create("FolderWorld", TestData.FINISHED);
+        data.set(WorldDataKey.PERMISSION, "build.secret");
+        data.set(WorldDataKey.PROJECT, "OwnProject");
         BuildWorldImpl world = new BuildWorldImpl(
                 context, uuid, "FolderWorld", BuildWorldType.NORMAL, data, null, List.of(), 1L, null, null);
         Folder folder = mock(Folder.class);
@@ -256,7 +251,7 @@ class YamlWorldStorageRoundTripTest {
         when(strict.worldContext()).thenThrow(new IllegalStateException("service not initialized yet"));
         when(strict.playerLookup()).thenThrow(new IllegalStateException("service not initialized yet"));
 
-        assertDoesNotThrow(() -> new YamlWorldStorage(plugin, strict));
+        assertDoesNotThrow(() -> new WorldStorageImpl(plugin, strict));
     }
 
     @Test
@@ -321,9 +316,9 @@ class YamlWorldStorageRoundTripTest {
         assertTrue(world.getData().get(WorldDataKey.MOB_AI));
         assertTrue(world.getData().get(WorldDataKey.PHYSICS));
         assertFalse(world.getData().get(WorldDataKey.BUILDERS_ENABLED));
-        assertEquals(WorldDataImpl.DEFAULT_TIMESTAMP, world.getData().get(WorldDataKey.LAST_EDITED));
-        assertEquals(WorldDataImpl.DEFAULT_TIMESTAMP, world.getData().get(WorldDataKey.LAST_LOADED));
-        assertEquals(WorldDataImpl.DEFAULT_TIMESTAMP, world.getData().get(WorldDataKey.LAST_UNLOADED));
+        assertEquals(-1L, world.getData().get(WorldDataKey.LAST_EDITED));
+        assertEquals(-1L, world.getData().get(WorldDataKey.LAST_LOADED));
+        assertEquals(-1L, world.getData().get(WorldDataKey.LAST_UNLOADED));
     }
 
     @Test

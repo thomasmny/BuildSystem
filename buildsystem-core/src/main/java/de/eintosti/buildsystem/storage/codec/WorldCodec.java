@@ -33,8 +33,9 @@ import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
-import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
+import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -50,8 +51,8 @@ import org.jspecify.annotations.Nullable;
  * world's UUID and the name is carried as a {@code name} field (a rename is then a field update, not a key move).
  *
  * <p>The bulk of a world's state lives under the nested {@code data} section, whose keys come straight from
- * {@link WorldDataKey} via {@link #dataPath} — the same catalog {@link WorldDataImpl} registers and serializes by, so
- * there is no parallel key list to keep in sync. Reads are defensive: unknown enums fall back to safe defaults and a
+ * {@link WorldDataKey} via {@link #dataPath}, and the set of keys from {@link WorldDataSchema}, so there is no parallel
+ * key list to keep in sync. Reads are defensive: unknown enums fall back to safe defaults and a
  * single unparseable entry surfaces as an exception for the storage to skip rather than aborting the whole load.
  */
 @NullMarked
@@ -85,7 +86,7 @@ public final class WorldCodec implements Codec<BuildWorld> {
 
     @Override
     public Map<String, Object> serialize(BuildWorld buildWorld) {
-        Map<String, Object> world = new HashMap<>();
+        Map<String, Object> world = new LinkedHashMap<>();
 
         world.put(NAME, buildWorld.getName());
         world.put(UUID_KEY, buildWorld.getUniqueId().toString());
@@ -94,12 +95,12 @@ public final class WorldCodec implements Codec<BuildWorld> {
             world.put(CREATOR, builders.getCreator().toString());
         }
         world.put(TYPE, buildWorld.getType().name());
-        world.put(DATA, serializeWorldData((WorldDataImpl) buildWorld.getData()));
         world.put(DATE, buildWorld.getCreation());
         world.put(BUILDERS, BuilderListCodec.format(builders.getAllBuilders()));
         if (buildWorld.getCustomGenerator() != null) {
             world.put(CHUNK_GENERATOR, buildWorld.getCustomGenerator().toString());
         }
+        world.put(DATA, serializeWorldData((WorldDataImpl) buildWorld.getData()));
 
         return world;
     }
@@ -111,18 +112,23 @@ public final class WorldCodec implements Codec<BuildWorld> {
      * which is all the catalog uses.
      */
     private Map<String, Object> serializeWorldData(WorldDataImpl worldData) {
-        Map<String, Object> data = new HashMap<>();
+        Map<String, Object> data = new LinkedHashMap<>();
         Map<String, Map<String, Object>> sections = new HashMap<>();
-        worldData.getAllData().forEach((id, property) -> {
+        worldData.storedValues().forEach((key, value) -> {
+            String id = key.id();
+            Object yaml = WorldDataSchema.toYaml(value);
             int dot = id.indexOf('.');
             if (dot < 0) {
-                data.put(id, property.getConfigFormat());
+                data.put(id, yaml);
                 return;
             }
-            sections.computeIfAbsent(id.substring(0, dot), section -> new HashMap<>())
-                    .put(id.substring(dot + 1), property.getConfigFormat());
+            sections.computeIfAbsent(id.substring(0, dot), section -> {
+                        Map<String, Object> nested = new LinkedHashMap<>();
+                        data.put(section, nested);
+                        return nested;
+                    })
+                    .put(id.substring(dot + 1), yaml);
         });
-        data.putAll(sections);
         return data;
     }
 
@@ -155,44 +161,40 @@ public final class WorldCodec implements Codec<BuildWorld> {
     }
 
     private WorldDataImpl parseWorldData(String worldName, ConfigurationSection section) {
-        WorldDataBuilder builder = new WorldDataBuilder(worldName)
-                .withCustomSpawn(parseCustomSpawn(section))
-                .withPermission(section.getString(dataPath(WorldDataKey.PERMISSION), "-"))
-                .withProject(section.getString(dataPath(WorldDataKey.PROJECT), "-"))
-                .withDifficulty(parseDifficulty(section, worldName))
-                .withMaterial(parseMaterial(section, worldName))
-                .withIconSkullTexture(section.getString(dataPath(WorldDataKey.ICON_SKULL_TEXTURE), ""))
-                .withStatus(parseStatus(section, worldName))
-                .withBlockBreaking(
-                        section.getBoolean(dataPath(WorldDataKey.BLOCK_BREAKING), WorldDataImpl.DEFAULT_BLOCK_BREAKING))
-                .withBlockInteractions(section.getBoolean(
-                        dataPath(WorldDataKey.BLOCK_INTERACTIONS), WorldDataImpl.DEFAULT_BLOCK_INTERACTIONS))
-                .withBlockPlacement(section.getBoolean(
-                        dataPath(WorldDataKey.BLOCK_PLACEMENT), WorldDataImpl.DEFAULT_BLOCK_PLACEMENT))
-                .withBuildersEnabled(section.getBoolean(
-                        dataPath(WorldDataKey.BUILDERS_ENABLED), WorldDataImpl.DEFAULT_BUILDERS_ENABLED))
-                .withExplosions(section.getBoolean(dataPath(WorldDataKey.EXPLOSIONS), WorldDataImpl.DEFAULT_EXPLOSIONS))
-                .withMobAi(section.getBoolean(dataPath(WorldDataKey.MOB_AI), WorldDataImpl.DEFAULT_MOB_AI))
-                .withPhysics(section.getBoolean(dataPath(WorldDataKey.PHYSICS), WorldDataImpl.DEFAULT_PHYSICS))
-                .withPinned(section.getBoolean(dataPath(WorldDataKey.PINNED), WorldDataImpl.DEFAULT_PINNED))
-                .withVisibility(parseVisibility(section))
-                .withTimeSinceBackup(section.getInt(
-                        dataPath(WorldDataKey.TIME_SINCE_BACKUP), WorldDataImpl.DEFAULT_TIME_SINCE_BACKUP))
-                .withLastLoaded(section.getLong(dataPath(WorldDataKey.LAST_LOADED), WorldDataImpl.DEFAULT_TIMESTAMP))
-                .withLastUnloaded(
-                        section.getLong(dataPath(WorldDataKey.LAST_UNLOADED), WorldDataImpl.DEFAULT_TIMESTAMP))
-                .withLastEdited(section.getLong(dataPath(WorldDataKey.LAST_EDITED), WorldDataImpl.DEFAULT_TIMESTAMP))
-                .withPermissionOverrideEnabled(
-                        () -> context.configService().current().folder().overridePermissions())
-                .withProjectOverrideEnabled(
-                        () -> context.configService().current().folder().overrideProjects());
+        WorldDataImpl data = WorldDataSchema.create(worldName, parseStatus(section, worldName));
         PluginConfig.World.Defaults defaults =
                 context.configService().current().world().defaults();
         for (PhysicsCategory category : PhysicsCategory.values()) {
-            builder.withPhysicsCategory(
-                    category, section.getBoolean(dataPath(category.key()), defaults.physicsException(category)));
+            // An absent exception takes the configured default, not the schema's.
+            data.set(category.key(), defaults.physicsException(category));
         }
-        return builder.build();
+
+        for (WorldDataKey<?> key : WorldDataSchema.keys()) {
+            readPlain(data, section, key);
+        }
+        data.set(WorldDataKey.CUSTOM_SPAWN, parseCustomSpawn(section));
+        data.set(WorldDataKey.DIFFICULTY, parseDifficulty(section, worldName));
+        data.set(WorldDataKey.MATERIAL, parseMaterial(section, worldName));
+        data.set(WorldDataKey.VISIBILITY, parseVisibility(section));
+        return data;
+    }
+
+    /**
+     * Reads a string, boolean or number key, keeping the value already in {@code data} when the key is absent. Keys of
+     * other types are parsed by their own methods.
+     */
+    private static <T> void readPlain(WorldDataImpl data, ConfigurationSection section, WorldDataKey<T> key) {
+        String path = dataPath(key);
+        T current = key.type().cast(data.storedValues().get(key));
+        Object value =
+                switch (current) {
+                    case Boolean fallback -> section.getBoolean(path, fallback);
+                    case Integer fallback -> section.getInt(path, fallback);
+                    case Long fallback -> section.getLong(path, fallback);
+                    case String fallback -> section.getString(path, fallback);
+                    default -> current;
+                };
+        data.set(key, key.type().cast(value));
     }
 
     /**

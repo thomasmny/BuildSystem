@@ -1,0 +1,76 @@
+0a0a0a0a-0000-4000-8000-000000000001:
+  name: arena
+  uuid: 0a0a0a0a-0000-4000-8000-000000000001
+  creator: 0c0c0c0c-0000-4000-8000-000000000001,Alex
+  type: IMPORTED
+  date: 1700000000000
+  builders: 0c0c0c0c-0000-4000-8000-000000000001,Alex;0c0c0c0c-0000-4000-8000-000000000002,Sam
+  chunk-generator: Terra:Terra
+  data:
+    status: finished
+    spawn: arena:1.5:64.0:-3.5:90.0:0.0
+    permission: maps.arena
+    project: Arena
+    difficulty: HARD
+    material: STONE
+    icon-skull-texture: eyJ0ZXh0dXJlcyI6e319
+    block-breaking: false
+    block-interactions: false
+    block-placement: false
+    builders-enabled: true
+    explosions: false
+    mob-ai: false
+    physics: false
+    physics-exceptions:
+      block-updates: true
+      connections: true
+      falling-blocks: true
+      fluid-flow: true
+      leaf-decay: true
+      growth: true
+      spreading: true
+      block-forming: true
+      block-fading: true
+    pinned: true
+    visibility: ADDED_PLAYERS
+    time-since-backup: 42
+    last-edited: 1700000000100
+    last-loaded: 1700000000200
+    last-unloaded: 1700000000300
+0a0a0a0a-0000-4000-8000-000000000002:
+  name: plain
+  uuid: 0a0a0a0a-0000-4000-8000-000000000002
+  type: NORMAL
+  date: 1700000000001
+  builders: ''
+  data:
+    status: not_started
+    spawn: ''
+    permission: '-'
+    project: '-'
+    difficulty: PEACEFUL
+    material: GRASS_BLOCK
+    icon-skull-texture: ''
+    block-breaking: true
+    block-interactions: true
+    block-placement: true
+    builders-enabled: false
+    explosions: true
+    mob-ai: true
+    physics: true
+    physics-exceptions:
+      block-updates: false
+      connections: false
+      falling-blocks: false
+      fluid-flow: false
+      leaf-decay: false
+      growth: false
+      spreading: false
+      block-forming: false
+      block-fading: false
+    pinned: false
+    visibility: EVERYONE
+    time-since-backup: 0
+    last-edited: -1
+    last-loaded: -1
+    last-unloaded: -1

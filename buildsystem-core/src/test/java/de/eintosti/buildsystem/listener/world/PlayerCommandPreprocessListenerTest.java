@@ -40,6 +40,7 @@ import de.eintosti.buildsystem.test.SoundlessPlayer;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
+import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
@@ -84,9 +85,7 @@ class PlayerCommandPreprocessListenerTest {
 
     @Test
     void archivedWorld_blocksAPlainPlayer() {
-        world(new WorldDataImpl.WorldDataBuilder("world")
-                .withStatus(TestData.ARCHIVE_STATUS)
-                .build());
+        world(WorldDataSchema.create("world", TestData.ARCHIVE_STATUS));
 
         assertTrue(runSet().isCancelled());
         verify(messages).sendMessage(player, "command_archive_world");
@@ -116,9 +115,7 @@ class PlayerCommandPreprocessListenerTest {
     }
 
     private static WorldDataImpl buildersEnabled() {
-        WorldDataImpl data = new WorldDataImpl.WorldDataBuilder("world")
-                .withStatus(TestData.NOT_STARTED)
-                .build();
+        WorldDataImpl data = WorldDataSchema.create("world", TestData.NOT_STARTED);
         data.set(WorldDataKey.BUILDERS_ENABLED, true);
         return data;
     }

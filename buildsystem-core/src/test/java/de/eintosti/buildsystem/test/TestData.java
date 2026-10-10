@@ -32,6 +32,7 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.storage.yaml.YamlEntityFile;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
@@ -44,8 +45,10 @@ import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import org.bukkit.Material;
 import org.bukkit.plugin.Plugin;
@@ -159,6 +162,18 @@ public final class TestData {
         lenient().when(registry.getDefault()).thenReturn(PUBLIC);
         lenient().when(registry.get(anyString())).thenAnswer(invocation -> categoryById(invocation.getArgument(0)));
         return registry;
+    }
+
+    /**
+     * {@return a storage file that writes nothing} Every write completes at once and a load finds nothing, for tests of
+     * the in-memory side of a storage.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> YamlEntityFile<T> noopEntityFile() {
+        return mock(
+                YamlEntityFile.class,
+                invocation -> CompletableFuture.completedFuture(
+                        invocation.getMethod().getName().equals("load") ? new LinkedHashMap<>() : null));
     }
 
     /**

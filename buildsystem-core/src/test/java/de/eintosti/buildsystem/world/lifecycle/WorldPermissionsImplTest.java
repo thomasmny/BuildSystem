@@ -29,11 +29,10 @@ import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
-import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
+import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import java.util.List;
 import java.util.UUID;
 import org.bukkit.Difficulty;
-import org.bukkit.Material;
 import org.bukkit.plugin.Plugin;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -87,16 +86,9 @@ class WorldPermissionsImplTest {
                 : Builder.of(UUID.randomUUID(), "Creator");
         List<Builder> builders =
                 relation == Relation.BUILDER ? List.of(Builder.of(player.getUniqueId(), player.getName())) : List.of();
-        WorldDataImpl data = new WorldDataBuilder("lobby")
-                .withStatus(TestData.NOT_STARTED)
-                .withDifficulty(Difficulty.NORMAL)
-                .withMaterial(Material.GRASS_BLOCK)
-                .withPermission(WORLD_PERMISSION)
-                .withProject("-")
-                .withVisibility(Visibility.EVERYONE)
-                .withPermissionOverrideEnabled(() -> false)
-                .withProjectOverrideEnabled(() -> false)
-                .build();
+        WorldDataImpl data = WorldDataSchema.create("lobby", TestData.NOT_STARTED);
+        data.set(WorldDataKey.DIFFICULTY, Difficulty.NORMAL);
+        data.set(WorldDataKey.PERMISSION, WORLD_PERMISSION);
         return new BuildWorldImpl(
                 context,
                 UUID.randomUUID(),

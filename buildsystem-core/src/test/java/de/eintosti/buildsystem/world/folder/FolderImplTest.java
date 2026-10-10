@@ -22,11 +22,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
-import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
+import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -55,16 +56,12 @@ class FolderImplTest {
     }
 
     private BuildWorldImpl world(String name) {
-        WorldDataImpl data = new WorldDataBuilder(name)
-                .withStatus(TestData.NOT_STARTED)
-                .withDifficulty(Difficulty.NORMAL)
-                .withMaterial(Material.GRASS_BLOCK)
-                .withPermission("-")
-                .withProject("-")
-                .withVisibility(Visibility.EVERYONE)
-                .withPermissionOverrideEnabled(() -> false)
-                .withProjectOverrideEnabled(() -> false)
-                .build();
+        WorldDataImpl data = WorldDataSchema.create(name, TestData.NOT_STARTED);
+        data.set(WorldDataKey.DIFFICULTY, Difficulty.NORMAL);
+        data.set(WorldDataKey.MATERIAL, Material.GRASS_BLOCK);
+        data.set(WorldDataKey.PERMISSION, "-");
+        data.set(WorldDataKey.PROJECT, "-");
+        data.set(WorldDataKey.VISIBILITY, Visibility.EVERYONE);
         return new BuildWorldImpl(
                 context,
                 UUID.randomUUID(),
@@ -174,21 +171,15 @@ class FolderImplTest {
     }
 
     @Test
-    void constructor_defensivelyCopiesWorlds() {
+    void builder_defensivelyCopiesWorlds() {
         List<UUID> worlds = new ArrayList<>(List.of(UUID.randomUUID()));
-        FolderImpl folder = new FolderImpl(
-                context,
-                UUID.randomUUID(),
-                "Detached",
-                0L,
-                TestData.PUBLIC,
-                null,
-                Builder.of(UUID.randomUUID(), "Creator"),
-                Material.CHEST,
-                "-",
-                "-",
-                worlds,
-                new ArrayList<>());
+        FolderImpl folder = FolderImpl.builder(context, UUID.randomUUID())
+                .name("Detached")
+                .creation(0L)
+                .category(TestData.PUBLIC)
+                .creator(Builder.of(UUID.randomUUID(), "Creator"))
+                .worlds(worlds)
+                .build();
 
         worlds.clear();
 

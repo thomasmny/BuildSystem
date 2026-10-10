@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.listener.player;
 
-import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -25,8 +24,8 @@ import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
-import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.LogoutLocation;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.world.WorldNames;
@@ -41,7 +40,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class PlayerQuitListener implements Listener {
 
-    private final PlayerService playerManager;
+    private final PlayerServiceImpl playerManager;
     private final NavigatorService navigatorService;
     private final NavigatorEditorService navigatorEditorService;
     private final NoClipService noClipService;
@@ -50,7 +49,7 @@ public class PlayerQuitListener implements Listener {
     private final Messages messages;
 
     public PlayerQuitListener(
-            PlayerService playerManager,
+            PlayerServiceImpl playerManager,
             NavigatorService navigatorService,
             NavigatorEditorService navigatorEditorService,
             NoClipService noClipService,
@@ -96,10 +95,8 @@ public class PlayerQuitListener implements Listener {
                 BuildPlayerImpl.of(playerManager.getPlayerStorage().getBuildPlayer(player));
         // The snapshots only live in memory, so hand them back before the server saves the player. Build mode is
         // unwound first, as on a world change: inside an archive world its snapshot is the emptied inventory.
-        CachedValues cachedValues = buildPlayer.getCachedValues();
-        cachedValues.resetBuildStateIfPresent(player);
-        playerManager.leaveBuildMode(player.getUniqueId());
-        ArchiveMode.exit(player, cachedValues, settingsManager);
+        playerManager.endBuildSession(player);
+        ArchiveMode.exit(player, buildPlayer.getCachedValues(), settingsManager);
 
         if (settings.isClearInventory()) {
             player.getInventory().clear();
