@@ -47,7 +47,6 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 final class S3DownloadDelivery implements DownloadDelivery {
 
-    
     private final S3Client s3;
 
     private final Logger logger;
