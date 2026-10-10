@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.command;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -34,7 +35,6 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.command.WorldToggleCommand.Toggle;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
 import java.util.logging.Logger;
@@ -121,27 +121,26 @@ class WorldToggleCommandTest {
 
     @Test
     void explosions_flipsOnAndOff() {
-        WorldMock world = server.addSimpleWorld("maps");
-        BuildWorld buildWorld = buildWorld(true);
-        when(buildWorld.getName()).thenReturn("maps");
-        when(worldStorage.getBuildWorld("maps")).thenReturn(buildWorld);
-        when(worldStorage.getBuildWorld(world)).thenReturn(buildWorld);
+        BuildWorld buildWorld = worldNamedMaps();
         when(buildWorld.getData().get(WorldDataKey.EXPLOSIONS)).thenReturn(false);
 
         run(Toggle.EXPLOSIONS, "maps");
 
         verify(buildWorld.getData()).set(WorldDataKey.EXPLOSIONS, true);
         verify(messages).sendMessage(eq(player), eq("explosions_activated"), any());
+
+        when(buildWorld.getData().get(WorldDataKey.EXPLOSIONS)).thenReturn(true);
+
+        run(Toggle.EXPLOSIONS, "maps");
+
+        verify(buildWorld.getData()).set(WorldDataKey.EXPLOSIONS, false);
+        verify(messages).sendMessage(eq(player), eq("explosions_deactivated"), any());
     }
 
     @Test
     void noai_activatingTurnsMobAiOffForLivingEntities() {
-        WorldMock world = server.addSimpleWorld("maps");
-        LivingEntity zombie = (LivingEntity) world.spawnEntity(world.getSpawnLocation(), EntityType.ZOMBIE);
-        BuildWorld buildWorld = buildWorld(true);
-        when(buildWorld.getName()).thenReturn("maps");
-        when(worldStorage.getBuildWorld("maps")).thenReturn(buildWorld);
-        when(worldStorage.getBuildWorld(world)).thenReturn(buildWorld);
+        BuildWorld buildWorld = worldNamedMaps();
+        LivingEntity zombie = spawnZombie();
         when(buildWorld.getData().get(WorldDataKey.MOB_AI)).thenReturn(true);
 
         run(Toggle.NOAI, "maps");
@@ -149,6 +148,34 @@ class WorldToggleCommandTest {
         verify(buildWorld.getData()).set(WorldDataKey.MOB_AI, false);
         verify(messages).sendMessage(eq(player), eq("noai_activated"), any());
         assertFalse(zombie.hasAI());
+    }
+
+    @Test
+    void noai_deactivatingGivesLivingEntitiesTheirAiBack() {
+        BuildWorld buildWorld = worldNamedMaps();
+        LivingEntity zombie = spawnZombie();
+        zombie.setAI(false);
+        when(buildWorld.getData().get(WorldDataKey.MOB_AI)).thenReturn(false);
+
+        run(Toggle.NOAI, "maps");
+
+        verify(buildWorld.getData()).set(WorldDataKey.MOB_AI, true);
+        verify(messages).sendMessage(eq(player), eq("noai_deactivated"), any());
+        assertTrue(zombie.hasAI());
+    }
+
+    private BuildWorld worldNamedMaps() {
+        WorldMock world = server.addSimpleWorld("maps");
+        BuildWorld buildWorld = buildWorld(true);
+        when(buildWorld.getName()).thenReturn("maps");
+        when(worldStorage.getBuildWorld("maps")).thenReturn(buildWorld);
+        when(worldStorage.getBuildWorld(world)).thenReturn(buildWorld);
+        return buildWorld;
+    }
+
+    private LivingEntity spawnZombie() {
+        WorldMock world = (WorldMock) server.getWorld("maps");
+        return (LivingEntity) world.spawnEntity(world.getSpawnLocation(), EntityType.ZOMBIE);
     }
 
     private void run(Toggle toggle, String... args) {
@@ -159,7 +186,6 @@ class WorldToggleCommandTest {
     private BuildWorld buildWorld(boolean mayToggle) {
         WorldPermissions permissions = mock(WorldPermissions.class);
         when(permissions.canPerformCommand(eq(player), any())).thenReturn(mayToggle);
-        when(permissions.canPerformCommand(player, Permissions.PHYSICS)).thenReturn(mayToggle);
         BuildWorld buildWorld = mock(BuildWorld.class);
         when(buildWorld.getPermissions()).thenReturn(permissions);
         when(buildWorld.getData()).thenReturn(mock(WorldData.class));
