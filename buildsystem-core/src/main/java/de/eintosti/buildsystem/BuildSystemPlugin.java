@@ -101,11 +101,15 @@ public class BuildSystemPlugin extends JavaPlugin {
         services.world()
                 .worldsLoaded()
                 .thenRun(() -> Bukkit.getOnlinePlayers().forEach(pl -> {
-                    ArchiveMode.enterIfInArchiveWorld(
+                    BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(
+                            services.player().getPlayerStorage().getBuildPlayer(pl));
+                    if (ArchiveMode.enterIfInArchiveWorld(
                             pl,
-                            cachedValues(pl),
+                            buildPlayer.getCachedValues(),
                             services.world().getWorldStorage(),
-                            configService.current().settings().archive());
+                            configService.current().settings().archive())) {
+                        services.player().getPlayerStorage().save(buildPlayer);
+                    }
                     services.settings().updateVisibility(pl);
                 }));
 

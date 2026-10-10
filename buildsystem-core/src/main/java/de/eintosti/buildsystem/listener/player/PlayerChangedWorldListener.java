@@ -105,23 +105,21 @@ public class PlayerChangedWorldListener implements Listener {
     }
 
     private void checkWorldStatus(Player player) {
-        CachedValues cachedValues = cachedValues(player);
-        ArchiveMode.exit(player, cachedValues);
+        BuildPlayerImpl buildPlayer =
+                BuildPlayerImpl.of(playerManager.getPlayerStorage().getBuildPlayer(player));
+        CachedValues cachedValues = buildPlayer.getCachedValues();
+        boolean snapshotChanged = ArchiveMode.exit(player, cachedValues);
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        if (buildWorld == null) {
-            return;
-        }
-
-        if (!buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
-            ArchiveMode.enter(
+        if (buildWorld != null && !buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
+            snapshotChanged |= ArchiveMode.enter(
                     player, cachedValues, configService.current().settings().archive());
         }
-        navigatorService.giveNavigator(player);
-    }
-
-    private CachedValues cachedValues(Player player) {
-        return BuildPlayerImpl.of(playerManager.getPlayerStorage().getBuildPlayer(player))
-                .getCachedValues();
+        if (snapshotChanged) {
+            playerManager.getPlayerStorage().save(buildPlayer);
+        }
+        if (buildWorld != null) {
+            navigatorService.giveNavigator(player);
+        }
     }
 }
