@@ -266,7 +266,8 @@ public class WorldServiceImpl implements WorldService {
                         customGenerator != null
                                 ? customGenerator
                                 : new CustomGeneratorImpl("BuildSystem", generatorData, null))
-                .privateWorld(false);
+                .privateWorld(false)
+                .notify(player);
 
         if (worldImporter.isDataVersionTooHigh()) {
             String key = single ? "import" : "importall";
