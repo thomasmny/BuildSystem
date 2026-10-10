@@ -73,6 +73,15 @@ class WorldArchiveTest {
     }
 
     @Test
+    void writingIntoAMissingTempDirectory_createsIt() throws IOException {
+        Path archive = tempDir.resolve(".tmp_backup_downloads").resolve("backup.zip");
+
+        WorldArchive.write(world("arena"), null, archive);
+
+        assertTrue(Files.isRegularFile(archive));
+    }
+
+    @Test
     void zip4jLocalBackup_restoresIntoTheWorldFolderItself() throws IOException {
         Path target = tempDir.resolve("restored");
         File archive = resource("zip4j-local.zip").toFile();
