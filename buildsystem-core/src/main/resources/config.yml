@@ -156,3 +156,6 @@ storage:
 folder:
   override-permissions: true
   override-projects: false
+
+# Internal, do not change manually!
+version: 5
