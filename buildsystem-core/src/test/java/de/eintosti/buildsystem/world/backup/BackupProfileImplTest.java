@@ -25,8 +25,10 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -76,6 +78,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 
 /**
@@ -400,6 +403,35 @@ class BackupProfileImplTest {
         verify(messages).sendMessage(player, "worlds_backup_restoration_failed");
         verify(messages, never())
                 .sendMessage(eq(player), eq("worlds_backup_restoration_successful"), any(Placeholders.class));
+        assertFalse(operations.isBusy(buildWorld));
+    }
+
+    @Test
+    void restoreWhoseOldWorldCannotBePutBack_leavesTheWorldUnloaded() throws Exception {
+        Path worldFolder = tempDir.resolve("arena");
+        Backup backup = unloadableArenaWithBackup(worldFolder, "zip4j-remote.zip");
+        Player inside = mock(Player.class);
+        when(inside.teleport(any(Location.class))).thenReturn(true);
+        when(inside.getLocation()).thenReturn(new Location(null, 1, 64, 1));
+        when(buildWorld.getWorld().orElseThrow().getPlayers()).thenReturn(List.of(inside));
+        Player player = mock(Player.class);
+
+        try (MockedConstruction<WorldRestore> restores = mockConstruction(WorldRestore.class, (restore, context) -> {
+            doThrow(new IOException("second rename failed")).when(restore).swap();
+            when(restore.worldIsBack()).thenReturn(false);
+            when(restore.replaced()).thenReturn(tempDir.resolve(".buildsystem-restore/arena.replaced"));
+        })) {
+            profile(3)
+                    .restoreBackup(backup, player)
+                    .handle((ignored, throwable) -> null)
+                    .get(5, TimeUnit.SECONDS);
+
+            assertEquals(1, restores.constructed().size());
+        }
+
+        verify(buildWorld.getLoader(), never()).load();
+        verify(buildWorld.getTeleporter(), never()).teleport(any(Player.class));
+        verify(messages).sendMessage(player, "worlds_backup_restoration_failed");
         assertFalse(operations.isBusy(buildWorld));
     }
 

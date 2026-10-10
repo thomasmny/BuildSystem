@@ -70,7 +70,7 @@ public final class WorldArchive {
     static void write(Path worldFolder, @Nullable Path excludedSubtree, Path target) throws IOException {
         // A world folder that is a symbolic link is archived from where it points.
         Path folder = worldFolder.toRealPath();
-        @Nullable Path excluded = excludedSubtree != null && Files.exists(excludedSubtree) ? excludedSubtree.toRealPath() : null;
+        @Nullable Path excluded = realPathIfPresent(excludedSubtree);
         Path restoreFolder = folder.resolve(WorldRestore.FOLDER);
         List<Path> files;
         try (Stream<Path> walk = Files.walk(folder)) {
@@ -94,6 +94,10 @@ public final class WorldArchive {
                 zip.closeEntry();
             }
         }
+    }
+
+    private static @Nullable Path realPathIfPresent(@Nullable Path path) throws IOException {
+        return path != null && Files.exists(path) ? path.toRealPath() : null;
     }
 
     /**

@@ -31,6 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Puts a backup in place of a world folder, so that a failure at any step leaves the old world there. Every move is an
@@ -144,6 +145,24 @@ public final class WorldRestore {
      */
     public boolean worldIsBack() {
         return Files.isDirectory(world) && !Files.exists(replaced());
+    }
+
+    /**
+     * {@return what a restore that went wrong left of this world's old folder, or {@code null} if there is nothing}
+     * Until an admin has looked at it, the world must not be loaded: its folder is missing or half replaced, and
+     * loading it would generate a new world there.
+     */
+    public static @Nullable Path pendingRestore(File worldFolder) {
+        Path world = worldFolder.toPath();
+        for (Path leftover : List.of(
+                inFolder(world, false, "replaced"),
+                inFolder(world, true, "replaced"),
+                folder(world, true).resolve(MOVING_IN))) {
+            if (Files.exists(leftover)) {
+                return leftover;
+            }
+        }
+        return null;
     }
 
     /**

@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.backup;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -123,6 +124,28 @@ class WorldRestoreTest {
 
         assertTrue(Files.exists(leftover));
         assertCurrent(world);
+    }
+
+    @Test
+    void pendingRestore_namesWhatAFailedRestoreLeft() throws IOException {
+        Path world = world();
+        assertNull(WorldRestore.pendingRestore(world.toFile()));
+
+        Path movingIn =
+                Files.createDirectories(world.resolve(WorldRestore.FOLDER)).resolve("moving-in");
+        Files.createFile(movingIn);
+        assertEquals(movingIn, WorldRestore.pendingRestore(world.toFile()));
+        Files.delete(movingIn);
+
+        Path inPlace =
+                Files.createDirectories(world.resolve(WorldRestore.FOLDER).resolve("replaced"));
+        assertEquals(inPlace, WorldRestore.pendingRestore(world.toFile()));
+        Files.delete(inPlace);
+
+        Path renamed =
+                Files.createDirectories(tempDir.resolve(WorldRestore.FOLDER).resolve("arena.replaced"));
+        FileUtils.deleteDirectory(world);
+        assertEquals(renamed, WorldRestore.pendingRestore(world.toFile()));
     }
 
     @Test
