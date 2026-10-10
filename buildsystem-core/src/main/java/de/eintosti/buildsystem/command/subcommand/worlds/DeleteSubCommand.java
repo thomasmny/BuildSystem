@@ -18,15 +18,19 @@
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.command.Completions;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
 import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menus;
+import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -58,8 +62,17 @@ public class DeleteSubCommand extends WorldSubCommand {
         if (args.length != 2) {
             return List.of();
         }
-        return WorldsCompletions.deletableWorldNames(
-                player, worldService, configService.current().world().deletionBlacklist(), args[1]);
+
+        // Offers only the worlds /worlds delete would accept: permitted and not on the deletion blacklist.
+        Set<String> blacklist = configService.current().world().deletionBlacklist();
+        List<String> result = new ArrayList<>();
+        Completions.addWorldNames(
+                args[1],
+                worldService.getWorldStorage(),
+                world -> !blacklist.contains(WorldNames.id(world.getName()))
+                        && world.getPermissions().canPerformCommand(player, Permissions.DELETE),
+                result);
+        return result;
     }
 
     @Override

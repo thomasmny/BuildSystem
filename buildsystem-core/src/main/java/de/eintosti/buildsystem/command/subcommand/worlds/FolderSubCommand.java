@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -292,14 +293,14 @@ public class FolderSubCommand extends AbstractSubCommand {
                 return result;
             }
 
+            Function<String, String> typedName = worldService.getWorldStorage().typedNames();
             worldService.getWorldStorage().getBuildWorlds().stream()
                     .filter(bw -> folder.getCategory()
                             .groups(
                                     bw.getData().get(WorldDataKey.VISIBILITY),
                                     bw.getData().get(WorldDataKey.STATUS).getId()))
                     .filter(bw -> op.equals("add") ? !bw.isAssignedToFolder() : folder.containsWorld(bw))
-                    .forEach(bw -> Completions.addMatching(
-                            args[3], worldService.getWorldStorage().typedName(bw.getName()), result));
+                    .forEach(bw -> Completions.addMatching(args[3], typedName.apply(bw.getName()), result));
             return result;
         }
 

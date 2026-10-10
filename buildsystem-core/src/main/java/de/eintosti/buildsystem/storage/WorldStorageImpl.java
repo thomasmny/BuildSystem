@@ -27,10 +27,14 @@ import de.eintosti.buildsystem.world.WorldNames;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
@@ -155,13 +159,18 @@ public abstract class WorldStorageImpl implements WorldStorage {
     }
 
     /**
-     * {@return the shortest name a player can type for an existing world} That is its name without a namespace when no
-     * other world shares it, otherwise {@code namespace:name}.
+     * {@return the shortest name a player can type for each existing world} That is its name without a namespace when
+     * no other world shares it, otherwise {@code namespace:name}. The worlds are counted per path once, so naming every
+     * world for a tab completion costs one pass over them instead of one per world.
      */
-    public String typedName(String worldName) {
-        return worldsWithPath(WorldNames.path(worldName)).size() > 1
-                ? WorldNames.qualified(worldName)
-                : WorldNames.path(worldName);
+    public Function<String, String> typedNames() {
+        Map<String, Long> worldsPerPath = getBuildWorlds().stream()
+                .collect(Collectors.groupingBy(
+                        world -> WorldNames.path(world.getName()).toLowerCase(Locale.ROOT), Collectors.counting()));
+        return worldName ->
+                worldsPerPath.getOrDefault(WorldNames.path(worldName).toLowerCase(Locale.ROOT), 0L) > 1
+                        ? WorldNames.qualified(worldName)
+                        : WorldNames.path(worldName);
     }
 
     /**

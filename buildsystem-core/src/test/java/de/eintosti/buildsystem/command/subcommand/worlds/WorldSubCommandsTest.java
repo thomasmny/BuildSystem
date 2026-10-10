@@ -46,6 +46,7 @@ import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -142,7 +143,7 @@ class WorldSubCommandsTest {
         BuildWorld denied = buildWorld(false);
         when(denied.getName()).thenReturn("Lounge");
         when(worldStorage.getBuildWorlds()).thenReturn(List.of(allowed, otherPrefix, denied));
-        when(worldStorage.typedName(anyString())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(worldStorage.typedNames()).thenReturn(Function.identity());
 
         EditSubCommand edit = new EditSubCommand(messages, worldService, mock(Menus.class));
 

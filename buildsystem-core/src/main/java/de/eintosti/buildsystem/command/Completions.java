@@ -19,8 +19,8 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.world.WorldNames;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import org.bukkit.util.StringUtil;
 import org.jspecify.annotations.NullMarked;
@@ -34,10 +34,17 @@ public final class Completions {
     private Completions() {}
 
     /**
+     * {@return whether {@code candidate} starts with {@code input}, ignoring case}
+     */
+    public static boolean matches(String input, String candidate) {
+        return StringUtil.startsWithIgnoreCase(candidate, input);
+    }
+
+    /**
      * Adds {@code candidate} to {@code result} if it starts with {@code input}, ignoring case.
      */
     public static void addMatching(String input, String candidate, List<String> result) {
-        if (StringUtil.startsWithIgnoreCase(candidate, input)) {
+        if (matches(input, candidate)) {
             result.add(candidate);
         }
     }
@@ -47,16 +54,10 @@ public final class Completions {
      */
     public static void addWorldNames(
             String input, WorldStorageImpl worldStorage, Predicate<BuildWorld> allowed, List<String> result) {
+        Function<String, String> typedName = worldStorage.typedNames();
         for (BuildWorld world : worldStorage.getBuildWorlds()) {
-            String name = world.getName();
-            if (!allowed.test(world)) {
-                continue;
-            }
-            // The typed name is either the path or the qualified name, and working it out scans every world.
-            // ponytail: an empty prefix still scans once per world; a path index in WorldStorageImpl would remove that.
-            if (StringUtil.startsWithIgnoreCase(WorldNames.path(name), input)
-                    || StringUtil.startsWithIgnoreCase(WorldNames.qualified(name), input)) {
-                addMatching(input, worldStorage.typedName(name), result);
+            if (allowed.test(world)) {
+                addMatching(input, typedName.apply(world.getName()), result);
             }
         }
     }
