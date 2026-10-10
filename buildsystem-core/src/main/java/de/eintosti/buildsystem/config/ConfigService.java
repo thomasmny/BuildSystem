@@ -85,9 +85,29 @@ public class ConfigService {
 
     /**
      * Reloads the configuration from disk and re-parses it into a new {@link PluginConfig}.
+     *
+     * @throws IllegalArgumentException If a value is invalid
      */
     public void load() {
         this.current = parse(plugin.getConfig(), plugin.getLogger(), wandDetector.detect());
+    }
+
+    /**
+     * Like {@link #load}, but a configuration with an invalid value is logged and not applied, so the one in use stays
+     * whole. For a running server, where failing part way through a reload or shutdown would do more harm.
+     *
+     * @return Whether the new configuration was applied
+     */
+    public boolean reload() {
+        try {
+            load();
+            return true;
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger()
+                    .severe("config.yml was not applied, the previous settings stay in use until it is fixed: "
+                            + e.getMessage());
+            return false;
+        }
     }
 
     /**

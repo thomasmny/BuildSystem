@@ -175,6 +175,17 @@ class ArchiveModeReloadTest {
     }
 
     @Test
+    void configReload_withAnInvalidValue_keepsThePreviousConfigWhole() {
+        plugin.getConfig().set("settings.archive.vanish", false);
+        plugin.getConfig().set("storage.table-prefix", "Not A Prefix");
+        plugin.saveConfig();
+
+        assertFalse(plugin.reloadConfigData(true));
+
+        assertFalse(bystander.canSee(archived), "the kept config still vanishes archived players");
+    }
+
+    @Test
     void crash_thenRejoinElsewhere_handsTheRealInventoryBackOnce() {
         assertEquals(GameMode.ADVENTURE, archived.getGameMode());
         flushWrites();

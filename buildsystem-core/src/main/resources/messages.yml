@@ -94,6 +94,7 @@ buildsystem_worlds: "&7An overview of all &o/worlds &7commands."
 # /config
 config_usage: "%prefix% &7Usage: &b/config reload"
 config_reloaded: "%prefix% &7The config was reloaded."
+config_reload_invalid: "%prefix% &cconfig.yml has an invalid value, so the previous settings stay in use. The console says which one."
 storage_usage: "%prefix% &7Usage: &b/buildsystem storage migrate <type>"
 storage_unknown_type: "%prefix% &cUnknown storage type. Use one of: &b%types%"
 storage_already_in_use: "%prefix% &7Worlds, folders and players are already stored in &b%type%&7."

@@ -273,14 +273,15 @@ public class BuildSystemPlugin extends JavaPlugin {
      * Reloads the config and config data.
      *
      * @param init Whether the plugin should reinitialize classes
+     * @return Whether the new config was applied, rather than kept out for an invalid value
      */
-    public void reloadConfigData(boolean init) {
+    public boolean reloadConfigData(boolean init) {
         for (Player pl : Bukkit.getOnlinePlayers()) {
             services.settings().hideScoreboard(pl);
         }
 
         reloadConfig();
-        services.config().load();
+        boolean applied = services.config().reload();
         if (isEnabled()) {
             services.backup().reload();
             services.worldDownload().reload();
@@ -301,5 +302,6 @@ public class BuildSystemPlugin extends JavaPlugin {
                 services.settings().hideScoreboards();
             }
         }
+        return applied;
     }
 }
