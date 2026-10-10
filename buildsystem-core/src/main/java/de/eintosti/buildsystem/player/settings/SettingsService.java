@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.color.ColorAPI;
@@ -80,8 +81,10 @@ public class SettingsService {
 
     /**
      * Shows or hides the player to every other online player, and every other online player to them. A viewer who
-     * turned on hide players sees nobody, and nobody sees a player who is vanished in a world where building is not
-     * allowed.
+     * turned on hide players sees nobody, and nobody sees a player in archive mode while the archive vanish is on.
+     *
+     * <p>A player that another plugin made invisible by default is never shown, since showing them would reveal them
+     * to everyone that plugin hid them from.
      *
      * @param player The player who joined, changed world or toggled hide players
      */
@@ -97,20 +100,33 @@ public class SettingsService {
         }
     }
 
-    private boolean isArchiveVanished(Player player) {
-        if (!configService.current().settings().archive().vanish()) {
-            return false;
+    /**
+     * Lifts every hide this plugin made. Paper keeps hides per plugin instance, so after a reload the new instance
+     * could not undo the old one's and players would stay hidden until they relog. Called on disable; the next
+     * instance applies the rule again on enable.
+     */
+    public void showAllPlayers() {
+        for (Player viewer : Bukkit.getOnlinePlayers()) {
+            for (Player target : Bukkit.getOnlinePlayers()) {
+                if (!target.equals(viewer) && target.isVisibleByDefault()) {
+                    viewer.showPlayer(plugin, target);
+                }
+            }
         }
-        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(player.getWorld());
-        return buildWorld != null
-                && !buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed();
+    }
+
+    private boolean isArchiveVanished(Player player) {
+        return configService.current().settings().archive().vanish()
+                && BuildPlayerImpl.of(playerService.getPlayerStorage().getBuildPlayer(player))
+                        .getCachedValues()
+                        .hasArchiveState();
     }
 
     private void setVisible(Player viewer, Player target, boolean visible) {
-        if (visible) {
-            viewer.showPlayer(plugin, target);
-        } else {
+        if (!visible) {
             viewer.hidePlayer(plugin, target);
+        } else if (target.isVisibleByDefault()) {
+            viewer.showPlayer(plugin, target);
         }
     }
 

@@ -18,80 +18,43 @@
 package de.eintosti.buildsystem.player.settings;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.data.WorldData;
-import de.eintosti.buildsystem.api.world.data.WorldDataKey;
-import de.eintosti.buildsystem.config.ConfigService;
-import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.player.BuildPlayerImpl;
-import de.eintosti.buildsystem.player.PlayerServiceImpl;
-import de.eintosti.buildsystem.storage.PlayerStorageImpl;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.test.TestData;
-import de.eintosti.buildsystem.util.TaskScheduler;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
-import java.util.HashMap;
-import java.util.Map;
-import org.bukkit.entity.Player;
+import de.eintosti.buildsystem.test.SoundlessPlayer;
+import de.eintosti.buildsystem.test.VisibilityFixture;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
-import org.mockbukkit.mockbukkit.world.WorldMock;
 
 /**
- * Who sees whom after {@link SettingsService#updateVisibility(Player)}, for a player who either hides others, is
- * vanished in an archive world, or both, next to a viewer in the same situations.
+ * Who sees whom after {@link SettingsService#updateVisibility}, and what is left after
+ * {@link SettingsService#showAllPlayers} on disable.
  */
 @NullMarked
 class SettingsServiceVisibilityTest {
 
     private ServerMock server;
-    private WorldMock archive;
-    private Plugin plugin;
+    private VisibilityFixture fixture;
     private SettingsService settingsService;
-    private final Map<Player, SettingsImpl> settings = new HashMap<>();
 
     @BeforeEach
     void setUp() {
         server = MockBukkit.mock();
-        // Players join in the first world, so that one is not the archive.
-        server.addSimpleWorld("world");
-        archive = server.addSimpleWorld("archive");
-        plugin = MockBukkit.createMockPlugin();
-
-        PlayerStorageImpl playerStorage = mock(PlayerStorageImpl.class);
-        PlayerServiceImpl playerService = mock(PlayerServiceImpl.class);
-        when(playerService.getPlayerStorage()).thenReturn(playerStorage);
-        when(playerStorage.getBuildPlayer(any(Player.class))).thenAnswer(call -> {
-            Player player = call.getArgument(0);
-            return new BuildPlayerImpl(player.getUniqueId(), settings.get(player));
-        });
-
-        WorldData data = mock(WorldData.class);
-        when(data.get(WorldDataKey.STATUS)).thenReturn(TestData.ARCHIVE_STATUS);
-        BuildWorld archiveWorld = mock(BuildWorld.class);
-        when(archiveWorld.getData()).thenReturn(data);
-        WorldStorageImpl worldStorage = mock(WorldStorageImpl.class);
-        when(worldStorage.getBuildWorld(archive)).thenReturn(archiveWorld);
-        WorldServiceImpl worldService = mock(WorldServiceImpl.class);
-        when(worldService.getWorldStorage()).thenReturn(worldStorage);
-
-        ConfigService configService = mock(ConfigService.class, RETURNS_DEEP_STUBS);
-        when(configService.current().settings().archive().vanish()).thenReturn(true);
-
-        settingsService = new SettingsService(
-                plugin, mock(TaskScheduler.class), configService, mock(Messages.class), playerService, worldService);
+        fixture = new VisibilityFixture(MockBukkit.createMockPlugin());
+        settingsService = fixture.settingsService;
     }
 
     @AfterEach
@@ -99,24 +62,24 @@ class SettingsServiceVisibilityTest {
         MockBukkit.unmock();
     }
 
-    @ParameterizedTest(name = "player hides {0}, vanished {1}; other hides {2}, vanished {3}")
-    @CsvSource({
-        "false, false, false, false, true, true",
-        "true, false, false, false, true, false",
-        "false, false, true, false, false, true",
-        "false, true, false, false, false, true",
-        "false, false, false, true, true, false",
-        "true, true, true, true, false, false",
-    })
+    static Stream<Arguments> combinations() {
+        List<Arguments> rows = new ArrayList<>();
+        for (int bits = 0; bits < 32; bits++) {
+            rows.add(
+                    Arguments.of((bits & 1) != 0, (bits & 2) != 0, (bits & 4) != 0, (bits & 8) != 0, (bits & 16) != 0));
+        }
+        return rows.stream();
+    }
+
+    @ParameterizedTest(name = "player hides {0}, archived {1}; other hides {2}, archived {3}; vanish {4}")
+    @MethodSource("combinations")
     void eachSideSeesTheOtherUnlessHidingOrVanished(
-            boolean playerHides,
-            boolean playerVanished,
-            boolean otherHides,
-            boolean otherVanished,
-            boolean otherSeesPlayer,
-            boolean playerSeesOther) {
-        PlayerMock player = join("Player", playerHides, playerVanished);
-        PlayerMock other = join("Other", otherHides, otherVanished);
+            boolean playerHides, boolean playerArchived, boolean otherHides, boolean otherArchived, boolean vanish) {
+        fixture.archiveVanish(vanish);
+        PlayerMock player = join("Player", playerHides, playerArchived);
+        PlayerMock other = join("Other", otherHides, otherArchived);
+        boolean otherSeesPlayer = !otherHides && !(vanish && playerArchived);
+        boolean playerSeesOther = !playerHides && !(vanish && otherArchived);
         // Start from the opposite of what is expected, so a missing show or hide is noticed.
         setVisible(other, player, !otherSeesPlayer);
         setVisible(player, other, !playerSeesOther);
@@ -127,22 +90,65 @@ class SettingsServiceVisibilityTest {
         assertEquals(playerSeesOther, player.canSee(other));
     }
 
-    private PlayerMock join(String name, boolean hidesOthers, boolean vanished) {
-        PlayerMock player = server.addPlayer(name);
-        SettingsImpl playerSettings = new SettingsImpl();
-        playerSettings.setHidePlayers(hidesOthers);
-        settings.put(player, playerSettings);
-        if (vanished) {
-            player.teleport(archive.getSpawnLocation());
+    @Test
+    void playerInvisibleByDefault_isNeverShown() {
+        PlayerMock viewer = join("Viewer", false, false);
+        PlayerMock target = join("Target", false, false);
+        target.setVisibleByDefault(false);
+        // MockBukkit's canSee ignores visible-by-default, so a hide stands in for it: a show would lift it.
+        viewer.hidePlayer(fixture.plugin, target);
+
+        settingsService.updateVisibility(target);
+        settingsService.showAllPlayers();
+
+        assertFalse(viewer.canSee(target));
+    }
+
+    @Test
+    void anotherPluginsHide_survivesUpdateAndDisable() {
+        PlayerMock viewer = join("Viewer", false, false);
+        PlayerMock target = join("Target", false, false);
+        // Plugins are equal by name, so the other plugin needs its own.
+        viewer.hidePlayer(MockBukkit.createMockPlugin("OtherPlugin"), target);
+
+        settingsService.updateVisibility(target);
+        assertFalse(viewer.canSee(target));
+
+        settingsService.showAllPlayers();
+        assertFalse(viewer.canSee(target));
+    }
+
+    @Test
+    void reload_disableLiftsTheOldHides_andEnableAppliesTheRuleAgain() {
+        PlayerMock viewer = join("Viewer", true, false);
+        PlayerMock target = join("Target", false, false);
+        settingsService.updateVisibility(viewer);
+        assertFalse(viewer.canSee(target));
+
+        settingsService.showAllPlayers();
+        assertTrue(viewer.canSee(target), "a new instance could not lift the old instance's hide");
+
+        Plugin reloaded = MockBukkit.createMockPlugin("Reloaded");
+        VisibilityFixture next = new VisibilityFixture(reloaded);
+        next.hidePlayers(viewer, true);
+        Bukkit.getOnlinePlayers().forEach(next.settingsService::updateVisibility);
+        assertFalse(viewer.canSee(target));
+    }
+
+    private PlayerMock join(String name, boolean hidesOthers, boolean archived) {
+        PlayerMock player = SoundlessPlayer.join(server, name);
+        fixture.hidePlayers(player, hidesOthers);
+        if (archived) {
+            fixture.enterArchive(player);
         }
         return player;
     }
 
     private void setVisible(PlayerMock viewer, PlayerMock target, boolean visible) {
         if (visible) {
-            viewer.showPlayer(plugin, target);
+            viewer.showPlayer(fixture.plugin, target);
         } else {
-            viewer.hidePlayer(plugin, target);
+            viewer.hidePlayer(fixture.plugin, target);
         }
     }
 }
