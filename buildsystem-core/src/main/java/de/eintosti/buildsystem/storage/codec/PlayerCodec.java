@@ -25,8 +25,10 @@ import de.eintosti.buildsystem.api.world.display.WorldDisplay;
 import de.eintosti.buildsystem.api.world.display.WorldFilter;
 import de.eintosti.buildsystem.api.world.display.WorldSort;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
+import de.eintosti.buildsystem.player.CachedValues.ArchiveState;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,14 +36,16 @@ import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
+import org.bukkit.GameMode;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * {@link Codec} for {@link BuildPlayer}s, mapping a player's settings and last logout location to and from the
- * {@code players.<uuid>} section. An unknown or missing value falls back to the default, so one bad entry never costs a
- * player all their settings.
+ * {@link Codec} for {@link BuildPlayer}s, mapping a player's settings, last logout location and archive snapshot to and
+ * from the {@code players.<uuid>} section. An unknown or missing value falls back to the default, so one bad entry never
+ * costs a player all their settings.
  */
 @NullMarked
 public final class PlayerCodec implements Codec<BuildPlayer> {
@@ -104,6 +108,10 @@ public final class PlayerCodec implements Codec<BuildPlayer> {
         if (logoutLocation != null) {
             serialized.put("logout-location", LogoutLocationCodec.format(logoutLocation));
         }
+        ArchiveState archiveState = player.getCachedValues().getArchiveState();
+        if (archiveState != null) {
+            serialized.put("archive-snapshot", serializeArchiveState(archiveState));
+        }
         return serialized;
     }
 
@@ -124,7 +132,49 @@ public final class PlayerCodec implements Codec<BuildPlayer> {
 
         BuildPlayerImpl player = new BuildPlayerImpl(UUID.fromString(key), settings);
         player.setLogoutLocation(LogoutLocationCodec.parse(section.getString("logout-location")));
+        ConfigurationSection archiveSnapshot = section.getConfigurationSection("archive-snapshot");
+        if (archiveSnapshot != null) {
+            player.getCachedValues().setArchiveState(parseArchiveState(archiveSnapshot));
+        }
         return player;
+    }
+
+    /**
+     * Uses Bukkit's own item serialization, which Spigot and Paper both read back. The items are copied here, on the
+     * main thread, because the file is written later off it.
+     */
+    private static Map<String, Object> serializeArchiveState(ArchiveState state) {
+        Map<String, Object> serialized = new LinkedHashMap<>();
+        serialized.put("gamemode", state.gameMode().name());
+        serialized.put("inventory", copy(state.inventory()));
+        serialized.put("armor", copy(state.armor()));
+        return serialized;
+    }
+
+    private static List<@Nullable ItemStack> copy(@Nullable ItemStack[] items) {
+        return Arrays.stream(items)
+                .map(item -> item == null || item.getType().isAir() ? null : item.clone())
+                .toList();
+    }
+
+    private ArchiveState parseArchiveState(ConfigurationSection section) {
+        return new ArchiveState(
+                parseGameMode(section.getString("gamemode")), items(section, "inventory"), items(section, "armor"));
+    }
+
+    private static @Nullable ItemStack[] items(ConfigurationSection section, String key) {
+        return section.getList(key, List.of()).stream()
+                .map(item -> item instanceof ItemStack stack ? stack : null)
+                .toArray(ItemStack[]::new);
+    }
+
+    private GameMode parseGameMode(@Nullable String raw) {
+        try {
+            return GameMode.valueOf(String.valueOf(raw));
+        } catch (IllegalArgumentException e) {
+            logger.warning("Unknown archive gamemode \"" + raw + "\". Defaulting to SURVIVAL.");
+            return GameMode.SURVIVAL;
+        }
     }
 
     private NavigatorType parseNavigatorType(@Nullable String raw) {
