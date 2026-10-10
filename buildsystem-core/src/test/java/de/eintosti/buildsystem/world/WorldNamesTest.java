@@ -19,13 +19,16 @@ package de.eintosti.buildsystem.world;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 @NullMarked
 class WorldNamesTest {
@@ -124,6 +127,21 @@ class WorldNamesTest {
         WorldCreator creator = WorldNames.creator("maps:Lobby");
 
         assertEquals(new NamespacedKey("maps", "lobby"), creator.key());
+    }
+
+    @Test
+    void creator_worldStoredUnderItsBukkitName_usesTheLoadedWorldsKey() {
+        World loaded = mock(World.class);
+        when(loaded.getName()).thenReturn("maps_lobby");
+        when(loaded.getKey()).thenReturn(new NamespacedKey("maps", "lobby"));
+        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+            bukkit.when(() -> Bukkit.getWorld("maps_lobby")).thenReturn(loaded);
+
+            WorldCreator creator = WorldNames.creator("maps_lobby");
+
+            assertEquals(new NamespacedKey("maps", "lobby"), creator.key());
+            assertEquals("maps_lobby", creator.name());
+        }
     }
 
     @Test

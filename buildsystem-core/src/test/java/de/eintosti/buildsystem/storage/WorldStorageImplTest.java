@@ -221,6 +221,21 @@ class WorldStorageImplTest {
     }
 
     @Test
+    void worldImportedUnderItsBukkitName_isFoundByItsKey() {
+        // Imported before namespaces existed: the world maps:lobby was stored under Paper's Bukkit name for it.
+        BuildWorld legacy = world("maps_lobby");
+        storage.addBuildWorld(legacy);
+
+        World keyed = mock(World.class);
+        when(keyed.getName()).thenReturn("maps_lobby");
+        when(keyed.getKey()).thenReturn(new NamespacedKey("maps", "lobby"));
+        assertSame(legacy, storage.getBuildWorld(keyed));
+        assertSame(legacy, storage.getBuildWorld("maps:lobby"));
+        assertSame(legacy, storage.getBuildWorld("maps_lobby"));
+        assertNull(storage.getBuildWorld("other:lobby"));
+    }
+
+    @Test
     void rename_remapsNameLookup() {
         BuildWorld buildWorld = world("oldName");
         storage.addBuildWorld(buildWorld);

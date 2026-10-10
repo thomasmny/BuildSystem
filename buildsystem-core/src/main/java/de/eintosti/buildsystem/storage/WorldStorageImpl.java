@@ -66,11 +66,11 @@ public abstract class WorldStorageImpl implements WorldStorage {
         }
 
         UUID uuid = this.uuidByName.get(WorldNames.id(name));
-        if (uuid != null) {
-            return this.buildWorldsByUuid.get(uuid);
+        if (uuid == null && WorldNames.isNamespaced(name)) {
+            // A namespaced world imported before namespaces existed was stored under its Bukkit name (maps_lobby).
+            uuid = this.uuidByName.get(WorldNames.id(WorldNames.bukkitName(name)));
         }
-
-        return null;
+        return uuid == null ? null : this.buildWorldsByUuid.get(uuid);
     }
 
     @Override

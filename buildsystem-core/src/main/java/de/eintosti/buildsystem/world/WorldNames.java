@@ -169,27 +169,37 @@ public final class WorldNames {
     /**
      * {@return a creator that loads or creates the world at its name's key}
      *
+     * <p>A namespaced world imported before namespaces existed is stored under its Bukkit name ({@code maps_lobby}).
+     * When that world is loaded, the creator uses its real key: Paper only hands back a loaded world when both the
+     * name and the key match it.
+     *
      * @throws IllegalArgumentException if the name is not a valid key
      * @throws UnsupportedOperationException if the world is namespaced and the server is not Paper
      */
     public static WorldCreator creator(String worldName) {
         if (!isNamespaced(worldName)) {
-            return new WorldCreator(path(worldName));
+            World loaded = namespacesSupported() ? Bukkit.getWorld(path(worldName)) : null;
+            return loaded != null && !loaded.getKey().getNamespace().equals(NamespacedKey.MINECRAFT)
+                    ? keyedCreator(loaded.getKey())
+                    : new WorldCreator(path(worldName));
         }
 
         NamespacedKey key = NamespacedKey.fromString(id(worldName));
         if (key == null) {
             throw new IllegalArgumentException("\"%s\" is not a valid world key".formatted(worldName));
         }
+        return keyedCreator(key);
+    }
+
+    private static WorldCreator keyedCreator(NamespacedKey key) {
         if (KEYED_CREATOR == null) {
             throw new UnsupportedOperationException(
-                    "World \"%s\" is in a namespace, which requires Paper".formatted(worldName));
+                    "World \"%s\" is in a namespace, which requires Paper".formatted(key));
         }
-
         try {
             return KEYED_CREATOR.newInstance(key);
         } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Failed to create world creator for \"%s\"".formatted(worldName), e);
+            throw new IllegalStateException("Failed to create world creator for \"%s\"".formatted(key), e);
         }
     }
 
