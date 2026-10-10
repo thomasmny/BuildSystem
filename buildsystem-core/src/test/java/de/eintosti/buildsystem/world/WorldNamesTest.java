@@ -22,16 +22,25 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.UnsafeValues;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.MockedStatic;
 
 @NullMarked
 class WorldNamesTest {
+
+    @TempDir
+    Path tempDir;
 
     @Test
     void bareName_isInTheMinecraftNamespace() {
@@ -134,7 +143,7 @@ class WorldNamesTest {
         World loaded = mock(World.class);
         when(loaded.getName()).thenReturn("maps_lobby");
         when(loaded.getKey()).thenReturn(new NamespacedKey("maps", "lobby"));
-        try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+        try (MockedStatic<Bukkit> bukkit = mockServer()) {
             bukkit.when(() -> Bukkit.getWorld("maps_lobby")).thenReturn(loaded);
 
             WorldCreator creator = WorldNames.creator("maps_lobby");
@@ -142,6 +151,35 @@ class WorldNamesTest {
             assertEquals(new NamespacedKey("maps", "lobby"), creator.key());
             assertEquals("maps_lobby", creator.name());
         }
+    }
+
+    @Test
+    void creator_worldReallyNamedLikeABukkitName_staysInMinecraft() throws IOException {
+        // maps:lobby is loaded by another plugin, but this world has a folder of its own: it is not that world.
+        Files.createDirectories(tempDir.resolve("world/dimensions/minecraft/maps_lobby"));
+        World loaded = mock(World.class);
+        when(loaded.getName()).thenReturn("maps_lobby");
+        when(loaded.getKey()).thenReturn(new NamespacedKey("maps", "lobby"));
+        try (MockedStatic<Bukkit> bukkit = mockServer()) {
+            bukkit.when(() -> Bukkit.getWorld("maps_lobby")).thenReturn(loaded);
+
+            assertEquals(
+                    NamespacedKey.minecraft("maps_lobby"),
+                    WorldNames.creator("maps_lobby").key());
+        }
+    }
+
+    /** A running server with {@code level-name=world} whose container is the temp dir. */
+    private MockedStatic<Bukkit> mockServer() {
+        MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class);
+        bukkit.when(Bukkit::getWorldContainer).thenReturn(tempDir.toFile());
+        World main = mock(World.class);
+        when(main.getName()).thenReturn("world");
+        bukkit.when(Bukkit::getWorlds).thenReturn(List.of(main));
+        UnsafeValues unsafe = mock(UnsafeValues.class);
+        when(unsafe.getMainLevelName()).thenReturn("world");
+        bukkit.when(Bukkit::getUnsafe).thenReturn(unsafe);
+        return bukkit;
     }
 
     @Test

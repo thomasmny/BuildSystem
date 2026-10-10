@@ -111,15 +111,15 @@ public class BukkitWorldFactory {
             return null;
         }
 
-        WorldCreator worldCreator;
+        World bukkitWorld;
         try {
-            worldCreator = WorldNames.creator(worldName);
+            bukkitWorld = Bukkit.createWorld(configure(WorldNames.creator(worldName)));
         } catch (IllegalArgumentException | UnsupportedOperationException e) {
-            // A namespaced world on Spigot, or a stored name that is not a valid key: skip it, not the whole load.
+            // A namespaced world on Spigot, a stored name that is not a valid key, or a name Paper refuses because a
+            // world with another key already has it: skip this world, not the rest of the load.
             logger.warning("\"%s\" cannot be loaded: %s. Skipping...".formatted(worldName, e.getMessage()));
             return null;
         }
-        World bukkitWorld = Bukkit.createWorld(configure(worldCreator));
 
         if (bukkitWorld != null) {
             applyDefaultWorldSettings(bukkitWorld);

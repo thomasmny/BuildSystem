@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.world;
 
+import de.eintosti.buildsystem.util.FileUtils;
 import java.lang.reflect.Constructor;
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -170,8 +171,8 @@ public final class WorldNames {
      * {@return a creator that loads or creates the world at its name's key}
      *
      * <p>A namespaced world imported before namespaces existed is stored under its Bukkit name ({@code maps_lobby}).
-     * When that world is loaded, the creator uses its real key: Paper only hands back a loaded world when both the
-     * name and the key match it.
+     * When that world is loaded and the name has no folder of its own, the creator uses the world's real key: Paper
+     * only hands back a loaded world when both the name and the key match it.
      *
      * @throws IllegalArgumentException if the name is not a valid key
      * @throws UnsupportedOperationException if the world is namespaced and the server is not Paper
@@ -179,7 +180,9 @@ public final class WorldNames {
     public static WorldCreator creator(String worldName) {
         if (!isNamespaced(worldName)) {
             World loaded = namespacesSupported() ? Bukkit.getWorld(path(worldName)) : null;
-            return loaded != null && !loaded.getKey().getNamespace().equals(NamespacedKey.MINECRAFT)
+            return loaded != null
+                            && !loaded.getKey().getNamespace().equals(NamespacedKey.MINECRAFT)
+                            && !FileUtils.hasPlainWorldFolder(worldName)
                     ? keyedCreator(loaded.getKey())
                     : new WorldCreator(path(worldName));
         }

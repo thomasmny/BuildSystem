@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
+import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
@@ -67,8 +68,13 @@ public abstract class WorldStorageImpl implements WorldStorage {
 
         UUID uuid = this.uuidByName.get(WorldNames.id(name));
         if (uuid == null && WorldNames.isNamespaced(name)) {
-            // A namespaced world imported before namespaces existed was stored under its Bukkit name (maps_lobby).
-            uuid = this.uuidByName.get(WorldNames.id(WorldNames.bukkitName(name)));
+            // A namespaced world imported before namespaces existed was stored under its Bukkit name (maps_lobby). A
+            // world really named maps_lobby has its own folder; the imported one does not.
+            String bukkitName = WorldNames.bukkitName(name);
+            UUID legacy = this.uuidByName.get(WorldNames.id(bukkitName));
+            if (legacy != null && !FileUtils.hasPlainWorldFolder(bukkitName)) {
+                uuid = legacy;
+            }
         }
         return uuid == null ? null : this.buildWorldsByUuid.get(uuid);
     }
@@ -114,6 +120,28 @@ public abstract class WorldStorageImpl implements WorldStorage {
         if (!oldKey.equals(newKey)) {
             this.uuidByName.remove(oldKey);
         }
+    }
+
+    /**
+     * {@return the name of the world a new world named {@code worldName} would clash with, or {@code null}} Paper names
+     * the world {@code maps:lobby} {@code maps_lobby}, so it cannot exist next to a world really named
+     * {@code maps_lobby}. A loaded world counts too, unless it is the very world being named, as when importing a world
+     * another plugin loaded.
+     */
+    public @Nullable String bukkitNameClash(String worldName) {
+        String id = WorldNames.id(worldName);
+        String bukkitName = WorldNames.bukkitName(worldName);
+        for (BuildWorld buildWorld : getBuildWorlds()) {
+            String name = buildWorld.getName();
+            if (!WorldNames.id(name).equals(id) && WorldNames.bukkitName(name).equalsIgnoreCase(bukkitName)) {
+                return name;
+            }
+        }
+        World loaded = Bukkit.getWorld(bukkitName);
+        if (loaded != null && !WorldNames.id(WorldNames.of(loaded)).equals(id)) {
+            return WorldNames.of(loaded);
+        }
+        return null;
     }
 
     @Override

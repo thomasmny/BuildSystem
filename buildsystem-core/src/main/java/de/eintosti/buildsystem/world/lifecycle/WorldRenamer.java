@@ -106,6 +106,19 @@ public class WorldRenamer {
             return;
         }
 
+        String clash = worldStorage.bukkitNameClash(sanitizedNewName);
+        if (clash != null) {
+            messages.sendMessage(
+                    player,
+                    "worlds_world_name_clash",
+                    Placeholders.of()
+                            .add("%world%", sanitizedNewName)
+                            .add("%other%", clash)
+                            .build());
+            XSound.ENTITY_ITEM_BREAK.play(player);
+            return;
+        }
+
         if (WorldNames.bukkitWorld(oldName) == null && !buildWorld.isLoaded()) {
             buildWorld.getLoader().load();
         }

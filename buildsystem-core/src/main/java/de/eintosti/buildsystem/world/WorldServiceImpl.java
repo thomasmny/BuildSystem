@@ -134,7 +134,7 @@ public class WorldServiceImpl implements WorldService {
      *
      * @return The {@link WorldNames#normalize normalized} name
      */
-    private static String validateWorldName(String name) {
+    private String validateWorldName(String name) {
         String path = WorldNames.path(name);
         if (StringCleaner.isReservedName(path)) {
             throw new IllegalArgumentException("World name '%s' is reserved and cannot be used".formatted(name));
@@ -153,7 +153,13 @@ public class WorldServiceImpl implements WorldService {
         if (StringCleaner.isPathEscape(Bukkit.getWorldContainer(), worldDirectory)) {
             throw new IllegalArgumentException("World name '%s' resolves outside the world container".formatted(name));
         }
-        return WorldNames.normalize(name);
+        String worldName = WorldNames.normalize(name);
+        String clash = worldStorage.bukkitNameClash(worldName);
+        if (clash != null) {
+            throw new IllegalArgumentException(
+                    "World name '%s' clashes with the existing world '%s'".formatted(name, clash));
+        }
+        return worldName;
     }
 
     /**
@@ -187,6 +193,18 @@ public class WorldServiceImpl implements WorldService {
             Generator generator,
             String generatorData,
             boolean single) {
+        String clash = worldStorage.bukkitNameClash(worldName);
+        if (clash != null) {
+            messages.sendMessage(
+                    player,
+                    "worlds_world_name_clash",
+                    Placeholders.of()
+                            .add("%world%", worldName)
+                            .add("%other%", clash)
+                            .build());
+            return false;
+        }
+
         CustomGenerator customGenerator = null;
         if (generator == Generator.CUSTOM) {
             customGenerator = CustomGeneratorImpl.of(generatorData, worldName);

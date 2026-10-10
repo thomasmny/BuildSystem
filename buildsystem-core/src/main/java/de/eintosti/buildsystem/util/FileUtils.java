@@ -77,6 +77,18 @@ public final class FileUtils {
     }
 
     /**
+     * {@return whether a world without a namespace has a folder of its own, flat or under
+     * {@code dimensions/minecraft}} A namespaced world imported before namespaces existed is stored under its Bukkit
+     * name ({@code maps_lobby}) but lives in its namespace's folder, so this tells it apart from a world really named
+     * {@code maps_lobby}.
+     */
+    public static boolean hasPlainWorldFolder(String worldName) {
+        String path = WorldNames.path(worldName);
+        return new File(worldDimensionsRoot(NamespacedKey.MINECRAFT), path.toLowerCase(Locale.ROOT)).isDirectory()
+                || new File(Bukkit.getWorldContainer(), path).isDirectory();
+    }
+
+    /**
      * The {@code <level-name>/dimensions/<namespace>} directory under which Paper 26.1+ stores the worlds of a
      * namespace. Resolved live from the running server, so it tracks the world container even after the server is
      * moved or copied.
