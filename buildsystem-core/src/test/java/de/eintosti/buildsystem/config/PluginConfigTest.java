@@ -23,6 +23,7 @@ import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.bukkit.Difficulty;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -161,6 +162,42 @@ class PluginConfigTest {
                           void-block:
                             material: DIAMOND_SWORD
                         """).world().voidBlock().material());
+    }
+
+    @Test
+    void navigatorItem_lowercase_isAccepted() {
+        assertEquals(XMaterial.COMPASS, parse("""
+                        settings:
+                          navigator:
+                            item: compass
+                        """).settings().navigator().item());
+    }
+
+    @Test
+    void navigatorItem_unknown_fallsBackToClock() {
+        assertEquals(XMaterial.CLOCK, parse("""
+                        settings:
+                          navigator:
+                            item: CLOKC
+                        """).settings().navigator().item());
+    }
+
+    @Test
+    void difficulty_lowercase_isAccepted() {
+        assertEquals(Difficulty.HARD, parse("""
+                        world:
+                          defaults:
+                            difficulty: hard
+                        """).world().defaults().difficulty());
+    }
+
+    @Test
+    void difficulty_unknown_fallsBackToPeaceful() {
+        assertEquals(Difficulty.PEACEFUL, parse("""
+                        world:
+                          defaults:
+                            difficulty: peacefull
+                        """).world().defaults().difficulty());
     }
 
     // -----------------------------------------------------------------------
