@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.world.lifecycle;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import de.eintosti.buildsystem.api.event.world.BuildWorldLoadEvent;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -167,15 +169,32 @@ class WorldUnloaderImplTest {
     }
 
     @Test
-    void reloadTurningUnloadingOff_neverFlagsAnAbsentWorldLoadedWithoutLoadingIt() {
+    void reloadTurningUnloadingOff_leavesAnUnloadedWorldUnloaded() {
         unloadingEnabled(true);
         BuildWorldImpl world = buildWorld("gone");
         world.getUnloader().manageUnload();
 
         unloadingEnabled(false);
+        // Loading would reach the world container, which MockBukkit does not implement.
+        assertDoesNotThrow(() -> world.getUnloader().manageUnload());
+
+        assertTrue(
+                server.getPluginManager().getFiredEvents().noneMatch(BuildWorldLoadEvent.class::isInstance),
+                "a reload must not load every unloaded world");
+        assertFalse(world.isLoaded());
+    }
+
+    @Test
+    void unloadingByHand_cancelsThePendingTimer() {
+        unloadingEnabled(true);
+        server.addSimpleWorld("manual");
+        BuildWorldImpl world = buildWorld("manual");
         world.getUnloader().manageUnload();
 
-        assertEquals(world.getWorld().isPresent(), world.isLoaded());
+        world.getUnloader().unload();
+
+        assertTrue(world.getWorld().isEmpty());
+        assertEquals(0, pendingTasks());
     }
 
     @Test

@@ -91,21 +91,13 @@ public class WorldUnloaderImpl implements WorldUnloader {
 
     /**
      * Brings the loaded flag and the unload timer in line with the current config. Safe to call again after a reload:
-     * the previous timer is cancelled first. With unloading turned off, every world is kept loaded, as at startup.
+     * the previous timer is cancelled first. Nothing is loaded here, so a reload that turns unloading off does not
+     * load every unloaded world at once.
      */
     @Override
     public void manageUnload() {
         cancelScheduledTask();
-        boolean present = buildWorld.getWorld().isPresent();
-        if (!unloadingEnabled()) {
-            buildWorld.setLoaded(present);
-            if (!present) {
-                buildWorld.getLoader().load();
-            }
-            return;
-        }
-
-        buildWorld.setLoaded(present);
+        buildWorld.setLoaded(buildWorld.getWorld().isPresent());
         startUnloadTask();
     }
 
@@ -133,7 +125,7 @@ public class WorldUnloaderImpl implements WorldUnloader {
 
     @Override
     public void unload() {
-        this.unloadTask = null;
+        cancelScheduledTask();
         Optional<World> optionalWorld = buildWorld.getWorld();
         if (optionalWorld.isEmpty()) {
             return;
