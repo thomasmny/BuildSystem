@@ -24,7 +24,9 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.util.ArgumentParser;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -46,7 +48,7 @@ public class ImportAllSubCommand extends AbstractSubCommand {
             return;
         }
 
-        if (args.length != 1) {
+        if (!isValidShape(args)) {
             messages.sendMessage(player, "worlds_importall_usage");
             return;
         }
@@ -104,6 +106,24 @@ public class ImportAllSubCommand extends AbstractSubCommand {
                 creatorArg,
                 "worlds_importall_player_not_found",
                 creator -> worldService.importWorlds(player, directories, resolvedGenerator, creator));
+    }
+
+    /**
+     * {@return whether the arguments are {@code importAll} followed by at most one {@code -g <generator>} and at most
+     * one {@code -c <creator>}, in either order}
+     */
+    private static boolean isValidShape(String[] args) {
+        if (args.length > 5 || args.length % 2 == 0) {
+            return false;
+        }
+        Set<String> seen = new HashSet<>();
+        for (int i = 1; i < args.length; i += 2) {
+            String flag = args[i].toLowerCase(Locale.ROOT);
+            if (!(flag.equals("-g") || flag.equals("-c")) || !seen.add(flag) || args[i + 1].startsWith("-")) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
