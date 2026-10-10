@@ -20,20 +20,15 @@ package de.eintosti.buildsystem.world.creation;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
-import de.eintosti.buildsystem.config.ConfigService;
-import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.creation.GenerationDataStore.WorldGenerationData;
 import de.eintosti.buildsystem.world.creation.generator.VoidGenerator;
-import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.Locale;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
-import org.bukkit.Difficulty;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
-import org.bukkit.block.Block;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -47,69 +42,37 @@ public class BukkitWorldFactory {
 
     private static final String BUILT_IN_GENERATOR_PLUGIN = "BuildSystem";
 
-    private final ConfigService configService;
     private final Logger logger;
     private final String worldName;
     private BuildWorldType worldType;
 
     private @Nullable CustomGenerator customGenerator;
-    private final @Nullable Difficulty difficulty;
-    private final @Nullable Integer time;
-    private final @Nullable Integer worldBorderSize;
     private final @Nullable Long seed;
-    private final boolean initialGeneration;
-    private final boolean applyDefaults;
 
     private final WorldDataVersionGuard versionGuard;
     private final GenerationDataStore generationDataStore;
 
     /**
-     * Used when loading or regenerating an existing world. No default settings are applied, so changes made to the
-     * world since it was created (gamerules, its spawn) survive an unload.
+     * Used when loading or regenerating an existing world.
      */
-    public BukkitWorldFactory(ConfigService configService, Logger logger, BuildWorld buildWorld) {
-        this.configService = configService;
-        this.logger = logger;
-        this.worldName = buildWorld.getName();
-        this.worldType = buildWorld.getType();
-        this.customGenerator = buildWorld.getCustomGenerator();
-        this.difficulty = null;
-        this.time = null;
-        this.worldBorderSize = null;
-        this.seed = null;
-        this.initialGeneration = false;
-        this.applyDefaults = false;
-        this.versionGuard = new WorldDataVersionGuard(logger, worldName);
-        this.generationDataStore = new GenerationDataStore(logger);
+    public BukkitWorldFactory(Logger logger, BuildWorld buildWorld) {
+        this(logger, buildWorld.getName(), buildWorld.getType(), buildWorld.getCustomGenerator(), null);
     }
 
     /**
-     * Used when creating or importing a new world with defaults from plugin config. {@code initialGeneration} is
-     * {@code true} only when the world is generated from scratch (not imported), enabling one-time setup like the
-     * void-block placement.
+     * Used when creating or importing a world. The creator applies the configured defaults once the world exists.
      */
     BukkitWorldFactory(
-            ConfigService configService,
             Logger logger,
             String worldName,
             BuildWorldType worldType,
             @Nullable CustomGenerator customGenerator,
-            @Nullable Difficulty difficulty,
-            @Nullable Integer time,
-            @Nullable Integer worldBorderSize,
-            @Nullable Long seed,
-            boolean initialGeneration) {
-        this.configService = configService;
+            @Nullable Long seed) {
         this.logger = logger;
         this.worldName = worldName;
         this.worldType = worldType;
         this.customGenerator = customGenerator;
-        this.difficulty = difficulty;
-        this.time = time;
-        this.worldBorderSize = worldBorderSize;
         this.seed = seed;
-        this.initialGeneration = initialGeneration;
-        this.applyDefaults = true;
         this.versionGuard = new WorldDataVersionGuard(logger, worldName);
         this.generationDataStore = new GenerationDataStore(logger);
     }
@@ -132,7 +95,6 @@ public class BukkitWorldFactory {
         }
 
         if (bukkitWorld != null) {
-            applyWorldSettings(bukkitWorld);
             generationDataStore.save(bukkitWorld, this.worldType, this.customGenerator);
         }
 
@@ -216,70 +178,10 @@ public class BukkitWorldFactory {
     }
 
     /**
-     * Applies the configured defaults to a world being created or imported. A world that is only being loaded again is
-     * left as it is.
+     * {@return the type the world was generated as} Differs from the stored type for a template, which takes the type
+     * of the world it was copied from, and for a world imported with one of BuildSystem's own generators.
      */
-    void applyWorldSettings(World bukkitWorld) {
-        if (!applyDefaults) {
-            return;
-        }
-        applyDefaultWorldSettings(bukkitWorld);
-        applyPostGenerationSettings(bukkitWorld, this.worldType);
-    }
-
-    private void applyDefaultWorldSettings(World bukkitWorld) {
-        if (difficulty != null) {
-            bukkitWorld.setDifficulty(difficulty);
-        }
-        if (time != null) {
-            bukkitWorld.setTime(time);
-        }
-        if (worldBorderSize != null) {
-            bukkitWorld.getWorldBorder().setSize(worldBorderSize);
-        }
-        configService
-                .current()
-                .world()
-                .defaults()
-                .gameRules()
-                .forEach(gameRule -> applyGameRule(bukkitWorld, gameRule));
-    }
-
-    private static <T> void applyGameRule(World world, GameRuleEntry<T> entry) {
-        entry.rule().setValue(world, entry.value());
-    }
-
-    void applyPostGenerationSettings(World bukkitWorld, BuildWorldType worldType) {
-        switch (worldType) {
-            case VOID -> {
-                int voidBlockY = 64;
-                if (initialGeneration) {
-                    placeVoidBlock(bukkitWorld, voidBlockY);
-                }
-                bukkitWorld.setSpawnLocation(0, voidBlockY + 1, 0);
-            }
-            case FLAT -> {
-                bukkitWorld.setSpawnLocation(0, -60, 0);
-            }
-            default -> {
-                // No special post-generation steps for other types
-            }
-        }
-    }
-
-    /**
-     * Places the configured void-block at the world's spawn column, only when the world is generated for the first
-     * time. Only fills air — a block already there, e.g. from a pre-existing world folder, is never overwritten.
-     */
-    private void placeVoidBlock(World bukkitWorld, int voidBlockY) {
-        PluginConfig.World.VoidBlock voidBlock = configService.current().world().voidBlock();
-        if (!voidBlock.enabled()) {
-            return;
-        }
-
-        Block block = bukkitWorld.getBlockAt(0, voidBlockY, 0);
-        if (block.getType().isAir()) {
-            block.setType(voidBlock.material());
-        }
+    BuildWorldType generatedType() {
+        return this.worldType;
     }
 }

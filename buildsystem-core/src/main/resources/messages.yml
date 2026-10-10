@@ -389,6 +389,7 @@ worlds_unimport_usage: "%prefix% &7Usage: &b/worlds unimport <world>"
 worlds_unimport_unknown_world: "%prefix% &cUnknown world."
 worlds_unimport_players_world: "%prefix% &7&oThe world you were in was unimported."
 worlds_unimport_finished: "%prefix% &b%world% &7has been &aunimported&7."
+worlds_unimport_error: "%prefix% &b%world% &ccould not be unimported. Check the console for details."
 
 
 # ---------

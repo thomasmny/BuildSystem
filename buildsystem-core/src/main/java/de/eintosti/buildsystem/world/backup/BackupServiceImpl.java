@@ -28,11 +28,14 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.backup.storage.LocalBackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.S3BackupStorage;
 import de.eintosti.buildsystem.world.backup.storage.SftpBackupStorage;
+import de.eintosti.buildsystem.world.lifecycle.WorldOperationRefusedException;
+import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Map;
@@ -241,7 +244,8 @@ public class BackupServiceImpl implements BackupService {
             WorldData worldData = buildWorld.getData();
             int elapsed = worldData.get(WorldDataKey.TIME_SINCE_BACKUP) + (int) UPDATE_PERIOD_SECONDS;
             if (elapsed > autoBackup.interval()) {
-                if (backedUpOneThisTick) {
+                // A world another operation holds is backed up on a later tick, once it is free again.
+                if (backedUpOneThisTick || worldService.operations().isBusy(buildWorld)) {
                     worldData.set(WorldDataKey.TIME_SINCE_BACKUP, elapsed);
                     continue;
                 }
@@ -255,29 +259,38 @@ public class BackupServiceImpl implements BackupService {
 
     private void autoBackup(BuildWorld buildWorld) {
         getProfile(buildWorld).createBackup().whenComplete((backup, throwable) -> {
-            if (throwable != null) {
-                String message = "Automatic backup failed for world '%s'".formatted(buildWorld.getName());
-                plugin.getLogger().log(Level.SEVERE, message, throwable);
+            if (throwable == null) {
+                return;
+            }
+            String worldName = buildWorld.getName();
+            if (WorldOperationRefusedException.find(throwable) != null) {
+                plugin.getLogger().info("Skipped the automatic backup of \"" + worldName + "\" while it was busy.");
+            } else {
+                plugin.getLogger()
+                        .log(Level.SEVERE, "Automatic backup failed for world \"" + worldName + "\"", throwable);
             }
         });
     }
 
     /**
-     * Backs up a world off the main thread, then runs {@code onSuccess} or {@code onFailure} back on it.
-     *
-     * @param buildWorld The world to back up
-     * @param onSuccess Run on the main thread once the backup completes
-     * @param onFailure Run on the main thread if the backup fails
+     * Backs up a world for a player and tells them how it went.
      */
-    public void backup(BuildWorld buildWorld, Runnable onSuccess, Runnable onFailure) {
-        getProfile(buildWorld).createBackup().whenComplete((backup, throwable) -> {
-            if (throwable != null) {
-                plugin.getLogger().log(Level.SEVERE, "Backup failed", throwable);
-                scheduler.run(onFailure);
-            } else {
-                scheduler.run(onSuccess);
-            }
-        });
+    public void backup(Player player, BuildWorld buildWorld) {
+        String worldName = buildWorld.getName();
+        Placeholders worldPlaceholder = Placeholders.of("%world%", worldName);
+        WorldOperations operations = worldService.operations();
+        getProfile(buildWorld)
+                .createBackup()
+                .whenCompleteAsync(
+                        (backup, throwable) -> {
+                            if (throwable == null) {
+                                messages.sendMessage(player, "worlds_backup_created", worldPlaceholder);
+                            } else if (!operations.reportRefusal(player, worldName, throwable)) {
+                                plugin.getLogger().log(Level.SEVERE, "Backup failed", throwable);
+                                messages.sendMessage(player, "worlds_backup_failed", worldPlaceholder);
+                            }
+                        },
+                        scheduler.mainThread());
     }
 
     @Override

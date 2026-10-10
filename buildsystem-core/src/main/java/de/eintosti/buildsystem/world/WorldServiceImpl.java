@@ -52,7 +52,6 @@ import de.eintosti.buildsystem.world.creation.WorldImportCoordinator;
 import de.eintosti.buildsystem.world.creation.WorldImporterImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldLoadBootstrap;
-import de.eintosti.buildsystem.world.lifecycle.WorldOperationRefusedException;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.lifecycle.WorldRenamer;
 import de.eintosti.buildsystem.world.lifecycle.WorldUnloaderImpl;
@@ -293,11 +292,25 @@ public class WorldServiceImpl implements WorldService {
     public CompletableFuture<Void> unimportWorld(BuildWorld buildWorld, SaveBehavior saveBehavior) {
         WorldOperations operations = operations();
         return operations.runExclusively(buildWorld, () -> {
-            operations.evacuate(buildWorld.getName(), "worlds_unimport_players_world");
-            operations.unload(buildWorld, saveBehavior);
+            operations.takeOffline(buildWorld, "worlds_unimport_players_world", saveBehavior);
             return unregister(buildWorld)
                     .thenRun(
                             () -> plugin.getLogger().info("*** Unimported world \"" + buildWorld.getName() + "\" ***"));
+        });
+    }
+
+    /**
+     * Unimports a world on behalf of a player and tells them how it went.
+     */
+    public void unimportWorld(Player player, BuildWorld buildWorld) {
+        String worldName = buildWorld.getName();
+        unimportWorld(buildWorld, SaveBehavior.SAVE).whenComplete((ignored, failure) -> {
+            if (failure == null) {
+                messages.sendMessage(player, "worlds_unimport_finished", Placeholders.of("%world%", worldName));
+            } else if (!operations().reportRefusal(player, worldName, failure)) {
+                plugin.getLogger().log(Level.SEVERE, "Failed to unimport world \"" + worldName + "\"", failure);
+                messages.sendMessage(player, "worlds_unimport_error", Placeholders.of("%world%", worldName));
+            }
         });
     }
 
@@ -328,6 +341,9 @@ public class WorldServiceImpl implements WorldService {
         deleteWorld(buildWorld)
                 .thenRun(() -> messages.sendMessage(player, "worlds_delete_finished"))
                 .exceptionally(e -> {
+                    if (operations().reportRefusal(player, worldName, e)) {
+                        return null;
+                    }
                     Throwable cause = e.getCause() != null ? e.getCause() : e;
                     switch (cause) {
                         case WorldNotFoundException ignored ->
@@ -337,8 +353,6 @@ public class WorldServiceImpl implements WorldService {
                         case WorldDeletionCancelledException ignored -> {
                             // The cancelling listener is responsible for messaging the player.
                         }
-                        case WorldOperationRefusedException refused ->
-                            messages.sendMessage(player, refused.messageKey(), Placeholders.of("%world%", worldName));
                         default -> {
                             messages.sendMessage(player, "worlds_delete_error", Placeholders.of("%world%", worldName));
                             plugin.getLogger()
@@ -381,9 +395,7 @@ public class WorldServiceImpl implements WorldService {
 
         // The unload comes before anything that cannot be undone: if it does not go through, the world is left as it
         // was instead of having its folder deleted while the server still writes to it.
-        WorldOperations operations = operations();
-        operations.evacuate(worldName, "worlds_delete_players_world");
-        operations.unload(buildWorld, SaveBehavior.DISCARD);
+        operations().takeOffline(buildWorld, "worlds_delete_players_world", SaveBehavior.DISCARD);
 
         buildWorld.setFolder(null);
         SpawnService spawnService = services.spawn();
@@ -433,7 +445,6 @@ public class WorldServiceImpl implements WorldService {
                         plugin,
                         this,
                         worldStorage,
-                        services.config(),
                         services.messages(),
                         services.prompts(),
                         services.spawn(),
@@ -445,7 +456,7 @@ public class WorldServiceImpl implements WorldService {
      * {@return the busy guard, evacuation and unload steps shared by the operations that take a world away}
      */
     public WorldOperations operations() {
-        return services.worldContext().operations();
+        return services.operations();
     }
 
     public void remanageAllUnloadTasks() {

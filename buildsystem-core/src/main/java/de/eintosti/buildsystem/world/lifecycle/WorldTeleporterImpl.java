@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.world.lifecycle;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.WorldNames;
 import io.papermc.lib.PaperLib;
@@ -50,6 +51,11 @@ public class WorldTeleporterImpl implements WorldTeleporter {
     @Override
     public void teleport(Player player) {
         boolean hadToLoad = false;
+        if (!buildWorld.isLoaded() && context.operations().isBusy(buildWorld)) {
+            context.messages()
+                    .sendMessage(player, "worlds_world_busy", Placeholders.of("%world%", buildWorld.getName()));
+            return;
+        }
         if (context.configService().current().world().unload().enabled() && !buildWorld.isLoaded()) {
             buildWorld.getLoader().loadForPlayer(player);
             hadToLoad = true;

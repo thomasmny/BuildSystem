@@ -23,10 +23,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
+import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.List;
@@ -147,5 +151,48 @@ class WorldOperationsTest {
             throw new IllegalStateException("boom");
         });
         assertFalse(operations.isBusy(world));
+    }
+
+    @Test
+    void operationReturningNoFutureOrThrowingAnError_freesTheWorld() {
+        BuildWorld world = mock(BuildWorld.class);
+        when(world.getUniqueId()).thenReturn(UUID.randomUUID());
+
+        CompletableFuture<Void> none = operations.runExclusively(world, () -> null);
+        assertThrows(ExecutionException.class, none::get);
+        assertFalse(operations.isBusy(world));
+
+        assertThrows(
+                StackOverflowError.class,
+                () -> operations.runExclusively(world, () -> {
+                    throw new StackOverflowError();
+                }));
+        assertFalse(operations.isBusy(world));
+    }
+
+    @Test
+    void takeOffline_whenTheUnloadIsRefused_sendsThePlayersBack() {
+        WorldMock lobby = server.addSimpleWorld("lobby");
+        WorldMock arena = server.addSimpleWorld("arena");
+        when(spawnService.getSpawn()).thenReturn(new Location(lobby, 5, 70, 5));
+        PlayerMock player = playerIn(arena);
+        BuildWorld world = mock(BuildWorld.class, RETURNS_DEEP_STUBS);
+        when(world.getName()).thenReturn("arena");
+        WorldTeleporter teleporter = world.getTeleporter();
+
+        WorldOperationRefusedException refused = assertThrows(
+                WorldOperationRefusedException.class, () -> operations.takeOffline(world, "key", SaveBehavior.SAVE));
+
+        assertEquals("worlds_world_unload_failed", refused.messageKey());
+        verify(world.getUnloader()).forceUnload(SaveBehavior.SAVE);
+        verify(teleporter).teleport(player);
+    }
+
+    @Test
+    void takeOffline_ofAnUnloadedWorld_movesNobody() {
+        BuildWorld world = mock(BuildWorld.class, RETURNS_DEEP_STUBS);
+        when(world.getName()).thenReturn("absent");
+
+        assertEquals(List.of(), operations.takeOffline(world, "key", SaveBehavior.DISCARD));
     }
 }

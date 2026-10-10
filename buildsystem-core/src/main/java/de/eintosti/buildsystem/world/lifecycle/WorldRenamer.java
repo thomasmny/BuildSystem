@@ -22,7 +22,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.world.BuildWorldRenameEvent;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
-import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Prompts;
@@ -56,7 +55,6 @@ public class WorldRenamer {
     private final BuildSystemPlugin plugin;
     private final WorldServiceImpl worldService;
     private final WorldStorageImpl worldStorage;
-    private final ConfigService configService;
     private final Messages messages;
     private final Prompts prompts;
     private final SpawnService spawnService;
@@ -66,7 +64,6 @@ public class WorldRenamer {
             BuildSystemPlugin plugin,
             WorldServiceImpl worldService,
             WorldStorageImpl worldStorage,
-            ConfigService configService,
             Messages messages,
             Prompts prompts,
             SpawnService spawnService,
@@ -74,7 +71,6 @@ public class WorldRenamer {
         this.plugin = plugin;
         this.worldService = worldService;
         this.worldStorage = worldStorage;
-        this.configService = configService;
         this.messages = messages;
         this.prompts = prompts;
         this.spawnService = spawnService;
@@ -99,9 +95,7 @@ public class WorldRenamer {
             return;
         }
 
-        // Either one is enough to refuse: a registered name would be taken over, an existing folder merged into.
-        if (worldStorage.worldExists(sanitizedNewName)
-                || FileUtils.worldFolder(sanitizedNewName).exists()) {
+        if (worldStorage.isNameTaken(sanitizedNewName)) {
             messages.sendMessage(player, "worlds_world_exists");
             XSound.ENTITY_ITEM_BREAK.play(player);
             return;
@@ -120,31 +114,20 @@ public class WorldRenamer {
             return;
         }
 
-        if (WorldNames.bukkitWorld(oldName) == null && !buildWorld.isLoaded()) {
-            buildWorld.getLoader().load();
-        }
-
-        World oldWorld = WorldNames.bukkitWorld(oldName);
-        if (oldWorld == null) {
+        if (!FileUtils.worldFolder(oldName).isDirectory()) {
             messages.sendMessage(player, "worlds_rename_unknown_world");
             return;
         }
 
+        // An unloaded world is renamed as it lies on disk; a loaded one is saved and unloaded first.
         WorldOperations operations = worldService.operations();
         operations
                 .runExclusively(buildWorld, () -> {
-                    List<Player> removedPlayers = operations.evacuate(oldName, "worlds_rename_players_world");
-                    Location oldSpawnLocation = oldWorld.getSpawnLocation();
-                    operations.unload(buildWorld, SaveBehavior.SAVE);
+                    List<Player> removedPlayers =
+                            operations.takeOffline(buildWorld, "worlds_rename_players_world", SaveBehavior.SAVE);
                     return moveFolder(oldName, sanitizedNewName)
                             .thenRunAsync(
-                                    () -> reconstruct(
-                                            player,
-                                            buildWorld,
-                                            oldName,
-                                            sanitizedNewName,
-                                            oldSpawnLocation,
-                                            removedPlayers),
+                                    () -> reconstruct(player, buildWorld, oldName, sanitizedNewName, removedPlayers),
                                     scheduler.mainThread());
                 })
                 .exceptionallyAsync(
@@ -179,30 +162,25 @@ public class WorldRenamer {
             BuildWorld buildWorld,
             String oldName,
             String sanitizedNewName,
-            Location oldSpawnLocation,
             List<Player> removedPlayers) {
         worldStorage.rename(buildWorld, oldName, sanitizedNewName);
         buildWorld.setName(sanitizedNewName);
-        Bukkit.getServer()
-                .getPluginManager()
-                .callEvent(new BuildWorldRenameEvent(buildWorld, oldName, sanitizedNewName));
+        Bukkit.getPluginManager().callEvent(new BuildWorldRenameEvent(buildWorld, oldName, sanitizedNewName));
         worldStorage.save(buildWorld).whenComplete((result, throwable) -> {
             if (throwable != null) {
-                plugin.getLogger()
-                        .log(
-                                Level.SEVERE,
-                                "Failed to persist rename of world \"" + oldName + "\" to \"" + sanitizedNewName + "\"",
-                                throwable);
+                String message =
+                        "Failed to persist rename of world \"%s\" to \"%s\"".formatted(oldName, sanitizedNewName);
+                plugin.getLogger().log(Level.SEVERE, message, throwable);
             }
         });
-        World newWorld = new BukkitWorldFactory(configService, plugin.getLogger(), buildWorld)
-                .generate(BukkitWorldFactory.VersionCheck.SKIP);
+        World newWorld =
+                new BukkitWorldFactory(plugin.getLogger(), buildWorld).generate(BukkitWorldFactory.VersionCheck.SKIP);
         buildWorld.getUnloader().manageUnload();
-        Location spawnLocation = oldSpawnLocation.clone();
-        spawnLocation.setWorld(newWorld);
-
-        removedPlayers.forEach(
-                pl -> PaperLib.teleportAsync(pl, spawnLocation.clone().add(0.5, 0, 0.5)));
+        if (newWorld != null) {
+            // The spawn is stored in level.dat, which moved along with the folder.
+            Location spawnLocation = newWorld.getSpawnLocation().add(0.5, 0, 0.5);
+            removedPlayers.forEach(pl -> PaperLib.teleportAsync(pl, spawnLocation));
+        }
 
         spawnService.renameWorld(oldName, sanitizedNewName);
 

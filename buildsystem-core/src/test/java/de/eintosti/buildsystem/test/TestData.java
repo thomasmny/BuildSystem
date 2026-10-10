@@ -205,6 +205,7 @@ public final class TestData {
         Prompts prompts = mock(Prompts.class);
         Services services = mock(Services.class);
         lenient().when(services.worldContext()).thenReturn(context);
+        lenient().when(services.operations()).thenReturn(context.operations());
         lenient().when(services.scheduler()).thenReturn(context.scheduler());
         lenient().when(services.config()).thenReturn(context.configService());
         lenient().when(services.messages()).thenReturn(context.messages());

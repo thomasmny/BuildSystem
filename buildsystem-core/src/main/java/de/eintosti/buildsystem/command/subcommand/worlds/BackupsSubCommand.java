@@ -24,7 +24,6 @@ import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
 import de.eintosti.buildsystem.command.subcommand.WorldTarget;
 import de.eintosti.buildsystem.i18n.Messages;
-import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
@@ -61,11 +60,7 @@ public class BackupsSubCommand extends WorldSubCommand {
                         return;
                     }
 
-                    Placeholders worldPlaceholder = Placeholders.of("%world%", buildWorld.getName());
-                    backupService.backup(
-                            buildWorld,
-                            () -> messages.sendMessage(player, "worlds_backup_created", worldPlaceholder),
-                            () -> messages.sendMessage(player, "worlds_backup_failed", worldPlaceholder));
+                    backupService.backup(player, buildWorld);
                 } else {
                     messages.sendMessage(player, "worlds_backup_usage");
                 }

@@ -31,7 +31,6 @@ import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.Prompts;
@@ -44,6 +43,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -81,6 +81,7 @@ class WorldRenamerTest {
         bukkit.when(Bukkit::getWorlds).thenReturn(List.of());
 
         worldStorage = mock(WorldStorageImpl.class);
+        when(worldStorage.isNameTaken(anyString())).thenCallRealMethod();
         when(worldStorage.renamedWorldName(anyString(), anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
         messages = mock(Messages.class);
@@ -98,7 +99,6 @@ class WorldRenamerTest {
                 mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS),
                 worldService,
                 worldStorage,
-                mock(ConfigService.class, RETURNS_DEEP_STUBS),
                 messages,
                 prompts,
                 mock(SpawnService.class),
@@ -142,6 +142,7 @@ class WorldRenamerTest {
         when(prompts.sanitizeWorldName(any(), anyString())).thenReturn("fresh");
         World oldWorld = mock(World.class);
         when(oldWorld.getPlayers()).thenReturn(List.of());
+        when(oldWorld.getWorldFolder()).thenReturn(worldContainer.resolve("old").toFile());
         // The unload is refused (an event cancelled it), so the world stays loaded.
         bukkit.when(() -> Bukkit.getWorld("old")).thenReturn(oldWorld);
         Files.createDirectories(worldContainer.resolve("old"));
@@ -153,6 +154,30 @@ class WorldRenamerTest {
         assertTrue(Files.isDirectory(worldContainer.resolve("old")));
         assertFalse(Files.exists(worldContainer.resolve("fresh")));
         verify(worldStorage, never()).rename(any(), anyString(), anyString());
+    }
+
+    @Test
+    void worldBusyWithAnotherOperation_isNotRenamed() throws IOException {
+        when(prompts.sanitizeWorldName(any(), anyString())).thenReturn("fresh");
+        Files.createDirectories(worldContainer.resolve("old"));
+        operations.runExclusively(buildWorld, CompletableFuture::new);
+
+        renamer.rename(player, buildWorld, "fresh");
+
+        verify(messages).sendMessage(eq(player), eq("worlds_world_busy"), any(Placeholders.class));
+        verify(buildWorld.getUnloader(), never()).forceUnload(any());
+        assertTrue(Files.isDirectory(worldContainer.resolve("old")));
+        assertFalse(Files.exists(worldContainer.resolve("fresh")));
+    }
+
+    @Test
+    void worldWithoutAFolder_isReportedUnknown() {
+        when(prompts.sanitizeWorldName(any(), anyString())).thenReturn("fresh");
+
+        renamer.rename(player, buildWorld, "fresh");
+
+        verify(messages).sendMessage(player, "worlds_rename_unknown_world");
+        assertNothingStarted();
     }
 
     private void assertNothingStarted() {

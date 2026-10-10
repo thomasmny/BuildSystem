@@ -18,7 +18,9 @@
 package de.eintosti.buildsystem.world.lifecycle;
 
 import de.eintosti.buildsystem.api.exception.WorldException;
+import java.util.concurrent.CompletionException;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * An operation on a world that was not carried out, because the world is busy with another operation or could not be
@@ -42,6 +44,18 @@ public final class WorldOperationRefusedException extends WorldException {
     static WorldOperationRefusedException notUnloaded(String worldName) {
         return new WorldOperationRefusedException(
                 "World '%s' could not be unloaded".formatted(worldName), "worlds_world_unload_failed");
+    }
+
+    /**
+     * {@return the refusal behind {@code failure}, looking through the {@link CompletionException}s a future wraps it
+     * in, or {@code null} when the failure was something else}
+     */
+    public static @Nullable WorldOperationRefusedException find(Throwable failure) {
+        Throwable cause = failure;
+        while (cause instanceof CompletionException && cause.getCause() != null) {
+            cause = cause.getCause();
+        }
+        return cause instanceof WorldOperationRefusedException refused ? refused : null;
     }
 
     /**

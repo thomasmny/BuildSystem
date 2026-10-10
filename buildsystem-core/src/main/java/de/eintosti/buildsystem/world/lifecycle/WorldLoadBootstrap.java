@@ -150,7 +150,7 @@ public class WorldLoadBootstrap {
             return LoadResult.NOT_LOADED;
         }
 
-        World world = new BukkitWorldFactory(configService, plugin.getLogger(), buildWorld)
+        World world = new BukkitWorldFactory(plugin.getLogger(), buildWorld)
                 .generate(BukkitWorldFactory.VersionCheck.REQUIRED);
         if (world == null) {
             return LoadResult.FAILED;

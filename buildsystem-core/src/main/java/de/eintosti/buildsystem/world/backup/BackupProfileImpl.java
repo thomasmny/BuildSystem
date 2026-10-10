@@ -36,7 +36,6 @@ import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.WorldFlush;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
-import de.eintosti.buildsystem.world.lifecycle.WorldOperationRefusedException;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import java.io.File;
 import java.io.IOException;
@@ -190,6 +189,7 @@ public class BackupProfileImpl implements BackupProfile {
 
         // Download off the main thread, then apply the restore back on the main thread. Blocking the
         // download here would freeze the entire server for the duration of a remote (S3/SFTP) fetch.
+        // The world is loaded again once the operation has let go of it, by the same load anyone else would use.
         WorldOperations operations = worldService.operations();
         return operations
                 .runExclusively(
@@ -197,15 +197,16 @@ public class BackupProfileImpl implements BackupProfile {
                         () -> this.storage
                                 .get()
                                 .downloadBackup(backup)
-                                .thenCompose(backupFile -> CompletableFuture.runAsync(
-                                        () -> {
+                                .thenApplyAsync(
+                                        backupFile -> {
                                             try {
-                                                applyRestore(backup, player, worldName, backupFile);
+                                                return replaceWorldFolder(worldName, backupFile);
                                             } catch (IOException e) {
                                                 throw new CompletionException(e);
                                             }
                                         },
-                                        mainThreadExecutor())))
+                                        mainThreadExecutor()))
+                .thenAccept(removedPlayers -> reloadRestoredWorld(backup, player, removedPlayers))
                 .whenCompleteAsync(
                         (ignored, throwable) -> {
                             if (throwable != null && !operations.reportRefusal(player, worldName, throwable)) {
@@ -221,10 +222,12 @@ public class BackupProfileImpl implements BackupProfile {
     }
 
     /**
-     * Applies a downloaded backup to the world. Must run on the main thread: it unloads, wipes and reloads the world
-     * and fires Bukkit events.
+     * Takes the world offline and replaces its folder with the backup. Must run on the main thread, since it unloads
+     * the world.
+     *
+     * @return The players moved out of the world, to bring back once it is loaded again
      */
-    private void applyRestore(Backup backup, Player player, String worldName, File backupFile) throws IOException {
+    private List<Player> replaceWorldFolder(String worldName, File backupFile) throws IOException {
         File targetDirectory = FileUtils.worldFolder(worldName);
 
         // Must happen before the world is deleted: a corrupt archive would otherwise only be detected once there
@@ -232,15 +235,9 @@ public class BackupProfileImpl implements BackupProfile {
         validateBackup(backupFile, targetDirectory);
 
         // The players are only moved once the archive is here and valid, so a failed download leaves them in place.
-        WorldOperations operations = worldService.operations();
-        List<Player> removedPlayers = operations.evacuate(worldName, "worlds_backup_restoration_in_progress");
-        WorldTeleporter worldTeleporter = this.buildWorld.getTeleporter();
-        try {
-            operations.unload(this.buildWorld, SaveBehavior.DISCARD);
-        } catch (WorldOperationRefusedException e) {
-            removedPlayers.forEach(worldTeleporter::teleport);
-            throw e;
-        }
+        List<Player> removedPlayers = worldService
+                .operations()
+                .takeOffline(this.buildWorld, "worlds_backup_restoration_in_progress", SaveBehavior.DISCARD);
         try {
             FileUtils.deleteDirectory(targetDirectory);
         } catch (IOException e) {
@@ -253,8 +250,16 @@ public class BackupProfileImpl implements BackupProfile {
             throw new IOException("Failed to create world directory for restore: " + targetDirectory.getAbsolutePath());
         }
         extractBackup(backupFile, targetDirectory);
+        return removedPlayers;
+    }
 
+    /**
+     * Loads the restored world and brings its players back. Runs on the main thread, right after the restore has
+     * released the world.
+     */
+    private void reloadRestoredWorld(Backup backup, Player player, List<Player> removedPlayers) {
         this.buildWorld.getLoader().load();
+        WorldTeleporter worldTeleporter = this.buildWorld.getTeleporter();
         removedPlayers.forEach(worldTeleporter::teleport);
 
         Bukkit.getPluginManager().callEvent(new BackupRestoredEvent(this.buildWorld, backup));

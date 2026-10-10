@@ -25,10 +25,10 @@ import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 import org.bukkit.Bukkit;
@@ -40,8 +40,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * The shared steps of the operations that take a world away from the server for a while: delete, unimport, rename,
- * restore and backup. Each marks the world busy for its duration, so two of them never work on the same world folder at once, and
- * the ones that need the world unloaded move its players out first and stop when the unload does not go through.
+ * restore, backup and download. Each marks the world busy for its duration, so two of them never work on the same
+ * world folder at once, and the ones that need the world unloaded stop when the unload does not go through.
  */
 @NullMarked
 public final class WorldOperations {
@@ -66,13 +66,18 @@ public final class WorldOperations {
             return CompletableFuture.failedFuture(WorldOperationRefusedException.busy(buildWorld.getName()));
         }
 
-        CompletableFuture<T> started;
+        boolean started = false;
         try {
-            started = operation.get();
+            CompletableFuture<T> future = Objects.requireNonNull(operation.get(), "The operation returned no future");
+            started = true;
+            return future.whenComplete((result, throwable) -> busyWorlds.remove(worldId));
         } catch (RuntimeException e) {
-            started = CompletableFuture.failedFuture(e);
+            return CompletableFuture.failedFuture(e);
+        } finally {
+            if (!started) {
+                busyWorlds.remove(worldId);
+            }
         }
-        return started.whenComplete((result, throwable) -> busyWorlds.remove(worldId));
     }
 
     public boolean isBusy(BuildWorld buildWorld) {
@@ -80,16 +85,23 @@ public final class WorldOperations {
     }
 
     /**
-     * Unloads the world.
+     * Moves the players out of the world and unloads it. When the unload does not go through, the players are sent
+     * back and the world is left as it was.
      *
-     * @throws WorldOperationRefusedException When a listener cancelled the unload or Bukkit refused it. The world is
-     *     then still loaded and unchanged.
+     * @param messageKey Sent to each player moved, and used as the kick message when there is nowhere to move them
+     * @return The players that were moved, for the caller to bring back once the world is loaded again
+     * @throws WorldOperationRefusedException When a listener cancelled the unload or Bukkit refused it
      */
-    public void unload(BuildWorld buildWorld, SaveBehavior saveBehavior) {
+    public List<Player> takeOffline(BuildWorld buildWorld, String messageKey, SaveBehavior saveBehavior) {
+        String worldName = buildWorld.getName();
+        List<Player> moved = evacuate(worldName, messageKey);
+        // forceUnload is void API, so whether the world went away is read back from the server.
         buildWorld.getUnloader().forceUnload(saveBehavior);
-        if (WorldNames.bukkitWorld(buildWorld.getName()) != null) {
-            throw WorldOperationRefusedException.notUnloaded(buildWorld.getName());
+        if (WorldNames.bukkitWorld(worldName) != null) {
+            moved.forEach(buildWorld.getTeleporter()::teleport);
+            throw WorldOperationRefusedException.notUnloaded(worldName);
         }
+        return moved;
     }
 
     /**
@@ -98,11 +110,8 @@ public final class WorldOperations {
      * @return {@code true} when it was a refusal, {@code false} when the failure is left to the caller
      */
     public boolean reportRefusal(Player player, String worldName, Throwable failure) {
-        Throwable cause = failure;
-        while (cause instanceof CompletionException && cause.getCause() != null) {
-            cause = cause.getCause();
-        }
-        if (!(cause instanceof WorldOperationRefusedException refused)) {
+        WorldOperationRefusedException refused = WorldOperationRefusedException.find(failure);
+        if (refused == null) {
             return false;
         }
         messages.sendMessage(player, refused.messageKey(), Placeholders.of("%world%", worldName));

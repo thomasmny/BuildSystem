@@ -18,111 +18,17 @@
 package de.eintosti.buildsystem.world.creation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-import com.cryptomorin.xseries.XGameRule;
-import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
-import de.eintosti.buildsystem.config.ConfigService;
-import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
-import de.eintosti.buildsystem.world.menu.GameRuleEntry;
-import java.util.List;
-import java.util.logging.Logger;
-import org.bukkit.GameRules;
-import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockbukkit.mockbukkit.MockBukkit;
-import org.mockbukkit.mockbukkit.ServerMock;
-import org.mockbukkit.mockbukkit.world.WorldMock;
 
 /**
- * Pins the void-block placement contract of {@link BukkitWorldFactory#applyPostGenerationSettings}: the configured
- * block is placed at the spawn column of newly generated void worlds only — never over an existing block, never when
- * disabled, and never when the world is merely re-generated (import/load/rename) — while the spawn is always set.
+ * Pins which type a world is generated as when it records a custom generator.
  */
 @NullMarked
 class BukkitWorldFactoryTest {
-
-    private ServerMock server;
-    private ConfigService configService;
-
-    @BeforeEach
-    void setUp() {
-        server = MockBukkit.mock();
-        configService = mock(ConfigService.class, RETURNS_DEEP_STUBS);
-    }
-
-    @AfterEach
-    void tearDown() {
-        MockBukkit.unmock();
-    }
-
-    private BukkitWorldFactory factory(PluginConfig.World.VoidBlock voidBlock, boolean initialGeneration) {
-        lenient().when(configService.current().world().voidBlock()).thenReturn(voidBlock);
-        return new BukkitWorldFactory(
-                configService,
-                Logger.getLogger("test"),
-                "void-world",
-                BuildWorldType.VOID,
-                null,
-                null,
-                null,
-                null,
-                null,
-                initialGeneration);
-    }
-
-    @Test
-    void initialGeneration_placesConfiguredBlockAndSetsSpawn() {
-        WorldMock world = server.addSimpleWorld("void-world");
-        assertEquals(Material.AIR, world.getBlockAt(0, 64, 0).getType());
-
-        factory(new PluginConfig.World.VoidBlock(true, Material.DIAMOND_BLOCK), true)
-                .applyPostGenerationSettings(world, BuildWorldType.VOID);
-
-        assertEquals(Material.DIAMOND_BLOCK, world.getBlockAt(0, 64, 0).getType());
-        assertEquals(65, world.getSpawnLocation().getBlockY());
-    }
-
-    @Test
-    void initialGeneration_neverOverwritesAnExistingBlock() {
-        WorldMock world = server.addSimpleWorld("void-world");
-        world.getBlockAt(0, 64, 0).setType(Material.STONE);
-
-        factory(new PluginConfig.World.VoidBlock(true, Material.GOLD_BLOCK), true)
-                .applyPostGenerationSettings(world, BuildWorldType.VOID);
-
-        assertEquals(Material.STONE, world.getBlockAt(0, 64, 0).getType());
-    }
-
-    @Test
-    void placementDisabled_stillSetsSpawn() {
-        WorldMock world = server.addSimpleWorld("void-world");
-
-        factory(new PluginConfig.World.VoidBlock(false, Material.GOLD_BLOCK), true)
-                .applyPostGenerationSettings(world, BuildWorldType.VOID);
-
-        assertEquals(Material.AIR, world.getBlockAt(0, 64, 0).getType());
-        assertEquals(65, world.getSpawnLocation().getBlockY());
-    }
-
-    @Test
-    void regeneration_placesNothingButStillSetsSpawn() {
-        WorldMock world = server.addSimpleWorld("void-world");
-
-        factory(new PluginConfig.World.VoidBlock(true, Material.GOLD_BLOCK), false)
-                .applyPostGenerationSettings(world, BuildWorldType.VOID);
-
-        assertEquals(Material.AIR, world.getBlockAt(0, 64, 0).getType());
-        assertEquals(65, world.getSpawnLocation().getBlockY());
-    }
 
     @Test
     void importedWithBuiltInGenerator_generatesThatType() {
@@ -155,47 +61,5 @@ class BukkitWorldFactoryTest {
                 BuildWorldType.FLAT,
                 BukkitWorldFactory.generationType(
                         BuildWorldType.FLAT, new CustomGeneratorImpl("BuildSystem", "void", null)));
-    }
-
-    @Test
-    void newWorld_getsTheBorderSizeItWasBuiltWith() {
-        WorldMock world = server.addSimpleWorld("bordered");
-        lenient()
-                .when(configService.current().world().defaults().worldBorderSize())
-                .thenReturn(1000);
-        lenient().when(configService.current().world().defaults().gameRules()).thenReturn(List.of());
-
-        new BukkitWorldFactory(
-                        configService,
-                        Logger.getLogger("test"),
-                        "bordered",
-                        BuildWorldType.NORMAL,
-                        null,
-                        null,
-                        null,
-                        500,
-                        null,
-                        true)
-                .applyWorldSettings(world);
-
-        assertEquals(500, world.getWorldBorder().getSize());
-    }
-
-    @Test
-    void loadingAnExistingWorld_keepsItsGameRulesAndSpawn() {
-        WorldMock world = server.addSimpleWorld("void-world");
-        world.setSpawnLocation(10, 80, 10);
-        world.setGameRule(GameRules.KEEP_INVENTORY, true);
-        lenient()
-                .when(configService.current().world().defaults().gameRules())
-                .thenReturn(List.of(new GameRuleEntry<>(XGameRule.KEEP_INVENTORY, false)));
-        BuildWorld buildWorld = mock(BuildWorld.class);
-        when(buildWorld.getName()).thenReturn("void-world");
-        when(buildWorld.getType()).thenReturn(BuildWorldType.VOID);
-
-        new BukkitWorldFactory(configService, Logger.getLogger("test"), buildWorld).applyWorldSettings(world);
-
-        assertEquals(Boolean.TRUE, world.getGameRuleValue(GameRules.KEEP_INVENTORY));
-        assertEquals(80, world.getSpawnLocation().getBlockY());
     }
 }

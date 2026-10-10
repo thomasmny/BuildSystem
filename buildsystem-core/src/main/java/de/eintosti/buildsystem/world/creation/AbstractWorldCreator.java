@@ -106,9 +106,12 @@ abstract class AbstractWorldCreator {
         newBuildWorld.getData().set(WorldDataKey.LAST_LOADED, System.currentTimeMillis());
         worldStorage.addBuildWorld(newBuildWorld);
 
+        BukkitWorldFactory factory =
+                new BukkitWorldFactory(context.logger(), worldName, worldType, customGenerator, seed);
         World world = null;
         try {
-            world = generateBukkitWorld(checkVersion);
+            world = factory.generate(
+                    checkVersion ? BukkitWorldFactory.VersionCheck.REQUIRED : BukkitWorldFactory.VersionCheck.SKIP);
         } finally {
             if (world == null) {
                 worldStorage.removeBuildWorld(newBuildWorld);
@@ -118,25 +121,11 @@ abstract class AbstractWorldCreator {
             return null;
         }
 
+        new WorldDefaults(context.configService(), difficulty, time, worldBorderSize)
+                .apply(world, factory.generatedType(), !isImport());
         newBuildWorld.getUnloader().manageUnload();
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostCreateEvent(newBuildWorld, isImport()));
         return newBuildWorld;
-    }
-
-    private @Nullable World generateBukkitWorld(boolean checkVersion) {
-        return new BukkitWorldFactory(
-                        context.configService(),
-                        context.logger(),
-                        worldName,
-                        worldType,
-                        customGenerator,
-                        difficulty,
-                        time,
-                        worldBorderSize,
-                        seed,
-                        !isImport())
-                .generate(
-                        checkVersion ? BukkitWorldFactory.VersionCheck.REQUIRED : BukkitWorldFactory.VersionCheck.SKIP);
     }
 
     protected final void notifyAudience(String key) {
