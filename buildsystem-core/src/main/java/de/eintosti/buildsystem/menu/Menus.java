@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.menu;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -129,7 +128,7 @@ public final class Menus {
                         messages,
                         messages.getString("restore_backup_title", player),
                         new ConfirmMenu.Choice(
-                                ItemBuilder.of(XMaterial.LIME_DYE)
+                                ItemBuilder.of(Material.LIME_DYE)
                                         .name(messages.getString("restore_backup_confirm_name", player))
                                         .lore(messages.getStringList(
                                                 "restore_backup_confirm_lore",
@@ -140,7 +139,7 @@ public final class Menus {
                                 p -> backup.owner().restoreBackup(backup, p)),
                         Permissions.BACKUP,
                         new ConfirmMenu.Choice(
-                                ItemBuilder.of(XMaterial.RED_DYE)
+                                ItemBuilder.of(Material.RED_DYE)
                                         .name(messages.getString("restore_backup_cancel_name", player))
                                         .build(),
                                 p -> {}),
@@ -262,17 +261,17 @@ public final class Menus {
                         messages,
                         messages.getString("delete_title", player),
                         new ConfirmMenu.Choice(
-                                ItemBuilder.of(XMaterial.LIME_DYE)
+                                ItemBuilder.of(Material.LIME_DYE)
                                         .name(messages.getString("delete_world_confirm", player))
                                         .build(),
                                 p -> services.world().deleteWorld(p, buildWorld)),
                         null,
                         new ConfirmMenu.Choice(
-                                ItemBuilder.of(XMaterial.RED_DYE)
+                                ItemBuilder.of(Material.RED_DYE)
                                         .name(messages.getString("delete_world_cancel", player))
                                         .build(),
                                 p -> messages.sendMessage(p, "worlds_delete_canceled", world)),
-                        ItemBuilder.of(XMaterial.FILLED_MAP)
+                        ItemBuilder.of(Material.FILLED_MAP)
                                 .name(messages.getString("delete_world_name", player, world))
                                 .lore(messages.getStringList("delete_world_name_lore", player))
                                 .build())

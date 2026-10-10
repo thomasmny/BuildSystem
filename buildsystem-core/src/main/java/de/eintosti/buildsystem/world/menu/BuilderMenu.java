@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -33,6 +32,7 @@ import de.eintosti.buildsystem.menu.PaginatedMenu;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import java.util.ArrayList;
 import java.util.List;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -90,7 +90,7 @@ public class BuilderMenu extends PaginatedMenu {
                 .render((player, inventory, slot) -> {
                     Builder creator = buildWorld.getBuilders().getCreator();
                     if (creator == null) {
-                        ItemBuilder.of(XMaterial.BARRIER)
+                        ItemBuilder.of(Material.BARRIER)
                                 .name(messages.getString("worldeditor_builders_no_creator_item", player))
                                 .into(inventory, slot);
                         return;

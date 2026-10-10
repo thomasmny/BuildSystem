@@ -25,7 +25,6 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -94,7 +93,7 @@ class SettingInteractionListenerTest {
         SettingsService settingsService = mock(SettingsService.class);
         when(settingsService.getSettings(any())).thenReturn(settings);
         ConfigService configService = mock(ConfigService.class, RETURNS_DEEP_STUBS);
-        when(configService.current().settings().builder().worldEditWand()).thenReturn(XMaterial.WOODEN_AXE);
+        when(configService.current().settings().builder().worldEditWand()).thenReturn(Material.WOODEN_AXE);
         worldStorage = mock(WorldStorage.class);
 
         Plugin plugin = MockBukkit.createMockPlugin();

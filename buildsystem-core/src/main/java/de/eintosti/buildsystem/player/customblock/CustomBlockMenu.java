@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.player.customblock;
 
-import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
@@ -25,6 +24,7 @@ import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuItems;
 import java.util.Map;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
@@ -34,11 +34,11 @@ public class CustomBlockMenu extends ButtonMenu {
 
     /**
      * A selectable custom block. {@code giveMaterial} is the material the item is handed out as; the default
-     * {@link XMaterial#PLAYER_HEAD} means "give as a skull". Render is always a skull for every slot.
+     * {@link Material#PLAYER_HEAD} means "give as a skull". Render is always a skull for every slot.
      */
-    record BlockEntry(CustomBlock block, XMaterial giveMaterial) {
+    record BlockEntry(CustomBlock block, Material giveMaterial) {
         BlockEntry(CustomBlock block) {
-            this(block, XMaterial.PLAYER_HEAD);
+            this(block, Material.PLAYER_HEAD);
         }
     }
 
@@ -66,13 +66,13 @@ public class CustomBlockMenu extends ButtonMenu {
             Map.entry(29, new BlockEntry(CustomBlock.BURNING_FURNACE)),
             Map.entry(30, new BlockEntry(CustomBlock.PISTON_HEAD)),
             Map.entry(31, new BlockEntry(CustomBlock.COMMAND_BLOCK)),
-            Map.entry(32, new BlockEntry(CustomBlock.BARRIER, XMaterial.BARRIER)),
-            Map.entry(33, new BlockEntry(CustomBlock.INVISIBLE_ITEM_FRAME, XMaterial.ITEM_FRAME)),
+            Map.entry(32, new BlockEntry(CustomBlock.BARRIER, Material.BARRIER)),
+            Map.entry(33, new BlockEntry(CustomBlock.INVISIBLE_ITEM_FRAME, Material.ITEM_FRAME)),
             Map.entry(37, new BlockEntry(CustomBlock.MOB_SPAWNER)),
             Map.entry(38, new BlockEntry(CustomBlock.NETHER_PORTAL)),
             Map.entry(39, new BlockEntry(CustomBlock.END_PORTAL)),
             Map.entry(40, new BlockEntry(CustomBlock.DRAGON_EGG)),
-            Map.entry(41, new BlockEntry(CustomBlock.DEBUG_STICK, XMaterial.DEBUG_STICK)));
+            Map.entry(41, new BlockEntry(CustomBlock.DEBUG_STICK, Material.DEBUG_STICK)));
 
     private final MenuItems menuItems;
 
@@ -103,9 +103,9 @@ public class CustomBlockMenu extends ButtonMenu {
         renderButtons(player);
     }
 
-    private void giveCustomBlock(Player player, CustomBlock customBlock, XMaterial material) {
+    private void giveCustomBlock(Player player, CustomBlock customBlock, Material material) {
         ItemStack itemStack;
-        if (material == XMaterial.PLAYER_HEAD) {
+        if (material == Material.PLAYER_HEAD) {
             itemStack = ItemBuilder.skull(Profileable.detect(customBlock.getSkullUrl()))
                     .name(messages.getString(customBlock.getMessageKey(), player))
                     .build();

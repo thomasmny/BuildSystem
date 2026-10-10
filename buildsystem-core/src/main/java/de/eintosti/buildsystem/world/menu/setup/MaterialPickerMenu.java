@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
-import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
@@ -41,7 +40,7 @@ import org.jspecify.annotations.NullMarked;
 /**
  * A reusable picker over every obtainable Minecraft item. Items fill the left eight columns and the view scrolls
  * vertically — one row at a time — via the up/down arrows down the right-hand column, which also holds a name filter.
- * Clicking an item hands the chosen {@link XMaterial} to the supplied callback. Used wherever an icon material is
+ * Clicking an item hands the chosen {@link Material} to the supplied callback. Used wherever an icon material is
  * configured (statuses, categories, default world-type icons).
  */
 @NullMarked
@@ -62,10 +61,8 @@ public class MaterialPickerMenu extends ButtonMenu {
      * Every obtainable item material, sorted by name. Computed once: a material is pickable when it has an item form,
      * is not a legacy alias, and is not air.
      */
-    private static final List<XMaterial> PICKABLE = Arrays.stream(Material.values())
+    private static final List<Material> PICKABLE = Arrays.stream(Material.values())
             .filter(material -> material.isItem() && !material.isLegacy() && !material.isAir())
-            .map(XMaterial::matchXMaterial)
-            .distinct()
             .sorted(Comparator.comparing(Enum::name))
             .toList();
 
@@ -98,7 +95,7 @@ public class MaterialPickerMenu extends ButtonMenu {
         getInventory().clear();
         fillRightControlColumn(player);
 
-        List<XMaterial> matches = getFilteredMaterials();
+        List<Material> matches = getFilteredMaterials();
         int maxTopRow = Math.max(0, Math.ceilDiv(matches.size(), COLUMNS) - VISIBLE_ROWS);
         topRow = Math.min(topRow, maxTopRow);
 
@@ -126,7 +123,7 @@ public class MaterialPickerMenu extends ButtonMenu {
         }
     }
 
-    private List<XMaterial> getFilteredMaterials() {
+    private List<Material> getFilteredMaterials() {
         if (filter.isEmpty()) {
             return PICKABLE;
         }
@@ -136,7 +133,7 @@ public class MaterialPickerMenu extends ButtonMenu {
                 .toList();
     }
 
-    private static boolean matchesFilter(XMaterial material, String needle) {
+    private static boolean matchesFilter(Material material, String needle) {
         if (getPrettyName(material).toLowerCase(Locale.ROOT).contains(needle)) {
             return true;
         }
@@ -144,18 +141,14 @@ public class MaterialPickerMenu extends ButtonMenu {
         return registryName.contains(needle) || ("minecraft:" + registryName).contains(needle);
     }
 
-    private MenuButton createMaterialButton(XMaterial material) {
+    private MenuButton createMaterialButton(Material material) {
         return MenuButton.builder()
                 .render((player, inventory, slot) -> ItemBuilder.of(material)
                         .name(ColorAPI.process("&b" + getPrettyName(material)))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
-                    Material picked = material.get();
-                    if (picked == null) {
-                        return;
-                    }
                     player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
-                    onPick.accept(picked);
+                    onPick.accept(material);
                 })
                 .build();
     }
@@ -183,7 +176,7 @@ public class MaterialPickerMenu extends ButtonMenu {
                 .render((player, inventory, slot) -> {
                     String activeFilterDisplay =
                             filter.isEmpty() ? messages.getString("setup_filter_none", player) : filter;
-                    ItemBuilder.of(XMaterial.HOPPER)
+                    ItemBuilder.of(Material.HOPPER)
                             .name(messages.getString("setup_filter", player))
                             .lore(messages.getStringList(
                                     "setup_filter_lore", player, Placeholders.of("%filter%", activeFilterDisplay)))
@@ -211,7 +204,7 @@ public class MaterialPickerMenu extends ButtonMenu {
     /**
      * Turns an enum-style material name ({@code DIAMOND_PICKAXE}) into a readable label ({@code Diamond Pickaxe}).
      */
-    private static String getPrettyName(XMaterial material) {
+    private static String getPrettyName(Material material) {
         String[] words = material.name().toLowerCase(Locale.ROOT).split("_");
         StringBuilder builder = new StringBuilder();
 

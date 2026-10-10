@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.navigator;
 
-import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XPotion;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -42,6 +40,7 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
@@ -50,6 +49,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -182,16 +182,14 @@ public class NavigatorService {
      * once ready, since a viewer or username skin means a Mojang lookup.
      */
     private void applyHelmet(Player player, NavigatorCategory category, ArmorStand armorStand) {
-        XMaterial icon = XMaterial.matchXMaterial(category.getIcon());
+        Material icon = category.getIcon();
         String texture = ItemBuilder.categoryTexture(category);
-        if (icon != XMaterial.PLAYER_HEAD || texture == null || texture.isBlank()) {
+        if (icon != Material.PLAYER_HEAD || texture == null || texture.isBlank()) {
             armorStand.getEquipment().setHelmet(ItemBuilder.of(icon).build());
             return;
         }
 
-        armorStand
-                .getEquipment()
-                .setHelmet(ItemBuilder.of(XMaterial.PLAYER_HEAD).build());
+        armorStand.getEquipment().setHelmet(ItemBuilder.of(Material.PLAYER_HEAD).build());
         menuItems.resolveHeadAsync(
                 MenuItems.profileFor(texture, player),
                 null,
@@ -223,7 +221,7 @@ public class NavigatorService {
         PlayerInventory playerInventory = player.getInventory();
         ItemStack slot8 = playerInventory.getItem(8);
 
-        if (slot8 == null || slot8.getType() == XMaterial.AIR.get()) {
+        if (slot8 == null || slot8.getType() == Material.AIR) {
             playerInventory.setItem(8, navigatorItem);
         } else {
             playerInventory.addItem(navigatorItem);
@@ -246,8 +244,8 @@ public class NavigatorService {
 
         CachedValues cachedValues = buildPlayer.getCachedValues();
         cachedValues.resetSpeedsIfPresent(player);
-        player.removePotionEffect(XPotion.JUMP_BOOST.get());
-        player.removePotionEffect(XPotion.BLINDNESS.get());
+        player.removePotionEffect(PotionEffectType.JUMP_BOOST);
+        player.removePotionEffect(PotionEffectType.BLINDNESS);
 
         openNavigator.remove(player.getUniqueId());
     }

@@ -17,9 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import com.cryptomorin.xseries.XEntityType;
-import com.cryptomorin.xseries.XMaterial;
-import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
@@ -39,14 +36,16 @@ import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.WorldClock;
 import de.eintosti.buildsystem.world.WorldNames;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -71,19 +70,19 @@ public class EditMenu extends ButtonMenu {
     /**
      * Entities which are ignored when the butcher item is used.
      */
-    private static final Set<XEntityType> IGNORED_ENTITIES = Sets.newHashSet(
-            XEntityType.ARMOR_STAND,
-            XEntityType.END_CRYSTAL,
-            XEntityType.ITEM_FRAME,
-            XEntityType.FALLING_BLOCK,
-            XEntityType.MINECART,
-            XEntityType.CHEST_MINECART,
-            XEntityType.COMMAND_BLOCK_MINECART,
-            XEntityType.FURNACE_MINECART,
-            XEntityType.HOPPER_MINECART,
-            XEntityType.SPAWNER_MINECART,
-            XEntityType.TNT_MINECART,
-            XEntityType.PLAYER);
+    private static final Set<EntityType> IGNORED_ENTITIES = EnumSet.of(
+            EntityType.ARMOR_STAND,
+            EntityType.END_CRYSTAL,
+            EntityType.ITEM_FRAME,
+            EntityType.FALLING_BLOCK,
+            EntityType.MINECART,
+            EntityType.CHEST_MINECART,
+            EntityType.COMMAND_BLOCK_MINECART,
+            EntityType.FURNACE_MINECART,
+            EntityType.HOPPER_MINECART,
+            EntityType.SPAWNER_MINECART,
+            EntityType.TNT_MINECART,
+            EntityType.PLAYER);
 
     private final PlayerServiceImpl playerManager;
     private final MenuItems menuItems;
@@ -161,7 +160,7 @@ public class EditMenu extends ButtonMenu {
                                 player,
                                 inventory,
                                 slot,
-                                XMaterial.SAND,
+                                Material.SAND,
                                 buildWorld.getData().get(WorldDataKey.PHYSICS),
                                 "worldeditor_physics_item",
                                 "worldeditor_physics_lore"))
@@ -298,12 +297,12 @@ public class EditMenu extends ButtonMenu {
                     player,
                     inventory,
                     slot,
-                    XMaterial.IRON_PICKAXE,
+                    Material.IRON_PICKAXE,
                     buildWorld.getData().get(WorldDataKey.BUILDERS_ENABLED),
                     "worldeditor_builders_item",
                     "worldeditor_builders_lore");
         } else {
-            ItemBuilder.of(XMaterial.BARRIER)
+            ItemBuilder.of(Material.BARRIER)
                     .name(messages.getString("worldeditor_builders_not_creator_item", player))
                     .lore(messages.getStringList("worldeditor_builders_not_creator_lore", player))
                     .into(inventory, slot);
@@ -319,13 +318,13 @@ public class EditMenu extends ButtonMenu {
         boolean isPrivate = buildWorld.getData().get(WorldDataKey.VISIBILITY).isPrivate();
 
         if (!canChangeVisibility(player, isPrivate)) {
-            ItemBuilder.of(XMaterial.BARRIER)
+            ItemBuilder.of(Material.BARRIER)
                     .name("§c§m" + ChatColor.stripColor(displayName))
                     .into(inventory, slot);
             return;
         }
 
-        XMaterial material = isPrivate ? XMaterial.ENDER_PEARL : XMaterial.ENDER_EYE;
+        Material material = isPrivate ? Material.ENDER_PEARL : Material.ENDER_EYE;
         List<String> lore = messages.getStringList(
                 isPrivate ? "worldeditor_visibility_lore_private" : "worldeditor_visibility_lore_public", player);
 
@@ -426,15 +425,12 @@ public class EditMenu extends ButtonMenu {
             return;
         }
 
-        AtomicInteger entitiesRemoved = new AtomicInteger();
-        bukkitWorld.getEntities().stream()
-                .filter(entity -> !IGNORED_ENTITIES.contains(XEntityType.of(entity)))
-                .forEach(entity -> {
-                    entity.remove();
-                    entitiesRemoved.incrementAndGet();
-                });
+        List<Entity> removable = bukkitWorld.getEntities().stream()
+                .filter(entity -> !IGNORED_ENTITIES.contains(entity.getType()))
+                .toList();
+        removable.forEach(Entity::remove);
 
         player.closeInventory();
-        messages.sendMessage(player, "worldeditor_butcher_removed", Placeholders.of("%amount%", entitiesRemoved.get()));
+        messages.sendMessage(player, "worldeditor_butcher_removed", Placeholders.of("%amount%", removable.size()));
     }
 }

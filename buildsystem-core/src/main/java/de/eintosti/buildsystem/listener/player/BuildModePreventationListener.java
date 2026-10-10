@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.listener.player;
 
-import com.cryptomorin.xseries.inventory.XInventoryView;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.config.ConfigService;
 import org.bukkit.entity.Player;
@@ -74,7 +73,7 @@ public class BuildModePreventationListener implements Listener {
             return;
         }
 
-        if (XInventoryView.of(event.getView()).getTopInventory().getType() != InventoryType.CRAFTING) {
+        if (event.getView().getTopInventory().getType() != InventoryType.CRAFTING) {
             event.setCancelled(true);
         }
     }

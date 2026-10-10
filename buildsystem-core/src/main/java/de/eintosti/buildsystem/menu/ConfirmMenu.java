@@ -17,9 +17,9 @@
  */
 package de.eintosti.buildsystem.menu;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.i18n.Messages;
 import java.util.function.Consumer;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -91,13 +91,13 @@ public class ConfirmMenu extends ButtonMenu {
     @Override
     protected void populate(Player player) {
         for (int slot : GREEN_SLOTS) {
-            ItemBuilder.of(XMaterial.LIME_STAINED_GLASS_PANE).name("§f").into(getInventory(), slot);
+            ItemBuilder.of(Material.LIME_STAINED_GLASS_PANE).name("§f").into(getInventory(), slot);
         }
         for (int slot : new int[] {4, SLOT_INFO, 22}) {
-            ItemBuilder.of(XMaterial.BLACK_STAINED_GLASS_PANE).name("§f").into(getInventory(), slot);
+            ItemBuilder.of(Material.BLACK_STAINED_GLASS_PANE).name("§f").into(getInventory(), slot);
         }
         for (int slot : RED_SLOTS) {
-            ItemBuilder.of(XMaterial.RED_STAINED_GLASS_PANE).name("§f").into(getInventory(), slot);
+            ItemBuilder.of(Material.RED_STAINED_GLASS_PANE).name("§f").into(getInventory(), slot);
         }
         if (info != null) {
             getInventory().setItem(SLOT_INFO, info);

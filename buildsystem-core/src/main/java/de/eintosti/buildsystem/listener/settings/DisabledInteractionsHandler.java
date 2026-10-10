@@ -54,7 +54,7 @@ final class DisabledInteractionsHandler implements SettingHandler {
                 || !settings.isDisableInteract()
                 || !block.getType().isInteractable()
                 || itemStack == null
-                || XMaterial.matchXMaterial(itemStack.getType())
+                || itemStack.getType()
                         == configService.current().settings().builder().worldEditWand()) {
             return null;
         }

@@ -17,13 +17,13 @@
  */
 package de.eintosti.buildsystem.player.customblock;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.function.Supplier;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.entity.Player;
@@ -58,8 +58,7 @@ public class CustomBlockManager implements Listener {
         boolean isBuildWorld = buildWorld != null;
 
         ItemStack itemStack = event.getItemInHand();
-        XMaterial xMaterial = XMaterial.matchXMaterial(itemStack);
-        if (xMaterial != XMaterial.PLAYER_HEAD) {
+        if (itemStack.getType() != Material.PLAYER_HEAD) {
             return;
         }
 

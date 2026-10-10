@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
@@ -30,6 +29,7 @@ import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.data.WorldStatusImpl;
 import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import java.util.List;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -89,7 +89,7 @@ public class StatusEditorMenu extends RegistryEditorMenu {
 
     private MenuButton orderButton() {
         return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.COMPARATOR)
+                .render((player, inventory, slot) -> ItemBuilder.of(Material.COMPARATOR)
                         .name(messages.getString(
                                 "setup_status_order",
                                 player,
@@ -106,7 +106,7 @@ public class StatusEditorMenu extends RegistryEditorMenu {
 
     private MenuButton progressesButton() {
         return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.ARROW)
+                .render((player, inventory, slot) -> ItemBuilder.of(Material.ARROW)
                         .name(messages.getString(
                                 "setup_status_progresses",
                                 player,

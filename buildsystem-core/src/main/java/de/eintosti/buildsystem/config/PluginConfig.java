@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.config;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.List;
@@ -151,9 +150,9 @@ public record PluginConfig(Settings settings, Storage storage, World world, Fold
 
         public record BuildMode(boolean dropItems, boolean moveItems) {}
 
-        public record Builder(boolean blockWorldEditNonBuilder, XMaterial worldEditWand) {}
+        public record Builder(boolean blockWorldEditNonBuilder, Material worldEditWand) {}
 
-        public record Navigator(XMaterial item, boolean giveItemOnJoin) {}
+        public record Navigator(Material item, boolean giveItemOnJoin) {}
     }
 
     /**

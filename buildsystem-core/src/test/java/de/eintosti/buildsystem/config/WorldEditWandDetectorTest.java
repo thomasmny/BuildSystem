@@ -19,9 +19,9 @@ package de.eintosti.buildsystem.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.cryptomorin.xseries.XMaterial;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.bukkit.Material;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -50,14 +50,14 @@ class WorldEditWandDetectorTest {
     @Test
     void detect_worldEditConfig_readsAndStripsNamespace() throws Exception {
         writeConfig("WorldEdit", "config.yml", "wand-item: minecraft:blaze_rod");
-        assertEquals(XMaterial.BLAZE_ROD, new WorldEditWandDetector(pluginsDir.toFile()).detect());
+        assertEquals(Material.BLAZE_ROD, new WorldEditWandDetector(pluginsDir.toFile()).detect());
     }
 
     @Test
     void detect_fastAsyncWorldEditTakesPrecedence() throws Exception {
         writeConfig("WorldEdit", "config.yml", "wand-item: minecraft:blaze_rod");
         writeConfig("FastAsyncWorldEdit", "worldedit-config.yml", "wand-item: minecraft:stick");
-        assertEquals(XMaterial.STICK, new WorldEditWandDetector(pluginsDir.toFile()).detect());
+        assertEquals(Material.STICK, new WorldEditWandDetector(pluginsDir.toFile()).detect());
     }
 
     @Test

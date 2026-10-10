@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
@@ -78,19 +77,19 @@ final class EditMenuRenderer {
     }
 
     void renderTime(Player player, Inventory inventory, int slot) {
-        XMaterial material;
+        Material material;
         String value;
         switch (buildWorld.getWorld().map(this::timeOfDay).orElse(TimeOfDay.SUNRISE)) {
             case NIGHT -> {
-                material = XMaterial.BLUE_STAINED_GLASS;
+                material = Material.BLUE_STAINED_GLASS;
                 value = messages.getString("worldeditor_time_lore_night", player);
             }
             case NOON -> {
-                material = XMaterial.YELLOW_STAINED_GLASS;
+                material = Material.YELLOW_STAINED_GLASS;
                 value = messages.getString("worldeditor_time_lore_noon", player);
             }
             default -> {
-                material = XMaterial.ORANGE_STAINED_GLASS;
+                material = Material.ORANGE_STAINED_GLASS;
                 value = messages.getString("worldeditor_time_lore_sunrise", player);
             }
         }
@@ -107,26 +106,26 @@ final class EditMenuRenderer {
     }
 
     void renderButcher(Player player, Inventory inventory, int slot) {
-        ItemBuilder.of(XMaterial.DIAMOND_SWORD)
+        ItemBuilder.of(Material.DIAMOND_SWORD)
                 .name(messages.getString("worldeditor_butcher_item", player))
                 .lore(messages.getStringList("worldeditor_butcher_lore", player))
                 .into(inventory, slot);
     }
 
     void renderGameRules(Player player, Inventory inventory, int slot) {
-        ItemBuilder.of(XMaterial.FILLED_MAP)
+        ItemBuilder.of(Material.FILLED_MAP)
                 .name(messages.getString("worldeditor_gamerules_item", player))
                 .lore(messages.getStringList("worldeditor_gamerules_lore", player))
                 .into(inventory, slot);
     }
 
     void renderDifficulty(Player player, Inventory inventory, int slot) {
-        XMaterial material =
+        Material material =
                 switch (buildWorld.getData().get(WorldDataKey.DIFFICULTY)) {
-                    case EASY -> XMaterial.GOLDEN_HELMET;
-                    case NORMAL -> XMaterial.IRON_HELMET;
-                    case HARD -> XMaterial.DIAMOND_HELMET;
-                    default -> XMaterial.LEATHER_HELMET;
+                    case EASY -> Material.GOLDEN_HELMET;
+                    case NORMAL -> Material.IRON_HELMET;
+                    case HARD -> Material.DIAMOND_HELMET;
+                    default -> Material.LEATHER_HELMET;
                 };
 
         ItemBuilder.of(material)
@@ -159,7 +158,7 @@ final class EditMenuRenderer {
     }
 
     void renderProject(Player player, Inventory inventory, int slot) {
-        ItemBuilder.of(XMaterial.ANVIL)
+        ItemBuilder.of(Material.ANVIL)
                 .name(messages.getString("worldeditor_project_item", player))
                 .lore(messages.getStringList(
                         "worldeditor_project_lore",
@@ -169,7 +168,7 @@ final class EditMenuRenderer {
     }
 
     void renderPermission(Player player, Inventory inventory, int slot) {
-        ItemBuilder.of(XMaterial.PAPER)
+        ItemBuilder.of(Material.PAPER)
                 .name(messages.getString("worldeditor_permission_item", player))
                 .lore(messages.getStringList(
                         "worldeditor_permission_lore",

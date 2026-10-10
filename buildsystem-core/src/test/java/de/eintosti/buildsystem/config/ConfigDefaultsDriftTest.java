@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.config.migration.ConfigMigrationManager;
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +32,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jspecify.annotations.NullMarked;
@@ -143,7 +143,7 @@ class ConfigDefaultsDriftTest {
     }
 
     private static PluginConfig parse(YamlConfiguration config) {
-        return ConfigService.parse(config, LOGGER, XMaterial.WOODEN_AXE);
+        return ConfigService.parse(config, LOGGER, Material.WOODEN_AXE);
     }
 
     @Test

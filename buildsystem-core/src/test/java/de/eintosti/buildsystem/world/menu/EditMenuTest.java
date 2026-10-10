@@ -18,6 +18,8 @@
 package de.eintosti.buildsystem.world.menu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -45,13 +47,18 @@ import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataSchema;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.bukkit.Difficulty;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Zombie;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -165,6 +172,20 @@ class EditMenuTest {
 
         verifyNoInteractions(menus);
         verify(messages, never()).sendPermissionError(player);
+    }
+
+    @Test
+    void butcher_removesEntitiesButKeepsDecorationAndPlayers() {
+        player.setOp(true);
+        World world = Objects.requireNonNull(server.getWorld("world"));
+        Location location = world.getSpawnLocation();
+        Zombie zombie = world.spawn(location, Zombie.class);
+        ArmorStand stand = world.spawn(location, ArmorStand.class);
+
+        click(29);
+
+        assertTrue(zombie.isDead());
+        assertFalse(stand.isDead());
     }
 
     private static Arguments slot(int slot, String permission, Consumer<EditMenuTest> effect) {

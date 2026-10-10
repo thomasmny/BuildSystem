@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import com.cryptomorin.xseries.XMaterial;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
@@ -33,6 +32,7 @@ import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.backup.BackupServiceImpl;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -75,7 +75,7 @@ public class BackupsMenu extends ButtonMenu {
     protected void populate(Player player) {
         menuItems.fillRange(player, getInventory(), 0, 9);
 
-        ItemBuilder.of(XMaterial.OAK_HANGING_SIGN)
+        ItemBuilder.of(Material.OAK_HANGING_SIGN)
                 .name(messages.getString("backups_information_name", player))
                 .lore(messages.getStringList(
                         "backups_information_lore",
@@ -118,7 +118,7 @@ public class BackupsMenu extends ButtonMenu {
 
     private MenuButton backupButton(Backup backup) {
         return MenuButton.builder()
-                .render((player, inventory, slot) -> ItemBuilder.of(XMaterial.GRASS_BLOCK)
+                .render((player, inventory, slot) -> ItemBuilder.of(Material.GRASS_BLOCK)
                         .name(messages.getString(
                                 "backups_backup_name",
                                 player,

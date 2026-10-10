@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
-import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.display.Registry;
 import de.eintosti.buildsystem.api.world.display.RegistryEntry;
@@ -32,6 +31,7 @@ import de.eintosti.buildsystem.navigator.NavigatorEditorService;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.List;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -223,7 +223,7 @@ public abstract class LayoutEditorMenu<T extends RegistryEntry> extends Menu {
         Inventory playerInventory = player.getInventory();
         playerInventory.clear();
 
-        ItemBuilder.of(XMaterial.BARRIER)
+        ItemBuilder.of(Material.BARRIER)
                 .name(messages.getString("setup_back", player))
                 .into(playerInventory, BACK_SLOT);
         ItemBuilder.skull(Profileable.detect(SkullTextures.ADD_ITEM))
