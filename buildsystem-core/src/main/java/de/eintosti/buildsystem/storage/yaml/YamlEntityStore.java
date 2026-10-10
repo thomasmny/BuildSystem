@@ -82,6 +82,10 @@ public final class YamlEntityStore implements EntityStore {
         return store.fileName();
     }
 
+    public boolean exists() {
+        return store.exists();
+    }
+
     /**
      * Re-reads the file, migrating a legacy one first.
      *

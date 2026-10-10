@@ -75,7 +75,12 @@ public final class SqlDatabase implements Database {
             throw new StorageException("The " + dialect.driverClass() + " driver is not available", e);
         }
         SqlDatabase database = new SqlDatabase(dialect, driver, url, properties, tablePrefix, logger);
-        database.run(connection -> null);
+        try {
+            database.run(connection -> null);
+        } catch (StorageException e) {
+            throw new StorageException(
+                    "Could not connect to the database: " + e.getCause().getMessage(), e.getCause());
+        }
         return database;
     }
 

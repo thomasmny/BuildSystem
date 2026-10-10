@@ -18,6 +18,9 @@
 package de.eintosti.buildsystem.storage.sql;
 
 import de.eintosti.buildsystem.config.PluginConfig;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -55,5 +58,13 @@ class PostgresEntityStoreContractTest extends SqlEntityStoreContractTest {
     @Override
     protected SqlDatabase rawDatabase() {
         return connect(SqlDialect.POSTGRESQL, "postgresql", DATABASE, 5432, tablePrefix);
+    }
+
+    @Override
+    protected void dropOtherConnections(Connection connection) throws SQLException {
+        try (Statement statement = connection.createStatement()) {
+            statement.execute("SELECT pg_terminate_backend(pid) FROM pg_stat_activity"
+                    + " WHERE pid <> pg_backend_pid() AND datname = current_database()");
+        }
     }
 }

@@ -291,6 +291,13 @@ public abstract class EntityStoreContractTest {
                         .size());
     }
 
+    @Test
+    void missingYamlFile_isOnlyCreatedForYaml() {
+        store("players").loadAll();
+
+        assertEquals(settings().type().equals("yaml"), new File(dataFolder, "players.yml").exists());
+    }
+
     private BuildWorld minimalWorld() {
         return worlds(fixture("worlds", "/codec/worlds-4.0.yml")).load().join().stream()
                 .filter(world -> world.getName().equals("plain"))

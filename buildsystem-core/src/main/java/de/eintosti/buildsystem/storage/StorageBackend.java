@@ -143,6 +143,10 @@ public final class StorageBackend implements AutoCloseable {
     }
 
     private void importEntries(YamlEntityStore yaml, EntityStore store) {
+        if (!yaml.exists()) {
+            // Loading would create an empty file.
+            return;
+        }
         Map<String, Map<String, Object>> entries = yaml.loadAll();
         if (entries.isEmpty()) {
             return;

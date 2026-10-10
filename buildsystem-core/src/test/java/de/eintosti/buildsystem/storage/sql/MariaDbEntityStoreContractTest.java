@@ -18,6 +18,12 @@
 package de.eintosti.buildsystem.storage.sql;
 
 import de.eintosti.buildsystem.config.PluginConfig;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -56,5 +62,22 @@ class MariaDbEntityStoreContractTest extends SqlEntityStoreContractTest {
     @Override
     protected SqlDatabase rawDatabase() {
         return connect(SqlDialect.MYSQL, "mysql", DATABASE, 3306, tablePrefix);
+    }
+
+    @Override
+    protected void dropOtherConnections(Connection connection) throws SQLException {
+        List<Long> others = new ArrayList<>();
+        try (Statement statement = connection.createStatement();
+                ResultSet rows = statement.executeQuery("SELECT id FROM information_schema.processlist"
+                        + " WHERE id <> CONNECTION_ID() AND db = DATABASE()")) {
+            while (rows.next()) {
+                others.add(rows.getLong(1));
+            }
+        }
+        try (Statement statement = connection.createStatement()) {
+            for (long id : others) {
+                statement.execute("KILL " + id);
+            }
+        }
     }
 }

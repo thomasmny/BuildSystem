@@ -24,12 +24,15 @@ import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.storage.EntityStore;
 import de.eintosti.buildsystem.storage.EntityStoreContractTest;
 import de.eintosti.buildsystem.storage.StorageException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.JdbcDatabaseContainer;
 
@@ -67,6 +70,13 @@ public abstract class SqlEntityStoreContractTest extends EntityStoreContractTest
                 tablePrefix);
     }
 
+    /**
+     * Has the database server close every other connection to it, as MySQL does to one left idle too long.
+     */
+    protected void dropOtherConnections(Connection connection) throws SQLException {
+        Assumptions.abort("no server to drop the connection");
+    }
+
     @Override
     protected List<String> loadOrder(List<String> saved) {
         return saved.stream().sorted().toList();
@@ -84,6 +94,26 @@ public abstract class SqlEntityStoreContractTest extends EntityStoreContractTest
         assertThrows(StorageException.class, () -> store("players").upsert(batch));
 
         assertEquals(Map.of("kept", Map.of("n", "1")), store("players").loadAll());
+    }
+
+    @Test
+    void connectionDroppedByTheServer_isOpenedAgain() {
+        store("players").upsert(Map.of("before", Map.of("n", "1")));
+        SqlDatabase raw = rawDatabase();
+        try {
+            raw.run(connection -> {
+                dropOtherConnections(connection);
+                return null;
+            });
+        } finally {
+            raw.close();
+        }
+
+        store("players").upsert(Map.of("after", Map.of("n", "2")));
+
+        assertEquals(
+                Map.of("after", Map.of("n", "2"), "before", Map.of("n", "1")),
+                store("players").loadAll());
     }
 
     @Test

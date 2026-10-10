@@ -39,8 +39,8 @@ class MongoEntityStoreContractTest extends EntityStoreContractTest {
     private static final String USER = "buildsystem";
     private static final String PASSWORD = "buildsystem-secret";
 
-    // 8.2 rather than 8.0 or 8.3, which refuse to start on Linux 6.19 or newer (SERVER-121912). The entrypoint starts
-    // mongod once to create the user, then again for real.
+    // 8.2, because the current 8.0 and latest images refuse to start on Linux 6.19 or newer (SERVER-121912).
+    // The entrypoint starts mongod once to create the user, then again for real.
     private static final GenericContainer<?> DATABASE = new GenericContainer<>(DockerImageName.parse(
                     "mongo:8.2@sha256:e0ce8c35124d4a9f9785532d1f268f39e9728ffa1cb38f46fa482436424c4bd3"))
             .withEnv("MONGO_INITDB_ROOT_USERNAME", USER)
