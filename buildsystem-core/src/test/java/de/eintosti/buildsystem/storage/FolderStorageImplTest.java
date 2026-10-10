@@ -44,6 +44,7 @@ class FolderStorageImplTest {
 
     private FolderStorageImpl storage;
     private final List<Event> firedEvents = new ArrayList<>();
+    private final List<Folder> deletedFromStorage = new ArrayList<>();
     private Builder creator;
 
     @BeforeEach
@@ -70,6 +71,7 @@ class FolderStorageImplTest {
 
             @Override
             public CompletableFuture<Void> delete(Folder folder) {
+                deletedFromStorage.add(folder);
                 return CompletableFuture.completedFuture(null);
             }
 
@@ -159,6 +161,19 @@ class FolderStorageImplTest {
 
         assertFalse(storage.folderExists("Parent"));
         assertFalse(storage.folderExists("Child"));
+    }
+
+    @Test
+    void removeFolder_deletesFolderAndSubfoldersFromStorage() {
+        Folder parent = storage.createFolder("Parent", TestData.PUBLIC, creator);
+        Folder child = storage.createFolder("Child", TestData.PUBLIC, creator);
+        child.setParent(parent);
+        storage.createFolder("Unrelated", TestData.PUBLIC, creator);
+
+        storage.removeFolder(parent);
+
+        assertEquals(2, deletedFromStorage.size());
+        assertTrue(deletedFromStorage.containsAll(List.of(parent, child)));
     }
 
     // Minimal Folder implementation for tests
