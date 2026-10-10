@@ -73,6 +73,11 @@ public class ConfigMigrationManager {
      * @throws IllegalStateException If a required migration step is missing.
      */
     public void migrate() {
+        // A fresh install has no config.yml yet. The bundled one is written afterwards and is already current.
+        if (!new File(plugin.getDataFolder(), "config.yml").exists()) {
+            return;
+        }
+
         Logger logger = plugin.getLogger();
         int fromVersion = plugin.getConfig().getInt("version", 1);
         if (fromVersion >= LATEST_VERSION) {
@@ -107,15 +112,11 @@ public class ConfigMigrationManager {
      * Copies {@code config.yml} to a sibling {@code config.yml.v<fromVersion>.bak} before the first migration
      * mutates it in place.
      *
-     * @return {@code true} if the backup succeeded (or the config file does not exist yet), {@code false} if
-     *     migration must be aborted because the pre-migration state could not be preserved
+     * @return {@code true} if the backup succeeded, {@code false} if migration must be aborted because the
+     *     pre-migration state could not be preserved
      */
     private boolean backupConfig(int fromVersion, Logger logger) {
         File configFile = new File(plugin.getDataFolder(), "config.yml");
-        if (!configFile.exists()) {
-            return true;
-        }
-
         File backup = new File(plugin.getDataFolder(), "config.yml.v%d.bak".formatted(fromVersion));
         try {
             Files.copy(configFile.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);

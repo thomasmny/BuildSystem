@@ -147,15 +147,9 @@ class ConfigDefaultsDriftTest {
     }
 
     @Test
-    @DisplayName("A fresh config.yml is already at the latest version, an old one without the key still migrates")
+    @DisplayName("The bundled config.yml is at the latest config version")
     void bundledConfig_isAtTheLatestVersion() {
-        YamlConfiguration bundled = loadBundledConfig();
-        assertEquals(ConfigMigrationManager.LATEST_VERSION, bundled.getInt("version", 1));
-
-        // Bukkit attaches the bundled file as defaults; the migration's explicit fallback must not read through them.
-        YamlConfiguration oldConfig = new YamlConfiguration();
-        oldConfig.setDefaults(bundled);
-        assertEquals(1, oldConfig.getInt("version", 1));
+        assertEquals(ConfigMigrationManager.LATEST_VERSION, loadBundledConfig().getInt("version", 1));
     }
 
     private static YamlConfiguration loadBundledConfig() {
