@@ -77,9 +77,7 @@ public class EditSessionListener implements Listener {
             return;
         }
 
-        if (!buildWorld.getPermissions().hasAdminPermission(player)
-                && (policy.checkStatus(player, buildWorld) == Denial.STATUS_LOCKED
-                        || policy.checkBuilders(player, buildWorld) == Denial.NOT_A_BUILDER)) {
+        if (policy.mayModify(player, buildWorld) != Denial.NONE) {
             event.setExtent(new NullExtent());
             return;
         }

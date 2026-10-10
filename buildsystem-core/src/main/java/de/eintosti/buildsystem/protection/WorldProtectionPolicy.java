@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.protection;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.access.WorldPermissions;
 import de.eintosti.buildsystem.api.world.access.WorldSetting;
 import de.eintosti.buildsystem.api.world.builder.Builders;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
@@ -29,7 +30,8 @@ import org.jspecify.annotations.NullMarked;
 /**
  * Answers "may this player modify this world right now?" in one place so every listener and integration checks it the
  * same way. Composes three independent restrictions: the world's {@link BuildWorldStatus status} disallowing building,
- * the builders feature, and the per-action {@link WorldSetting settings} — each short-circuited by the build bypass.
+ * the builders feature, and the per-action {@link WorldSetting settings}, each short-circuited by build mode and the
+ * admin permission. {@link WorldPermissions#canModify} answers from here too.
  */
 @NullMarked
 public final class WorldProtectionPolicy {
@@ -67,8 +69,7 @@ public final class WorldProtectionPolicy {
      * @return {@link Denial#STATUS_LOCKED} when the status forbids building, otherwise {@link Denial#NONE}
      */
     public Denial checkStatus(Player player, BuildWorld world) {
-        if (world.getPermissions().canBypassBuildRestriction(player)
-                || player.hasPermission(Permissions.BYPASS_ARCHIVE)) {
+        if (isExempt(player, world) || player.hasPermission(Permissions.BYPASS_ARCHIVE)) {
             return Denial.NONE;
         }
 
@@ -88,8 +89,7 @@ public final class WorldProtectionPolicy {
      * @return {@link Denial#NOT_A_BUILDER} when the player is not allowed, otherwise {@link Denial#NONE}
      */
     public Denial checkBuilders(Player player, BuildWorld world) {
-        if (world.getPermissions().canBypassBuildRestriction(player)
-                || player.hasPermission(Permissions.BYPASS_BUILDERS)) {
+        if (isExempt(player, world) || player.hasPermission(Permissions.BYPASS_BUILDERS)) {
             return Denial.NONE;
         }
 
@@ -106,7 +106,8 @@ public final class WorldProtectionPolicy {
     }
 
     /**
-     * Checks whether a per-action {@link WorldSetting} (e.g. block placement) is enabled for the world.
+     * Checks whether a per-action {@link WorldSetting} (e.g. block placement) is enabled for the world, or the player
+     * holds the setting's {@link WorldSetting#getBypassPermission() bypass permission}.
      *
      * @param player The player attempting the action
      * @param world The world being modified
@@ -114,7 +115,7 @@ public final class WorldProtectionPolicy {
      * @return {@link Denial#SETTING_DISABLED} when the setting is off, otherwise {@link Denial#NONE}
      */
     public Denial checkSetting(Player player, BuildWorld world, WorldSetting setting) {
-        if (world.getPermissions().canBypassBuildRestriction(player)) {
+        if (isExempt(player, world) || player.hasPermission(setting.getBypassPermission())) {
             return Denial.NONE;
         }
 
@@ -133,7 +134,7 @@ public final class WorldProtectionPolicy {
      * @return The first applicable denial, or {@link Denial#NONE} when the modification is allowed
      */
     public Denial mayModify(Player player, BuildWorld world) {
-        if (world.getPermissions().canBypassBuildRestriction(player)) {
+        if (isExempt(player, world)) {
             return Denial.NONE;
         }
 
@@ -147,7 +148,7 @@ public final class WorldProtectionPolicy {
 
     /**
      * Runs the full modification check for a setting-gated action (status, then the setting, then builders), returning
-     * the first {@link Denial} that applies.
+     * the first {@link Denial} that applies. Holding the setting's bypass permission also skips the builders check.
      *
      * @param player The player attempting the action
      * @param world The world being modified
@@ -155,7 +156,7 @@ public final class WorldProtectionPolicy {
      * @return The first applicable denial, or {@link Denial#NONE} when the modification is allowed
      */
     public Denial mayModify(Player player, BuildWorld world, WorldSetting setting) {
-        if (world.getPermissions().canBypassBuildRestriction(player)) {
+        if (isExempt(player, world)) {
             return Denial.NONE;
         }
 
@@ -164,11 +165,20 @@ public final class WorldProtectionPolicy {
             return status;
         }
 
+        if (player.hasPermission(setting.getBypassPermission())) {
+            return Denial.NONE;
+        }
+
         Denial settingDenial = checkSetting(player, world, setting);
         if (settingDenial != Denial.NONE) {
             return settingDenial;
         }
 
         return checkBuilders(player, world);
+    }
+
+    private static boolean isExempt(Player player, BuildWorld world) {
+        return world.getPermissions().canBypassBuildRestriction(player)
+                || world.getPermissions().hasAdminPermission(player);
     }
 }
