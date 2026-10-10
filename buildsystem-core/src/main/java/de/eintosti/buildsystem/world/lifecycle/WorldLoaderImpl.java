@@ -47,9 +47,18 @@ public class WorldLoaderImpl implements WorldLoader {
         return new WorldLoaderImpl(context, buildWorld);
     }
 
+    /**
+     * Loads the world with a title for the player, or tells them the world is busy while an operation such as a rename
+     * or restore holds it. Callers check {@link BuildWorldImpl#isLoaded()} afterwards.
+     */
     @Override
     public void loadForPlayer(Player player) {
         if (this.buildWorld.isLoaded()) {
+            return;
+        }
+        if (this.context.operations().isBusy(this.buildWorld)) {
+            context.messages()
+                    .sendMessage(player, "worlds_world_busy", Placeholders.of("%world%", this.buildWorld.getName()));
             return;
         }
 

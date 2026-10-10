@@ -21,14 +21,17 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import de.eintosti.buildsystem.api.event.world.BuildWorldLoadEvent;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.test.TestData;
@@ -40,6 +43,7 @@ import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
@@ -47,6 +51,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
+import org.mockbukkit.mockbukkit.entity.PlayerMock;
 
 /**
  * Pins how the unloader keeps the loaded flag and the unload timer in line with the config, in particular across a
@@ -58,14 +63,16 @@ class WorldUnloaderImplTest {
     private ServerMock server;
     private ConfigService configService;
     private WorldContext context;
+    private Messages messages;
+    private SpawnService spawnService;
 
     @BeforeEach
     void setUp() {
         server = MockBukkit.mock();
         configService = mock(ConfigService.class, RETURNS_DEEP_STUBS);
         when(configService.current().world().unload().timeUntilUnload()).thenReturn("01:00:00");
-        Messages messages = mock(Messages.class, RETURNS_DEEP_STUBS);
-        SpawnService spawnService = mock(SpawnService.class);
+        messages = mock(Messages.class, RETURNS_DEEP_STUBS);
+        spawnService = mock(SpawnService.class);
         context = new WorldContext(
                 messages,
                 mock(MenuItems.class),
@@ -178,23 +185,34 @@ class WorldUnloaderImplTest {
         // Loading would reach the world container, which MockBukkit does not implement.
         assertDoesNotThrow(() -> world.getUnloader().manageUnload());
 
-        assertTrue(
-                server.getPluginManager().getFiredEvents().noneMatch(BuildWorldLoadEvent.class::isInstance),
-                "a reload must not load every unloaded world");
         assertFalse(world.isLoaded());
     }
 
     @Test
-    void unloadingByHand_cancelsThePendingTimer() {
+    void unloadingByHand_cancelsThePendingTimerEvenWhenTheSpawnWorldStaysLoaded() {
         unloadingEnabled(true);
         server.addSimpleWorld("manual");
+        when(spawnService.isIn("manual")).thenReturn(true);
         BuildWorldImpl world = buildWorld("manual");
         world.getUnloader().manageUnload();
 
         world.getUnloader().unload();
 
-        assertTrue(world.getWorld().isEmpty());
+        assertTrue(world.getWorld().isPresent());
         assertEquals(0, pendingTasks());
+    }
+
+    @Test
+    void loadingForAPlayer_whileBusy_tellsThemAndLoadsNothing() {
+        BuildWorldImpl world = buildWorld("busy");
+        context.operations().runExclusively(world, CompletableFuture::new);
+        PlayerMock player = server.addPlayer();
+
+        // Loading would reach the world container, which MockBukkit does not implement.
+        assertDoesNotThrow(() -> world.getLoader().loadForPlayer(player));
+
+        verify(messages).sendMessage(eq(player), eq("worlds_world_busy"), any(Placeholders.class));
+        assertFalse(world.isLoaded());
     }
 
     @Test

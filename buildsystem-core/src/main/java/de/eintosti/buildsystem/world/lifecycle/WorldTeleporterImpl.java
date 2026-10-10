@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world.lifecycle;
 import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
-import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.WorldNames;
 import io.papermc.lib.PaperLib;
@@ -53,12 +52,10 @@ public class WorldTeleporterImpl implements WorldTeleporter {
         // Also when unloading is turned off: a reload that turned it off leaves already unloaded worlds unloaded.
         boolean hadToLoad = !buildWorld.isLoaded();
         if (hadToLoad) {
-            if (context.operations().isBusy(buildWorld)) {
-                context.messages()
-                        .sendMessage(player, "worlds_world_busy", Placeholders.of("%world%", buildWorld.getName()));
+            buildWorld.getLoader().loadForPlayer(player);
+            if (!buildWorld.isLoaded()) {
                 return;
             }
-            buildWorld.getLoader().loadForPlayer(player);
         }
 
         World bukkitWorld = WorldNames.bukkitWorld(buildWorld.getName());
