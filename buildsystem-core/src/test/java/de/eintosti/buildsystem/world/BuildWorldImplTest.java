@@ -21,12 +21,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.test.TestData;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
 import java.util.HashSet;
@@ -82,10 +85,23 @@ class BuildWorldImplTest {
         // Worlds are built on the async storage thread, so the constructor must not reach the Bukkit scheduler (which
         // this test has no server for) or decide the loaded state.
         when(context.configService().current().world().unload().enabled()).thenReturn(true);
+        TaskScheduler scheduler = mock(TaskScheduler.class);
+        context = new WorldContext(
+                context.messages(),
+                context.menuItems(),
+                context.configService(),
+                context.playerService(),
+                context.spawnService(),
+                context.statusRegistry(),
+                context.customizableIcons(),
+                scheduler,
+                context.logger(),
+                context.operations());
 
         BuildWorldImpl world = world("Fresh", UUID.randomUUID());
 
         assertFalse(world.isLoaded());
+        verifyNoInteractions(scheduler);
     }
 
     @Test
