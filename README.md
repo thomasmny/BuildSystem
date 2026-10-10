@@ -180,21 +180,6 @@ Build requires **Java 25**.
 * `./gradlew idea` will generate an [IntelliJ IDEA](https://www.jetbrains.com/idea/) module for each
   folder.
 
-### Releases
-
-Publishing a GitHub release runs `.github/workflows/release.yml`. It builds the plugin, attaches
-`BuildSystem-<version>.jar` to the release and publishes the same jar to Modrinth, with the release notes
-as the changelog. The tag has to match `version` in `gradle.properties`, without a leading `v`. The
-Minecraft versions listed on Modrinth are `modrinthGameVersions` in `gradle.properties`.
-
-The Modrinth step is skipped until it is set up once:
-
-1. Create the BuildSystem project on [Modrinth](https://modrinth.com/).
-2. Create a [personal access token](https://modrinth.com/settings/pats) with only the "Create versions"
-   scope.
-3. In the repository settings, add the token as the `MODRINTH_TOKEN` secret and the project's id or slug
-   as the `MODRINTH_PROJECT_ID` variable (or secret).
-
 ### PR Policy
 
 I'll accept changes that make sense. You should be able to justify their existence, along with any
