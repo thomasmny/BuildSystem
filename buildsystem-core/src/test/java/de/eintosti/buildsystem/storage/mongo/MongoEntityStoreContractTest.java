@@ -85,9 +85,15 @@ class MongoEntityStoreContractTest extends EntityStoreContractTest {
     @Test
     void fieldNameMongoWouldReadAsOperatorOrPath_isRejected() {
         for (String field : List.of("$set", "a.b")) {
-            Map<String, Map<String, Object>> entry = Map.of("p", Map.of("settings", Map.of(field, true)));
+            for (Object values : List.of(
+                    Map.of(field, true),
+                    List.of(Map.of(field, true)),
+                    List.of(List.of(Map.of("ok", Map.of(field, 1)))))) {
+                Map<String, Map<String, Object>> entry = Map.of("p", Map.of("settings", values));
 
-            assertThrows(IllegalArgumentException.class, () -> store("players").upsert(entry), field);
+                assertThrows(
+                        IllegalArgumentException.class, () -> store("players").upsert(entry), field + " in " + values);
+            }
         }
         assertEquals(Map.of(), store("players").loadAll());
     }

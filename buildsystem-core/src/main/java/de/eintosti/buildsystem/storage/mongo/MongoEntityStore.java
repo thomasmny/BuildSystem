@@ -37,6 +37,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bson.Document;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * One Mongo collection, an entry being a document whose {@code _id} is the entry's key. Documents load in {@code _id}
@@ -139,9 +140,15 @@ final class MongoEntityStore implements EntityStore {
             if (!(name instanceof String field) || field.startsWith("$") || field.contains(".")) {
                 throw new IllegalArgumentException("Cannot store the field name \"" + name + "\" in MongoDB");
             }
-            if (value instanceof Map<?, ?> nested) {
-                checkFieldNames(nested);
-            }
+            checkNested(value);
         });
+    }
+
+    private static void checkNested(@Nullable Object value) {
+        if (value instanceof Map<?, ?> nested) {
+            checkFieldNames(nested);
+        } else if (value instanceof List<?> list) {
+            list.forEach(MongoEntityStore::checkNested);
+        }
     }
 }
