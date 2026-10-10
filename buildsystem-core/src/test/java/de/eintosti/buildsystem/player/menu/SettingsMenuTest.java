@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.player.menu;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
@@ -34,10 +35,15 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
+import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import org.bukkit.Sound;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -47,7 +53,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 
@@ -94,33 +101,60 @@ class SettingsMenuTest {
                 player);
     }
 
+    static Stream<Arguments> toggles() {
+        return Stream.of(
+                toggle(12, "clear-inventory", Settings::isClearInventory),
+                toggle(13, "disable-interact", Settings::isDisableInteract),
+                toggle(14, "hide-players", Settings::isHidePlayers),
+                toggle(15, "instant-place-signs", Settings::isInstantPlaceSigns),
+                toggle(20, "keep-navigator", Settings::isKeepNavigator),
+                toggle(21, "navigator-type", Settings::getNavigatorType),
+                toggle(22, "night-vision", Settings::isNightVision),
+                toggle(23, "no-clip", Settings::isNoClip),
+                toggle(24, "open-trapdoors", Settings::isOpenTrapDoors),
+                toggle(29, "place-plants", Settings::isPlacePlants),
+                toggle(30, "scoreboard", Settings::isScoreboard),
+                toggle(31, "slab-breaking", Settings::isSlabBreaking),
+                toggle(32, "spawn-teleport", Settings::isSpawnTeleport));
+    }
+
+    private static Arguments toggle(int slot, String setting, Function<Settings, Object> value) {
+        return Arguments.of(slot, "buildsystem.setting." + setting, value);
+    }
+
     @ParameterizedTest(name = "slot {0} needs {1}")
-    @CsvSource({
-        "12, buildsystem.setting.clear-inventory",
-        "13, buildsystem.setting.disable-interact",
-        "14, buildsystem.setting.hide-players",
-        "15, buildsystem.setting.instant-place-signs",
-        "20, buildsystem.setting.keep-navigator",
-        "21, buildsystem.setting.navigator-type",
-        "22, buildsystem.setting.night-vision",
-        "23, buildsystem.setting.no-clip",
-        "24, buildsystem.setting.open-trapdoors",
-        "29, buildsystem.setting.place-plants",
-        "30, buildsystem.setting.scoreboard",
-        "31, buildsystem.setting.slab-breaking",
-        "32, buildsystem.setting.spawn-teleport"
-    })
-    void toggle_needsItsPermission_andReopens(int slot, String permission) {
-        when(settingsService.getSettings(player)).thenReturn(mock(Settings.class));
+    @MethodSource("toggles")
+    void toggle_needsItsPermission_flipsItsSetting_andReopens(
+            int slot, String permission, Function<Settings, Object> value) {
+        Settings settings = new SettingsImpl();
+        when(settingsService.getSettings(player)).thenReturn(settings);
         when(configService.current().settings().scoreboard()).thenReturn(true);
+        Object before = value.apply(settings);
 
         click(menu(), slot);
         verify(messages).sendPermissionError(player);
         verify(menus, never()).openSettings(player);
+        assertEquals(before, value.apply(settings));
 
         player.addAttachment(MockBukkit.createMockPlugin(), permission, true);
         click(menu(), slot);
         verify(menus).openSettings(player);
+        assertNotEquals(before, value.apply(settings));
+    }
+
+    @Test
+    void scoreboard_disabledInConfig_isRefusedWithoutReopening() {
+        player.setOp(true);
+        Settings settings = new SettingsImpl();
+        when(settingsService.getSettings(player)).thenReturn(settings);
+        when(configService.current().settings().scoreboard()).thenReturn(false);
+        boolean before = settings.isScoreboard();
+
+        click(menu(), 30);
+
+        assertEquals(before, settings.isScoreboard());
+        verify(menus, never()).openSettings(player);
+        assertEquals(List.of(Sound.ENTITY_ITEM_BREAK), player.sounds());
     }
 
     @Test

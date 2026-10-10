@@ -43,6 +43,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
+import org.mockito.ArgumentCaptor;
 
 /**
  * Pins the speed each {@link SpeedMenu} slot sets, by clicking it. Built through the real production constructor under
@@ -79,7 +80,9 @@ class SpeedMenuTest {
         click(slot);
 
         assertEquals(speed, player.getWalkSpeed());
-        verify(messages).sendMessage(eq(player), eq("speed_set_walking"), any(Placeholders.class));
+        ArgumentCaptor<Placeholders> placeholders = ArgumentCaptor.forClass(Placeholders.class);
+        verify(messages).sendMessage(eq(player), eq("speed_set_walking"), placeholders.capture());
+        assertEquals(String.valueOf(shown), placeholders.getValue().applyTo("%speed%"));
     }
 
     @Test
@@ -91,7 +94,9 @@ class SpeedMenuTest {
         click(15);
 
         assertEquals(0.9f, player.getFlySpeed(), 0.0001f);
-        verify(messages).sendMessage(eq(player), eq("speed_set_flying"), any(Placeholders.class));
+        ArgumentCaptor<Placeholders> placeholders = ArgumentCaptor.forClass(Placeholders.class);
+        verify(messages).sendMessage(eq(player), eq("speed_set_flying"), placeholders.capture());
+        assertEquals("5", placeholders.getValue().applyTo("%speed%"));
     }
 
     @Test

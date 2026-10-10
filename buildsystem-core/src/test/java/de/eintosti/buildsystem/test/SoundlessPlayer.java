@@ -17,6 +17,8 @@
  */
 package de.eintosti.buildsystem.test;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
@@ -26,10 +28,12 @@ import org.mockbukkit.mockbukkit.entity.PlayerMock;
 
 /**
  * A {@link PlayerMock} that accepts the seeded {@code playSound} overload XSound plays through, which MockBukkit does
- * not implement.
+ * not implement, and records the sounds instead of playing them.
  */
 @NullMarked
 public class SoundlessPlayer extends PlayerMock {
+
+    private final List<Sound> sounds = new ArrayList<>();
 
     public SoundlessPlayer(ServerMock server, String name) {
         super(server, name);
@@ -43,5 +47,14 @@ public class SoundlessPlayer extends PlayerMock {
 
     @Override
     public void playSound(
-            Location location, Sound sound, SoundCategory category, float volume, float pitch, long seed) {}
+            Location location, Sound sound, SoundCategory category, float volume, float pitch, long seed) {
+        sounds.add(sound);
+    }
+
+    /**
+     * {@return the sounds played to this player so far, oldest first}
+     */
+    public List<Sound> sounds() {
+        return sounds;
+    }
 }
