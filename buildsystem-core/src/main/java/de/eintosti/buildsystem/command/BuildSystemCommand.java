@@ -27,6 +27,7 @@ import de.eintosti.buildsystem.storage.StorageMigrator;
 import de.eintosti.buildsystem.storage.StorageType;
 import de.eintosti.buildsystem.util.Permissions;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +97,34 @@ public class BuildSystemCommand extends CommandBase {
         }
     }
 
+    @Override
+    protected List<String> complete(Player player, String label, String[] args) {
+        List<String> result = new ArrayList<>();
+        if (!player.hasPermission(Permissions.STORAGE_MIGRATE)) {
+            return result;
+        }
+        String input = args[args.length - 1];
+        switch (args.length) {
+            case 1 -> Completions.addMatching(input, "storage", result);
+            case 2 -> {
+                if (args[0].equalsIgnoreCase("storage")) {
+                    Completions.addMatching(input, "migrate", result);
+                }
+            }
+            case 3 -> {
+                if (args[0].equalsIgnoreCase("storage") && args[1].equalsIgnoreCase("migrate")) {
+                    for (StorageType type : StorageType.values()) {
+                        if (type != services.storage().type()) {
+                            Completions.addMatching(input, type.key(), result);
+                        }
+                    }
+                }
+            }
+            default -> {}
+        }
+        return result;
+    }
+
     /**
      * {@code /buildsystem storage migrate <type> [confirm]}: without {@code confirm}, only says what would be copied.
      */
@@ -133,6 +162,7 @@ public class BuildSystemCommand extends CommandBase {
                     sender,
                     "storage_migrate_confirm",
                     counts(migrator.counts())
+                            .add("%from%", services.storage().type().displayName())
                             .add("%type%", type.displayName())
                             .add("%key%", type.key())
                             .build());
