@@ -102,7 +102,7 @@ public class GameRulesMenu extends PaginatedMenu {
                                 "GameRule '%s' does not exist in world '%s'.".formatted(gameRuleName, world.getName()));
                         return;
                     }
-                    ItemBuilder.of(isEnabled(world, gameRule) ? Material.FILLED_MAP : Material.MAP)
+                    ItemBuilder.of(icon(world, gameRule))
                             .name(ChatColor.YELLOW + gameRule.name())
                             .lore(getLore(world, gameRule, player))
                             .into(inventory, slot);
@@ -136,6 +136,13 @@ public class GameRulesMenu extends PaginatedMenu {
                     .toList();
         }
         return lore;
+    }
+
+    private Material icon(World world, XGameRule<?> gameRule) {
+        if (!isOfType(gameRule, Boolean.class)) {
+            return Material.COMPARATOR;
+        }
+        return isEnabled(world, gameRule) ? Material.LIME_DYE : Material.GRAY_DYE;
     }
 
     /**

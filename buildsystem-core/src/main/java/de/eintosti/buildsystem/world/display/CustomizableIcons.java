@@ -50,7 +50,7 @@ public class CustomizableIcons {
                 Map.entry(BuildWorldType.NETHER, Material.NETHERRACK),
                 Map.entry(BuildWorldType.END, Material.END_STONE),
                 Map.entry(BuildWorldType.VOID, Material.GLASS),
-                Map.entry(BuildWorldType.CUSTOM, Material.FILLED_MAP),
+                Map.entry(BuildWorldType.CUSTOM, Material.STRUCTURE_BLOCK),
                 Map.entry(BuildWorldType.TEMPLATE, Material.FILLED_MAP),
                 Map.entry(BuildWorldType.IMPORTED, Material.FURNACE)));
     }

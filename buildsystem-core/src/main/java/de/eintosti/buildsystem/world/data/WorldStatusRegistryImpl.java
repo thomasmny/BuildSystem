@@ -102,7 +102,7 @@ public class WorldStatusRegistryImpl extends AbstractRegistry<WorldStatusImpl> i
         put(defaults, "almost_finished", "Almost Finished", "&a", Material.LIME_DYE, 3, true, null);
         put(defaults, "finished", "Finished", "&2", Material.GREEN_DYE, 4, true, null);
         put(defaults, "archive", "Archive", "&3", Material.CYAN_DYE, 5, false, null);
-        put(defaults, "hidden", "Hidden", "&7", Material.BONE_MEAL, 6, true, null);
+        put(defaults, "hidden", "Hidden", "&7", Material.LIGHT_GRAY_DYE, 6, true, null);
         return defaults;
     }
 

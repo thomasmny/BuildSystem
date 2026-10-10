@@ -184,7 +184,7 @@ public class SettingsMenu extends ButtonMenu {
                         "spawn-teleport",
                         "settings_spawnteleport_item",
                         "settings_spawnteleport_lore",
-                        Material.MAGMA_CREAM,
+                        Material.RECOVERY_COMPASS,
                         Settings::isSpawnTeleport,
                         (player, s) -> s.setSpawnTeleport(!s.isSpawnTeleport())));
     }
