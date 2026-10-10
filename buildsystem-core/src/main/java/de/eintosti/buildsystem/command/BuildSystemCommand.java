@@ -157,18 +157,6 @@ public class BuildSystemCommand extends CommandBase {
             messages.sendMessage(sender, "storage_migrate_running");
             return;
         }
-        if (args.length == 3) {
-            messages.sendMessage(
-                    sender,
-                    "storage_migrate_confirm",
-                    counts(migrator.counts())
-                            .add("%from%", services.storage().type().displayName())
-                            .add("%type%", type.displayName())
-                            .add("%key%", type.key())
-                            .build());
-            return;
-        }
-
         PluginConfig.Storage.Database settings;
         try {
             settings = services.config().readStorageSettings();
@@ -176,6 +164,11 @@ public class BuildSystemCommand extends CommandBase {
             failed(sender, type, e);
             return;
         }
+        if (args.length == 3) {
+            confirm(sender, type, settings);
+            return;
+        }
+
         messages.sendMessage(sender, "storage_migrate_started", Placeholders.of("%type%", type.displayName()));
         migrator.migrate(type, settings)
                 .whenCompleteAsync(
@@ -192,6 +185,41 @@ public class BuildSystemCommand extends CommandBase {
                                     "storage_migrate_done",
                                     counts(copied)
                                             .add("%type%", type.displayName())
+                                            .build());
+                        },
+                        services.scheduler().mainThread());
+    }
+
+    /**
+     * Says what a migration to {@code type} would copy, and whether it replaces what {@code type} holds already.
+     */
+    private void confirm(CommandSender sender, StorageType type, PluginConfig.Storage.Database settings) {
+        StorageMigrator migrator = services.storageMigrator();
+        migrator.holdsData(type, settings)
+                .whenCompleteAsync(
+                        (holdsData, failure) -> {
+                            if (failure != null) {
+                                failed(
+                                        sender,
+                                        type,
+                                        failure instanceof CompletionException ? failure.getCause() : failure);
+                                return;
+                            }
+                            if (holdsData) {
+                                messages.sendMessage(
+                                        sender,
+                                        "storage_migrate_target_has_data",
+                                        Placeholders.of("%type%", type.displayName()));
+                            }
+                            messages.sendMessage(
+                                    sender,
+                                    "storage_migrate_confirm",
+                                    counts(migrator.counts())
+                                            .add(
+                                                    "%from%",
+                                                    services.storage().type().displayName())
+                                            .add("%type%", type.displayName())
+                                            .add("%key%", type.key())
                                             .build());
                         },
                         services.scheduler().mainThread());

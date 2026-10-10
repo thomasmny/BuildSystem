@@ -252,6 +252,26 @@ class StorageMigratorTest {
     }
 
     @Test
+    void holdsData_saysWhetherTheTargetHasEntries() {
+        CompletableFuture<Boolean> emptyYaml = migrator.holdsData(StorageType.YAML, settings());
+        runAll();
+        assertFalse(emptyYaml.join());
+
+        live.add(new Note("a", 1));
+        migrator.migrate(target(), settings());
+        runAll();
+        migrator.migrate(StorageType.YAML, settings());
+        runAll();
+        CompletableFuture<Boolean> filled = migrator.holdsData(target(), settings());
+        runAll();
+        assertTrue(filled.join());
+
+        CompletableFuture<Boolean> unreachable = migrator.holdsData(StorageType.MYSQL, settings());
+        runAll();
+        assertThrows(CompletionException.class, unreachable::join);
+    }
+
+    @Test
     void migrate_whileOneRuns_isRefused() {
         CompletableFuture<Map<EntityKind, Integer>> first = migrator.migrate(target(), settings());
 

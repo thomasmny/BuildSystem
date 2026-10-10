@@ -66,13 +66,7 @@ public final class StorageBackend implements AutoCloseable {
         File sqliteFile = new File(dataFolder, SQLITE_FILE);
         Database database =
                 switch (type) {
-                    case YAML -> {
-                        if (sqliteFile.exists()) {
-                            logger.warning(SQLITE_FILE + " exists, but storage.type is yaml, so worlds, folders and"
-                                    + " players load from the YAML files instead.");
-                        }
-                        yield null;
-                    }
+                    case YAML -> null;
                     case SQLITE -> sqlite(sqliteFile, prefix, logger);
                     case MYSQL, MARIADB -> {
                         Properties properties = credentials(settings.server(type));

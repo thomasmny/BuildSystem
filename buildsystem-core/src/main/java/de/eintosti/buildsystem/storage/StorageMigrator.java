@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.storage;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -172,6 +173,31 @@ public final class StorageMigrator {
         if (gate != null) {
             gate.complete(null);
         }
+    }
+
+    /**
+     * {@return whether {@code type} already holds entries of any kind, checked in the background} Connects and closes
+     * the connection again, and fails as a migration would when the backend cannot be reached.
+     */
+    public CompletableFuture<Boolean> holdsData(StorageType type, PluginConfig.Storage.Database settings) {
+        return CompletableFuture.supplyAsync(
+                () -> {
+                    StorageBackend backend = StorageBackend.connect(type, settings, dataFolder, logger);
+                    try {
+                        for (Part<?> part : parts) {
+                            EntityStore store = backend.collection(part.kind());
+                            // Reading a YAML file that is not there would create it.
+                            boolean present = !(store instanceof YamlEntityStore yaml) || yaml.exists();
+                            if (present && !store.isEmpty()) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    } finally {
+                        backend.close();
+                    }
+                },
+                background);
     }
 
     private Map<EntityKind, EntityStore> open(

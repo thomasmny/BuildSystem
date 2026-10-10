@@ -35,6 +35,7 @@ import de.eintosti.buildsystem.storage.EntityKind;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.StorageBackend;
 import de.eintosti.buildsystem.storage.StorageMigrator;
+import de.eintosti.buildsystem.storage.StorageType;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.storage.yaml.YamlSetupStorage;
 import de.eintosti.buildsystem.util.TaskScheduler;
@@ -48,6 +49,7 @@ import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import de.eintosti.buildsystem.world.download.WorldDownloadService;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
+import java.io.File;
 import org.bukkit.NamespacedKey;
 import org.jspecify.annotations.NullMarked;
 
@@ -107,6 +109,12 @@ public final class Services {
                 configService.current().storage().database();
         this.storageBackend =
                 StorageBackend.connect(database.type(), database, plugin.getDataFolder(), plugin.getLogger());
+        if (database.type() == StorageType.YAML
+                && new File(plugin.getDataFolder(), StorageBackend.SQLITE_FILE).exists()) {
+            plugin.getLogger()
+                    .warning(StorageBackend.SQLITE_FILE + " exists, but storage.type is yaml, so worlds, folders and"
+                            + " players load from the YAML files instead.");
+        }
         this.worldStorage = new WorldStorageImpl(
                 plugin.getLogger(),
                 taskScheduler.background(),
