@@ -20,13 +20,17 @@ package de.eintosti.buildsystem.world.lifecycle;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.lifecycle.SaveBehavior;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -35,8 +39,8 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * The shared steps of the operations that take a world away from the server for a while: delete, rename, restore and
- * backup. Each marks the world busy for its duration, so two of them never work on the same world folder at once, and
+ * The shared steps of the operations that take a world away from the server for a while: delete, unimport, rename,
+ * restore and backup. Each marks the world busy for its duration, so two of them never work on the same world folder at once, and
  * the ones that need the world unloaded move its players out first and stop when the unload does not go through.
  */
 @NullMarked
@@ -52,19 +56,23 @@ public final class WorldOperations {
     }
 
     /**
-     * Marks the world busy.
-     *
-     * @return {@code false} when another operation is already running on it, in which case nothing was marked
+     * Runs an operation with the world marked busy and frees the world once the operation's future completes. While
+     * another operation holds the world, this one is not started and the future fails with a
+     * {@link WorldOperationRefusedException}.
      */
-    public boolean tryBegin(BuildWorld buildWorld) {
-        return busyWorlds.add(buildWorld.getUniqueId());
-    }
+    public <T> CompletableFuture<T> runExclusively(BuildWorld buildWorld, Supplier<CompletableFuture<T>> operation) {
+        UUID worldId = buildWorld.getUniqueId();
+        if (!busyWorlds.add(worldId)) {
+            return CompletableFuture.failedFuture(WorldOperationRefusedException.busy(buildWorld.getName()));
+        }
 
-    /**
-     * Marks the world free again. Call exactly once for every successful {@link #tryBegin}.
-     */
-    public void end(BuildWorld buildWorld) {
-        busyWorlds.remove(buildWorld.getUniqueId());
+        CompletableFuture<T> started;
+        try {
+            started = operation.get();
+        } catch (RuntimeException e) {
+            started = CompletableFuture.failedFuture(e);
+        }
+        return started.whenComplete((result, throwable) -> busyWorlds.remove(worldId));
     }
 
     public boolean isBusy(BuildWorld buildWorld) {
@@ -72,16 +80,33 @@ public final class WorldOperations {
     }
 
     /**
-     * Unloads the world without touching its state when the unload is cancelled or fails.
+     * Unloads the world.
      *
-     * @return {@code true} when the world is no longer loaded
+     * @throws WorldOperationRefusedException When a listener cancelled the unload or Bukkit refused it. The world is
+     *     then still loaded and unchanged.
      */
-    public static boolean tryUnload(BuildWorld buildWorld, SaveBehavior saveBehavior) {
-        if (buildWorld.getUnloader() instanceof WorldUnloaderImpl unloader) {
-            return unloader.tryUnload(saveBehavior);
-        }
+    public void unload(BuildWorld buildWorld, SaveBehavior saveBehavior) {
         buildWorld.getUnloader().forceUnload(saveBehavior);
-        return WorldNames.bukkitWorld(buildWorld.getName()) == null;
+        if (WorldNames.bukkitWorld(buildWorld.getName()) != null) {
+            throw WorldOperationRefusedException.notUnloaded(buildWorld.getName());
+        }
+    }
+
+    /**
+     * Tells the player why an operation was refused, when {@code failure} is a {@link WorldOperationRefusedException}.
+     *
+     * @return {@code true} when it was a refusal, {@code false} when the failure is left to the caller
+     */
+    public boolean reportRefusal(Player player, String worldName, Throwable failure) {
+        Throwable cause = failure;
+        while (cause instanceof CompletionException && cause.getCause() != null) {
+            cause = cause.getCause();
+        }
+        if (!(cause instanceof WorldOperationRefusedException refused)) {
+            return false;
+        }
+        messages.sendMessage(player, refused.messageKey(), Placeholders.of("%world%", worldName));
+        return true;
     }
 
     /**

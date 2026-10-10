@@ -44,11 +44,13 @@ import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.UUID;
+import net.kyori.adventure.text.Component;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerQuitEvent.QuitReason;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
@@ -102,7 +104,9 @@ class PlayerQuitListenerTest {
         MockBukkit.unmock();
     }
 
-    /** What entering an archive world does: snapshot the state, then empty the inventory. */
+    /**
+     * What entering an archive world does: snapshot the state, then empty the inventory.
+     */
     private void enterArchiveWorld() {
         player.setGameMode(GameMode.CREATIVE);
         player.getInventory().addItem(new ItemStack(Material.DIAMOND, 3));
@@ -115,7 +119,7 @@ class PlayerQuitListenerTest {
     void quittingInAnArchiveWorld_restoresTheInventoryAndGameMode() {
         enterArchiveWorld();
 
-        listener.onPlayerQuit(new PlayerQuitEvent(player, (String) null));
+        listener.onPlayerQuit(new PlayerQuitEvent(player, (Component) null, QuitReason.DISCONNECTED));
 
         assertTrue(player.getInventory().contains(Material.DIAMOND, 3));
         assertEquals(GameMode.CREATIVE, player.getGameMode());
@@ -126,7 +130,7 @@ class PlayerQuitListenerTest {
         settings.setClearInventory(true);
         enterArchiveWorld();
 
-        listener.onPlayerQuit(new PlayerQuitEvent(player, (String) null));
+        listener.onPlayerQuit(new PlayerQuitEvent(player, (Component) null, QuitReason.DISCONNECTED));
 
         assertFalse(player.getInventory().contains(Material.DIAMOND));
     }
@@ -134,7 +138,7 @@ class PlayerQuitListenerTest {
     @Test
     void rejoiningInAnArchiveWorld_takesTheInventoryAgain() {
         enterArchiveWorld();
-        listener.onPlayerQuit(new PlayerQuitEvent(player, (String) null));
+        listener.onPlayerQuit(new PlayerQuitEvent(player, (Component) null, QuitReason.DISCONNECTED));
 
         BuildWorld archive = mock(BuildWorld.class, RETURNS_DEEP_STUBS);
         BuildWorldStatus archived = mock(BuildWorldStatus.class);
@@ -157,7 +161,7 @@ class PlayerQuitListenerTest {
                         mock(Messages.class),
                         mock(UpdateChecker.class),
                         mock(TaskScheduler.class))
-                .onPlayerJoin(new PlayerJoinEvent(player, (String) null));
+                .onPlayerJoin(new PlayerJoinEvent(player, (Component) null));
 
         assertFalse(player.getInventory().contains(Material.DIAMOND));
         assertEquals(GameMode.ADVENTURE, player.getGameMode());

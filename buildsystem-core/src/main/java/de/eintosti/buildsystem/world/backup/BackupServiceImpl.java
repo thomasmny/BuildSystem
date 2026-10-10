@@ -65,9 +65,9 @@ public class BackupServiceImpl implements BackupService {
 
     /**
      * Kept for as long as the plugin runs: a profile holds its world's backup chain, which keeps retention passes from
-     * overlapping, so it must not be dropped while a backup is running.
+     * overlapping, so it must not be dropped while a backup is running. That is one small entry per world backed up
+     * since the last restart.
      */
-    // ponytail: one small entry per world ever backed up, removed only on restart
     private final Map<UUID, BackupProfile> profiles = new ConcurrentHashMap<>();
 
     /**

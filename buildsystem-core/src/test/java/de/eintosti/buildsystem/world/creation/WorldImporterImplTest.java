@@ -65,7 +65,7 @@ class WorldImporterImplTest {
         assertEquals(BuildWorldType.IMPORTED, imported.getType());
         verify(worldStorage).addBuildWorld(imported);
         verify(worldStorage, never()).removeBuildWorld(any());
-        server.getPluginManager().assertEventFired(BuildWorldPostCreateEvent.class);
+        assertEquals(1, postCreateEvents());
     }
 
     @Test
@@ -75,7 +75,13 @@ class WorldImporterImplTest {
 
         assertNull(imported);
         verify(worldStorage).removeBuildWorld(any());
-        server.getPluginManager()
-                .assertEventNotFired(BuildWorldPostCreateEvent.class, "a failed import is not a created world");
+        assertEquals(0, postCreateEvents(), "a failed import is not a created world");
+    }
+
+    private long postCreateEvents() {
+        return server.getPluginManager()
+                .getFiredEvents()
+                .filter(BuildWorldPostCreateEvent.class::isInstance)
+                .count();
     }
 }

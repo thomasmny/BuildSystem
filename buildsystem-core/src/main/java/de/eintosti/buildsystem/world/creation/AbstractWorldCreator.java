@@ -61,8 +61,6 @@ abstract class AbstractWorldCreator {
 
     protected @Nullable Player audience;
 
-    protected @Nullable BuildWorld buildWorld;
-
     protected AbstractWorldCreator(
             WorldContext context, WorldStorageImpl worldStorage, String worldName, BuildWorldType worldType) {
         this.context = context;
@@ -110,21 +108,7 @@ abstract class AbstractWorldCreator {
 
         World world = null;
         try {
-            world = new BukkitWorldFactory(
-                            context.configService(),
-                            context.logger(),
-                            worldName,
-                            worldType,
-                            customGenerator,
-                            difficulty,
-                            time,
-                            worldBorderSize,
-                            seed,
-                            !isImport())
-                    .generate(
-                            checkVersion
-                                    ? BukkitWorldFactory.VersionCheck.REQUIRED
-                                    : BukkitWorldFactory.VersionCheck.SKIP);
+            world = generateBukkitWorld(checkVersion);
         } finally {
             if (world == null) {
                 worldStorage.removeBuildWorld(newBuildWorld);
@@ -136,8 +120,23 @@ abstract class AbstractWorldCreator {
 
         newBuildWorld.getUnloader().manageUnload();
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostCreateEvent(newBuildWorld, isImport()));
-        this.buildWorld = newBuildWorld;
         return newBuildWorld;
+    }
+
+    private @Nullable World generateBukkitWorld(boolean checkVersion) {
+        return new BukkitWorldFactory(
+                        context.configService(),
+                        context.logger(),
+                        worldName,
+                        worldType,
+                        customGenerator,
+                        difficulty,
+                        time,
+                        worldBorderSize,
+                        seed,
+                        !isImport())
+                .generate(
+                        checkVersion ? BukkitWorldFactory.VersionCheck.REQUIRED : BukkitWorldFactory.VersionCheck.SKIP);
     }
 
     protected final void notifyAudience(String key) {

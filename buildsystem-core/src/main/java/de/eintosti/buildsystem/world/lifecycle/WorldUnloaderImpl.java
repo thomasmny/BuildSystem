@@ -38,7 +38,9 @@ public class WorldUnloaderImpl implements WorldUnloader {
 
     private static final long DEFAULT_SECONDS_UNTIL_UNLOAD = 3600;
 
-    /** The last malformed delay that was warned about, so a bad value is logged once instead of once per world. */
+    /**
+     * The last malformed delay that was warned about, so a bad value is logged once instead of once per world.
+     */
     private static volatile @Nullable String lastWarnedDelay;
 
     private final WorldContext context;

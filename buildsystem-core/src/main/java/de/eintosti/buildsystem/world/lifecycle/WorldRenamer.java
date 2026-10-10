@@ -131,56 +131,47 @@ public class WorldRenamer {
         }
 
         WorldOperations operations = worldService.operations();
-        if (!operations.tryBegin(buildWorld)) {
-            messages.sendMessage(player, "worlds_world_busy", Placeholders.of("%world%", oldName));
-            return;
-        }
-
-        List<Player> removedPlayers = operations.evacuate(oldName, "worlds_rename_players_world");
-        Location oldSpawnLocation = oldWorld.getSpawnLocation();
-        if (!WorldOperations.tryUnload(buildWorld, SaveBehavior.SAVE)) {
-            operations.end(buildWorld);
-            messages.sendMessage(player, "worlds_world_unload_failed", Placeholders.of("%world%", oldName));
-            return;
-        }
-
-        move(player, buildWorld, oldName, sanitizedNewName, oldSpawnLocation, removedPlayers);
-    }
-
-    private void move(
-            Player player,
-            BuildWorld buildWorld,
-            String oldName,
-            String sanitizedNewName,
-            Location oldSpawnLocation,
-            List<Player> removedPlayers) {
-
-        File oldWorldFile = FileUtils.worldFolder(oldName);
-        File newWorldFile = FileUtils.worldFolder(sanitizedNewName);
-        CompletableFuture.runAsync(
-                        () -> {
-                            try {
-                                FileUtils.moveDirectory(oldWorldFile, newWorldFile);
-                            } catch (IOException e) {
-                                throw new CompletionException("Failed to rename world directory", e);
-                            }
-                        },
-                        scheduler.background())
-                .thenRunAsync(
-                        () -> reconstruct(
-                                player, buildWorld, oldName, sanitizedNewName, oldSpawnLocation, removedPlayers),
-                        scheduler.mainThread())
+        operations
+                .runExclusively(buildWorld, () -> {
+                    List<Player> removedPlayers = operations.evacuate(oldName, "worlds_rename_players_world");
+                    Location oldSpawnLocation = oldWorld.getSpawnLocation();
+                    operations.unload(buildWorld, SaveBehavior.SAVE);
+                    return moveFolder(oldName, sanitizedNewName)
+                            .thenRunAsync(
+                                    () -> reconstruct(
+                                            player,
+                                            buildWorld,
+                                            oldName,
+                                            sanitizedNewName,
+                                            oldSpawnLocation,
+                                            removedPlayers),
+                                    scheduler.mainThread());
+                })
                 .exceptionallyAsync(
                         throwable -> {
-                            // reconstruct() is skipped when the move fails, so the world keeps its old name on disk and
-                            // in storage; tell the player instead of leaving the rename silently half-done.
-                            plugin.getLogger()
-                                    .log(Level.SEVERE, "Failed to rename world \"" + oldName + "\"", throwable);
-                            messages.sendMessage(player, "worlds_rename_error");
+                            // When the rename stops early, the world keeps its old name on disk and in storage.
+                            if (!operations.reportRefusal(player, oldName, throwable)) {
+                                plugin.getLogger()
+                                        .log(Level.SEVERE, "Failed to rename world \"" + oldName + "\"", throwable);
+                                messages.sendMessage(player, "worlds_rename_error");
+                            }
                             return null;
                         },
-                        scheduler.mainThread())
-                .whenComplete((ignored, throwable) -> worldService.operations().end(buildWorld));
+                        scheduler.mainThread());
+    }
+
+    private CompletableFuture<Void> moveFolder(String oldName, String newName) {
+        File oldWorldFile = FileUtils.worldFolder(oldName);
+        File newWorldFile = FileUtils.worldFolder(newName);
+        return CompletableFuture.runAsync(
+                () -> {
+                    try {
+                        FileUtils.moveDirectory(oldWorldFile, newWorldFile);
+                    } catch (IOException e) {
+                        throw new CompletionException("Failed to rename world directory", e);
+                    }
+                },
+                scheduler.background());
     }
 
     private void reconstruct(

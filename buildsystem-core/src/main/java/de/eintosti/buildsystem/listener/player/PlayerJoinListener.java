@@ -110,22 +110,21 @@ public class PlayerJoinListener implements Listener {
         teleportToCorrectLocation(player, buildPlayer);
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        if (buildWorld != null && !buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
-            // Joining inside an archive world fires no world change, so archive mode is entered here.
-            ArchiveMode.enter(
-                    player,
-                    buildPlayer.getCachedValues(),
-                    configService.current().settings().archive());
-        }
-        navigatorService.giveNavigator(player);
-
         if (buildWorld != null) {
             WorldData worldData = buildWorld.getData();
+            if (!worldData.get(WorldDataKey.STATUS).isBuildingAllowed()) {
+                // Joining inside an archive world fires no world change, so archive mode is entered here.
+                ArchiveMode.enter(
+                        player,
+                        buildPlayer.getCachedValues(),
+                        configService.current().settings().archive());
+            }
             if (!worldData.get(WorldDataKey.PHYSICS) && player.hasPermission(Permissions.PHYSICS_MESSAGE)) {
                 messages.sendMessage(
                         player, "physics_deactivated_in_world", Placeholders.of("%world%", buildWorld.getName()));
             }
         }
+        navigatorService.giveNavigator(player);
 
         if (player.hasPermission(Permissions.UPDATES)) {
             performUpdateCheck(player);

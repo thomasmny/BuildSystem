@@ -238,7 +238,9 @@ class FileUtilsTest {
         assertThrows(IOException.class, () -> FileUtils.zipDirectoryToMemory(missing, null));
     }
 
-    /** A running server with {@code level-name=world} whose container is the temp dir. */
+    /**
+     * A running server with {@code level-name=world} whose container is the temp dir.
+     */
     private MockedStatic<Bukkit> mockServer() {
         MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class);
         bukkit.when(Bukkit::getWorldContainer).thenReturn(tempDir.toFile());

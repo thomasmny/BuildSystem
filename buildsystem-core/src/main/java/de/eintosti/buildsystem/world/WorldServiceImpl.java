@@ -25,7 +25,6 @@ import de.eintosti.buildsystem.api.event.world.BuildWorldUnimportEvent;
 import de.eintosti.buildsystem.api.exception.WorldDeletionCancelledException;
 import de.eintosti.buildsystem.api.exception.WorldDeletionException;
 import de.eintosti.buildsystem.api.exception.WorldDirectoryNotFoundException;
-import de.eintosti.buildsystem.api.exception.WorldException;
 import de.eintosti.buildsystem.api.exception.WorldNotFoundException;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.WorldService;
@@ -53,6 +52,7 @@ import de.eintosti.buildsystem.world.creation.WorldImportCoordinator;
 import de.eintosti.buildsystem.world.creation.WorldImporterImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import de.eintosti.buildsystem.world.lifecycle.WorldLoadBootstrap;
+import de.eintosti.buildsystem.world.lifecycle.WorldOperationRefusedException;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.lifecycle.WorldRenamer;
 import de.eintosti.buildsystem.world.lifecycle.WorldUnloaderImpl;
@@ -292,23 +292,13 @@ public class WorldServiceImpl implements WorldService {
     @Override
     public CompletableFuture<Void> unimportWorld(BuildWorld buildWorld, SaveBehavior saveBehavior) {
         WorldOperations operations = operations();
-        if (!operations.tryBegin(buildWorld)) {
-            return CompletableFuture.failedFuture(
-                    new WorldException("World '%s' is busy with another operation".formatted(buildWorld.getName())));
-        }
-
-        try {
+        return operations.runExclusively(buildWorld, () -> {
             operations.evacuate(buildWorld.getName(), "worlds_unimport_players_world");
-            if (!WorldOperations.tryUnload(buildWorld, saveBehavior)) {
-                return CompletableFuture.failedFuture(
-                        new WorldException("World '%s' could not be unloaded".formatted(buildWorld.getName())));
-            }
+            operations.unload(buildWorld, saveBehavior);
             return unregister(buildWorld)
                     .thenRun(
                             () -> plugin.getLogger().info("*** Unimported world \"" + buildWorld.getName() + "\" ***"));
-        } finally {
-            operations.end(buildWorld);
-        }
+        });
     }
 
     /**
@@ -377,19 +367,7 @@ public class WorldServiceImpl implements WorldService {
                     new WorldDirectoryNotFoundException(worldName, deleteFolder.getAbsolutePath()));
         }
 
-        WorldOperations operations = operations();
-        if (!operations.tryBegin(buildWorld)) {
-            return CompletableFuture.failedFuture(new WorldOperationRefusedException(
-                    "World '%s' is busy with another operation".formatted(worldName), "worlds_world_busy"));
-        }
-
-        CompletableFuture<Void> deletion;
-        try {
-            deletion = unloadAndDelete(buildWorld, deleteFolder);
-        } catch (RuntimeException e) {
-            deletion = CompletableFuture.failedFuture(e);
-        }
-        return deletion.whenComplete((ignored, throwable) -> operations.end(buildWorld));
+        return operations().runExclusively(buildWorld, () -> unloadAndDelete(buildWorld, deleteFolder));
     }
 
     private CompletableFuture<Void> unloadAndDelete(BuildWorld buildWorld, File deleteFolder) {
@@ -403,11 +381,9 @@ public class WorldServiceImpl implements WorldService {
 
         // The unload comes before anything that cannot be undone: if it does not go through, the world is left as it
         // was instead of having its folder deleted while the server still writes to it.
-        operations().evacuate(worldName, "worlds_delete_players_world");
-        if (!WorldOperations.tryUnload(buildWorld, SaveBehavior.DISCARD)) {
-            return CompletableFuture.failedFuture(new WorldOperationRefusedException(
-                    "World '%s' could not be unloaded".formatted(worldName), "worlds_world_unload_failed"));
-        }
+        WorldOperations operations = operations();
+        operations.evacuate(worldName, "worlds_delete_players_world");
+        operations.unload(buildWorld, SaveBehavior.DISCARD);
 
         buildWorld.setFolder(null);
         SpawnService spawnService = services.spawn();

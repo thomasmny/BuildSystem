@@ -99,7 +99,9 @@ class BackupProfileImplTest {
         bukkit.close();
     }
 
-    /** A scheduler that runs "main thread" work inline, so the post-delete events fire within the test. */
+    /**
+     * A scheduler that runs "main thread" work inline, so the post-delete events fire within the test.
+     */
     private static TaskScheduler inlineScheduler() {
         TaskScheduler scheduler = mock(TaskScheduler.class);
         lenient().when(scheduler.mainThread()).thenReturn(Runnable::run);
@@ -187,7 +189,7 @@ class BackupProfileImplTest {
     void whileTheWorldIsBusy_backupIsRefusedAndNothingIsStored() {
         stubListingAndStore(List.of());
         BackupProfileImpl profile = profile(3);
-        operations.tryBegin(buildWorld);
+        operations.runExclusively(buildWorld, CompletableFuture::new);
 
         assertThrows(ExecutionException.class, () -> profile.createBackup().get(5, TimeUnit.SECONDS));
 

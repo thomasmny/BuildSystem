@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.lifecycle;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -30,6 +31,9 @@ import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -110,17 +114,38 @@ class WorldOperationsTest {
     }
 
     @Test
-    void busyGuard_letsOneOperationInAtATime() {
+    void secondOperationOnABusyWorld_isRefusedWithoutRunning() {
         BuildWorld world = mock(BuildWorld.class);
         when(world.getUniqueId()).thenReturn(UUID.randomUUID());
+        when(world.getName()).thenReturn("arena");
+        CompletableFuture<Void> first = new CompletableFuture<>();
+        operations.runExclusively(world, () -> first);
+        AtomicBoolean secondRan = new AtomicBoolean();
 
-        assertTrue(operations.tryBegin(world));
-        assertFalse(operations.tryBegin(world));
+        CompletableFuture<Void> second = operations.runExclusively(world, () -> {
+            secondRan.set(true);
+            return CompletableFuture.completedFuture(null);
+        });
+
+        assertFalse(secondRan.get());
+        ExecutionException refused = assertThrows(ExecutionException.class, second::get);
+        assertEquals("worlds_world_busy", ((WorldOperationRefusedException) refused.getCause()).messageKey());
         assertTrue(operations.isBusy(world));
+    }
 
-        operations.end(world);
+    @Test
+    void finishedOrThrowingOperation_freesTheWorld() {
+        BuildWorld world = mock(BuildWorld.class);
+        when(world.getUniqueId()).thenReturn(UUID.randomUUID());
+        CompletableFuture<Void> first = new CompletableFuture<>();
+        operations.runExclusively(world, () -> first);
 
+        first.complete(null);
         assertFalse(operations.isBusy(world));
-        assertTrue(operations.tryBegin(world));
+
+        operations.runExclusively(world, () -> {
+            throw new IllegalStateException("boom");
+        });
+        assertFalse(operations.isBusy(world));
     }
 }

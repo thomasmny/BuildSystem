@@ -21,7 +21,6 @@ import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.event.backup.BackupCreatedEvent;
 import de.eintosti.buildsystem.api.event.backup.BackupDeletedEvent;
 import de.eintosti.buildsystem.api.event.backup.BackupRestoredEvent;
-import de.eintosti.buildsystem.api.exception.WorldException;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.backup.Backup;
 import de.eintosti.buildsystem.api.world.backup.BackupProfile;
@@ -37,6 +36,7 @@ import de.eintosti.buildsystem.util.StringCleaner;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.WorldFlush;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import de.eintosti.buildsystem.world.lifecycle.WorldOperationRefusedException;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import java.io.File;
 import java.io.IOException;
@@ -112,23 +112,14 @@ public class BackupProfileImpl implements BackupProfile {
             CompletableFuture<Backup> next = this.pendingCreation
                     .handle((backup, throwable) -> null)
                     .thenComposeAsync(
-                            ignored -> {
-                                WorldOperations operations = worldService.operations();
-                                if (!operations.tryBegin(this.buildWorld)) {
-                                    return CompletableFuture.<Backup>failedFuture(
-                                            new WorldException("World '%s' is busy with another operation"
-                                                    .formatted(this.buildWorld.getName())));
-                                }
+                            ignored -> worldService.operations().runExclusively(this.buildWorld, () -> {
                                 Optional<World> world = this.buildWorld.getWorld();
                                 world.ifPresent(WorldFlush::saveAndPauseWrites);
                                 return storeWithRetention()
                                         .whenCompleteAsync(
-                                                (backup, throwable) -> {
-                                                    world.ifPresent(WorldFlush::resumeWrites);
-                                                    operations.end(this.buildWorld);
-                                                },
+                                                (backup, throwable) -> world.ifPresent(WorldFlush::resumeWrites),
                                                 mainThreadExecutor());
-                            },
+                            }),
                             mainThreadExecutor());
             this.pendingCreation = next.handle((backup, throwable) -> backup);
             return next;
@@ -197,30 +188,27 @@ public class BackupProfileImpl implements BackupProfile {
             return CompletableFuture.completedFuture(null);
         }
 
-        WorldOperations operations = worldService.operations();
-        if (!operations.tryBegin(this.buildWorld)) {
-            messages.sendMessage(player, "worlds_world_busy", Placeholders.of("%world%", worldName));
-            return CompletableFuture.completedFuture(null);
-        }
-
         // Download off the main thread, then apply the restore back on the main thread. Blocking the
         // download here would freeze the entire server for the duration of a remote (S3/SFTP) fetch.
-        return this.storage
-                .get()
-                .downloadBackup(backup)
-                .thenCompose(backupFile -> CompletableFuture.runAsync(
-                        () -> {
-                            try {
-                                applyRestore(backup, player, worldName, backupFile);
-                            } catch (IOException e) {
-                                throw new CompletionException(e);
-                            }
-                        },
-                        mainThreadExecutor()))
+        WorldOperations operations = worldService.operations();
+        return operations
+                .runExclusively(
+                        this.buildWorld,
+                        () -> this.storage
+                                .get()
+                                .downloadBackup(backup)
+                                .thenCompose(backupFile -> CompletableFuture.runAsync(
+                                        () -> {
+                                            try {
+                                                applyRestore(backup, player, worldName, backupFile);
+                                            } catch (IOException e) {
+                                                throw new CompletionException(e);
+                                            }
+                                        },
+                                        mainThreadExecutor())))
                 .whenCompleteAsync(
                         (ignored, throwable) -> {
-                            operations.end(this.buildWorld);
-                            if (throwable != null) {
+                            if (throwable != null && !operations.reportRefusal(player, worldName, throwable)) {
                                 plugin.getLogger()
                                         .log(
                                                 Level.SEVERE,
@@ -244,13 +232,14 @@ public class BackupProfileImpl implements BackupProfile {
         validateBackup(backupFile, targetDirectory);
 
         // The players are only moved once the archive is here and valid, so a failed download leaves them in place.
-        List<Player> removedPlayers =
-                worldService.operations().evacuate(worldName, "worlds_backup_restoration_in_progress");
+        WorldOperations operations = worldService.operations();
+        List<Player> removedPlayers = operations.evacuate(worldName, "worlds_backup_restoration_in_progress");
         WorldTeleporter worldTeleporter = this.buildWorld.getTeleporter();
-        if (!WorldOperations.tryUnload(this.buildWorld, SaveBehavior.DISCARD)) {
+        try {
+            operations.unload(this.buildWorld, SaveBehavior.DISCARD);
+        } catch (WorldOperationRefusedException e) {
             removedPlayers.forEach(worldTeleporter::teleport);
-            messages.sendMessage(player, "worlds_world_unload_failed", Placeholders.of("%world%", worldName));
-            return;
+            throw e;
         }
         try {
             FileUtils.deleteDirectory(targetDirectory);

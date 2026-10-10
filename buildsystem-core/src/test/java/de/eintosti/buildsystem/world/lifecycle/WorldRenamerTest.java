@@ -91,6 +91,9 @@ class WorldRenamerTest {
         WorldServiceImpl worldService = mock(WorldServiceImpl.class);
         when(worldService.operations()).thenReturn(operations);
 
+        TaskScheduler scheduler = mock(TaskScheduler.class);
+        when(scheduler.mainThread()).thenReturn(Runnable::run);
+        when(scheduler.background()).thenReturn(Runnable::run);
         renamer = new WorldRenamer(
                 mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS),
                 worldService,
@@ -99,7 +102,7 @@ class WorldRenamerTest {
                 messages,
                 prompts,
                 mock(SpawnService.class),
-                mock(TaskScheduler.class));
+                scheduler);
 
         player = mock(Player.class);
         when(player.getLocation()).thenReturn(new Location(null, 0, 0, 0));

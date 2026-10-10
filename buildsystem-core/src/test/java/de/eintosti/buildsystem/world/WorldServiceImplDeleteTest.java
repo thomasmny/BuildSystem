@@ -32,11 +32,13 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.data.WorldDataImpl;
 import de.eintosti.buildsystem.world.data.WorldDataImpl.WorldDataBuilder;
+import de.eintosti.buildsystem.world.lifecycle.WorldOperationRefusedException;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.bukkit.Bukkit;
@@ -224,7 +226,7 @@ class WorldServiceImplDeleteTest {
         BuildWorldImpl buildWorld = registeredWorld("busy");
         Path worldDirectory = worldContainer.resolve("busy");
         Files.createDirectories(worldDirectory);
-        worldService.operations().tryBegin(buildWorld);
+        worldService.operations().runExclusively(buildWorld, CompletableFuture::new);
 
         try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
             bukkit.when(Bukkit::getWorldContainer).thenReturn(worldContainer.toFile());
