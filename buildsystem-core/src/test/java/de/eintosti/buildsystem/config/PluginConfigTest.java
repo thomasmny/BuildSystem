@@ -723,7 +723,11 @@ class PluginConfigTest {
                 "mysql:\n    host: \"db1,db2\"",
                 "mysql:\n    host: \"db:3307\"",
                 "mysql:\n    port: 0",
-                "mongodb:\n    port: 65536");
+                "mongodb:\n    port: 65536",
+                "postgresql:\n    username: \"builder\\0search_path\\0evil\"",
+                "postgresql:\n    username: \"builder\\n\"",
+                "postgresql:\n    password: \"hunter2\\0options\\0-c x=y\"",
+                "mysql:\n    password: \"hunter2\\r\"");
         for (String line : hostile) {
             assertThrows(IllegalArgumentException.class, () -> parse("storage:\n  " + line), line);
         }

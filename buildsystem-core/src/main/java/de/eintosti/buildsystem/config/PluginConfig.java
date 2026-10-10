@@ -176,6 +176,8 @@ public record PluginConfig(Settings settings, Storage storage, World world, Fold
                 // Only names and addresses: drivers read options and further hosts from characters like ( = , @
                 private static final Pattern HOST = Pattern.compile("[A-Za-z0-9.-]{1,253}|\\[[0-9A-Fa-f:.]{2,45}]");
                 private static final Pattern DATABASE = Pattern.compile("[A-Za-z0-9_-]{1,64}");
+                // The PostgreSQL driver sends the login as NUL-separated startup parameters, so a NUL would add one.
+                private static final Pattern CONTROL = Pattern.compile("\\p{Cntrl}");
 
                 public Server {
                     String block = "storage." + type.key() + ".";
@@ -189,6 +191,12 @@ public record PluginConfig(Settings settings, Storage storage, World world, Fold
                     if (!DATABASE.matcher(database).matches()) {
                         throw new IllegalArgumentException(
                                 block + "database may only hold letters, digits, - and _, at most 64 of them");
+                    }
+                    if (CONTROL.matcher(username).find()) {
+                        throw new IllegalArgumentException(block + "username may not hold control characters");
+                    }
+                    if (password != null && CONTROL.matcher(password).find()) {
+                        throw new IllegalArgumentException(block + "password may not hold control characters");
                     }
                 }
 
