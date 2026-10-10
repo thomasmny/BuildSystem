@@ -169,10 +169,14 @@ public final class EntityCollection<T> {
                             MemoryConfiguration root = new MemoryConfiguration();
                             Map<String, T> loaded = new LinkedHashMap<>();
                             store.loadAll().forEach((key, values) -> {
-                                ConfigurationSection section = root.createSection(key, values);
                                 try {
+                                    // Throws for an empty key or field name, which only a database can hold.
+                                    ConfigurationSection section = root.createSection(key, values);
                                     loaded.put(key, codec().deserialize(key, section));
                                 } catch (Exception e) {
+                                    if (!key.isEmpty()) {
+                                        root.set(key, null);
+                                    }
                                     logger.log(
                                             Level.WARNING,
                                             "Skipping " + label + " \"" + key + "\": could not be loaded",

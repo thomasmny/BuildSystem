@@ -62,6 +62,7 @@ import org.bukkit.util.BlockVector;
 import org.bukkit.util.Vector;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -280,6 +281,26 @@ public abstract class EntityStoreContractTest {
         restart();
         assertEquals(
                 Set.of("fixed"), backend.store(EntityKind.PLAYERS).loadAll().keySet());
+    }
+
+    @Test
+    void rowWithAnEmptyIdOrFieldName_isSkipped_andTheRestLoad() {
+        // Only a database can hold these: YAML has no empty key.
+        Assumptions.assumeTrue(settings().type() != StorageType.YAML);
+        String good = "0b0b0b0b-0000-4000-8000-000000000001";
+        String emptyField = "0b0b0b0b-0000-4000-8000-000000000002";
+        Map<String, Map<String, Object>> rows = new LinkedHashMap<>();
+        rows.put("", Map.of("settings", Map.of("type", "OLD")));
+        rows.put(emptyField, Map.of("", "x"));
+        rows.put(good, Map.of("settings", Map.of("type", "OLD")));
+        store("players").upsert(rows);
+
+        Collection<BuildPlayer> loaded = players(store("players")).load().join();
+
+        assertEquals(
+                List.of(UUID.fromString(good)),
+                loaded.stream().map(BuildPlayer::getUniqueId).toList());
+        assertEquals(3, store("players").loadAll().size(), "the rows that could not load stay stored");
     }
 
     @Test
