@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.world.menu.setup;
 
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
@@ -27,6 +26,7 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import java.util.List;
 import java.util.function.Consumer;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -126,7 +126,7 @@ public class DyePickerMenu extends ButtonMenu {
                         .glow(swatch.token().equalsIgnoreCase(currentToken))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                     onPick.accept(swatch.token());
                 })
                 .build();

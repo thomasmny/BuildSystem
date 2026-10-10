@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.command.subcommand.Argument;
@@ -30,6 +29,7 @@ import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -75,7 +75,7 @@ public class SetCreatorSubCommand extends WorldSubCommand {
         buildWorld.getBuilders().setCreator(creator);
 
         settingsService.forceUpdateSidebar(buildWorld);
-        XSound.ENTITY_PLAYER_LEVELUP.play(player);
+        player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
         messages.sendMessage(player, "worlds_setcreator_set", Placeholders.of("%world%", buildWorld.getName()));
         player.closeInventory();
     }

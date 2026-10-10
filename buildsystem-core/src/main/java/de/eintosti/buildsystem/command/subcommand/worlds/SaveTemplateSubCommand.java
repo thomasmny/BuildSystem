@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
@@ -37,6 +36,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
@@ -118,7 +118,7 @@ public class SaveTemplateSubCommand extends WorldSubCommand {
                         messages.sendMessage(
                                 player, "worlds_savetemplate_error", Placeholders.of("%template%", templateName));
                     } else {
-                        XSound.ENTITY_PLAYER_LEVELUP.play(player);
+                        player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
                         messages.sendMessage(
                                 player, "worlds_savetemplate_finished", Placeholders.of("%template%", templateName));
                     }

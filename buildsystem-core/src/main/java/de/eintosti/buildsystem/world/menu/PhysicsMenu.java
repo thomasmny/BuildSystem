@@ -20,7 +20,6 @@ package de.eintosti.buildsystem.world.menu;
 import static java.util.Map.entry;
 
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
@@ -32,6 +31,7 @@ import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.menu.EditMenuToggles.Toggle;
 import java.util.Map;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
@@ -104,7 +104,7 @@ public class PhysicsMenu extends ButtonMenu {
                         toggle.render(menuItems, buildWorld.getData(), player, inventory, slot))
                 .onClick((player, event) -> {
                     toggle.flip(buildWorld.getData());
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                     populate(player);
                 })
                 .build();

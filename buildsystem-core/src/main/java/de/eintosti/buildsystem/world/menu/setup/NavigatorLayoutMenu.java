@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
-import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.Registry;
@@ -33,6 +32,7 @@ import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.jspecify.annotations.NullMarked;
@@ -257,7 +257,7 @@ public class NavigatorLayoutMenu extends LayoutEditorMenu<NavigatorCategory> {
         private void pickUp(Player player) {
             held = true;
             setCursorNextTick(player, icon(player, null).build());
-            XSound.ITEM_ARMOR_EQUIP_LEATHER.play(player);
+            player.playSound(player, Sound.ITEM_ARMOR_EQUIP_LEATHER, 1f, 1f);
             refresh(player);
         }
 

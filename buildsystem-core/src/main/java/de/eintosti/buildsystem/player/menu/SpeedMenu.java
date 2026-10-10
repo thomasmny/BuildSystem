@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.player.menu;
 
-import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
@@ -29,6 +28,7 @@ import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.Map;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
@@ -68,7 +68,7 @@ public class SpeedMenu extends ButtonMenu {
                                 .build()))
                 .onClick((player, event) -> {
                     setSpeed(player, option.speed(), option.displayNumber());
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                     player.closeInventory();
                 })
                 .build();

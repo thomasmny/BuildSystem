@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.listener.navigator;
 
 import com.cryptomorin.xseries.XPotion;
-import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.inventory.XInventoryView;
 import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.player.settings.NavigatorType;
@@ -38,6 +37,7 @@ import de.eintosti.buildsystem.util.Permissions;
 import java.util.Objects;
 import java.util.UUID;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -120,7 +120,7 @@ public class NavigatorListener implements Listener {
         switch (settings.getNavigatorType()) {
             case OLD -> {
                 menus.openNavigator(player);
-                XSound.BLOCK_CHEST_OPEN.play(player);
+                player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
             }
             case NEW -> {
                 if (navigatorService.isNavigatorOpen(player)) {
@@ -188,7 +188,7 @@ public class NavigatorListener implements Listener {
                 return;
             }
 
-            XSound.BLOCK_CHEST_OPEN.play(player);
+            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
             menus.openCategoryWorlds(category, player);
         }
     }

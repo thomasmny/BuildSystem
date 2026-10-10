@@ -18,9 +18,9 @@
 package de.eintosti.buildsystem.menu;
 
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.i18n.Messages;
 import java.util.function.Consumer;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jspecify.annotations.NullMarked;
@@ -72,7 +72,7 @@ public class ConfirmMenu extends ButtonMenu {
                         .permission(confirmPermission)
                         .onClick((player, event) -> {
                             player.closeInventory();
-                            XSound.ENTITY_PLAYER_LEVELUP.play(player);
+                            player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
                             confirm.action().accept(player);
                         })
                         .build());
@@ -82,7 +82,7 @@ public class ConfirmMenu extends ButtonMenu {
                         .render((player, inventory, slot) -> inventory.setItem(slot, cancel.item()))
                         .onClick((player, event) -> {
                             player.closeInventory();
-                            XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
+                            player.playSound(player, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 1f);
                             cancel.action().accept(player);
                         })
                         .build());

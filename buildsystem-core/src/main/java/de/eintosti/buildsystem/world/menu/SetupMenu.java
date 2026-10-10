@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.world.menu;
 
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.ButtonMenu;
 import de.eintosti.buildsystem.menu.ItemBuilder;
@@ -26,6 +25,7 @@ import de.eintosti.buildsystem.menu.MenuButton;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
 import java.util.function.Consumer;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -62,7 +62,7 @@ public class SetupMenu extends ButtonMenu {
                         .lore(messages.getStringList(nameKey + "_lore", player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
-                    XSound.BLOCK_CHEST_OPEN.play(player);
+                    player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
                     open.accept(player);
                 })
                 .build();

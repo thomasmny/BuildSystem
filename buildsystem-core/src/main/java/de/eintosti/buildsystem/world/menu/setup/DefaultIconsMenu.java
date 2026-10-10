@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu.setup;
 
-import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -29,6 +28,7 @@ import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.menu.SkullTextures;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import java.util.List;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -85,7 +85,7 @@ public class DefaultIconsMenu extends ButtonMenu {
                         messages.getStringList("setup_reset_confirm_lore", player),
                         () -> {
                             icons.resetToDefaults();
-                            XSound.ENTITY_CHICKEN_EGG.play(player);
+                            player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                             menus.openDefaultIcons(player);
                         },
                         () -> menus.openDefaultIcons(player)))

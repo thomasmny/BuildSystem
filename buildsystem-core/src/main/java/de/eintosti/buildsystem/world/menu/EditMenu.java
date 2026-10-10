@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.world.menu;
 
 import com.cryptomorin.xseries.XEntityType;
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -46,6 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.bukkit.ChatColor;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -190,7 +190,7 @@ public class EditMenu extends ButtonMenu {
                         .permission(Permissions.EDIT_GAMERULES)
                         .render(renderer::renderGameRules)
                         .onClick((player, event) -> {
-                            XSound.BLOCK_CHEST_OPEN.play(player);
+                            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
                             menus.openGameRules(buildWorld, player);
                         })
                         .build());
@@ -212,7 +212,7 @@ public class EditMenu extends ButtonMenu {
                         .permission(Permissions.EDIT_STATUS)
                         .render(renderer::renderStatus)
                         .onClick((player, event) -> {
-                            XSound.ENTITY_CHICKEN_EGG.play(player);
+                            player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                             menus.openStatus(buildWorld, player);
                         })
                         .build());
@@ -223,7 +223,7 @@ public class EditMenu extends ButtonMenu {
                         .permission(Permissions.EDIT_PROJECT)
                         .render(renderer::renderProject)
                         .onClick((player, event) -> {
-                            XSound.ENTITY_CHICKEN_EGG.play(player);
+                            player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                             menus.promptWorldProject(buildWorld, player);
                         })
                         .build());
@@ -234,7 +234,7 @@ public class EditMenu extends ButtonMenu {
                         .permission(Permissions.EDIT_PERMISSION)
                         .render(renderer::renderPermission)
                         .onClick((player, event) -> {
-                            XSound.ENTITY_CHICKEN_EGG.play(player);
+                            player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                             menus.promptWorldPermission(buildWorld, player);
                         })
                         .build());
@@ -257,7 +257,7 @@ public class EditMenu extends ButtonMenu {
             return;
         }
 
-        XSound.BLOCK_CHEST_OPEN.play(player);
+        player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
         menus.openMaterialPicker(
                 player,
                 material -> {
@@ -348,7 +348,7 @@ public class EditMenu extends ButtonMenu {
      */
     private void onPhysicsClick(Player player, InventoryClickEvent event) {
         if (event.isRightClick()) {
-            XSound.BLOCK_CHEST_OPEN.play(player);
+            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
             menus.openPhysics(buildWorld, player);
             return;
         }
@@ -365,12 +365,12 @@ public class EditMenu extends ButtonMenu {
      */
     private void onBuildersClick(Player player, InventoryClickEvent event) {
         if (!canManageBuilders(player)) {
-            XSound.ENTITY_ITEM_BREAK.play(player);
+            player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
             return;
         }
 
         if (event.isRightClick()) {
-            XSound.BLOCK_CHEST_OPEN.play(player);
+            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
             menus.openBuilder(buildWorld, player);
             return;
         }
@@ -387,7 +387,7 @@ public class EditMenu extends ButtonMenu {
     private void onVisibilityClick(Player player, InventoryClickEvent event) {
         boolean isPrivate = buildWorld.getData().get(WorldDataKey.VISIBILITY).isPrivate();
         if (!canChangeVisibility(player, isPrivate)) {
-            XSound.ENTITY_ITEM_BREAK.play(player);
+            player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
             return;
         }
 
@@ -401,7 +401,7 @@ public class EditMenu extends ButtonMenu {
     }
 
     private void reopen(Player player) {
-        XSound.ENTITY_CHICKEN_EGG.play(player);
+        player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
         menus.reopenEdit(buildWorld, player);
     }
 

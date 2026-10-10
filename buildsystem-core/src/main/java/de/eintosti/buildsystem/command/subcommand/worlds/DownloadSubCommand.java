@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.command.subcommand.Argument;
 import de.eintosti.buildsystem.command.subcommand.WorldSubCommand;
@@ -49,6 +48,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.NullMarked;
@@ -235,7 +235,7 @@ public class DownloadSubCommand extends WorldSubCommand {
         String[] parts = text.split(BUTTON_PLACEHOLDER, 2);
         if (parts.length == 1) {
             player.spigot().sendMessage(linked(TextComponent.fromLegacyText(text), url));
-            XSound.ENTITY_PLAYER_LEVELUP.play(player);
+            player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
             return;
         }
 
@@ -246,7 +246,7 @@ public class DownloadSubCommand extends WorldSubCommand {
         message.addExtra(new TextComponent(TextComponent.fromLegacyText(parts[1])));
 
         player.spigot().sendMessage(message);
-        XSound.ENTITY_PLAYER_LEVELUP.play(player);
+        player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
     }
 
     private static TextComponent linked(BaseComponent[] text, String url) {

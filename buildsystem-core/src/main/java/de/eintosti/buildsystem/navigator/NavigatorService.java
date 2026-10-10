@@ -19,7 +19,6 @@ package de.eintosti.buildsystem.navigator;
 
 import com.cryptomorin.xseries.XMaterial;
 import com.cryptomorin.xseries.XPotion;
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -44,6 +43,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Sound;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -240,7 +240,7 @@ public class NavigatorService {
         buildPlayer.setLastLookedAt(null);
         removeArmorStands(player);
 
-        XSound.ENTITY_ITEM_BREAK.play(player);
+        player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
         displayActionBarMessage(player, "");
         navigatorItems.replace(player, navigatorItems::isBarrier, navigatorItems.create(player));
 
@@ -299,7 +299,7 @@ public class NavigatorService {
         NavigatorCategory lastLookedAt = buildPlayer.getLastLookedAt();
         if (lastLookedAt == null || !lastLookedAt.equals(category)) {
             buildPlayer.setLastLookedAt(category);
-            XSound.ENTITY_CHICKEN_EGG.play(player);
+            player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
         }
 
         displayActionBarMessage(player, ColorAPI.process(category.getStyledName()));

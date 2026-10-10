@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.menu;
 
-import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.i18n.Messages;
@@ -32,6 +31,7 @@ import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.display.CategoryPermissions;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import java.util.List;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jspecify.annotations.NullMarked;
@@ -82,7 +82,7 @@ public class NavigatorMenu extends ButtonMenu {
                         inventory, slot, category, player, ColorAPI.process(category.getStyledName()), List.of()))
                 .onClick((player, event) -> {
                     menus.openCategoryWorlds(category, player);
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                 })
                 .build();
     }
@@ -95,7 +95,7 @@ public class NavigatorMenu extends ButtonMenu {
                         .into(inventory, slot))
                 .onClick((player, event) -> {
                     menus.openSettings(player);
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                 })
                 .build();
     }
@@ -106,7 +106,7 @@ public class NavigatorMenu extends ButtonMenu {
      */
     @Override
     protected void onPermissionDenied(Player player, InventoryClickEvent event) {
-        XSound.ENTITY_ITEM_BREAK.play(player);
+        player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
     }
 
     @Override

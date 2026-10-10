@@ -22,13 +22,14 @@ import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
+import org.bukkit.entity.Entity;
 import org.jspecify.annotations.NullMarked;
 import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 
 /**
- * A {@link PlayerMock} that accepts the seeded {@code playSound} overload XSound plays through, which MockBukkit does
- * not implement, and records the sounds instead of playing them.
+ * A {@link PlayerMock} that records the sounds played to it instead of playing them. It also accepts the seeded
+ * {@code playSound} overload XSound plays through, which MockBukkit does not implement.
  */
 @NullMarked
 public class SoundlessPlayer extends PlayerMock {
@@ -48,6 +49,11 @@ public class SoundlessPlayer extends PlayerMock {
     @Override
     public void playSound(
             Location location, Sound sound, SoundCategory category, float volume, float pitch, long seed) {
+        sounds.add(sound);
+    }
+
+    @Override
+    public void playSound(Entity entity, Sound sound, float volume, float pitch) {
         sounds.add(sound);
     }
 

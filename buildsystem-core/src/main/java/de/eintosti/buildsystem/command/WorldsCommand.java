@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.command;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.command.subcommand.worlds.AddBuilderSubCommand;
@@ -60,6 +59,7 @@ import de.eintosti.buildsystem.world.download.WorldDownloadService;
 import java.io.File;
 import java.util.List;
 import java.util.logging.Logger;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -130,7 +130,7 @@ public class WorldsCommand extends CommandBase {
                 return;
             }
             services.menus().openNavigator(player);
-            XSound.BLOCK_CHEST_OPEN.play(player);
+            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
             return;
         }
         dispatcher.dispatch(player, args);

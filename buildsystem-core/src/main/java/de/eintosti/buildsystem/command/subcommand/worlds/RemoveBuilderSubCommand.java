@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.command.subcommand.worlds;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
@@ -33,6 +32,7 @@ import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -86,7 +86,7 @@ public class RemoveBuilderSubCommand extends WorldSubCommand {
         }
 
         builders.removeBuilder(builderId);
-        XSound.ENTITY_PLAYER_LEVELUP.play(player);
+        player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
         messages.sendMessage(player, "worlds_removebuilder_removed", Placeholders.of("%builder%", builder.getName()));
 
         player.closeInventory();

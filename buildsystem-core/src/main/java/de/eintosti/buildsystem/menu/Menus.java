@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.menu;
 
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -60,6 +59,7 @@ import de.eintosti.buildsystem.world.menu.setup.StatusLayoutMenu;
 import java.util.List;
 import java.util.function.Consumer;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -153,7 +153,7 @@ public final class Menus {
      */
     public void openEdit(BuildWorld buildWorld, Player player) {
         if (showEdit(buildWorld, player)) {
-            XSound.BLOCK_CHEST_OPEN.play(player);
+            player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
         }
     }
 
@@ -173,7 +173,7 @@ public final class Menus {
     private boolean showEdit(BuildWorld buildWorld, Player player) {
         if (buildWorld.getWorld().isEmpty()) {
             player.closeInventory();
-            XSound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR.play(player);
+            player.playSound(player, Sound.ENTITY_ZOMBIE_BREAK_WOODEN_DOOR, 1f, 1f);
             player.sendTitle(" ", services.messages().getString("world_not_loaded", player), 5, 70, 20);
             return false;
         }

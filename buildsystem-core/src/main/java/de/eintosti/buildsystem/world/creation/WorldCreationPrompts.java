@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world.creation;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.WorldBuilder;
@@ -32,6 +31,7 @@ import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.creation.generator.CustomGeneratorImpl;
 import java.util.Objects;
 import java.util.function.Supplier;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -86,7 +86,7 @@ public class WorldCreationPrompts {
 
         if (worldService.getWorldStorage().isNameTaken(name)) {
             messages.sendMessage(player, "worlds_world_exists");
-            XSound.ENTITY_ITEM_BREAK.play(player);
+            player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
             return false;
         }
 
@@ -96,7 +96,7 @@ public class WorldCreationPrompts {
                     player,
                     "worlds_world_name_clash",
                     Placeholders.of().add("%world%", name).add("%other%", clash).build());
-            XSound.ENTITY_ITEM_BREAK.play(player);
+            player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
             return false;
         }
 
@@ -121,14 +121,14 @@ public class WorldCreationPrompts {
         boolean allowed = !player.isPermissionSet(generatorNode) || player.hasPermission(generatorNode);
         if (!allowed) {
             messages.sendPermissionError(player);
-            XSound.ENTITY_ITEM_BREAK.play(player);
+            player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
             return false;
         }
 
         CustomGenerator generator = CustomGeneratorImpl.of(input, selection.name());
         if (generator == null) {
             messages.sendMessage(player, "worlds_import_unknown_generator");
-            XSound.ENTITY_ITEM_BREAK.play(player);
+            player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
             return false;
         }
 

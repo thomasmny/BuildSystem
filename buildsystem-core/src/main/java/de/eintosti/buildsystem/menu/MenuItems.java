@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.menu;
 
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.builder.XSkull;
 import com.cryptomorin.xseries.profiles.exceptions.ProfileException;
 import com.cryptomorin.xseries.profiles.objects.ProfileInputType;
@@ -36,6 +35,7 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.stream.IntStream;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -72,7 +72,7 @@ public final class MenuItems {
                         .name(messages.getString("setup_back", player))
                         .into(inventory, slot))
                 .onClick((player, event) -> {
-                    XSound.BLOCK_CHEST_OPEN.play(player);
+                    player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
                     onBack.accept(player);
                 })
                 .build();

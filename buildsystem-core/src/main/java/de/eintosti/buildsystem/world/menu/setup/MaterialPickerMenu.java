@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.world.menu.setup;
 
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
@@ -35,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -154,7 +154,7 @@ public class MaterialPickerMenu extends ButtonMenu {
                     if (picked == null) {
                         return;
                     }
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                     onPick.accept(picked);
                 })
                 .build();
@@ -168,11 +168,11 @@ public class MaterialPickerMenu extends ButtonMenu {
                         .into(inventory, slot))
                 .onClick((player, event) -> {
                     if (!enabled) {
-                        XSound.ENTITY_ITEM_BREAK.play(player);
+                        player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
                         return;
                     }
                     topRow += up ? -1 : 1;
-                    XSound.ENTITY_CHICKEN_EGG.play(player);
+                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1f, 1f);
                     populate(player);
                 })
                 .build();

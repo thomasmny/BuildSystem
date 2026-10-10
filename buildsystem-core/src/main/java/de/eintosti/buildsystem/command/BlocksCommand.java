@@ -17,11 +17,11 @@
  */
 package de.eintosti.buildsystem.command;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menus;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.logging.Logger;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -41,7 +41,7 @@ public class BlocksCommand extends CommandBase {
             return;
         }
 
-        XSound.BLOCK_CHEST_OPEN.play(player);
+        player.playSound(player, Sound.BLOCK_CHEST_OPEN, 1f, 1f);
         menus.openBlocks(player);
     }
 }

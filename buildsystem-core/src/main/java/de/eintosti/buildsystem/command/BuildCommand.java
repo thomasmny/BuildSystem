@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.command;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.event.world.PlayerBuildModeToggleEvent;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
@@ -28,6 +27,7 @@ import java.util.List;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -97,11 +97,11 @@ public class BuildCommand extends CommandBase {
             }
             target.setGameMode(GameMode.CREATIVE);
 
-            XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
+            target.playSound(target, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
             if (sender.equals(target)) {
                 messages.sendMessage(target, "build_activated_self");
             } else {
-                XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
+                sender.playSound(sender, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
                 messages.sendMessage(
                         sender, "build_activated_other_sender", Placeholders.of("%target%", target.getName()));
                 messages.sendMessage(
@@ -112,11 +112,11 @@ public class BuildCommand extends CommandBase {
                 return;
             }
 
-            XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(target);
+            target.playSound(target, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
             if (sender.equals(target)) {
                 messages.sendMessage(target, "build_deactivated_self");
             } else {
-                XSound.ENTITY_EXPERIENCE_ORB_PICKUP.play(sender);
+                sender.playSound(sender, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f);
                 messages.sendMessage(
                         sender, "build_deactivated_other_sender", Placeholders.of("%target%", target.getName()));
                 messages.sendMessage(

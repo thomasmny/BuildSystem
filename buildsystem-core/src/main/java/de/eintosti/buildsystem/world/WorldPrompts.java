@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.world;
 
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.builder.Builders;
@@ -29,6 +28,7 @@ import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
 import java.util.List;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
@@ -66,7 +66,7 @@ public final class WorldPrompts {
             buildWorld.getData().set(WorldDataKey.PROJECT, project);
             settingsService.forceUpdateSidebar(buildWorld);
 
-            XSound.ENTITY_PLAYER_LEVELUP.play(player);
+            player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
             messages.sendMessage(player, "worlds_setproject_set", Placeholders.of("%world%", buildWorld.getName()));
 
             // The world's folder can override this value, in which case the stored project is not the one shown.
@@ -84,7 +84,7 @@ public final class WorldPrompts {
 
             List<String> whitelist = configService.current().settings().worldPermissionWhitelist();
             if (!isPermissionAllowed(permission, whitelist)) {
-                XSound.ENTITY_ITEM_BREAK.play(player);
+                player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
                 messages.sendMessage(player, "worlds_setpermission_not_allowed");
                 then.run();
                 return;
@@ -93,7 +93,7 @@ public final class WorldPrompts {
             buildWorld.getData().set(WorldDataKey.PERMISSION, permission);
             settingsService.forceUpdateSidebar(buildWorld);
 
-            XSound.ENTITY_PLAYER_LEVELUP.play(player);
+            player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
             messages.sendMessage(player, "worlds_setpermission_set", Placeholders.of("%world%", buildWorld.getName()));
 
             // A folder override means the stored permission is not the one being enforced.
@@ -152,7 +152,7 @@ public final class WorldPrompts {
         }
 
         builders.addBuilder(builder);
-        XSound.ENTITY_PLAYER_LEVELUP.play(player);
+        player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f);
         messages.sendMessage(player, "worlds_addbuilder_added", Placeholders.of("%builder%", builder.getName()));
         then.run();
     }

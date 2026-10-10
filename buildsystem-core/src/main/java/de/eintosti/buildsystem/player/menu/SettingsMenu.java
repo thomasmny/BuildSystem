@@ -18,7 +18,6 @@
 package de.eintosti.buildsystem.player.menu;
 
 import com.cryptomorin.xseries.XMaterial;
-import com.cryptomorin.xseries.XSound;
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
 import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
@@ -37,6 +36,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
@@ -78,7 +78,7 @@ public class SettingsMenu extends ButtonMenu {
                         .render(this::renderDesign)
                         .onClick((player, event) -> {
                             menus.openDesign(player);
-                            XSound.ENTITY_ITEM_PICKUP.play(player);
+                            player.playSound(player, Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
                         })
                         .build());
 
@@ -272,11 +272,11 @@ public class SettingsMenu extends ButtonMenu {
      */
     private void handleToggle(Player player, BooleanSupplier onToggle) {
         if (!onToggle.getAsBoolean()) {
-            XSound.ENTITY_ITEM_BREAK.play(player);
+            player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
             return;
         }
 
-        XSound.ENTITY_ITEM_PICKUP.play(player);
+        player.playSound(player, Sound.ENTITY_ITEM_PICKUP, 1f, 1f);
         menus.openSettings(player);
     }
 
@@ -287,7 +287,7 @@ public class SettingsMenu extends ButtonMenu {
     @Override
     protected void onPermissionDenied(Player player, InventoryClickEvent event) {
         messages.sendPermissionError(player);
-        XSound.ENTITY_ITEM_BREAK.play(player);
+        player.playSound(player, Sound.ENTITY_ITEM_BREAK, 1f, 1f);
     }
 
     @Override
