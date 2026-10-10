@@ -84,7 +84,9 @@ public class WorldDataImpl implements WorldData {
         }
     }
 
-    /** {@return the world's own values, without overrides, as they are saved} */
+    /**
+     * {@return the world's own values, without overrides, as they are saved}
+     */
     public Map<WorldDataKey<?>, Object> storedValues() {
         return Collections.unmodifiableMap(values);
     }

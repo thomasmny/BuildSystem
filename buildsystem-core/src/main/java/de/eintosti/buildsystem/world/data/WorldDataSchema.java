@@ -37,7 +37,9 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class WorldDataSchema {
 
-    /** Every key except {@link WorldDataKey#STATUS}, whose fallback is the registry's default status. */
+    /**
+     * Every key except {@link WorldDataKey#STATUS}, whose fallback is the registry's default status.
+     */
     private static final Map<WorldDataKey<?>, Object> FALLBACKS = fallbacks();
 
     private WorldDataSchema() {}
@@ -71,7 +73,9 @@ public final class WorldDataSchema {
         return Collections.unmodifiableMap(fallbacks);
     }
 
-    /** {@return every key a world stores} */
+    /**
+     * {@return every key a world stores}
+     */
     public static Set<WorldDataKey<?>> keys() {
         Set<WorldDataKey<?>> keys = new LinkedHashSet<>(FALLBACKS.keySet());
         keys.add(WorldDataKey.STATUS);
@@ -98,7 +102,9 @@ public final class WorldDataSchema {
         return new WorldDataImpl(worldName, values);
     }
 
-    /** {@return the value as it is written to disk} Enums by name and statuses by id. */
+    /**
+     * {@return the value as it is written to disk} Enums by name and statuses by id.
+     */
     public static Object toYaml(Object value) {
         return switch (value) {
             case BuildWorldStatus status -> status.getId();

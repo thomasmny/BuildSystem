@@ -170,7 +170,9 @@ public final class YamlEntityFile<T> {
                 background);
     }
 
-    /** Brings a legacy (name-keyed) file up to the current UUID-keyed format, once, before parsing. */
+    /**
+     * Brings a legacy (name-keyed) file up to the current UUID-keyed format, once, before parsing.
+     */
     private void migrateIfNeeded() {
         if (migration == null) {
             return;
