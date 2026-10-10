@@ -18,11 +18,9 @@
 package de.eintosti.buildsystem.util;
 
 import com.google.common.base.Preconditions;
-import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -37,55 +35,69 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A utility class to assist in checking for updates for plugins uploaded to <a
- * href="https://spigotmc.org/resources/">SpigotMC</a>.
+ * Checks the latest GitHub release of BuildSystem against the installed version.
  *
  * @author Parker Hawke - Choco
  */
 @NullMarked
 public final class UpdateChecker {
 
-    private static final String USER_AGENT = "CHOCO-update-checker";
-    private static final String UPDATE_URL = "https://api.spigotmc.org/simple/0.1/index.php?action=getResource&id=%d";
+    private static final URI LATEST_RELEASE =
+            URI.create("https://api.github.com/repos/thomasmny/BuildSystem/releases/latest");
+    private static final String RELEASES_PAGE = "https://github.com/thomasmny/BuildSystem/releases";
     private static final Pattern DECIMAL_SCHEME_PATTERN = Pattern.compile("\\d+(?:\\.\\d+)*");
     private static final Duration TIMEOUT = Duration.ofSeconds(5);
     private static final Duration CACHE_FOR = Duration.ofHours(1);
 
     private final JavaPlugin plugin;
-    private final SpigotRequest request;
+    private final ReleaseRequest request;
     private final Executor executor;
+    private final Duration cacheFor;
 
     private @Nullable CompletableFuture<UpdateResult> lastCheck;
     private long lastCheckAt;
 
-    public UpdateChecker(JavaPlugin plugin, int pluginID, Executor executor) {
-        this(plugin, spigotRequest(pluginID), executor);
+    /**
+     * The last release GitHub sent, kept so a {@code 304 Not Modified} can reuse it.
+     */
+    private volatile @Nullable Release lastRelease;
+
+    public UpdateChecker(JavaPlugin plugin, Executor executor) {
+        this(plugin, githubRequest(plugin.getDescription().getVersion()), executor, CACHE_FOR);
     }
 
-    UpdateChecker(JavaPlugin plugin, SpigotRequest request, Executor executor) {
+    UpdateChecker(JavaPlugin plugin, ReleaseRequest request, Executor executor, Duration cacheFor) {
         this.plugin = plugin;
         this.request = request;
         this.executor = executor;
+        this.cacheFor = cacheFor;
     }
 
-    private static SpigotRequest spigotRequest(int pluginID) {
-        Preconditions.checkArgument(pluginID > 0, "Plugin ID must be greater than 0");
+    private static ReleaseRequest githubRequest(String pluginVersion) {
         HttpClient httpClient = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
-        HttpRequest request = HttpRequest.newBuilder(URI.create(UPDATE_URL.formatted(pluginID)))
-                .timeout(TIMEOUT)
-                .header("User-Agent", USER_AGENT)
-                .GET()
-                .build();
-        return () -> httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        return etag -> {
+            HttpRequest.Builder builder = HttpRequest.newBuilder(LATEST_RELEASE)
+                    .timeout(TIMEOUT)
+                    .header("Accept", "application/vnd.github+json")
+                    .header("X-GitHub-Api-Version", "2022-11-28")
+                    .header("User-Agent", "BuildSystem/" + pluginVersion)
+                    .GET();
+            if (etag != null) {
+                builder.header("If-None-Match", etag);
+            }
+            return httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofString());
+        };
     }
 
     /**
-     * Sends the request to Spigot's resource API.
+     * Fetches the latest release, sending the given ETag as {@code If-None-Match} when there is one.
      */
     @FunctionalInterface
-    interface SpigotRequest {
-        HttpResponse<String> send() throws IOException, InterruptedException;
+    interface ReleaseRequest {
+        HttpResponse<String> send(@Nullable String etag) throws IOException, InterruptedException;
     }
+
+    private record Release(@Nullable String etag, String version, String url) {}
 
     /**
      * {@return the plugin's current version} Exposed so callers can render it (e.g. in an update-available message)
@@ -122,16 +134,16 @@ public final class UpdateChecker {
     }
 
     /**
-     * Request an update check to Spigot. This request is asynchronous and may not complete immediately as an HTTP GET
-     * request is published to the Spigot API. An answer from Spigot is reused for an hour, so a player joining does not
-     * cost a request each time; a failed check is retried on the next call.
+     * Requests an update check from GitHub. The request runs on the executor given to the constructor. An answer is
+     * reused for an hour, so a player joining does not cost a request each time; a failed check is retried on the next
+     * call.
      *
      * @return a future update result
      */
     public synchronized CompletableFuture<UpdateResult> requestUpdateCheck() {
         long now = System.nanoTime();
         boolean reusable = lastCheck != null
-                && now - lastCheckAt <= CACHE_FOR.toNanos()
+                && now - lastCheckAt < cacheFor.toNanos()
                 && (!lastCheck.isDone() || lastCheck.join().getReason().isAnswer());
         if (!reusable) {
             lastCheck = CompletableFuture.supplyAsync(this::check, executor);
@@ -141,50 +153,58 @@ public final class UpdateChecker {
     }
 
     /**
-     * Never completes exceptionally, so a cached check can always be read.
+     * Never throws, so a cached check can always be read.
      */
     private UpdateResult check() {
-        int responseCode;
-
+        Release cached = lastRelease;
         try {
-            HttpResponse<String> response = request.send();
-            responseCode = response.statusCode();
-
-            JsonElement json;
-            try (JsonReader reader = new JsonReader(new StringReader(response.body()))) {
-                json = JsonParser.parseReader(reader);
-            }
-
-            if (!json.isJsonObject()) {
-                return new UpdateResult(UpdateReason.INVALID_JSON);
-            }
-
-            String currentVersion =
-                    json.getAsJsonObject().get("current_version").getAsString();
-            String pluginVersion = plugin.getDescription().getVersion();
-            String latest = compareVersions(pluginVersion, currentVersion);
-
-            if (latest == null) {
-                return new UpdateResult(UpdateReason.UNSUPPORTED_VERSION_SCHEME);
-            } else if (latest.equals(pluginVersion)) {
+            HttpResponse<String> response = request.send(cached == null ? null : cached.etag());
+            int status = response.statusCode();
+            // A 304 confirms the cached release and does not count against GitHub's rate limit.
+            Release release = status == 200 ? parse(response) : status == 304 ? cached : null;
+            if (release == null) {
                 return new UpdateResult(
-                        pluginVersion.equals(currentVersion)
-                                ? UpdateReason.UP_TO_DATE
-                                : UpdateReason.UNRELEASED_VERSION);
-            } else if (latest.equals(currentVersion)) {
-                return new UpdateResult(UpdateReason.NEW_UPDATE, latest);
+                        switch (status) {
+                            case 401 -> UpdateReason.UNAUTHORIZED_QUERY;
+                            case 403, 429 -> UpdateReason.RATE_LIMITED;
+                            default -> UpdateReason.UNKNOWN_ERROR;
+                        });
             }
+            lastRelease = release;
+            return compare(release);
         } catch (IOException e) {
             return new UpdateResult(UpdateReason.COULD_NOT_CONNECT);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return new UpdateResult(UpdateReason.COULD_NOT_CONNECT);
         } catch (RuntimeException e) {
-            // A response without the expected fields, for example.
-            return new UpdateResult(UpdateReason.UNKNOWN_ERROR);
+            // A body that is not JSON or lacks the expected fields.
+            return new UpdateResult(UpdateReason.INVALID_JSON);
         }
+    }
 
-        return new UpdateResult(responseCode == 401 ? UpdateReason.UNAUTHORIZED_QUERY : UpdateReason.UNKNOWN_ERROR);
+    private static Release parse(HttpResponse<String> response) {
+        JsonObject json = JsonParser.parseString(response.body()).getAsJsonObject();
+        String tag = json.get("tag_name").getAsString();
+        return new Release(
+                response.headers().firstValue("ETag").orElse(null),
+                tag.startsWith("v") ? tag.substring(1) : tag,
+                json.get("html_url").getAsString());
+    }
+
+    private UpdateResult compare(Release release) {
+        String pluginVersion = getCurrentVersion();
+        String latest = compareVersions(pluginVersion, release.version());
+        if (latest == null) {
+            return new UpdateResult(UpdateReason.UNSUPPORTED_VERSION_SCHEME);
+        }
+        if (latest.equals(pluginVersion)) {
+            return new UpdateResult(
+                    pluginVersion.equals(release.version())
+                            ? UpdateReason.UP_TO_DATE
+                            : UpdateReason.UNRELEASED_VERSION);
+        }
+        return new UpdateResult(UpdateReason.NEW_UPDATE, release.version(), release.url());
     }
 
     /**
@@ -193,28 +213,32 @@ public final class UpdateChecker {
     public enum UpdateReason {
 
         /**
-         * A new update is available for download on SpigotMC.
+         * A newer release is available on GitHub.
          */
         NEW_UPDATE, // The only reason that requires an update
 
         /**
-         * A successful connection to the Spigot API could not be established.
+         * A connection to GitHub could not be established.
          */
         COULD_NOT_CONNECT,
 
         /**
-         * The JSON retrieved from Spigot was invalid or malformed.
+         * The JSON retrieved from GitHub was invalid or malformed.
          */
         INVALID_JSON,
 
         /**
-         * A 401 error was returned by the Spigot API.
+         * A 401 error was returned by GitHub.
          */
         UNAUTHORIZED_QUERY,
 
         /**
-         * The version of the plugin installed on the server is greater than the one uploaded to SpigotMC's resources
-         * section.
+         * GitHub's rate limit was reached. The check is retried on the next request.
+         */
+        RATE_LIMITED,
+
+        /**
+         * The version of the plugin installed on the server is greater than the latest release.
          */
         UNRELEASED_VERSION,
 
@@ -230,17 +254,17 @@ public final class UpdateChecker {
         UNSUPPORTED_VERSION_SCHEME,
 
         /**
-         * The plugin is up-to-date with the version released on SpigotMC's resources section.
+         * The plugin is up-to-date with the latest release.
          */
         UP_TO_DATE;
 
         /**
-         * {@return whether Spigot answered the check, as opposed to the request failing}
+         * {@return whether GitHub answered the check, as opposed to the request failing}
          */
         boolean isAnswer() {
             return switch (this) {
                 case NEW_UPDATE, UNRELEASED_VERSION, UNSUPPORTED_VERSION_SCHEME, UP_TO_DATE -> true;
-                case COULD_NOT_CONNECT, INVALID_JSON, UNAUTHORIZED_QUERY, UNKNOWN_ERROR -> false;
+                case COULD_NOT_CONNECT, INVALID_JSON, UNAUTHORIZED_QUERY, RATE_LIMITED, UNKNOWN_ERROR -> false;
             };
         }
     }
@@ -252,10 +276,12 @@ public final class UpdateChecker {
 
         private final UpdateReason reason;
         private final String newestVersion;
+        private final String releaseUrl;
 
-        private UpdateResult(UpdateReason reason, String newestVersion) {
+        private UpdateResult(UpdateReason reason, String newestVersion, String releaseUrl) {
             this.reason = reason;
             this.newestVersion = newestVersion;
+            this.releaseUrl = releaseUrl;
         }
 
         private UpdateResult(UpdateReason reason) {
@@ -265,6 +291,7 @@ public final class UpdateChecker {
 
             this.reason = reason;
             this.newestVersion = plugin.getDescription().getVersion();
+            this.releaseUrl = RELEASES_PAGE;
         }
 
         /**
@@ -293,6 +320,13 @@ public final class UpdateChecker {
          */
         public String getNewestVersion() {
             return newestVersion;
+        }
+
+        /**
+         * {@return the GitHub page of the newest release, or of all releases unless an update is available}
+         */
+        public String getReleaseUrl() {
+            return releaseUrl;
         }
     }
 }

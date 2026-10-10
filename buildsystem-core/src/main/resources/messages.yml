@@ -27,6 +27,7 @@ input_cancelled: "%prefix% &cInput cancelled!"
 update_available:
   - "%prefix% &7Great! A new update is available &8[&bv%new_version%&8]"
   - " &8➥ &7Your current version: &bv%current_version%"
+  - " &8➥ &7Download: &b%release_url%"
 command_archive_world: "%prefix% &cYou can't use that command here!"
 command_not_builder: "%prefix% &cOnly builders can use that command!"
 

@@ -42,7 +42,6 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class BuildSystemPlugin extends JavaPlugin {
 
-    public static final int SPIGOT_ID = 60441;
     public static final int METRICS_ID = 7427;
     public static final String ADMIN_PERMISSION = Permissions.ADMIN;
 
@@ -71,8 +70,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         this.services.initClasses();
-        this.updateChecker =
-                new UpdateChecker(this, SPIGOT_ID, services.scheduler().background());
+        this.updateChecker = new UpdateChecker(this, services.scheduler().background());
         performUpdateCheck();
 
         new CommandRegistrar(this, services).registerAll();
@@ -179,6 +177,9 @@ public class BuildSystemPlugin extends JavaPlugin {
                                                         ChatColor.YELLOW,
                                                         ChatColor.RED,
                                                         this.getDescription().getVersion()));
+                                Bukkit.getConsoleSender()
+                                        .sendMessage("%s ➥ Download: %s%s"
+                                                .formatted(ChatColor.YELLOW, ChatColor.AQUA, result.getReleaseUrl()));
                                 return;
                             }
 
@@ -187,6 +188,7 @@ public class BuildSystemPlugin extends JavaPlugin {
                                 case COULD_NOT_CONNECT,
                                         INVALID_JSON,
                                         UNAUTHORIZED_QUERY,
+                                        RATE_LIMITED,
                                         UNKNOWN_ERROR,
                                         UNSUPPORTED_VERSION_SCHEME ->
                                     Bukkit.getConsoleSender()

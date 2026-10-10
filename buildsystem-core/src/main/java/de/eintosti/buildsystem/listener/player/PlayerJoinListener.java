@@ -227,6 +227,7 @@ public class PlayerJoinListener implements Listener {
                             Placeholders placeholders = Placeholders.of()
                                     .add("%new_version%", result.getNewestVersion())
                                     .add("%current_version%", updateChecker.getCurrentVersion())
+                                    .add("%release_url%", result.getReleaseUrl())
                                     .build();
                             player.sendMessage(String.join(
                                     "\n", messages.getStringList("update_available", player, placeholders)));
