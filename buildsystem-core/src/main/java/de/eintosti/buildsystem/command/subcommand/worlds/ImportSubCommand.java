@@ -122,22 +122,14 @@ public class ImportSubCommand extends AbstractSubCommand {
             return;
         }
 
-        String creatorName = options.creatorName();
-        playerLookupService
-                .lookupUniqueId(creatorName)
-                .thenAccept(creatorId -> scheduler.run(() -> {
-                    if (creatorId == null) {
-                        messages.sendMessage(player, "worlds_import_player_not_found");
-                        return;
-                    }
-                    startImport(
-                            player,
-                            worldName,
-                            Builder.of(creatorId, creatorName),
-                            options.worldType(),
-                            options.generator(),
-                            options.generatorName());
-                }));
+        resolvePlayer(
+                playerLookupService,
+                scheduler,
+                player,
+                options.creatorName(),
+                "worlds_import_player_not_found",
+                creator -> startImport(
+                        player, worldName, creator, options.worldType(), options.generator(), options.generatorName()));
     }
 
     /**

@@ -61,14 +61,8 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
 
     @Override
     public void execute(Player player, String worldName, String[] args) {
-        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(player.getWorld());
+        BuildWorld buildWorld = requireCurrentWorld(player, "worlds_addbuilder_unknown_world");
         if (buildWorld == null) {
-            messages.sendMessage(player, "worlds_addbuilder_unknown_world");
-            return;
-        }
-
-        if (!hasAddBuilderPermission(player, buildWorld)) {
-            messages.sendPermissionError(player);
             return;
         }
 
@@ -80,43 +74,17 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
     }
 
     private void addBuilder(Player player, BuildWorld buildWorld, String builderName, boolean closeInventory) {
-        Player builderPlayer = Bukkit.getPlayerExact(builderName);
-        if (builderPlayer != null) {
-            applyBuilder(
-                    player,
-                    buildWorld,
-                    Builder.of(builderPlayer),
-                    builderPlayer.getUniqueId(),
-                    builderName,
-                    closeInventory);
-            return;
-        }
-
-        playerLookupService
-                .lookupUniqueId(builderName)
-                .thenAccept(builderId -> scheduler.run(() -> {
-                    if (builderId == null) {
-                        messages.sendMessage(player, "worlds_addbuilder_player_not_found");
-                        player.closeInventory();
-                        return;
-                    }
-                    applyBuilder(
-                            player,
-                            buildWorld,
-                            Builder.of(builderId, builderName),
-                            builderId,
-                            builderName,
-                            closeInventory);
-                }));
+        resolvePlayer(
+                playerLookupService,
+                scheduler,
+                player,
+                builderName,
+                "worlds_addbuilder_player_not_found",
+                builder -> applyBuilder(player, buildWorld, builder, closeInventory));
     }
 
-    private void applyBuilder(
-            Player player,
-            BuildWorld buildWorld,
-            Builder builder,
-            UUID builderId,
-            String builderName,
-            boolean closeInventory) {
+    private void applyBuilder(Player player, BuildWorld buildWorld, Builder builder, boolean closeInventory) {
+        UUID builderId = builder.getUniqueId();
         Builders builders = buildWorld.getBuilders();
         if (builderId.equals(player.getUniqueId()) && builders.isCreator(player)) {
             messages.sendMessage(player, "worlds_addbuilder_already_creator");
@@ -132,7 +100,7 @@ public class AddBuilderSubCommand extends AbstractSubCommand {
 
         builders.addBuilder(builder);
         XSound.ENTITY_PLAYER_LEVELUP.play(player);
-        messages.sendMessage(player, "worlds_addbuilder_added", Placeholders.of("%builder%", builderName));
+        messages.sendMessage(player, "worlds_addbuilder_added", Placeholders.of("%builder%", builder.getName()));
 
         if (closeInventory) {
             player.closeInventory();

@@ -18,9 +18,19 @@
 package de.eintosti.buildsystem.command.subcommand;
 
 import de.eintosti.buildsystem.api.world.BuildWorld;
+import de.eintosti.buildsystem.api.world.builder.Builder;
+import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.player.PlayerLookupService;
+import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -79,5 +89,81 @@ public abstract class AbstractSubCommand implements SubCommand {
         }
 
         return buildWorld;
+    }
+
+    /**
+     * The preamble for subcommands that act on the world the player stands in: permission first when it is a build
+     * world, then existence.
+     *
+     * @param player The command sender
+     * @param missingKey The message sent when the player is not in a build world
+     * @return The world if both checks pass, otherwise {@code null} (an error message has already been sent)
+     */
+    protected @Nullable BuildWorld requireCurrentWorld(Player player, String missingKey) {
+        BuildWorld buildWorld = worldService.getWorldStorage().getBuildWorld(player.getWorld());
+        if (buildWorld == null) {
+            messages.sendMessage(player, missingKey);
+            return null;
+        }
+
+        if (!buildWorld.getPermissions().canPerformCommand(player, getArgument().getPermission())) {
+            messages.sendPermissionError(player);
+            return null;
+        }
+        return buildWorld;
+    }
+
+    /**
+     * Resolves a player name to a {@link Builder}, using the online player when there is one and otherwise looking the
+     * name up off the main thread. {@code onFound} always runs on the main thread. When the name is unknown, {@code
+     * notFoundKey} is sent and the player's inventory closed instead.
+     */
+    protected void resolvePlayer(
+            PlayerLookupService lookup,
+            TaskScheduler scheduler,
+            Player player,
+            String name,
+            String notFoundKey,
+            Consumer<Builder> onFound) {
+        Player online = Bukkit.getPlayerExact(name);
+        if (online != null) {
+            onFound.accept(Builder.of(online));
+            return;
+        }
+
+        lookup.lookupUniqueId(name)
+                .thenAcceptAsync(
+                        uuid -> {
+                            if (uuid == null) {
+                                messages.sendMessage(player, notFoundKey);
+                                player.closeInventory();
+                                return;
+                            }
+                            onFound.accept(Builder.of(uuid, name));
+                        },
+                        scheduler.mainThread());
+    }
+
+    /**
+     * Completes the world-name argument with the worlds the player may see and run this subcommand in.
+     */
+    protected List<String> completeWorldName(Player player, String[] args) {
+        if (args.length != 2) {
+            return List.of();
+        }
+
+        List<String> result = new ArrayList<>();
+        WorldStorageImpl worldStorage = worldService.getWorldStorage();
+        for (BuildWorld world : worldStorage.getBuildWorlds()) {
+            String worldPermission = world.getData().get(WorldDataKey.PERMISSION);
+            String name = worldStorage.typedName(world.getName());
+            if ((player.hasPermission(worldPermission) || worldPermission.equals("-"))
+                    && world.getPermissions()
+                            .canPerformCommand(player, getArgument().getPermission())
+                    && StringUtil.startsWithIgnoreCase(name, args[1])) {
+                result.add(name);
+            }
+        }
+        return result;
     }
 }
