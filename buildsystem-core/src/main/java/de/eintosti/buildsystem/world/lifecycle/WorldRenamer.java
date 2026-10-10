@@ -201,6 +201,7 @@ public class WorldRenamer {
         });
         World newWorld = new BukkitWorldFactory(configService, plugin.getLogger(), buildWorld)
                 .generate(BukkitWorldFactory.VersionCheck.SKIP);
+        buildWorld.getUnloader().manageUnload();
         Location spawnLocation = oldSpawnLocation.clone();
         spawnLocation.setWorld(newWorld);
 

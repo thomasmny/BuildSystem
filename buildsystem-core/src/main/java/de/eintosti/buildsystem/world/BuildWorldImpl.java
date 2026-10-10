@@ -169,7 +169,6 @@ public final class BuildWorldImpl implements BuildWorld, HeadProfileSource {
         this.worldUnloader = WorldUnloaderImpl.of(context, this);
         this.worldPermissions = WorldPermissionsImpl.of(context, this);
         this.worldTeleporter = WorldTeleporterImpl.of(context, this);
-        this.worldUnloader.manageUnload();
     }
 
     /**
