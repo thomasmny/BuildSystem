@@ -28,59 +28,63 @@ import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
 import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.jspecify.annotations.NullMarked;
 
+/**
+ * Stops WorldEdit edits in build worlds the player may not build in, and records when a world was last edited.
+ * FastAsyncWorldEdit fires {@link EditSessionEvent} off the main thread, so the decision only reads, and the
+ * {@link WorldDataKey#LAST_EDITED} write is handed to the main thread.
+ */
 @NullMarked
 public class EditSessionListener implements Listener {
 
     private final WorldStorageImpl worldStorage;
+    private final TaskScheduler scheduler;
     private final WorldProtectionPolicy policy;
 
-    public EditSessionListener(WorldStorageImpl worldStorage) {
+    public EditSessionListener(WorldStorageImpl worldStorage, TaskScheduler scheduler) {
         this.worldStorage = worldStorage;
+        this.scheduler = scheduler;
         this.policy = new WorldProtectionPolicy();
         WorldEdit.getInstance().getEventBus().register(this);
     }
 
     @Subscribe
     public void onEditSession(EditSessionEvent event) {
+        if (event.getStage() != EditSession.Stage.BEFORE_CHANGE || event.getWorld() == null) {
+            return;
+        }
+
         Actor actor = event.getActor();
         if (actor == null || !actor.isPlayer()) {
             return;
         }
 
-        Player player = Bukkit.getPlayer(actor.getName());
-        if (player == null) {
+        Player player = Bukkit.getPlayer(actor.getUniqueId());
+        World world = Bukkit.getWorld(event.getWorld().getName());
+        if (player == null || world == null) {
             return;
         }
 
-        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
+        // The edited world, not the one the player stands in: //world can point WorldEdit elsewhere.
+        BuildWorld buildWorld = worldStorage.getBuildWorld(world);
         if (buildWorld == null) {
             return;
         }
 
-        if (event.getStage() != EditSession.Stage.BEFORE_CHANGE) {
-            return;
-        }
-
-        if (buildWorld.getPermissions().hasAdminPermission(player)) {
-            buildWorld.getData().set(WorldDataKey.LAST_EDITED, System.currentTimeMillis());
-            return;
-        }
-
-        if (policy.checkStatus(player, buildWorld) == Denial.STATUS_LOCKED) {
+        if (!buildWorld.getPermissions().hasAdminPermission(player)
+                && (policy.checkStatus(player, buildWorld) == Denial.STATUS_LOCKED
+                        || policy.checkBuilders(player, buildWorld) == Denial.NOT_A_BUILDER)) {
             event.setExtent(new NullExtent());
             return;
         }
 
-        if (policy.checkBuilders(player, buildWorld) == Denial.NOT_A_BUILDER) {
-            event.setExtent(new NullExtent());
-            return;
-        }
-
-        buildWorld.getData().set(WorldDataKey.LAST_EDITED, System.currentTimeMillis());
+        long editedAt = System.currentTimeMillis();
+        scheduler.run(() -> buildWorld.getData().set(WorldDataKey.LAST_EDITED, editedAt));
     }
 }
