@@ -62,16 +62,19 @@ class WorldUnloaderImplTest {
         server = MockBukkit.mock();
         configService = mock(ConfigService.class, RETURNS_DEEP_STUBS);
         when(configService.current().world().unload().timeUntilUnload()).thenReturn("01:00:00");
+        Messages messages = mock(Messages.class, RETURNS_DEEP_STUBS);
+        SpawnService spawnService = mock(SpawnService.class);
         context = new WorldContext(
-                mock(Messages.class, RETURNS_DEEP_STUBS),
+                messages,
                 mock(MenuItems.class),
                 configService,
                 mock(PlayerServiceImpl.class),
-                mock(SpawnService.class),
+                spawnService,
                 TestData.statusRegistry(),
                 mock(CustomizableIcons.class),
                 new TaskScheduler(MockBukkit.createMockPlugin()),
-                Logger.getLogger("WorldUnloaderImplTest"));
+                Logger.getLogger("WorldUnloaderImplTest"),
+                new WorldOperations(messages, spawnService));
     }
 
     @AfterEach

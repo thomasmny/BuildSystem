@@ -38,6 +38,7 @@ import de.eintosti.buildsystem.world.data.WorldStatusRegistryImpl;
 import de.eintosti.buildsystem.world.display.CustomizableIcons;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import de.eintosti.buildsystem.world.download.WorldDownloadService;
+import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import org.bukkit.NamespacedKey;
 import org.jspecify.annotations.NullMarked;
@@ -248,7 +249,8 @@ public final class Services {
                     worldStatusRegistry(),
                     customizableIcons(),
                     taskScheduler,
-                    plugin.getLogger());
+                    plugin.getLogger(),
+                    new WorldOperations(messages(), spawn()));
         }
         return worldContext;
     }

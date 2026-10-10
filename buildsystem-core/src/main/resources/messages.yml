@@ -178,12 +178,15 @@ worlds_backup_created: "%prefix% &7Successfully &acreated &7a backup of &b%world
 worlds_backup_failed: "%prefix% &cUnable to create a backup of %world%."
 worlds_backup_restoration_in_progress: "%prefix% &7&oThe world you are in is being restored..."
 worlds_backup_restoration_successful: "%prefix% &7The world has been successfully reset to the state from &a%timestamp%&7."
+worlds_backup_restoration_failed: "%prefix% &cThe backup could not be restored. Check the console for details."
 
 worlds_builders_usage: "%prefix% &7Usage: &b/worlds builders <world>"
 worlds_builders_unknown_world: "%prefix% &cUnknown world."
 
 worlds_world_exists: "%prefix% &cThis world already exists."
 worlds_world_creation_invalid_characters: "%prefix% &7&oRemoved invalid characters from world name."
+worlds_world_busy: "%prefix% &b%world% &cis busy with another operation. Try again in a moment."
+worlds_world_unload_failed: "%prefix% &b%world% &ccould not be unloaded, so nothing was changed."
 worlds_world_creation_name_bank: "%prefix% &cThe world name cannot be blank."
 worlds_world_namespace_invalid: "%prefix% &c%namespace% &7is not a valid namespace. Use lowercase letters, digits, &f_&7, &f-&7 and &f.&7."
 worlds_world_namespace_unsupported: "%prefix% &cWorld namespaces require Paper."
