@@ -59,6 +59,7 @@ final class SqlEntityStore implements EntityStore {
     private final String upsert;
     private final String delete;
     private final String deleteAll;
+    private final String dropTable;
     private final Logger logger;
 
     /**
@@ -74,6 +75,7 @@ final class SqlEntityStore implements EntityStore {
         this.upsert = dialect.upsert(table);
         this.delete = "DELETE FROM " + table + " WHERE id = ?";
         this.deleteAll = "DELETE FROM " + table;
+        this.dropTable = "DROP TABLE " + table;
         this.logger = logger;
     }
 
@@ -81,6 +83,15 @@ final class SqlEntityStore implements EntityStore {
         database.run("create " + table, connection -> {
             try (Statement statement = connection.createStatement()) {
                 statement.execute(createTable);
+            }
+            return null;
+        });
+    }
+
+    void dropTable() {
+        database.run("drop " + table, connection -> {
+            try (Statement statement = connection.createStatement()) {
+                statement.execute(dropTable);
             }
             return null;
         });

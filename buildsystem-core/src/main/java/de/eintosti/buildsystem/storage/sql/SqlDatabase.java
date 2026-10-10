@@ -25,7 +25,6 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Properties;
 import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
@@ -83,12 +82,16 @@ public final class SqlDatabase implements Database {
 
     @Override
     public EntityStore collection(EntityKind kind) {
+        SqlEntityStore store = table(kind);
+        store.createTable();
+        return store;
+    }
+
+    private SqlEntityStore table(EntityKind kind) {
         // The only identifier in the SQL, and it cannot be a parameter. It is safe to splice in: the prefix was checked
         // against [a-z_][a-z0-9_]{0,31}| when the config was parsed, and the rest is the lowercase name of an enum
         // constant.
-        SqlEntityStore store = new SqlEntityStore(this, dialect, tablePrefix + kind.id(), logger);
-        store.createTable();
-        return store;
+        return new SqlEntityStore(this, dialect, tablePrefix + kind.id(), logger);
     }
 
     @Override
@@ -111,13 +114,7 @@ public final class SqlDatabase implements Database {
 
     @Override
     public void drop(EntityKind kind) {
-        String table = tablePrefix + kind.id();
-        run("drop " + table, connection -> {
-            try (Statement statement = connection.createStatement()) {
-                statement.execute("DROP TABLE " + table);
-            }
-            return null;
-        });
+        table(kind).dropTable();
     }
 
     /**
