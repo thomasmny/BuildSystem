@@ -19,70 +19,78 @@ package de.eintosti.buildsystem.command;
 
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.i18n.Placeholders;
-import java.util.ArrayList;
 import java.util.List;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Contract;
 import org.jspecify.annotations.NullMarked;
 
+/**
+ * A paged list of commands, each shown with its description and suggested on click. The message keys share a prefix:
+ * {@code <prefix>_title_with_page}, {@code <prefix>_permission} and {@code <prefix>_invalid_page}.
+ */
 @NullMarked
 public final class HelpPages {
 
     private static final int MAX_COMMANDS_PER_PAGE = 7;
+    private static final String RULE = "§7§m----------------------------------------------------";
+
+    /**
+     * One line of the help: what to show, the description's message key, what a click suggests, and the permission
+     * named in the hover text.
+     */
+    public record Entry(String usage, String descriptionKey, String suggest, String permission) {}
 
     private final Messages messages;
-    private final String title, permissionTemplate;
+    private final String keyPrefix;
+    private final List<Entry> entries;
 
-    public HelpPages(Messages messages, String title, String permissionTemplate) {
+    public HelpPages(Messages messages, String keyPrefix, List<Entry> entries) {
         this.messages = messages;
-        this.title = title;
-        this.permissionTemplate = permissionTemplate;
+        this.keyPrefix = keyPrefix;
+        this.entries = entries;
     }
 
     /**
-     * Sends one page of {@code commands}, clamping {@code pageNum} into range.
+     * Sends the page the player typed, or {@code <prefix>_invalid_page} if it is not a number.
      */
-    public void send(Player player, int pageNum, List<TextComponent> commands) {
-        int numPages = Math.max(1, Math.ceilDiv(commands.size(), MAX_COMMANDS_PER_PAGE));
-        pageNum = Math.clamp(pageNum, 1, numPages);
+    public void send(Player player, String page) {
+        try {
+            send(player, Integer.parseInt(page));
+        } catch (NumberFormatException e) {
+            messages.sendMessage(player, keyPrefix + "_invalid_page");
+        }
+    }
 
-        List<TextComponent> page = createPage(commands, pageNum);
-        page.add(0, new TextComponent("§7§m----------------------------------------------------"));
-        page.add(
-                1,
-                new TextComponent(messages.getString(this.title, player)
-                        .replace("%page%", String.valueOf(pageNum))
+    /**
+     * Sends one page, clamping {@code page} into range.
+     */
+    public void send(Player player, int page) {
+        int numPages = Math.max(1, Math.ceilDiv(entries.size(), MAX_COMMANDS_PER_PAGE));
+        int shown = Math.clamp(page, 1, numPages);
+        int from = (shown - 1) * MAX_COMMANDS_PER_PAGE;
+
+        player.spigot().sendMessage(new TextComponent(RULE));
+        player.spigot()
+                .sendMessage(new TextComponent(messages.getString(keyPrefix + "_title_with_page", player)
+                        .replace("%page%", String.valueOf(shown))
                         .replace("%max%", String.valueOf(numPages))
                         .concat("\n")));
-        page.add(new TextComponent("§7§m----------------------------------------------------"));
-        page.forEach(line -> player.spigot().sendMessage(line));
+        entries.subList(from, Math.min(from + MAX_COMMANDS_PER_PAGE, entries.size()))
+                .forEach(entry -> player.spigot().sendMessage(component(player, entry)));
+        player.spigot().sendMessage(new TextComponent(RULE));
     }
 
-    private static List<TextComponent> createPage(List<TextComponent> commands, int page) {
-        int from = (page - 1) * MAX_COMMANDS_PER_PAGE;
-        return new ArrayList<>(commands.subList(from, Math.min(from + MAX_COMMANDS_PER_PAGE, commands.size())));
-    }
-
-    @Contract("_, _, _, _, _-> new")
-    public TextComponent component(
-            Player player, String command, String commandDescriptionKey, String suggest, String permission) {
-        if (command.isEmpty()) {
-            return new TextComponent();
-        }
-
-        TextComponent commandComponent = new TextComponent("§b" + command);
-        TextComponent textComponent = new TextComponent(" §8» " + messages.getString(commandDescriptionKey, player));
-
-        commandComponent.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, suggest));
-        commandComponent.setHoverEvent(new HoverEvent(
+    private TextComponent component(Player player, Entry entry) {
+        TextComponent component = new TextComponent("§b" + entry.usage());
+        component.setClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, entry.suggest()));
+        component.setHoverEvent(new HoverEvent(
                 HoverEvent.Action.SHOW_TEXT,
                 new Text(messages.getString(
-                        this.permissionTemplate, player, Placeholders.of("%permission%", permission)))));
-        commandComponent.addExtra(textComponent);
-        return commandComponent;
+                        keyPrefix + "_permission", player, Placeholders.of("%permission%", entry.permission())))));
+        component.addExtra(new TextComponent(" §8» " + messages.getString(entry.descriptionKey(), player)));
+        return component;
     }
 }

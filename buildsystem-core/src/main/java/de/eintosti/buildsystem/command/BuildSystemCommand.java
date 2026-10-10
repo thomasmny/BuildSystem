@@ -17,23 +17,41 @@
  */
 package de.eintosti.buildsystem.command;
 
-import com.google.common.collect.Lists;
+import de.eintosti.buildsystem.command.HelpPages.Entry;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.List;
 import java.util.logging.Logger;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class BuildSystemCommand extends CommandBase {
 
+    private static final List<Entry> COMMANDS = List.of(
+            new Entry("/back", "buildsystem_back", "/back", Permissions.BACK),
+            new Entry("/blocks", "buildsystem_blocks", "/blocks", Permissions.BLOCKS),
+            new Entry("/build [player]", "buildsystem_build", "/build", Permissions.BUILD),
+            new Entry("/config reload", "buildsystem_config", "/config reload", Permissions.CONFIG),
+            new Entry("/day [world]", "buildsystem_day", "/day", Permissions.DAY),
+            new Entry("/explosions [world]", "buildsystem_explosions", "/explosions", Permissions.EXPLOSIONS),
+            new Entry("/gm <gamemode> [player]", "buildsystem_gamemode", "/gm ", Permissions.GAMEMODE),
+            new Entry("/night [world]", "buildsystem_night", "/night", Permissions.NIGHT),
+            new Entry("/noai [world]", "buildsystem_noai", "/noai", Permissions.NOAI),
+            new Entry("/physics [world]", "buildsystem_physics", "/physics", Permissions.PHYSICS),
+            new Entry("/settings", "buildsystem_settings", "/settings", Permissions.SETTINGS),
+            new Entry("/setup", "buildsystem_setup", "/setup", Permissions.SETUP),
+            new Entry("/skull [player/id]", "buildsystem_skull", "/skull", Permissions.SKULL),
+            new Entry("/spawn", "buildsystem_spawn", "/spawn", "-"),
+            new Entry("/speed <1-5>", "buildsystem_speed", "/speed ", Permissions.SPEED),
+            new Entry("/top", "buildsystem_top", "/top", Permissions.TOP),
+            new Entry("/worlds help", "buildsystem_worlds", "/worlds help", "-"));
+
     private final HelpPages pages;
 
     public BuildSystemCommand(Messages messages, Logger logger) {
         super(messages, logger, true);
-        this.pages = new HelpPages(messages, "buildsystem_title_with_page", "buildsystem_permission");
+        this.pages = new HelpPages(messages, "buildsystem", COMMANDS);
     }
 
     @Override
@@ -42,42 +60,10 @@ public class BuildSystemCommand extends CommandBase {
             return;
         }
 
-        if (args.length == 0) {
-            pages.send(player, 1, getCommands(player));
-        } else if (args.length == 1) {
-            try {
-                int page = Integer.parseInt(args[0]);
-                pages.send(player, page, getCommands(player));
-            } catch (NumberFormatException e) {
-                messages.sendMessage(player, "buildsystem_invalid_page");
-            }
-        } else {
-            messages.sendMessage(player, "buildsystem_usage");
+        switch (args.length) {
+            case 0 -> pages.send(player, 1);
+            case 1 -> pages.send(player, args[0]);
+            default -> messages.sendMessage(player, "buildsystem_usage");
         }
-    }
-
-    private List<TextComponent> getCommands(Player player) {
-        List<TextComponent> commands = Lists.newArrayList(
-                pages.component(player, "/back", "buildsystem_back", "/back", Permissions.BACK),
-                pages.component(player, "/blocks", "buildsystem_blocks", "/blocks", Permissions.BLOCKS),
-                pages.component(player, "/build [player]", "buildsystem_build", "/build", Permissions.BUILD),
-                pages.component(player, "/config reload", "buildsystem_config", "/config reload", Permissions.CONFIG),
-                pages.component(player, "/day [world]", "buildsystem_day", "/day", Permissions.DAY),
-                pages.component(
-                        player, "/explosions [world]", "buildsystem_explosions", "/explosions", Permissions.EXPLOSIONS),
-                pages.component(
-                        player, "/gm <gamemode> [player]", "buildsystem_gamemode", "/gm ", Permissions.GAMEMODE),
-                pages.component(player, "/night [world]", "buildsystem_night", "/night", Permissions.NIGHT),
-                pages.component(player, "/noai [world]", "buildsystem_noai", "/noai", Permissions.NOAI),
-                pages.component(player, "/physics [world]", "buildsystem_physics", "/physics", Permissions.PHYSICS),
-                pages.component(player, "/settings", "buildsystem_settings", "/settings", Permissions.SETTINGS),
-                pages.component(player, "/setup", "buildsystem_setup", "/setup", Permissions.SETUP),
-                pages.component(player, "/skull [player/id]", "buildsystem_skull", "/skull", Permissions.SKULL),
-                pages.component(player, "/spawn", "buildsystem_spawn", "/spawn", "-"),
-                pages.component(player, "/speed <1-5>", "buildsystem_speed", "/speed ", Permissions.SPEED),
-                pages.component(player, "/top", "buildsystem_top", "/top", Permissions.TOP),
-                pages.component(player, "/worlds help", "buildsystem_worlds", "/worlds help", "-"));
-        commands.removeIf(textComponent -> textComponent.getText().isEmpty());
-        return commands;
     }
 }

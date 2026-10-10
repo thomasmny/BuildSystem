@@ -22,17 +22,19 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.eintosti.buildsystem.command.HelpPages.Entry;
 import de.eintosti.buildsystem.i18n.Messages;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.IntStream;
 import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -57,12 +59,23 @@ class HelpPagesTest {
                 .when(spigot)
                 .sendMessage(any(BaseComponent.class));
 
-        List<TextComponent> commands = IntStream.range(0, COMMANDS)
-                .mapToObj(i -> new TextComponent("cmd" + i))
+        List<Entry> commands = IntStream.range(0, COMMANDS)
+                .mapToObj(i -> new Entry("/cmd" + i, "description", "/cmd" + i, "-"))
                 .toList();
-        new HelpPages(messages, "title", "permission").send(player, requested, commands);
+        new HelpPages(messages, "help", commands).send(player, requested);
 
         assertEquals(shown + "/2\n", lines.get(1));
         assertEquals(commandLines + 3, lines.size());
+        assertEquals("§b/cmd" + (shown - 1) * 7 + " §8» %page%/%max%", lines.get(2));
+    }
+
+    @Test
+    void send_withAPageThatIsNotANumber_sendsTheInvalidPageKey() {
+        Messages messages = mock(Messages.class);
+        Player player = mock(Player.class);
+
+        new HelpPages(messages, "help", List.of()).send(player, "two");
+
+        verify(messages).sendMessage(player, "help_invalid_page");
     }
 }
