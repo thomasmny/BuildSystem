@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.command;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,6 +35,7 @@ import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.command.WorldToggleCommand.Toggle;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.i18n.Placeholders;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import java.util.List;
@@ -48,6 +50,7 @@ import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import org.mockbukkit.mockbukkit.world.WorldMock;
+import org.mockito.ArgumentCaptor;
 
 @NullMarked
 class WorldToggleCommandTest {
@@ -78,14 +81,18 @@ class WorldToggleCommandTest {
     @Test
     void physicsAll_onlyTouchesWorldsThePlayerMayToggle() {
         BuildWorld allowed = buildWorld(true);
+        BuildWorld alsoAllowed = buildWorld(true);
         BuildWorld denied = buildWorld(false);
-        when(worldStorage.getBuildWorlds()).thenReturn(List.of(allowed, denied));
+        when(worldStorage.getBuildWorlds()).thenReturn(List.of(allowed, denied, alsoAllowed));
 
         run(Toggle.PHYSICS, "all");
 
         verify(allowed.getData()).set(WorldDataKey.PHYSICS, true);
+        verify(alsoAllowed.getData()).set(WorldDataKey.PHYSICS, true);
         verify(denied.getData(), never()).set(eq(WorldDataKey.PHYSICS), anyBoolean());
-        verify(messages).sendMessage(eq(player), eq("physics_activated_all_skipped"), any());
+        ArgumentCaptor<Placeholders> counts = ArgumentCaptor.forClass(Placeholders.class);
+        verify(messages).sendMessage(eq(player), eq("physics_activated_all_skipped"), counts.capture());
+        assertEquals("2 activated, 1 skipped", counts.getValue().applyTo("%activated% activated, %skipped% skipped"));
     }
 
     @Test

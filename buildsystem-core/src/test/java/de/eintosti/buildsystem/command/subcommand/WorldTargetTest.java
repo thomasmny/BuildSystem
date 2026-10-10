@@ -151,14 +151,14 @@ class WorldTargetTest {
 
             @Override
             public Argument getArgument() {
-                return WorldsArgument.SET_SPAWN;
+                return WorldsArgument.EDIT;
             }
         };
 
-        subCommand.execute(player, "world", new String[] {"setSpawn"});
+        subCommand.execute(player, "world", new String[] {"edit"});
         BuildWorld world = buildWorld(true);
         when(worldStorage.getBuildWorld(player.getWorld())).thenReturn(world);
-        subCommand.execute(player, "world", new String[] {"setSpawn"});
+        subCommand.execute(player, "world", new String[] {"edit"});
 
         assertEquals(List.of(world), ran);
     }
@@ -172,7 +172,7 @@ class WorldTargetTest {
 
     private BuildWorld buildWorld(boolean permitted) {
         WorldPermissions permissions = mock(WorldPermissions.class);
-        when(permissions.canPerformCommand(eq(player), any())).thenReturn(permitted);
+        when(permissions.canPerformCommand(player, PERMISSION)).thenReturn(permitted);
         BuildWorld buildWorld = mock(BuildWorld.class);
         when(buildWorld.getPermissions()).thenReturn(permissions);
         return buildWorld;
