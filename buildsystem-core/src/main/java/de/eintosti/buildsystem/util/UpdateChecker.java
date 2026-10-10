@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.util;
 
+import com.google.common.base.Preconditions;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -29,6 +30,7 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.OptionalLong;
@@ -132,11 +134,10 @@ public final class UpdateChecker {
         if (lastCheck == null) {
             return false;
         }
-        if (!lastCheck.isDone()) {
-            return true;
-        }
-        if (lastCheck.join().reason().isAnswer()) {
-            return now - lastCheckAt < CACHE_FOR.toNanos();
+        boolean fresh = now - lastCheckAt < CACHE_FOR.toNanos();
+        // A check still running is only waited for inside the cache window, so one that hangs cannot block the next.
+        if (!lastCheck.isDone() || lastCheck.join().reason().isAnswer()) {
+            return fresh;
         }
         Instant until = retryAt;
         return until != null && Instant.now().isBefore(until);
@@ -157,7 +158,7 @@ public final class UpdateChecker {
         }
 
         int status = response.statusCode();
-        retryAt = status == 403 || status == 429 ? retryAt(response.headers()) : null;
+        retryAt = status == 403 || status == 429 ? retryAt(response.headers(), Instant.now()) : null;
         if (status != 200) {
             return new UpdateResult(
                     switch (status) {
@@ -168,7 +169,7 @@ public final class UpdateChecker {
                     null);
         }
 
-        List<Release> releases;
+        List<Candidate> releases;
         try {
             releases = parse(response.body());
         } catch (RuntimeException e) {
@@ -183,17 +184,18 @@ public final class UpdateChecker {
     }
 
     /**
-     * {@return when GitHub allows the next request} {@code Retry-After} counts seconds from now, and
-     * {@code x-ratelimit-reset} is a Unix time.
+     * {@return when GitHub allows the next request, at most an hour away} {@code Retry-After} counts seconds from now,
+     * and {@code x-ratelimit-reset} is a Unix time, so a skewed clock could otherwise pause checks for long.
      */
-    private static @Nullable Instant retryAt(HttpHeaders headers) {
+    private static @Nullable Instant retryAt(HttpHeaders headers, Instant now) {
         try {
             OptionalLong retryAfter = headers.firstValueAsLong("retry-after");
-            if (retryAfter.isPresent()) {
-                return Instant.now().plusSeconds(retryAfter.getAsLong());
-            }
             OptionalLong reset = headers.firstValueAsLong("x-ratelimit-reset");
-            return reset.isPresent() ? Instant.ofEpochSecond(reset.getAsLong()) : null;
+            Instant at = retryAfter.isPresent()
+                    ? now.plusSeconds(retryAfter.getAsLong())
+                    : reset.isPresent() ? Instant.ofEpochSecond(reset.getAsLong()) : null;
+            Instant latest = now.plus(CACHE_FOR);
+            return at == null || at.isBefore(latest) ? at : latest;
         } catch (NumberFormatException e) {
             // Retry-After may also be an HTTP date; the next request then simply tries again.
             return null;
@@ -204,8 +206,8 @@ public final class UpdateChecker {
      * {@return the stable releases in the list} Drafts, pre-releases and tags that are not version numbers are left
      * out, and a leading {@code v} is stripped from the tag.
      */
-    private static List<Release> parse(String body) {
-        List<Release> releases = new ArrayList<>();
+    private static List<Candidate> parse(String body) {
+        List<Candidate> releases = new ArrayList<>();
         for (JsonElement element : JsonParser.parseString(body).getAsJsonArray()) {
             JsonObject release = element.getAsJsonObject();
             if (release.get("draft").getAsBoolean() || release.get("prerelease").getAsBoolean()) {
@@ -213,38 +215,41 @@ public final class UpdateChecker {
             }
             String tag = release.get("tag_name").getAsString();
             String version = tag.startsWith("v") ? tag.substring(1) : tag;
-            if (Version.parse(version) != null) {
-                releases.add(new Release(version, release.get("html_url").getAsString()));
+            Version parsed = Version.parse(version);
+            if (parsed != null) {
+                releases.add(new Candidate(
+                        parsed, new Release(version, release.get("html_url").getAsString())));
             }
         }
         return releases;
     }
 
-    private UpdateResult compare(List<Release> releases) {
+    private UpdateResult compare(List<Candidate> releases) {
         Version installed = Version.parse(getCurrentVersion());
         if (installed == null) {
             return new UpdateResult(UpdateReason.UNSUPPORTED_VERSION_SCHEME, null);
         }
 
-        Release newest = releases.stream()
-                .max(Comparator.comparing(release -> Version.parse(release.version())))
-                .orElse(null);
+        Candidate newest =
+                releases.stream().max(Comparator.comparing(Candidate::version)).orElse(null);
         if (newest == null) {
             return new UpdateResult(UpdateReason.UP_TO_DATE, null);
         }
 
-        int comparison = Version.parse(newest.version()).compareTo(installed);
+        int comparison = newest.version().compareTo(installed);
         UpdateReason reason = comparison > 0
                 ? UpdateReason.NEW_UPDATE
                 : comparison == 0 ? UpdateReason.UP_TO_DATE : UpdateReason.UNRELEASED_VERSION;
-        return new UpdateResult(reason, newest);
+        return new UpdateResult(reason, newest.release());
     }
+
+    private record Candidate(Version version, Release release) {}
 
     /**
      * A dotted version number. Missing parts count as zero, and a version with a suffix such as {@code -SNAPSHOT} is
      * older than the same numbers without one.
      */
-    private record Version(int[] numbers, boolean suffixed) implements Comparable<Version> {
+    private record Version(List<Integer> numbers, boolean suffixed) implements Comparable<Version> {
 
         private static final Pattern NUMBERS = Pattern.compile("\\d+(?:\\.\\d+)*");
 
@@ -253,17 +258,15 @@ public final class UpdateChecker {
             if (!matcher.lookingAt()) {
                 return null;
             }
-            String[] parts = matcher.group().split("\\.");
-            int[] numbers = new int[parts.length];
-            for (int i = 0; i < parts.length; i++) {
-                numbers[i] = NumberUtils.toInt(parts[i]);
-            }
+            List<Integer> numbers = Arrays.stream(matcher.group().split("\\."))
+                    .map(NumberUtils::toInt)
+                    .toList();
             return new Version(numbers, matcher.end() < version.length());
         }
 
         @Override
         public int compareTo(Version other) {
-            for (int i = 0; i < Math.max(numbers.length, other.numbers.length); i++) {
+            for (int i = 0; i < Math.max(numbers.size(), other.numbers.size()); i++) {
                 int comparison = Integer.compare(part(i), other.part(i));
                 if (comparison != 0) {
                     return comparison;
@@ -273,7 +276,7 @@ public final class UpdateChecker {
         }
 
         private int part(int index) {
-            return index < numbers.length ? numbers[index] : 0;
+            return index < numbers.size() ? numbers.get(index) : 0;
         }
     }
 
@@ -293,6 +296,11 @@ public final class UpdateChecker {
      */
     public record UpdateResult(
             UpdateReason reason, @Nullable Release release) {
+
+        public UpdateResult {
+            Preconditions.checkArgument(
+                    reason != UpdateReason.NEW_UPDATE || release != null, "A new update needs a release");
+        }
 
         /**
          * {@return the release to update to, or {@code null} unless it is newer than the installed version}
