@@ -22,7 +22,9 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
@@ -52,6 +54,13 @@ public final class EntityCollection<T> {
     private @Nullable Codec<T> codec;
     private CompletableFuture<Void> lastWrite = CompletableFuture.completedFuture(null);
     private volatile boolean loaded;
+    /**
+     * The entries the last load could not parse, as they are stored. They are never written over, so the stored
+     * version survives until it is fixed or deleted.
+     */
+    private final Map<String, Map<String, Object>> skipped = new ConcurrentHashMap<>();
+
+    private final Set<String> refusalsLogged = ConcurrentHashMap.newKeySet();
 
     /**
      * @param label What one entity is called in log messages
@@ -93,7 +102,20 @@ public final class EntityCollection<T> {
      */
     public CompletableFuture<Void> save(Collection<T> values) {
         Map<String, Map<String, Object>> serialized = serialize(values);
+        serialized.keySet().removeIf(this::skipped);
         return write(() -> store.upsert(serialized));
+    }
+
+    private boolean skipped(String key) {
+        if (!skipped.containsKey(key)) {
+            return false;
+        }
+        if (refusalsLogged.add(key)) {
+            logger.severe(
+                    "Not saving " + label + " \"" + key + "\": it is stored but could not be loaded. Fix or delete"
+                            + " the stored entry, then restart the server.");
+        }
+        return true;
     }
 
     /**
@@ -108,8 +130,8 @@ public final class EntityCollection<T> {
     }
 
     /**
-     * Replaces every stored entry with {@code values}, including entries that failed to load. Refused until the stored
-     * entries have loaded, since what is in memory may then be missing some or all of them.
+     * Replaces every stored entry with {@code values}, keeping the entries that failed to parse as they are stored.
+     * Refused until the stored entries have loaded, since what is in memory may then be missing some or all of them.
      */
     public CompletableFuture<Void> replaceAll(Collection<T> values) {
         if (!loaded) {
@@ -117,6 +139,8 @@ public final class EntityCollection<T> {
                     "Not replacing the stored " + label + " entries, since they have not loaded", null));
         }
         Map<String, Map<String, Object>> serialized = serialize(values);
+        serialized.keySet().removeIf(this::skipped);
+        serialized.putAll(skipped);
         return write(() -> store.replaceAll(serialized));
     }
 
@@ -125,6 +149,7 @@ public final class EntityCollection<T> {
     }
 
     public CompletableFuture<Void> delete(String key) {
+        skipped.remove(key);
         return write(() -> store.delete(key));
     }
 
@@ -184,6 +209,7 @@ public final class EntityCollection<T> {
                         () -> {
                             MemoryConfiguration root = new MemoryConfiguration();
                             Map<String, T> loaded = new LinkedHashMap<>();
+                            Map<String, Map<String, Object>> unparsed = new LinkedHashMap<>();
                             Map<String, Map<String, Object>> stored = store.loadAll();
                             stored.forEach((key, values) -> {
                                 try {
@@ -191,6 +217,7 @@ public final class EntityCollection<T> {
                                     ConfigurationSection section = root.createSection(key, values);
                                     loaded.put(key, codec().deserialize(key, section));
                                 } catch (Exception e) {
+                                    unparsed.put(key, values);
                                     try {
                                         root.set(key, null);
                                     } catch (IllegalArgumentException ignored) {
@@ -203,6 +230,9 @@ public final class EntityCollection<T> {
                                 }
                             });
                             link.accept(loaded, root);
+                            skipped.clear();
+                            skipped.putAll(unparsed);
+                            refusalsLogged.clear();
                             return loaded;
                         },
                         background)

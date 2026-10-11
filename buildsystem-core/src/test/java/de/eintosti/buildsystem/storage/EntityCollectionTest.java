@@ -37,8 +37,10 @@ import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.logging.Handler;
@@ -182,5 +184,105 @@ class EntityCollectionTest {
                         .filter(message -> message.startsWith("Not saving"))
                         .count(),
                 "a refused save is logged once, not on every autosave");
+    }
+
+    @Test
+    void anEntryThatWasSkippedOnLoad_isNotSavedOver_untilItLoads() throws Exception {
+        List<String> logged = new ArrayList<>();
+        Logger logger = Logger.getAnonymousLogger();
+        logger.setUseParentHandlers(false);
+        logger.addHandler(new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                logged.add(record.getLevel() + " " + record.getMessage());
+            }
+
+            @Override
+            public void flush() {}
+
+            @Override
+            public void close() {}
+        });
+        Codec<Entry> strict = new Codec<>() {
+            @Override
+            public String key(Entry value) {
+                return value.name();
+            }
+
+            @Override
+            public Map<String, Object> serialize(Entry value) {
+                return Map.of("name", value.name());
+            }
+
+            @Override
+            public Entry deserialize(String key, ConfigurationSection section) {
+                return new Entry(Objects.requireNonNull(section.getString("name"), "name"));
+            }
+        };
+        Path entries = dataFolder.toPath().resolve("entries.yml");
+        Files.writeString(entries, "entries:\n  hub:\n    other: kept\n  lobby:\n    name: lobby\n");
+        EntityCollection<Entry> file = new EntityCollection<>(
+                new YamlEntityStore(new YamlStore(dataFolder, "entries.yml", logger), "entries", logger, null),
+                "entry",
+                () -> strict,
+                Runnable::run,
+                logger);
+
+        assertEquals(List.of("lobby"), List.copyOf(file.load().join().keySet()));
+        logged.clear();
+        file.save(new Entry("hub")).join();
+        file.save(List.of(new Entry("hub"), new Entry("lobby"))).join();
+        file.replaceAll(List.of(new Entry("lobby"))).join();
+
+        YamlConfiguration written = YamlConfiguration.loadConfiguration(entries.toFile());
+        assertEquals("kept", written.getString("entries.hub.other"));
+        assertFalse(written.contains("entries.hub.name"), "the skipped entry must not be written over");
+        assertTrue(written.contains("entries.lobby"));
+        assertEquals(
+                List.of("SEVERE Not saving entry \"hub\": it is stored but could not be loaded. Fix or delete"
+                        + " the stored entry, then restart the server."),
+                logged);
+
+        Files.writeString(entries, "entries:\n  hub:\n    name: hub\n");
+        assertEquals(List.of("hub"), List.copyOf(file.load().join().keySet()));
+        file.save(new Entry("hub")).join();
+        file.delete("hub").join();
+        assertFalse(YamlConfiguration.loadConfiguration(entries.toFile()).contains("entries.hub"));
+    }
+
+    @Test
+    void anEntryThatWasSkippedOnLoad_canStillBeDeleted() {
+        Logger logger = Logger.getLogger("EntityCollectionTest");
+        EntityStore store =
+                new YamlEntityStore(new YamlStore(dataFolder, "entries.yml", logger), "entries", logger, null);
+        Map<String, Map<String, Object>> rows = new LinkedHashMap<>();
+        rows.put("hub", Map.of("name", 7));
+        store.upsert(rows);
+        EntityCollection<Entry> file = new EntityCollection<>(
+                store,
+                "entry",
+                () -> new Codec<>() {
+                    @Override
+                    public String key(Entry value) {
+                        return value.name();
+                    }
+
+                    @Override
+                    public Map<String, Object> serialize(Entry value) {
+                        return Map.of("name", value.name());
+                    }
+
+                    @Override
+                    public Entry deserialize(String key, ConfigurationSection section) {
+                        throw new IllegalArgumentException("unreadable");
+                    }
+                },
+                Runnable::run,
+                logger);
+
+        assertTrue(file.load().join().isEmpty());
+        file.delete("hub").join();
+
+        assertTrue(store.loadAll().isEmpty());
     }
 }
