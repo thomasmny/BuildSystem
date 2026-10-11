@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.storage.codec;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.test.TestData;
@@ -200,5 +201,15 @@ class FolderCodecTest {
                 .category(child.getCategory())
                 .creator(CodecSamples.SAM)
                 .build();
+    }
+
+    @Test
+    void keyThatIsNotACanonicalUuid_isRefused() {
+        ConfigurationSection section =
+                CodecSamples.section(CodecSamples.resource("folders-4.0.yml"), CodecSamples.FOLDER_ID.toString());
+        for (String key : CodecSamples.nonCanonical(CodecSamples.FOLDER_ID)) {
+            // Loaded, it would be saved again under the canonical key, next to the row it came from.
+            assertThrows(IllegalArgumentException.class, () -> codec.deserialize(key, section), key);
+        }
     }
 }

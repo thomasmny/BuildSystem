@@ -114,8 +114,8 @@ public class PlayerStorageImpl implements PlayerStorage {
      */
     public CompletableFuture<Void> loadPlayers() {
         return load().thenAccept(players -> {
-                    Map<UUID, BuildPlayer> loadedPlayers =
-                            players.stream().collect(Collectors.toMap(BuildPlayer::getUniqueId, Function.identity()));
+                    Map<UUID, BuildPlayer> loadedPlayers = players.stream()
+                            .collect(Collectors.toMap(BuildPlayer::getUniqueId, Function.identity(), this::keepFirst));
                     this.buildPlayers.putAll(loadedPlayers);
                     logger.info("Loaded " + players.size() + " players from storage");
                 })
@@ -123,6 +123,11 @@ public class PlayerStorageImpl implements PlayerStorage {
                     logger.log(Level.SEVERE, "Failed to load players from storage", throwable);
                     return null;
                 });
+    }
+
+    private BuildPlayer keepFirst(BuildPlayer first, BuildPlayer duplicate) {
+        logger.warning("Two stored entries are for player " + first.getUniqueId() + ", keeping the first");
+        return first;
     }
 
     @Override

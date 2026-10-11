@@ -137,8 +137,8 @@ public class FolderStorageImpl implements FolderStorage {
      * @return A future that completes once they are in place, and also when loading failed, which is logged
      */
     public CompletableFuture<Void> loadFolders() {
-        return load().thenAccept(loaded -> this.folders.putAll(
-                        loaded.stream().collect(Collectors.toMap(Folder::getUniqueId, Function.identity()))))
+        return load().thenAccept(loaded -> this.folders.putAll(loaded.stream()
+                        .collect(Collectors.toMap(Folder::getUniqueId, Function.identity(), this::keepFirst))))
                 .exceptionally(throwable -> {
                     logger.log(
                             Level.SEVERE,
@@ -146,6 +146,11 @@ public class FolderStorageImpl implements FolderStorage {
                             throwable instanceof CompletionException ? throwable.getCause() : throwable);
                     return null;
                 });
+    }
+
+    private Folder keepFirst(Folder first, Folder duplicate) {
+        logger.warning("Two stored entries are for folder " + first.getUniqueId() + ", keeping the first");
+        return first;
     }
 
     @Override

@@ -20,15 +20,20 @@ package de.eintosti.buildsystem.storage;
 import static org.junit.jupiter.api.Assertions.*;
 
 import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
+import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.test.TestData;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 @NullMarked
 class PlayerStorageImplTest {
@@ -91,5 +96,24 @@ class PlayerStorageImplTest {
             assertSame(first, future.get(), "All concurrent createBuildPlayer calls must return the same instance");
         }
         assertNotNull(first);
+    }
+
+    @Test
+    void loadPlayers_withTwoEntriesForOnePlayer_keepsTheFirst_andLoadsTheRest() {
+        EntityCollection<BuildPlayer> file = TestData.noopEntityCollection();
+        UUID twice = UUID.randomUUID();
+        UUID other = UUID.randomUUID();
+        BuildPlayer first = new BuildPlayerImpl(twice, new SettingsImpl());
+        Map<String, BuildPlayer> loaded = new LinkedHashMap<>();
+        loaded.put("first", first);
+        loaded.put("second", new BuildPlayerImpl(twice, new SettingsImpl()));
+        loaded.put("other", new BuildPlayerImpl(other, new SettingsImpl()));
+        Mockito.when(file.load()).thenReturn(CompletableFuture.completedFuture(loaded));
+        PlayerStorageImpl loading = new PlayerStorageImpl(Logger.getLogger("test"), file);
+
+        loading.loadPlayers().join();
+
+        assertSame(first, loading.getBuildPlayer(twice));
+        assertNotNull(loading.getBuildPlayer(other));
     }
 }

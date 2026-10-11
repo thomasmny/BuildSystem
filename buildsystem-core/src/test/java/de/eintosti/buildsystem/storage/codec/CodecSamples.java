@@ -40,10 +40,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.bukkit.Difficulty;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
@@ -224,6 +227,16 @@ final class CodecSamples {
 
     static Map<String, Object> reparsed(Map<String, Object> serialized) {
         return asMap(section(toYaml(Map.of("entry", serialized)), "entry"));
+    }
+
+    /**
+     * {@return spellings of {@code id} that {@link UUID#fromString} also accepts: upper case, and without leading zeros}
+     */
+    static List<String> nonCanonical(UUID id) {
+        String shortForm = Arrays.stream(id.toString().split("-"))
+                .map(part -> part.replaceFirst("^0+(?=.)", ""))
+                .collect(Collectors.joining("-"));
+        return List.of(id.toString().toUpperCase(Locale.ROOT), shortForm);
     }
 
     static String resource(String name) {

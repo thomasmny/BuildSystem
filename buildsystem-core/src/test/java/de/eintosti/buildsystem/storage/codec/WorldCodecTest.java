@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.storage.codec;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -264,5 +265,15 @@ class WorldCodecTest {
             yaml = key + ":\n" + body.indent(2);
         }
         return codec.deserialize(key, CodecSamples.section(yaml, key));
+    }
+
+    @Test
+    void keyThatIsNotACanonicalUuid_isRefused() {
+        ConfigurationSection section =
+                CodecSamples.section(CodecSamples.resource("worlds-4.0.yml"), CodecSamples.WORLD_ID.toString());
+        for (String key : CodecSamples.nonCanonical(CodecSamples.WORLD_ID)) {
+            // Loaded, it would be saved again under the canonical key, next to the row it came from.
+            assertThrows(IllegalArgumentException.class, () -> codec.deserialize(key, section), key);
+        }
     }
 }
