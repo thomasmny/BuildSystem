@@ -29,8 +29,14 @@ import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -99,5 +105,57 @@ class YamlPlayerStorageRoundTripTest {
         Collection<BuildPlayer> loaded = newStorage().load().get();
 
         assertTrue(loaded.isEmpty());
+    }
+
+    @Test
+    void aFileWithBrokenSyntax_isKept_andNotSavedOver_untilItLoadsAgain() throws Exception {
+        assertKeptAndNotSavedOver(healthy -> healthy + "broken: [unclosed\n");
+    }
+
+    @Test
+    void aFileWithAnUnreadableArchiveItem_isKept_andNotSavedOver_untilItLoadsAgain() throws Exception {
+        // An item the server cannot read back, such as one another server software saved, fails the whole file.
+        assertKeptAndNotSavedOver(healthy -> {
+            YamlConfiguration config = new YamlConfiguration();
+            config.loadFromString(healthy);
+            String snapshot = "players." + UUID.randomUUID() + ".archive-snapshot";
+            config.set(snapshot + ".gamemode", "SURVIVAL");
+            config.set(snapshot + ".inventory", List.of(Map.of("==", "com.example.UnknownItem", "count", 5)));
+            config.set(snapshot + ".armor", List.of());
+            return config.saveToString();
+        });
+    }
+
+    private void assertKeptAndNotSavedOver(BrokenFile breaker) throws Exception {
+        UUID stored = UUID.randomUUID();
+        newStorage().save(samplePlayer(stored)).join();
+        Path players = dataFolder.toPath().resolve("players.yml");
+        String healthy = Files.readString(players);
+        String broken = breaker.breakFile(healthy);
+        Files.writeString(players, broken);
+
+        PlayerStorageImpl storage = newStorage();
+        assertThrows(ExecutionException.class, () -> storage.load().get());
+        storage.save(samplePlayer(UUID.randomUUID())).join();
+        assertEquals(broken, Files.readString(players), "a file that failed to load is never written over");
+        File[] copies = dataFolder.listFiles((dir, name) -> name.startsWith("players.yml.broken-"));
+        assertNotNull(copies);
+        assertEquals(1, copies.length);
+        assertEquals(broken, Files.readString(copies[0].toPath()));
+
+        Files.writeString(players, healthy);
+        assertEquals(
+                List.of(stored),
+                storage.load().get().stream().map(BuildPlayer::getUniqueId).toList());
+        UUID joined = UUID.randomUUID();
+        storage.save(samplePlayer(joined)).join();
+        YamlConfiguration saved = YamlConfiguration.loadConfiguration(players.toFile());
+        assertTrue(saved.isConfigurationSection("players." + stored));
+        assertTrue(saved.isConfigurationSection("players." + joined), "saving works again once the file loads");
+    }
+
+    @FunctionalInterface
+    private interface BrokenFile {
+        String breakFile(String healthy) throws Exception;
     }
 }

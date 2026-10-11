@@ -99,8 +99,14 @@ public class PlayerStorageImpl implements PlayerStorage {
         return file.delete(playerKey);
     }
 
-    public void loadPlayers() {
-        load().thenAccept(players -> {
+    /**
+     * Loads the stored players into the cache.
+     *
+     * @return A future that completes once they are in the cache. It completes normally even when the load fails, which
+     *     is logged.
+     */
+    public CompletableFuture<Void> loadPlayers() {
+        return load().thenAccept(players -> {
                     Map<UUID, BuildPlayer> loadedPlayers =
                             players.stream().collect(Collectors.toMap(BuildPlayer::getUniqueId, Function.identity()));
                     this.buildPlayers.putAll(loadedPlayers);

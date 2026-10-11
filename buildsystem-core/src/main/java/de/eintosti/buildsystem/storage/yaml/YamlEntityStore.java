@@ -96,12 +96,13 @@ public final class YamlEntityStore implements EntityStore {
     public SequencedMap<String, Map<String, Object>> loadAll() {
         return store.locked(() -> {
             SequencedMap<String, Map<String, Object>> entries = new LinkedHashMap<>();
-            if (!store.reload()) {
-                return entries;
-            }
+            boolean existed = store.reload();
             if (store.loadFailed()) {
                 // Reading on would hand back whatever the file did not lose, as if it were all of it.
                 throw new StorageException("Could not read " + store.fileName() + ", see the error above", null);
+            }
+            if (!existed) {
+                return entries;
             }
             migrateIfNeeded();
 

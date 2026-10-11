@@ -113,20 +113,23 @@ public class BuildSystemPlugin extends JavaPlugin {
         });
         Bukkit.getOnlinePlayers().forEach(services.settings()::updateVisibility);
         // After a reload, players may be standing in an archive world, which only exists once the stored worlds load.
-        services.world()
-                .worldsLoaded()
-                .thenRun(() -> Bukkit.getOnlinePlayers().forEach(pl -> {
-                    BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(
-                            services.player().getPlayerStorage().getBuildPlayer(pl));
-                    if (ArchiveMode.enterIfInArchiveWorld(
-                            pl,
-                            buildPlayer.getCachedValues(),
-                            services.world().getWorldStorage(),
-                            configService.current().settings().archive())) {
-                        services.player().getPlayerStorage().save(buildPlayer);
-                    }
-                    services.settings().updateVisibility(pl);
-                }));
+        // The players must have loaded too, or the new snapshot lands on a blank player the loaded one then replaces.
+        CompletableFuture.allOf(
+                        services.world().worldsLoaded(), services.player().playersLoaded())
+                .thenRunAsync(
+                        () -> Bukkit.getOnlinePlayers().forEach(pl -> {
+                            BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(
+                                    services.player().getPlayerStorage().getBuildPlayer(pl));
+                            if (ArchiveMode.enterIfInArchiveWorld(
+                                    pl,
+                                    buildPlayer.getCachedValues(),
+                                    services.world().getWorldStorage(),
+                                    configService.current().settings().archive())) {
+                                services.player().getPlayerStorage().save(buildPlayer);
+                            }
+                            services.settings().updateVisibility(pl);
+                        }),
+                        scheduler.mainThread());
 
         services.worldDownload().start();
 

@@ -32,6 +32,8 @@ import de.eintosti.buildsystem.storage.codec.Codec;
 import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
 import de.eintosti.buildsystem.storage.yaml.YamlStore;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -135,5 +137,50 @@ class EntityCollectionTest {
         assertThrows(CompletionException.class, file.load()::join);
         assertThrows(CompletionException.class, file.replaceAll(List.of())::join);
         verify(failing, never()).replaceAll(any());
+    }
+
+    @Test
+    void aFileThatFailsToLoad_isNotMigratedOrSavedOver_andTheRefusalIsLoggedOnce() throws Exception {
+        List<String> logged = new ArrayList<>();
+        Logger logger = Logger.getLogger("EntityCollectionTest.broken");
+        logger.setUseParentHandlers(false);
+        logger.addHandler(new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                logged.add(record.getMessage());
+            }
+
+            @Override
+            public void flush() {}
+
+            @Override
+            public void close() {}
+        });
+        Path entries = dataFolder.toPath().resolve("entries.yml");
+        String broken = "entries:\n  arena:\n    name: [unclosed\n";
+        Files.writeString(entries, broken);
+        EntityCollection<Entry> file = new EntityCollection<>(
+                new YamlEntityStore(
+                        new YamlStore(dataFolder, "entries.yml", logger),
+                        "entries",
+                        logger,
+                        (section, log) -> section.set("entries", null)),
+                "entry",
+                () -> CODEC,
+                Runnable::run,
+                logger);
+
+        assertThrows(CompletionException.class, file.load()::join);
+        assertEquals(broken, Files.readString(entries), "the legacy migration must not rewrite a file it cannot read");
+
+        file.save(new Entry("lobby")).join();
+        file.save(new Entry("hub")).join();
+        assertEquals(broken, Files.readString(entries));
+        assertEquals(
+                1,
+                logged.stream()
+                        .filter(message -> message.startsWith("Not saving"))
+                        .count(),
+                "a refused save is logged once, not on every autosave");
     }
 }

@@ -26,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.event.folder.FolderCreatedEvent;
 import de.eintosti.buildsystem.api.event.folder.FolderDeletedEvent;
@@ -181,5 +182,21 @@ class FolderStorageImplTest {
         assertEquals(1, firedEvents.size());
         assertInstanceOf(FolderDeletedEvent.class, firedEvents.getFirst());
         assertSame(folder, ((FolderDeletedEvent) firedEvents.getFirst()).getFolder());
+    }
+
+    @Test
+    void loadFolders_whenInterrupted_keepsTheInterrupt() {
+        EntityCollection<Folder> file = TestData.noopEntityCollection();
+        when(file.load(any())).thenReturn(new CompletableFuture<>());
+        FolderStorageImpl loading = new FolderStorageImpl(
+                Logger.getLogger(FolderStorageImplTest.class.getName()),
+                Mockito.mock(WorldStorage.class),
+                TestData::worldContext,
+                file);
+
+        Thread.currentThread().interrupt();
+        loading.loadFolders();
+
+        assertTrue(Thread.interrupted());
     }
 }

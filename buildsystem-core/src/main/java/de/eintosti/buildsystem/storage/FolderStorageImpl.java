@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
@@ -139,7 +140,10 @@ public class FolderStorageImpl implements FolderStorage {
         return load().thenAccept(loaded -> this.folders.putAll(
                         loaded.stream().collect(Collectors.toMap(Folder::getUniqueId, Function.identity()))))
                 .exceptionally(throwable -> {
-                    logger.log(Level.SEVERE, "Failed to load folders from storage", throwable);
+                    logger.log(
+                            Level.SEVERE,
+                            "Failed to load folders from storage",
+                            throwable instanceof CompletionException ? throwable.getCause() : throwable);
                     return null;
                 });
     }
