@@ -130,8 +130,11 @@ public class FolderStorageImpl implements FolderStorage {
         try {
             this.folders.putAll(
                     load().get().stream().collect(Collectors.toMap(Folder::getUniqueId, Function.identity())));
-        } catch (InterruptedException | ExecutionException e) {
-            logger.severe("Failed to load folders from storage: " + e.getMessage());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.log(Level.SEVERE, "Interrupted while loading folders from storage", e);
+        } catch (ExecutionException e) {
+            logger.log(Level.SEVERE, "Failed to load folders from storage", e.getCause());
         }
     }
 

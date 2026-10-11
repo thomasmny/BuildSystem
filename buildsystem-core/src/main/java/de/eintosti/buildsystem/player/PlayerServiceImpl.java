@@ -45,6 +45,7 @@ public class PlayerServiceImpl implements PlayerService {
     private final MaxWorldsResolver maxWorldsResolver;
 
     private final Set<UUID> buildModePlayers;
+    private CompletableFuture<Void> playersLoaded = new CompletableFuture<>();
 
     public PlayerServiceImpl(
             BuildSystemPlugin plugin,
@@ -60,7 +61,22 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     public void init() {
-        this.playerStorage.loadPlayers();
+        this.playersLoaded = this.playerStorage.loadPlayers();
+    }
+
+    /**
+     * {@return a future that completes once the stored players are loaded, on a background thread}
+     */
+    public CompletableFuture<Void> playersLoaded() {
+        return playersLoaded;
+    }
+
+    /**
+     * {@return whether nothing about the players can be saved, since the stored players failed to load} An archive
+     * snapshot taken meanwhile would only live in memory, so a crash would lose the items.
+     */
+    public boolean playerSavesRefused() {
+        return playerStorage.loadFailed();
     }
 
     @Override
