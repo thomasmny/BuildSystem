@@ -109,6 +109,8 @@ public class PlayerJoinListener implements Listener {
             // before the stored snapshot is cleared, so a second crash cannot lose the items.
             player.saveData();
         }
+        // Before entering an archive world, which would snapshot a leftover barrier and hand it back on leaving.
+        navigatorService.clearLeftovers(player);
         manageSettings(player, buildPlayer.getSettings());
         teleportToCorrectLocation(player, buildPlayer);
 
@@ -128,7 +130,6 @@ public class PlayerJoinListener implements Listener {
                     player, "physics_deactivated_in_world", Placeholders.of("%world%", buildWorld.getName()));
         }
         settingsManager.updateVisibility(player);
-        navigatorService.clearLeftovers(player);
         navigatorService.giveNavigator(player);
 
         if (player.hasPermission(Permissions.UPDATES)) {

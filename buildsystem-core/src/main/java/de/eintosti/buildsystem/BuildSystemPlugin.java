@@ -101,6 +101,8 @@ public class BuildSystemPlugin extends JavaPlugin {
             Settings settings = buildPlayer.getSettings();
             services.noClip().startNoClip(pl, settings);
             services.settings().displayScoreboard(pl);
+            // A disable that threw partway through its player loop never closed the navigator for the rest.
+            services.navigator().clearLeftovers(pl);
         });
         Bukkit.getOnlinePlayers().forEach(services.settings()::updateVisibility);
         // After a reload, players may be standing in an archive world, which only exists once the stored worlds load.

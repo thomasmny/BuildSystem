@@ -49,6 +49,7 @@ import java.util.Objects;
 import java.util.UUID;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -59,6 +60,7 @@ import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffectType;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
@@ -234,6 +236,26 @@ class ArchiveModeReloadTest {
 
         flushWrites();
         assertTrue(snapshotStored(bystander));
+    }
+
+    @Test
+    void joiningInTheArchive_withTheNavigatorsBarrierLeftOver_neverHandsTheBarrierBack() {
+        // A crash with the armor-stand navigator open left the barrier in place of the navigator.
+        bystander.getInventory().clear();
+        bystander
+                .getInventory()
+                .setItem(
+                        3,
+                        ItemBuilder.of(Material.BARRIER)
+                                .pdc(new NamespacedKey(plugin, "navigator_barrier"), PersistentDataType.BOOLEAN, true)
+                                .build());
+        bystander.setLocation(archive.getSpawnLocation());
+        server.getPluginManager().callEvent(new PlayerJoinEvent(bystander, ""));
+
+        moveTo(bystander, lobby);
+
+        assertFalse(bystander.getInventory().contains(Material.BARRIER));
+        assertTrue(bystander.getInventory().contains(Material.CLOCK));
     }
 
     @Test

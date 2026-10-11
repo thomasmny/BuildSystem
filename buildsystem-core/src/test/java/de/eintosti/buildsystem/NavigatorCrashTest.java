@@ -93,6 +93,22 @@ class NavigatorCrashTest {
     }
 
     @Test
+    void enabling_clearsTheLeftoversADisableThatThrewNeverReached() {
+        SoundlessPlayer player = SoundlessPlayer.join(server, "Player");
+        server.getPluginManager().disablePlugin(plugin);
+        player.getInventory().setItem(3, barrier());
+        player.setWalkSpeed(0);
+        player.addPotionEffect(
+                new PotionEffect(PotionEffectType.BLINDNESS, PotionEffect.INFINITE_DURATION, 0, false, false));
+
+        server.getPluginManager().enablePlugin(plugin);
+
+        assertFalse(player.getInventory().contains(Material.BARRIER));
+        assertEquals(0.2f, player.getWalkSpeed());
+        assertNull(player.getPotionEffect(PotionEffectType.BLINDNESS));
+    }
+
+    @Test
     void joiningWithOtherEffectsAndSpeeds_keepsThem() {
         SoundlessPlayer player = new SoundlessPlayer(server, "Player");
         player.setWalkSpeed(0.5f);
