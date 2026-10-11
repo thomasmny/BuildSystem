@@ -452,6 +452,28 @@ class StorageMigratorTest {
     }
 
     @Test
+    void location_ofTheLocalMachine_isTheSameWhateverItIsCalled() {
+        List<String> hosts = List.of("localhost", "LOCALHOST", "127.0.0.1", "[::1]");
+        for (String host : hosts) {
+            PluginConfig.Storage.Database settings = new PluginConfig.Storage.Database(
+                    StorageType.MYSQL,
+                    prefix,
+                    Map.of(
+                            StorageType.MYSQL,
+                            new PluginConfig.Storage.Database.Server(
+                                    StorageType.MYSQL, "localhost", 3306, "buildsystem", "a", "", StorageTls.PREFER),
+                            StorageType.MARIADB,
+                            new PluginConfig.Storage.Database.Server(
+                                    StorageType.MARIADB, host, 3306, "buildsystem", "b", "", StorageTls.PREFER)));
+
+            assertEquals(
+                    StorageBackend.location(StorageType.MYSQL, settings),
+                    StorageBackend.location(StorageType.MARIADB, settings),
+                    host);
+        }
+    }
+
+    @Test
     void migrate_whileOneRuns_isRefused() {
         CompletableFuture<Map<EntityKind, Integer>> first = migrator.migrate(target(), settings());
 

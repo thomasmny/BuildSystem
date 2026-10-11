@@ -26,6 +26,7 @@ import java.io.File;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -48,6 +49,8 @@ public final class StorageBackend implements AutoCloseable {
      * save or the shutdown.
      */
     public static final int READ_TIMEOUT_SECONDS = 30;
+
+    private static final Set<String> LOCAL_HOSTS = Set.of("localhost", "127.0.0.1", "[::1]");
 
     private final StorageType type;
     private final String location;
@@ -127,8 +130,10 @@ public final class StorageBackend implements AutoCloseable {
             case SQLITE -> SQLITE_FILE + "/" + settings.tablePrefix();
             case MYSQL, MARIADB, POSTGRESQL, MONGODB -> {
                 PluginConfig.Storage.Database.Server server = settings.server(type);
-                yield server.host().toLowerCase(Locale.ROOT) + ":" + server.port() + "/" + server.database() + "/"
-                        + settings.tablePrefix();
+                String host = server.host().toLowerCase(Locale.ROOT);
+                // Without a DNS lookup, so another name for this machine still counts as a different host.
+                yield (LOCAL_HOSTS.contains(host) ? "localhost" : host) + ":" + server.port() + "/" + server.database()
+                        + "/" + settings.tablePrefix();
             }
         };
     }
