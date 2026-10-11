@@ -287,13 +287,15 @@ public abstract class EntityStoreContractTest {
     }
 
     @Test
-    void rowWithAnEmptyIdOrFieldName_isSkipped_andTheRestLoad() {
+    void rowWithAnEmptyIdPartOrFieldName_isSkipped_andTheRestLoad() {
         // Only a database can hold these: YAML has no empty key.
         Assumptions.assumeTrue(settings().type() != StorageType.YAML);
         String good = "0b0b0b0b-0000-4000-8000-000000000001";
         String emptyField = "0b0b0b0b-0000-4000-8000-000000000002";
         Map<String, Map<String, Object>> rows = new LinkedHashMap<>();
         rows.put("", Map.of("settings", Map.of("type", "OLD")));
+        // A path whose last part is empty, so even removing it again throws.
+        rows.put("a.", Map.of("settings", Map.of("type", "OLD")));
         rows.put(emptyField, Map.of("", "x"));
         rows.put(good, Map.of("settings", Map.of("type", "OLD")));
         store("players").upsert(rows);
@@ -303,7 +305,7 @@ public abstract class EntityStoreContractTest {
         assertEquals(
                 List.of(UUID.fromString(good)),
                 loaded.stream().map(BuildPlayer::getUniqueId).toList());
-        assertEquals(3, store("players").loadAll().size(), "the rows that could not load stay stored");
+        assertEquals(4, store("players").loadAll().size(), "the rows that could not load stay stored");
     }
 
     @Test

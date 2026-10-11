@@ -191,8 +191,10 @@ public final class EntityCollection<T> {
                                     ConfigurationSection section = root.createSection(key, values);
                                     loaded.put(key, codec().deserialize(key, section));
                                 } catch (Exception e) {
-                                    if (!key.isEmpty()) {
+                                    try {
                                         root.set(key, null);
+                                    } catch (IllegalArgumentException ignored) {
+                                        // A key like "a." cannot be removed either; link then sees what was left.
                                     }
                                     logger.log(
                                             Level.WARNING,
