@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.bukkit.Difficulty;
@@ -81,6 +82,30 @@ public class ConfigService {
         config.load(new File(plugin.getDataFolder(), "config.yml"));
         config.setDefaults(Objects.requireNonNull(plugin.getConfig().getDefaults()));
         return StorageSettingsFactory.fromConfig(config).database();
+    }
+
+    /**
+     * Reads config.yml to check that it parses. Bukkit loads a file that does not as an empty configuration, and saving
+     * that writes only the defaults back, the storage type among them, so the next start would use a fresh database.
+     *
+     * @return Whether config.yml is missing or parses. A file that does not is logged.
+     */
+    public boolean fileReadable() {
+        File file = new File(plugin.getDataFolder(), "config.yml");
+        if (!file.exists()) {
+            return true;
+        }
+        try {
+            new YamlConfiguration().load(file);
+            return true;
+        } catch (IOException | InvalidConfigurationException e) {
+            plugin.getLogger()
+                    .log(
+                            Level.SEVERE,
+                            "config.yml cannot be read, so it is neither applied nor saved until it is fixed",
+                            e);
+            return false;
+        }
     }
 
     /**
