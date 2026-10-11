@@ -20,11 +20,19 @@ package de.eintosti.buildsystem;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mockConstruction;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -88,5 +96,61 @@ class BrokenConfigTest {
         assertThrows(IllegalStateException.class, plugin::onLoad);
 
         assertEquals(broken, Files.readString(config));
+    }
+
+    @Test
+    void aSyntaxErrorOnThePasswordLine_neverShowsThePassword() throws Exception {
+        String canary = "canary-7f3a9c";
+        Files.writeString(
+                config,
+                Files.readString(config)
+                        .replaceFirst(
+                                "(?m)^(  postgresql:\\n(?:    .*\\n)*?    password: ).*$", "$1" + canary + ": x"));
+        List<String> logged = new ArrayList<>();
+        Handler handler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                logged.add(String.valueOf(record.getMessage()));
+                for (Throwable thrown = record.getThrown(); thrown != null; thrown = thrown.getCause()) {
+                    logged.add(String.valueOf(thrown));
+                }
+            }
+
+            @Override
+            public void flush() {}
+
+            @Override
+            public void close() {}
+        };
+        plugin.getLogger().addHandler(handler);
+        Bukkit.getLogger().addHandler(handler);
+        try {
+            assertFalse(plugin.reloadConfigData(true));
+            server.dispatchCommand(server.getConsoleSender(), "buildsystem storage migrate postgresql");
+            for (int i = 0; i < 20; i++) {
+                server.getScheduler().performOneTick();
+            }
+            server.getPluginManager().disablePlugin(plugin);
+            // A fresh start, where Bukkit has not read config.yml yet.
+            Field loadedConfig = JavaPlugin.class.getDeclaredField("newConfig");
+            loadedConfig.setAccessible(true);
+            loadedConfig.set(plugin, null);
+            assertThrows(IllegalStateException.class, plugin::onLoad);
+        } finally {
+            plugin.getLogger().removeHandler(handler);
+            Bukkit.getLogger().removeHandler(handler);
+        }
+        List<String> chat = new ArrayList<>();
+        for (String message = server.getConsoleSender().nextMessage();
+                message != null;
+                message = server.getConsoleSender().nextMessage()) {
+            chat.add(message);
+        }
+
+        assertTrue(Files.readString(config).contains(canary), "the test must break the password line");
+        assertTrue(logged.stream().anyMatch(message -> message.contains("line ")), String.valueOf(logged));
+        assertTrue(chat.stream().anyMatch(message -> message.contains("line ")), String.valueOf(chat));
+        assertTrue(logged.stream().noneMatch(message -> message.contains(canary)), String.valueOf(logged));
+        assertTrue(chat.stream().noneMatch(message -> message.contains(canary)), String.valueOf(chat));
     }
 }

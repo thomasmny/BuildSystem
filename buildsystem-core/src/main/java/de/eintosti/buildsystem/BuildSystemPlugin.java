@@ -73,10 +73,11 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     @Override
     public void onLoad() {
-        this.configService = new ConfigService(this);
-        if (!configService.fileReadable()) {
+        // Before anything reads config.yml through Bukkit, which would log the broken line, password and all.
+        if (!ConfigService.fileReadable(this)) {
             throw new IllegalStateException("config.yml cannot be read, see the error above. Fix it and restart.");
         }
+        this.configService = new ConfigService(this);
         new ConfigMigrationManager(this).migrate();
         this.getConfig().options().copyDefaults(true);
         this.saveConfig();
@@ -330,7 +331,7 @@ public class BuildSystemPlugin extends JavaPlugin {
      * @return Whether the new config was applied, rather than kept out for an invalid value
      */
     public boolean reloadConfigData(boolean init) {
-        if (!services.config().fileReadable()) {
+        if (!ConfigService.fileReadable(this)) {
             return false;
         }
         for (Player pl : Bukkit.getOnlinePlayers()) {

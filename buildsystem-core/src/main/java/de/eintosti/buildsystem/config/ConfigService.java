@@ -45,8 +45,11 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.Plugin;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.yaml.snakeyaml.error.Mark;
+import org.yaml.snakeyaml.error.MarkedYAMLException;
 
 @NullMarked
 public class ConfigService {
@@ -79,7 +82,11 @@ public class ConfigService {
      */
     public PluginConfig.Storage.Database readStorageSettings() throws IOException, InvalidConfigurationException {
         YamlConfiguration config = new YamlConfiguration();
-        config.load(new File(plugin.getDataFolder(), "config.yml"));
+        try {
+            config.load(new File(plugin.getDataFolder(), "config.yml"));
+        } catch (InvalidConfigurationException e) {
+            throw new InvalidConfigurationException("config.yml cannot be read: " + describe(e));
+        }
         config.setDefaults(Objects.requireNonNull(plugin.getConfig().getDefaults()));
         return StorageSettingsFactory.fromConfig(config).database();
     }
@@ -88,9 +95,10 @@ public class ConfigService {
      * Reads config.yml to check that it parses. Bukkit loads a file that does not as an empty configuration, and saving
      * that writes only the defaults back, the storage type among them, so the next start would use a fresh database.
      *
+     * @param plugin The plugin whose config.yml is read
      * @return Whether config.yml is missing or parses. A file that does not is logged.
      */
-    public boolean fileReadable() {
+    public static boolean fileReadable(Plugin plugin) {
         File file = new File(plugin.getDataFolder(), "config.yml");
         if (!file.exists()) {
             return true;
@@ -98,14 +106,36 @@ public class ConfigService {
         try {
             new YamlConfiguration().load(file);
             return true;
-        } catch (IOException | InvalidConfigurationException e) {
+        } catch (IOException e) {
             plugin.getLogger()
                     .log(
                             Level.SEVERE,
                             "config.yml cannot be read, so it is neither applied nor saved until it is fixed",
                             e);
             return false;
+        } catch (InvalidConfigurationException e) {
+            plugin.getLogger()
+                    .severe("config.yml cannot be read, so it is neither applied nor saved until it is fixed: "
+                            + describe(e));
+            return false;
         }
+    }
+
+    /**
+     * {@return what is wrong with a YAML file and where} SnakeYAML quotes the offending line in its message, which can
+     * hold a password, so only the problem and its position are kept.
+     */
+    static String describe(InvalidConfigurationException e) {
+        for (Throwable cause = e; cause != null; cause = cause.getCause()) {
+            if (cause instanceof MarkedYAMLException marked) {
+                Mark mark = marked.getProblemMark();
+                String problem = String.valueOf(marked.getProblem());
+                return mark == null
+                        ? problem
+                        : problem + " at line " + (mark.getLine() + 1) + ", column " + (mark.getColumn() + 1);
+            }
+        }
+        return "it is not valid YAML";
     }
 
     /**
