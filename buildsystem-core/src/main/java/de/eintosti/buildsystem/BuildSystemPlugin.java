@@ -145,6 +145,12 @@ public class BuildSystemPlugin extends JavaPlugin {
             return;
         }
 
+        // Before anything that can throw: WorldEdit's event bus outlives the plugin, and an async FAWE edit arriving
+        // during the disable would otherwise still be judged and scheduled.
+        if (this.integrations != null) {
+            this.integrations.deactivateWorldEdit();
+        }
+
         // First, as on quit: otherwise the editor's copy would overwrite the inventory the snapshots below hand back.
         services.navigatorEditor().restoreAll();
         Bukkit.getOnlinePlayers().forEach(pl -> {

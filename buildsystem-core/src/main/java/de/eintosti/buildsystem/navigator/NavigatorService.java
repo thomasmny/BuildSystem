@@ -31,6 +31,7 @@ import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.color.ColorAPI;
 import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -49,6 +50,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.BoundingBox;
 import org.jspecify.annotations.NullMarked;
@@ -59,6 +61,9 @@ public class NavigatorService {
 
     private static final float RADIUS = 2.2f;
     private static final float SPREAD = 90.0f;
+    private static final float DEFAULT_WALK_SPEED = 0.2f;
+    private static final float DEFAULT_FLY_SPEED = 0.1f;
+    private static final int ONE_HOUR_TICKS = 20 * 60 * 60;
 
     private final NavigatorCategoryRegistryImpl navigatorCategoryRegistry;
     private final ConfigService configService;
@@ -248,6 +253,40 @@ public class NavigatorService {
         player.removePotionEffect(PotionEffectType.BLINDNESS);
 
         openNavigator.remove(player.getUniqueId());
+    }
+
+    /**
+     * Clears what an open navigator did to a player who joins without it open, which happens when the server crashed
+     * while it was open. Only the navigator's own effects and speeds are touched; anything another plugin applied
+     * stays.
+     */
+    public void clearLeftovers(Player player) {
+        if (openNavigator.contains(player.getUniqueId())) {
+            return;
+        }
+
+        if (Arrays.stream(player.getInventory().getContents()).anyMatch(navigatorItems::isBarrier)) {
+            navigatorItems.replace(player, navigatorItems::isBarrier, navigatorItems.create(player));
+        }
+        removeEffectIfNavigators(player, PotionEffectType.BLINDNESS, 0);
+        removeEffectIfNavigators(player, PotionEffectType.JUMP_BOOST, 250);
+        if (player.getWalkSpeed() == 0) {
+            player.setWalkSpeed(DEFAULT_WALK_SPEED);
+        }
+        if (player.getFlySpeed() == 0) {
+            player.setFlySpeed(DEFAULT_FLY_SPEED);
+        }
+    }
+
+    private static void removeEffectIfNavigators(Player player, PotionEffectType type, int amplifier) {
+        PotionEffect effect = player.getPotionEffect(type);
+        if (effect == null || effect.hasParticles() || effect.getAmplifier() != amplifier) {
+            return;
+        }
+        // Versions before 3.0 applied Integer.MAX_VALUE instead of an infinite duration.
+        if (effect.isInfinite() || effect.getDuration() > ONE_HOUR_TICKS) {
+            player.removePotionEffect(type);
+        }
     }
 
     private void initEntityChecker() {

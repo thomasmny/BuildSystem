@@ -128,6 +128,7 @@ public class PlayerJoinListener implements Listener {
                     player, "physics_deactivated_in_world", Placeholders.of("%world%", buildWorld.getName()));
         }
         settingsManager.updateVisibility(player);
+        navigatorService.clearLeftovers(player);
         navigatorService.giveNavigator(player);
 
         if (player.hasPermission(Permissions.UPDATES)) {
