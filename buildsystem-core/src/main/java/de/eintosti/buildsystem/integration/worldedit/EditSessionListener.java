@@ -51,7 +51,18 @@ public class EditSessionListener implements Listener {
         this.worldStorage = worldStorage;
         this.scheduler = scheduler;
         this.policy = new WorldProtectionPolicy();
+    }
+
+    public void register() {
         WorldEdit.getInstance().getEventBus().register(this);
+    }
+
+    /**
+     * Takes this listener off WorldEdit's event bus. The bus outlives the plugin, so without this a reload leaves the
+     * old listener judging edits against the old storage.
+     */
+    public void unregister() {
+        WorldEdit.getInstance().getEventBus().unregister(this);
     }
 
     @Subscribe

@@ -50,8 +50,7 @@ final class SettingToggles {
             settings.setNavigatorType(NavigatorType.NEW);
         } else {
             settings.setNavigatorType(NavigatorType.OLD);
-            navigatorService.removeArmorStands(player);
-            player.removePotionEffect(PotionEffectType.BLINDNESS);
+            navigatorService.closeNewNavigator(player);
         }
     }
 

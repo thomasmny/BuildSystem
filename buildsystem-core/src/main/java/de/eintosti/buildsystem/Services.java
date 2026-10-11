@@ -105,7 +105,7 @@ public final class Services {
                 new WorldStatusRegistryImpl(plugin, navigatorCategoryRegistry, messages, worldStorage);
         this.customizableIcons = new CustomizableIcons(plugin);
 
-        this.customBlockManager = new CustomBlockManager(plugin, taskScheduler, worldStorage);
+        this.customBlockManager = new CustomBlockManager(plugin, taskScheduler);
         (this.playerService = new PlayerServiceImpl(plugin, configService, worldStorage, taskScheduler)).init();
         this.navigatorEditorService = new NavigatorEditorService();
         this.noClipService = new NoClipService(taskScheduler);

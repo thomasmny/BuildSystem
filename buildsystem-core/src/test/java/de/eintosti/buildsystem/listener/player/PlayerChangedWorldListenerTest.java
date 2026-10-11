@@ -17,7 +17,9 @@
  */
 package de.eintosti.buildsystem.listener.player;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -26,12 +28,20 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.WorldData;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
+import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.menu.MenuItems;
+import de.eintosti.buildsystem.menu.NavigatorItems;
 import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.test.VisibilityFixture;
+import de.eintosti.buildsystem.util.TaskScheduler;
+import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
+import org.bukkit.NamespacedKey;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -82,5 +92,49 @@ class PlayerChangedWorldListenerTest {
 
         assertTrue(bystander.canSee(target));
         assertFalse(viewer.canSee(target));
+    }
+
+    @Test
+    void changingWorldWithTheArmorStandNavigatorOpen_closesItFully() {
+        ServerMock server = MockBukkit.mock();
+        WorldMock from = server.addSimpleWorld("from");
+        WorldMock to = server.addSimpleWorld("to");
+        VisibilityFixture fixture = new VisibilityFixture(MockBukkit.createMockPlugin());
+        PlayerMock player = SoundlessPlayer.join(server, "Player");
+        NavigatorService navigatorService = new NavigatorService(
+                mock(NavigatorCategoryRegistryImpl.class),
+                mock(ConfigService.class),
+                mock(NavigatorItems.class),
+                mock(MenuItems.class),
+                fixture.playerService,
+                mock(Messages.class),
+                mock(TaskScheduler.class),
+                new NamespacedKey("test", "owner"),
+                new NamespacedKey("test", "category"));
+        // What opening the navigator does to the player.
+        fixture.buildPlayer(player).getCachedValues().saveSpeeds(player);
+        player.setWalkSpeed(0);
+        player.setFlySpeed(0);
+        player.addPotionEffect(
+                new PotionEffect(PotionEffectType.BLINDNESS, PotionEffect.INFINITE_DURATION, 0, false, false));
+        player.addPotionEffect(
+                new PotionEffect(PotionEffectType.JUMP_BOOST, PotionEffect.INFINITE_DURATION, 250, false, false));
+        navigatorService.markNavigatorOpen(player);
+        player.teleport(to.getSpawnLocation());
+
+        PlayerChangedWorldListener listener = new PlayerChangedWorldListener(
+                navigatorService,
+                fixture.playerService,
+                fixture.settingsService,
+                mock(WorldStorage.class),
+                fixture.configService,
+                mock(Messages.class));
+        listener.onPlayerChangedWorld(new PlayerChangedWorldEvent(player, from));
+
+        assertFalse(navigatorService.isNavigatorOpen(player));
+        assertEquals(0.2f, player.getWalkSpeed());
+        assertEquals(0.1f, player.getFlySpeed());
+        assertNull(player.getPotionEffect(PotionEffectType.JUMP_BOOST));
+        assertNull(player.getPotionEffect(PotionEffectType.BLINDNESS));
     }
 }
