@@ -266,9 +266,8 @@ public final class StorageBackend implements AutoCloseable {
         if (database == null) {
             return yaml;
         }
-        // Only a new table: an empty one may be empty because everything in it was deleted, and the old file would
-        // bring
-        // it all back.
+        // Only a new table: an empty one may be empty because everything in it was deleted, and the old file
+        // would bring it all back.
         boolean existed = database.exists(kind);
         EntityStore store = collection(kind);
         if (!existed) {
