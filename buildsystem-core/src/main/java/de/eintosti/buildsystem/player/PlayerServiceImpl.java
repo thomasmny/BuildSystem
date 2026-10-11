@@ -45,6 +45,7 @@ public class PlayerServiceImpl implements PlayerService {
     private final MaxWorldsResolver maxWorldsResolver;
 
     private final Set<UUID> buildModePlayers;
+    private CompletableFuture<Void> playersLoaded = new CompletableFuture<>();
 
     public PlayerServiceImpl(
             BuildSystemPlugin plugin,
@@ -60,7 +61,14 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     public void init() {
-        this.playerStorage.loadPlayers();
+        this.playersLoaded = this.playerStorage.loadPlayers();
+    }
+
+    /**
+     * {@return a future that completes once the stored players are loaded, on a background thread}
+     */
+    public CompletableFuture<Void> playersLoaded() {
+        return playersLoaded;
     }
 
     @Override

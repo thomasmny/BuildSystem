@@ -17,15 +17,22 @@
  */
 package de.eintosti.buildsystem.storage.yaml;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.eintosti.buildsystem.storage.codec.Codec;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -81,5 +88,48 @@ class YamlEntityFileTest {
         assertTrue(save.isDone() && delete.isDone());
         YamlConfiguration written = YamlConfiguration.loadConfiguration(new File(dataFolder, "entries.yml"));
         assertFalse(written.contains("entries.arena"), "the save must not bring the deleted entry back");
+    }
+
+    @Test
+    void aFileThatFailsToLoad_isNotMigratedOrSavedOver_andTheRefusalIsLoggedOnce() throws Exception {
+        List<String> logged = new ArrayList<>();
+        Logger logger = Logger.getLogger("YamlEntityFileTest.broken");
+        logger.setUseParentHandlers(false);
+        logger.addHandler(new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                logged.add(record.getMessage());
+            }
+
+            @Override
+            public void flush() {}
+
+            @Override
+            public void close() {}
+        });
+        YamlEntityFile<Entry> file = new YamlEntityFile<>(
+                new YamlStore(dataFolder, "entries.yml", logger),
+                "entries",
+                "entry",
+                () -> CODEC,
+                Runnable::run,
+                logger,
+                (section, log) -> section.set("entries", null));
+        Path entries = dataFolder.toPath().resolve("entries.yml");
+        String broken = "entries:\n  arena:\n    name: [unclosed\n";
+        Files.writeString(entries, broken);
+
+        assertTrue(file.load().join().isEmpty());
+        assertEquals(broken, Files.readString(entries), "the legacy migration must not rewrite a file it cannot read");
+
+        file.save(new Entry("lobby")).join();
+        file.save(new Entry("hub")).join();
+        assertEquals(broken, Files.readString(entries));
+        assertEquals(
+                1,
+                logged.stream()
+                        .filter(message -> message.startsWith("Not saving"))
+                        .count(),
+                "a refused save is logged once, not on every autosave");
     }
 }
