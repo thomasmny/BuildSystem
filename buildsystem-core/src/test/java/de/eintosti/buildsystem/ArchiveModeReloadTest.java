@@ -54,6 +54,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -231,6 +234,34 @@ class ArchiveModeReloadTest {
         server.getPluginManager().disablePlugin(plugin);
         assertOutOfArchiveMode();
         assertEquals(broken, Files.readString(players));
+    }
+
+    @Test
+    void aPlayersTableThatFailsToLoad_leavesTheInventoryAlone() throws Exception {
+        server.getPluginManager().disablePlugin(plugin);
+        try (Connection connection =
+                        DriverManager.getConnection("jdbc:sqlite:" + new File(plugin.getDataFolder(), "storage.db"));
+                Statement statement = connection.createStatement()) {
+            // A table the plugin cannot read, with the real one kept aside.
+            statement.execute("ALTER TABLE buildsystem_players RENAME TO kept_players");
+            statement.execute("CREATE TABLE buildsystem_players (id VARCHAR(64) PRIMARY KEY, payload TEXT)");
+        }
+
+        server.getPluginManager().enablePlugin(plugin);
+        awaitStoredWorlds();
+        ((PlayerServiceImpl) api().getPlayerService()).playersLoaded().join();
+        server.getScheduler().performOneTick();
+        assertTrue(((PlayerServiceImpl) api().getPlayerService()).playerSavesRefused());
+        // The snapshot could not be stored, so a crash would lose what archive mode takes.
+        assertOutOfArchiveMode();
+        moveTo(archived, lobby);
+        moveTo(archived, archive);
+        assertOutOfArchiveMode();
+        rejoin();
+        assertOutOfArchiveMode();
+
+        server.getPluginManager().disablePlugin(plugin);
+        assertOutOfArchiveMode();
     }
 
     @Test
