@@ -101,8 +101,17 @@ public final class Integrations {
             this.luckPerms.unregisterAll();
         }
 
+        deactivateWorldEdit();
+    }
+
+    /**
+     * Takes the WorldEdit listener off on its own, so the plugin can drop it first on disable. PlaceholderAPI has to
+     * stay until the end, because handing back the navigator item on disable still resolves its name.
+     */
+    public void deactivateWorldEdit() {
         if (this.worldEdit != null) {
             this.worldEdit.unregister();
+            this.worldEdit = null;
         }
     }
 }

@@ -19,6 +19,7 @@ package de.eintosti.buildsystem;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.when;
@@ -41,6 +42,8 @@ import java.io.File;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.bukkit.Location;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -111,6 +114,29 @@ class WorldEditReloadTest {
 
         server.getPluginManager().disablePlugin(plugin);
 
+        assertFalse(postEdit("archive").getExtent() instanceof NullExtent);
+    }
+
+    @Test
+    void disabling_stopsJudgingWorldEditEdits_evenWhenALaterStepThrows() {
+        // Stands in for any disable step that throws: the disable reads every player's location to store where they
+        // logged out.
+        AtomicBoolean broken = new AtomicBoolean();
+        server.addPlayer(new SoundlessPlayer(server, "Broken") {
+            @Override
+            public Location getLocation() {
+                if (broken.get()) {
+                    throw new IllegalStateException("broken player");
+                }
+                return super.getLocation();
+            }
+        });
+        broken.set(true);
+
+        assertThrows(
+                IllegalStateException.class, () -> server.getPluginManager().disablePlugin(plugin));
+
+        broken.set(false);
         assertFalse(postEdit("archive").getExtent() instanceof NullExtent);
     }
 
