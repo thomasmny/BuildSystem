@@ -412,7 +412,10 @@ public final class StorageMigrator {
     record Part<T>(EntityKind kind, EntityCollection<T> collection, Supplier<? extends Collection<T>> live) {
 
         Map<String, Map<String, Object>> snapshot() {
-            return collection.serialize(live.get());
+            Map<String, Map<String, Object>> serialized = collection.serialize(live.get());
+            // What is in memory for a skipped entry is a blank stand-in, so the copy takes the stored entry instead.
+            serialized.keySet().removeIf(collection::skippedOnLoad);
+            return serialized;
         }
     }
 }

@@ -67,6 +67,9 @@ class StorageMigratorTest {
 
         @Override
         public Note deserialize(String key, ConfigurationSection section) {
+            if (section.contains("broken")) {
+                throw new IllegalArgumentException("Cannot parse " + key);
+            }
             return new Note(key, section.getLong("time"));
         }
     };
@@ -172,6 +175,30 @@ class StorageMigratorTest {
                 current.get().collection(EntityKind.PLAYERS).loadAll();
         assertEquals(List.of("a", "unloaded"), List.copyOf(copied.keySet()));
         assertEquals("as is", copied.get("unloaded").get("kept"));
+    }
+
+    @Test
+    void migrate_copiesTheStoredEntryThatCouldNotBeParsed_overTheBlankOneInMemory() throws Exception {
+        File players = new File(dataFolder, "players.yml");
+        YamlConfiguration file = YamlConfiguration.loadConfiguration(players);
+        file.set("players.p.time", 1);
+        file.set("players.p.broken", true);
+        file.save(players);
+        notes.load();
+        runAll();
+        // Like a player whose entry was skipped joining: a blank one is made in memory, and its save is refused.
+        live.add(new Note("p", 0));
+        notes.save(live);
+        runAll();
+
+        CompletableFuture<Map<EntityKind, Integer>> migration = migrator.migrate(target(), settings());
+        runAll();
+        migration.join();
+
+        Map<String, Object> copied =
+                current.get().collection(EntityKind.PLAYERS).loadAll().get("p");
+        assertEquals(1L, ((Number) copied.get("time")).longValue(), String.valueOf(copied));
+        assertEquals(true, copied.get("broken"), String.valueOf(copied));
     }
 
     @Test
