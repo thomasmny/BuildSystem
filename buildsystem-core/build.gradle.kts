@@ -70,10 +70,12 @@ dependencies {
     implementation(libs.paperlib)
     implementation(libs.sftp)
     implementation(libs.xseries)
-    // Not shaded: the server downloads these from plugin.yml's libraries. Paper and Spigot already ship the SQLite and
-    // MySQL drivers.
-    library(libs.mongodb.driver)
-    library(libs.postgresql)
+    // Shaded rather than in plugin.yml's libraries, so a server without internet access can use them. Paper and
+    // Spigot already ship the SQLite and MySQL drivers. checker-qual only holds annotations the driver needs to compile.
+    implementation(libs.mongodb.driver)
+    implementation(libs.postgresql) { exclude(group = "org.checkerframework") }
+    // The MongoDB driver and sshd log through the shaded slf4j, which prints a warning on stderr without a binding.
+    implementation(libs.slf4j.nop)
 
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
@@ -83,9 +85,7 @@ dependencies {
     testImplementation(libs.testcontainers.mongodb)
     testImplementation(libs.testcontainers.mysql)
     testImplementation(libs.testcontainers.postgresql)
-    testImplementation(libs.mongodb.driver)
     testImplementation(libs.mysql.connector)
-    testImplementation(libs.postgresql)
     testRuntimeOnly(libs.sqlite.jdbc)
     // Test-only Bukkit API: MockBukkit requires the Paper API. The plugin itself targets spigot-api (compileOnly
     // above); paper-api is a strict superset and is confined to the test classpath, so the shipped plugin stays
@@ -125,7 +125,14 @@ tasks.named<ShadowJar>("shadowJar") {
         exclude(dependency("org.apache.sshd:.*:.*"))
         exclude(dependency("net.i2p.crypto:.*:.*"))
         exclude(dependency("org.bstats:.*:.*"))
+        // Both load classes by name, which minimize cannot see.
+        exclude(dependency("org.mongodb:.*:.*"))
+        exclude(dependency("org.postgresql:.*:.*"))
+        // Only found through the class slf4j-api is compiled against, so minimize sees no use of it.
+        exclude(dependency("org.slf4j:slf4j-nop:.*"))
     }
+    // Lists the driver under its old name, and BuildSystem creates the driver itself.
+    exclude("META-INF/services/java.sql.Driver")
     archiveFileName.set("${rootProject.name}-${project.version}.jar")
     destinationDirectory.set(rootProject.layout.buildDirectory.dir("libs"))
 
@@ -139,6 +146,9 @@ tasks.named<ShadowJar>("shadowJar") {
     relocate("net.i2p.crypto", "$shadePath.eddsa")
     relocate("org.bstats", "$shadePath.bstats")
     relocate("org.slf4j", "$shadePath.slf4j")
+    relocate("org.postgresql", "$shadePath.postgresql")
+    relocate("com.mongodb", "$shadePath.mongodb")
+    relocate("org.bson", "$shadePath.bson")
 }
 
 // Run by .github/workflows/release.yml when a GitHub release is published.

@@ -23,9 +23,11 @@ essentialsx = "2.21.2"
 
 # Third Party
 annotations = "26.1.0"
-# Downloaded by the server through plugin.yml libraries, not shaded.
+# Shaded and relocated into the plugin jar.
 mongodb-driver = "5.12.0"
 postgresql = "42.7.13"
+# Matches the slf4j-api that sshd brings.
+slf4j = "1.7.36"
 eddsa = "0.3.0"
 bstats = "3.2.1"
 fastboard = "2.2.2"
@@ -68,6 +70,7 @@ fastboard = { group = "fr.mrmicky", name = "fastboard", version.ref = "fastboard
 jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
 mongodb-driver = { group = "org.mongodb", name = "mongodb-driver-sync", version.ref = "mongodb-driver" }
 postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgresql" }
+slf4j-nop = { group = "org.slf4j", name = "slf4j-nop", version.ref = "slf4j" }
 nbt = { group = "dev.dewy", name = "nbt", version.ref = "nbt" }
 sftp = { group = "org.apache.sshd", name = "sshd-sftp", version.ref = "sshd-sftp" }
 xseries = { group = "com.github.cryptomorin", name = "XSeries", version.ref = "xseries" }
