@@ -123,6 +123,13 @@ public class WorldStorageImpl implements WorldStorage {
         return file.load().thenApply(loaded -> new ArrayList<>(loaded.values()));
     }
 
+    /**
+     * {@return whether the stored worlds failed to load} Nothing is saved for them until the file is fixed.
+     */
+    public boolean loadFailed() {
+        return file.loadFailed();
+    }
+
     @Override
     public CompletableFuture<Void> delete(BuildWorld buildWorld) {
         return file.delete(buildWorld);

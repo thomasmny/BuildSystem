@@ -211,6 +211,13 @@ public final class EntityCollection<T> {
     }
 
     /**
+     * {@return whether the last load failed, so that saves and deletes are refused until one succeeds}
+     */
+    public boolean loadFailed() {
+        return loadFailed;
+    }
+
+    /**
      * {@return where the entries are stored now}
      */
     EntityStore store() {

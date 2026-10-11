@@ -110,7 +110,10 @@ public class PlayerChangedWorldListener implements Listener {
         }
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        if (buildWorld != null && !buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
+        // Without a stored snapshot, a crash would lose what archive mode takes, so the inventory is left alone.
+        if (buildWorld != null
+                && !buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()
+                && !playerManager.playerSavesRefused()) {
             snapshotChanged |= ArchiveMode.enter(
                     player, cachedValues, configService.current().settings().archive());
         }

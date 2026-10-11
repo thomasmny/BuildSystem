@@ -89,6 +89,13 @@ public class PlayerStorageImpl implements PlayerStorage {
         return file.load().thenApply(loaded -> new ArrayList<>(loaded.values()));
     }
 
+    /**
+     * {@return whether the stored players failed to load} Nothing is saved for them until the file is fixed.
+     */
+    public boolean loadFailed() {
+        return file.loadFailed();
+    }
+
     @Override
     public CompletableFuture<Void> delete(BuildPlayer buildPlayer) {
         return file.delete(buildPlayer);

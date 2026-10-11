@@ -31,12 +31,15 @@ import static org.mockito.Mockito.mockStatic;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.BuildSystem;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.storage.EntityKind;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.StorageBackend;
@@ -206,7 +209,7 @@ class ArchiveModeReloadTest {
     }
 
     @Test
-    void aPlayersFileThatFailsToLoad_isNotSavedOver_andArchiveModeStillHandsTheInventoryBack() throws Exception {
+    void aPlayersFileThatFailsToLoad_isNotSavedOver_andArchiveModeLeavesTheInventoryAlone() throws Exception {
         useYaml();
         server.getPluginManager().disablePlugin(plugin);
         Path players = playersFile();
@@ -215,12 +218,50 @@ class ArchiveModeReloadTest {
 
         server.getPluginManager().enablePlugin(plugin);
         awaitStoredWorlds();
-        awaitArchiveMode();
-        assertInArchiveMode();
-        server.getPluginManager().disablePlugin(plugin);
+        ((PlayerServiceImpl) api().getPlayerService()).playersLoaded().join();
+        server.getScheduler().performOneTick();
+        // The snapshot could not be stored, so a crash would lose what archive mode takes.
+        assertOutOfArchiveMode();
+        moveTo(archived, lobby);
+        moveTo(archived, archive);
+        assertOutOfArchiveMode();
+        rejoin();
+        assertOutOfArchiveMode();
 
+        server.getPluginManager().disablePlugin(plugin);
         assertOutOfArchiveMode();
         assertEquals(broken, Files.readString(players));
+    }
+
+    @Test
+    void aWorldsFileThatFailsToLoad_leavesTheFoldersAlone() throws Exception {
+        useYaml();
+        BuildWorld world = Objects.requireNonNull(worldStorage().getBuildWorld("archive"));
+        Folder folder = api().getWorldService()
+                .getFolderStorage()
+                .createFolder(
+                        "Maps",
+                        api().getNavigatorCategoryRegistry().getDefault(),
+                        Builder.of(UUID.randomUUID(), "Creator"));
+        folder.addWorld(world);
+        server.getPluginManager().disablePlugin(plugin);
+        String worldsPath = "folders." + folder.getUniqueId() + ".worlds";
+        List<String> stored = List.of(world.getUniqueId().toString());
+        assertEquals(stored, dataFile("folders.yml").getStringList(worldsPath));
+        Path worlds = new File(plugin.getDataFolder(), "worlds.yml").toPath();
+        Files.writeString(worlds, Files.readString(worlds) + "broken: [unclosed\n");
+
+        server.getPluginManager().enablePlugin(plugin);
+        long deadline = System.currentTimeMillis() + 10_000;
+        while (!worldStorage().loadFailed()) {
+            assertTrue(System.currentTimeMillis() < deadline, "the stored worlds never failed to load");
+            server.getScheduler().performOneTick();
+            Thread.onSpinWait();
+        }
+        server.getScheduler().performOneTick();
+        server.getPluginManager().disablePlugin(plugin);
+
+        assertEquals(stored, dataFile("folders.yml").getStringList(worldsPath));
     }
 
     @Test
@@ -501,6 +542,14 @@ class ArchiveModeReloadTest {
             server.getScheduler().performOneTick();
             Thread.onSpinWait();
         }
+    }
+
+    private YamlConfiguration dataFile(String name) {
+        return YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), name));
+    }
+
+    private BuildSystem api() {
+        return Objects.requireNonNull(server.getServicesManager().load(BuildSystem.class));
     }
 
     private Path playersFile() {

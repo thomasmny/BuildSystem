@@ -130,6 +130,10 @@ public class WorldLoadBootstrap {
      * <p>Must be called after all folders and worlds have been loaded.
      */
     private void assignWorldsToFolders() {
+        if (worldStorage.loadFailed()) {
+            // No world is known, so every folder would lose its worlds, and the next save would make that permanent.
+            return;
+        }
         folderStorage.getFolders().forEach(folder -> {
             List<UUID> invalidWorlds = new ArrayList<>();
             folder.getWorldUUIDs().stream()
