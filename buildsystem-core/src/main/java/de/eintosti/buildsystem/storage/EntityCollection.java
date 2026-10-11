@@ -54,6 +54,8 @@ public final class EntityCollection<T> {
     private @Nullable Codec<T> codec;
     private CompletableFuture<Void> lastWrite = CompletableFuture.completedFuture(null);
     private volatile boolean loaded;
+    private volatile boolean loadFailed;
+    private volatile boolean refusalLogged;
     /**
      * The entries the last load could not parse, as they are stored. They are never written over, so the stored
      * version survives until it is fixed or deleted.
@@ -101,9 +103,28 @@ public final class EntityCollection<T> {
      * this way, rather than being erased by the next save.
      */
     public CompletableFuture<Void> save(Collection<T> values) {
+        if (refusedAfterFailedLoad()) {
+            return CompletableFuture.completedFuture(null);
+        }
         Map<String, Map<String, Object>> serialized = serialize(values);
         serialized.keySet().removeIf(this::skipped);
         return write(() -> store.upsert(serialized));
+    }
+
+    /**
+     * Whether the last load failed. What is in memory may then be missing some or all of the stored entries, or hold
+     * defaults in their place, and writing it would replace the stored ones.
+     */
+    private boolean refusedAfterFailedLoad() {
+        if (!loadFailed) {
+            return false;
+        }
+        if (!refusalLogged) {
+            refusalLogged = true;
+            logger.severe("Not saving the " + label + " entries, since they failed to load. Changes made meanwhile are"
+                    + " not kept: fix the storage, then restart the server.");
+        }
+        return true;
     }
 
     private boolean skipped(String key) {
@@ -149,6 +170,9 @@ public final class EntityCollection<T> {
     }
 
     public CompletableFuture<Void> delete(String key) {
+        if (refusedAfterFailedLoad()) {
+            return CompletableFuture.completedFuture(null);
+        }
         skipped.remove(key);
         return write(() -> store.delete(key));
     }
@@ -236,6 +260,10 @@ public final class EntityCollection<T> {
                             return loaded;
                         },
                         background)
-                .whenComplete((entries, throwable) -> this.loaded = throwable == null);
+                .whenComplete((entries, throwable) -> {
+                    this.loaded = throwable == null;
+                    this.loadFailed = throwable != null;
+                    this.refusalLogged = false;
+                });
     }
 }

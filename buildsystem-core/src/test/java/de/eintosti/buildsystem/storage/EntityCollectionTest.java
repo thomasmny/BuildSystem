@@ -25,9 +25,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.storage.codec.Codec;
 import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
 import de.eintosti.buildsystem.storage.yaml.YamlStore;
@@ -51,6 +53,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 @NullMarked
 class EntityCollectionTest {
@@ -284,5 +288,38 @@ class EntityCollectionTest {
         file.delete("hub").join();
 
         assertTrue(store.loadAll().isEmpty());
+    }
+
+    @ParameterizedTest
+    @EnumSource(
+            value = StorageType.class,
+            names = {"YAML", "SQLITE"})
+    void afterAFailedLoad_writesAreRefused_untilALoadSucceeds(StorageType type) {
+        Logger logger = Logger.getLogger("EntityCollectionTest");
+        StorageBackend backend =
+                StorageBackend.connect(type, new PluginConfig.Storage.Database(type, "", Map.of()), dataFolder, logger);
+        try {
+            EntityStore real = backend.store(EntityKind.PLAYERS);
+            real.upsert(Map.of("hub", Map.of("name", "stored")));
+            EntityStore failingOnce = spy(real);
+            doThrow(new StorageException("Could not load the entries", null))
+                    .doCallRealMethod()
+                    .when(failingOnce)
+                    .loadAll();
+            EntityCollection<Entry> file =
+                    new EntityCollection<>(failingOnce, "entry", () -> CODEC, Runnable::run, logger);
+
+            assertThrows(CompletionException.class, file.load()::join);
+            file.save(new Entry("hub")).join();
+            file.save(new Entry("lobby")).join();
+            file.delete("hub").join();
+            assertEquals(Map.of("hub", Map.of("name", "stored")), real.loadAll());
+
+            file.load().join();
+            file.save(new Entry("lobby")).join();
+            assertEquals(List.of("hub", "lobby"), List.copyOf(real.loadAll().keySet()));
+        } finally {
+            backend.close();
+        }
     }
 }
