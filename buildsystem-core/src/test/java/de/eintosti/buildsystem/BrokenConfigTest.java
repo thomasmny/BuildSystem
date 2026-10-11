@@ -23,20 +23,31 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mockConstruction;
 
+import de.eintosti.buildsystem.api.BuildSystem;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.storage.EntityKind;
+import de.eintosti.buildsystem.storage.StorageBackend;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
+import java.util.regex.Matcher;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockbukkit.mockbukkit.MockBukkit;
 import org.mockbukkit.mockbukkit.ServerMock;
 import org.mockito.MockedConstruction;
@@ -99,13 +110,31 @@ class BrokenConfigTest {
     }
 
     @Test
-    void aSyntaxErrorOnThePasswordLine_neverShowsThePassword() throws Exception {
+    void disable_withATagOnThePasswordLine_stillSavesThePlayers() throws Exception {
+        PluginConfig.Storage.Database settings = new ConfigService(plugin).readStorageSettings();
+        UUID player = UUID.randomUUID();
+        Objects.requireNonNull(server.getServicesManager().load(BuildSystem.class))
+                .getPlayerService()
+                .getPlayerStorage()
+                .createBuildPlayer(player);
+        Files.writeString(config, withPostgresPassword("!canary"));
+
+        server.getPluginManager().disablePlugin(plugin);
+
+        StorageBackend backend =
+                StorageBackend.connect(settings.type(), settings, plugin.getDataFolder(), plugin.getLogger());
+        try {
+            assertTrue(backend.collection(EntityKind.PLAYERS).loadAll().containsKey(player.toString()));
+        } finally {
+            backend.close();
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"%s: x", "*%s", "!!%s x", "!%s"})
+    void aSyntaxErrorOnThePasswordLine_neverShowsThePassword(String passwordLine) throws Exception {
         String canary = "canary-7f3a9c";
-        Files.writeString(
-                config,
-                Files.readString(config)
-                        .replaceFirst(
-                                "(?m)^(  postgresql:\\n(?:    .*\\n)*?    password: ).*$", "$1" + canary + ": x"));
+        Files.writeString(config, withPostgresPassword(passwordLine.formatted(canary)));
         List<String> logged = new ArrayList<>();
         Handler handler = new Handler() {
             @Override
@@ -152,5 +181,12 @@ class BrokenConfigTest {
         assertTrue(chat.stream().anyMatch(message -> message.contains("line ")), String.valueOf(chat));
         assertTrue(logged.stream().noneMatch(message -> message.contains(canary)), String.valueOf(logged));
         assertTrue(chat.stream().noneMatch(message -> message.contains(canary)), String.valueOf(chat));
+    }
+
+    private String withPostgresPassword(String value) throws IOException {
+        return Files.readString(config)
+                .replaceFirst(
+                        "(?m)^(  postgresql:\\n(?:    .*\\n)*?    password: ).*$",
+                        "$1" + Matcher.quoteReplacement(value));
     }
 }

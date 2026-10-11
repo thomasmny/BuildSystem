@@ -43,6 +43,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -51,6 +52,7 @@ import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.Nullable;
+import org.yaml.snakeyaml.error.YAMLException;
 
 public class BuildSystemPlugin extends JavaPlugin {
 
@@ -196,8 +198,14 @@ public class BuildSystemPlugin extends JavaPlugin {
         services.backup().close();
         services.world().cancelAllUnloadTasks();
 
-        if (reloadConfigData(false)) {
-            saveConfig();
+        try {
+            if (reloadConfigData(false)) {
+                saveConfig();
+            }
+        } catch (RuntimeException e) {
+            // Never in the way of the final saves below. A YAML error's message quotes a line of config.yml.
+            getLogger()
+                    .log(Level.SEVERE, "config.yml was not reloaded or saved", e instanceof YAMLException ? null : e);
         }
 
         // Cancelling only stops future ticks, not one already running,

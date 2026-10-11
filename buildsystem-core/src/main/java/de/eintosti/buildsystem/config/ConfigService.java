@@ -50,6 +50,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.yaml.snakeyaml.error.Mark;
 import org.yaml.snakeyaml.error.MarkedYAMLException;
+import org.yaml.snakeyaml.error.YAMLException;
 
 @NullMarked
 public class ConfigService {
@@ -84,7 +85,7 @@ public class ConfigService {
         YamlConfiguration config = new YamlConfiguration();
         try {
             config.load(new File(plugin.getDataFolder(), "config.yml"));
-        } catch (InvalidConfigurationException e) {
+        } catch (InvalidConfigurationException | YAMLException e) {
             throw new InvalidConfigurationException("config.yml cannot be read: " + describe(e));
         }
         config.setDefaults(Objects.requireNonNull(plugin.getConfig().getDefaults()));
@@ -113,7 +114,7 @@ public class ConfigService {
                             "config.yml cannot be read, so it is neither applied nor saved until it is fixed",
                             e);
             return false;
-        } catch (InvalidConfigurationException e) {
+        } catch (InvalidConfigurationException | YAMLException e) {
             plugin.getLogger()
                     .severe("config.yml cannot be read, so it is neither applied nor saved until it is fixed: "
                             + describe(e));
@@ -122,20 +123,17 @@ public class ConfigService {
     }
 
     /**
-     * {@return what is wrong with a YAML file and where} SnakeYAML quotes the offending line in its message, which can
-     * hold a password, so only the problem and its position are kept.
+     * {@return where a YAML file stops parsing} Only the position: SnakeYAML quotes the offending line in its message,
+     * and even the problem text can repeat a password, as an undefined alias or an unknown tag.
      */
-    static String describe(InvalidConfigurationException e) {
+    static String describe(Exception e) {
         for (Throwable cause = e; cause != null; cause = cause.getCause()) {
-            if (cause instanceof MarkedYAMLException marked) {
+            if (cause instanceof MarkedYAMLException marked && marked.getProblemMark() != null) {
                 Mark mark = marked.getProblemMark();
-                String problem = String.valueOf(marked.getProblem());
-                return mark == null
-                        ? problem
-                        : problem + " at line " + (mark.getLine() + 1) + ", column " + (mark.getColumn() + 1);
+                return "syntax error at line " + (mark.getLine() + 1) + ", column " + (mark.getColumn() + 1);
             }
         }
-        return "it is not valid YAML";
+        return "syntax error";
     }
 
     /**
