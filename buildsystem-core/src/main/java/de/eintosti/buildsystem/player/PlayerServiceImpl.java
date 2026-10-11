@@ -71,6 +71,14 @@ public class PlayerServiceImpl implements PlayerService {
         return playersLoaded;
     }
 
+    /**
+     * {@return whether nothing about the players can be saved, since the stored players failed to load} An archive
+     * snapshot taken meanwhile would only live in memory, so a crash would lose the items.
+     */
+    public boolean playerSavesRefused() {
+        return playerStorage.loadFailed();
+    }
+
     @Override
     public PlayerStorage getPlayerStorage() {
         return playerStorage;

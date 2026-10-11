@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.listener.player;
 
-import de.eintosti.buildsystem.api.player.PlayerService;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
@@ -29,6 +28,7 @@ import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.LogoutLocation;
 import de.eintosti.buildsystem.player.PlayerLookupService;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
@@ -48,7 +48,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class PlayerJoinListener implements Listener {
 
-    private final PlayerService playerManager;
+    private final PlayerServiceImpl playerManager;
     private final SettingsService settingsManager;
     private final NavigatorService navigatorService;
     private final SpawnService spawnService;
@@ -61,7 +61,7 @@ public class PlayerJoinListener implements Listener {
     private final TaskScheduler scheduler;
 
     public PlayerJoinListener(
-            PlayerService playerManager,
+            PlayerServiceImpl playerManager,
             SettingsService settingsManager,
             NavigatorService navigatorService,
             SpawnService spawnService,
@@ -112,11 +112,13 @@ public class PlayerJoinListener implements Listener {
         manageSettings(player, buildPlayer.getSettings());
         teleportToCorrectLocation(player, buildPlayer);
 
-        boolean entered = ArchiveMode.enterIfInArchiveWorld(
-                player,
-                buildPlayer.getCachedValues(),
-                worldStorage,
-                configService.current().settings().archive());
+        // Without a stored snapshot, a crash would lose what archive mode takes, so the inventory is left alone.
+        boolean entered = !playerManager.playerSavesRefused()
+                && ArchiveMode.enterIfInArchiveWorld(
+                        player,
+                        buildPlayer.getCachedValues(),
+                        worldStorage,
+                        configService.current().settings().archive());
         if (restored || entered) {
             playerManager.getPlayerStorage().save(buildPlayer);
         }

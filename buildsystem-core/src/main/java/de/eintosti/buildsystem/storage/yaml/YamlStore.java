@@ -72,6 +72,13 @@ public final class YamlStore {
     }
 
     /**
+     * {@return whether the file exists but did not load} Saves are refused until it loads again.
+     */
+    public boolean loadFailed() {
+        return loadFailed;
+    }
+
+    /**
      * Re-reads the backing file from disk, creating an empty one when it does not yet exist.
      *
      * @return {@code true} if the file existed and was read, {@code false} if it was just created or could not be read

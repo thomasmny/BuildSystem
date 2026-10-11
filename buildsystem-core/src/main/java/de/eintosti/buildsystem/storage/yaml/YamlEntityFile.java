@@ -134,6 +134,13 @@ public final class YamlEntityFile<T> {
     }
 
     /**
+     * {@return whether the file exists but did not load, so nothing is written to it}
+     */
+    public boolean loadFailed() {
+        return store.loadFailed();
+    }
+
+    /**
      * Re-reads the file and parses every entry, skipping (and logging) one that cannot be parsed so the rest still load.
      *
      * @param link Runs under the file lock once every entry is parsed, with the root section, to resolve references
