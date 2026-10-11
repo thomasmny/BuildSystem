@@ -12,7 +12,7 @@ mockbukkit = "4.115.0"
 testcontainers = "2.0.5"
 # The drivers Paper 26.3 bundles, for the storage tests.
 sqlite-jdbc = "3.49.1.0"
-mysql-connector = "9.2.0"
+mysql-connector = "9.7.0"
 
 # Plugins
 luckperms = "5.5"
