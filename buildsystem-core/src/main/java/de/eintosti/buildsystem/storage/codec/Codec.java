@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem.storage.codec;
 
 import java.util.Map;
+import java.util.UUID;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -81,4 +82,20 @@ public interface Codec<T> {
      * @return The reconstructed entity
      */
     T deserialize(String key, ConfigurationSection section);
+
+    /**
+     * Parses a stored key as a UUID, refusing any spelling but the one {@link UUID#toString} writes. An entry loaded
+     * from an upper case or shortened key would be saved again under the canonical one, next to the entry it came from.
+     *
+     * @param key The stored key
+     * @return The UUID it spells
+     * @throws IllegalArgumentException If the key is not a canonical UUID
+     */
+    static UUID canonicalUuid(String key) {
+        UUID uuid = UUID.fromString(key);
+        if (!uuid.toString().equals(key)) {
+            throw new IllegalArgumentException("Not a canonical UUID: " + key);
+        }
+        return uuid;
+    }
 }

@@ -33,10 +33,12 @@ import de.eintosti.buildsystem.api.event.folder.FolderDeletedEvent;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
-import de.eintosti.buildsystem.storage.yaml.YamlEntityFile;
 import de.eintosti.buildsystem.test.TestData;
+import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
@@ -60,7 +62,7 @@ class FolderStorageImplTest {
         WorldStorage worldStorage = Mockito.mock(WorldStorage.class);
         creator = Builder.of(UUID.randomUUID(), "TestPlayer");
 
-        YamlEntityFile<Folder> file = TestData.noopEntityFile();
+        EntityCollection<Folder> file = TestData.noopEntityCollection();
         doAnswer(invocation -> {
                     deletedFromStorage.add(invocation.getArgument(0));
                     return CompletableFuture.completedFuture(null);
@@ -187,7 +189,7 @@ class FolderStorageImplTest {
 
     @Test
     void loadFolders_whenInterrupted_keepsTheInterrupt() {
-        YamlEntityFile<Folder> file = TestData.noopEntityFile();
+        EntityCollection<Folder> file = TestData.noopEntityCollection();
         when(file.load(any())).thenReturn(new CompletableFuture<>());
         FolderStorageImpl loading = new FolderStorageImpl(
                 Logger.getLogger(FolderStorageImplTest.class.getName()),
@@ -199,5 +201,35 @@ class FolderStorageImplTest {
         loading.loadFolders();
 
         assertTrue(Thread.interrupted());
+    }
+
+    @Test
+    void loadFolders_withTwoEntriesForOneFolder_keepsTheFirst_andLoadsTheRest() {
+        EntityCollection<Folder> file = TestData.noopEntityCollection();
+        UUID twice = UUID.randomUUID();
+        Folder first = folder(twice, "First");
+        Map<String, Folder> loaded = new LinkedHashMap<>();
+        loaded.put("first", first);
+        loaded.put("second", folder(twice, "Second"));
+        loaded.put("other", folder(UUID.randomUUID(), "Other"));
+        when(file.load(any())).thenReturn(CompletableFuture.completedFuture(loaded));
+        FolderStorageImpl loading = new FolderStorageImpl(
+                Logger.getLogger(FolderStorageImplTest.class.getName()),
+                Mockito.mock(WorldStorage.class),
+                TestData::worldContext,
+                file);
+
+        loading.loadFolders().join();
+
+        assertSame(first, loading.getFolder("First"));
+        assertNotNull(loading.getFolder("Other"));
+    }
+
+    private Folder folder(UUID uuid, String name) {
+        return FolderImpl.builder(TestData.worldContext(), uuid)
+                .name(name)
+                .category(TestData.PUBLIC)
+                .creator(creator)
+                .build();
     }
 }

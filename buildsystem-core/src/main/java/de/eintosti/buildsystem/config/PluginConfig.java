@@ -18,10 +18,13 @@
 package de.eintosti.buildsystem.config;
 
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
+import de.eintosti.buildsystem.storage.StorageTls;
+import de.eintosti.buildsystem.storage.StorageType;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import org.bukkit.Difficulty;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -38,8 +41,9 @@ public record PluginConfig(Settings settings, Storage storage, World world, Fold
      *
      * @param s3 The S3 or S3-compatible service
      * @param sftp The SFTP server
+     * @param database Where worlds, folders and players are kept
      */
-    public record Storage(S3 s3, Sftp sftp) {
+    public record Storage(S3 s3, Sftp sftp, Database database) {
 
         /**
          * Which backend a feature stores its files on.
@@ -122,6 +126,119 @@ public record PluginConfig(Settings settings, Storage storage, World world, Fold
                                 region,
                                 bucket,
                                 path);
+            }
+        }
+
+        /**
+         * Where worlds, folders and players are kept. The values are checked here, so a config that could reach a
+         * table, file or server it should not fails to load instead.
+         *
+         * @param type The backend in use
+         * @param tablePrefix Put in front of every table and collection name
+         * @param servers The connection block of every type that has a valid one
+         * @param invalidServers Why the block of each other type is invalid. Only the block of {@code type} has to be
+         *     valid, so a mistake in a block nobody uses does not stop the server; the others are checked when they are
+         *     used.
+         */
+        public record Database(
+                StorageType type,
+                String tablePrefix,
+                Map<StorageType, Server> servers,
+                Map<StorageType, String> invalidServers) {
+
+            private static final Pattern TABLE_PREFIX = Pattern.compile("[a-z_][a-z0-9_]{0,31}|");
+
+            public Database {
+                if (!TABLE_PREFIX.matcher(tablePrefix).matches()) {
+                    throw new IllegalArgumentException("storage.table-prefix may only hold lowercase letters, digits"
+                            + " and underscores, at most 32 of them, and may not start with a digit");
+                }
+                String invalid = invalidServers.get(type);
+                if (invalid != null) {
+                    throw new IllegalArgumentException(invalid);
+                }
+                servers = Map.copyOf(servers);
+                invalidServers = Map.copyOf(invalidServers);
+            }
+
+            public Database(StorageType type, String tablePrefix, Map<StorageType, Server> servers) {
+                this(type, tablePrefix, servers, Map.of());
+            }
+
+            /**
+             * {@return the connection block of {@code type}}
+             *
+             * @throws IllegalArgumentException If the type has no server to connect to, or its block is invalid
+             */
+            public Server server(StorageType type) {
+                String invalid = invalidServers.get(type);
+                if (invalid != null) {
+                    throw new IllegalArgumentException(invalid);
+                }
+                Server server = servers.get(type);
+                if (server == null) {
+                    throw new IllegalArgumentException(type.displayName() + " has no server to connect to");
+                }
+                return server;
+            }
+
+            /**
+             * One {@code storage.<type>} block. Each value ends up in a connection address, so none may carry
+             * anything that would change what that address points to.
+             */
+            public record Server(
+                    StorageType type,
+                    String host,
+                    int port,
+                    String database,
+                    String username,
+                    @Nullable String password,
+                    StorageTls tls) {
+
+                // Only names and addresses: drivers read options and further hosts from characters like ( = , @. The _
+                // is for Docker service names.
+                private static final Pattern HOST = Pattern.compile("[A-Za-z0-9._-]{1,253}|\\[[0-9A-Fa-f:.]{2,45}]");
+                private static final Pattern DATABASE = Pattern.compile("[A-Za-z0-9_-]{1,64}");
+                // The PostgreSQL driver sends the login as NUL-separated startup parameters, so a NUL would add one.
+                private static final Pattern CONTROL = Pattern.compile("\\p{Cntrl}");
+
+                public Server {
+                    String block = "storage." + type.key() + ".";
+                    if (!HOST.matcher(host).matches()) {
+                        throw new IllegalArgumentException(
+                                block + "host must be a host name, an IP address or an IPv6 address in brackets");
+                    }
+                    if (port < 1 || port > 65535) {
+                        throw new IllegalArgumentException(block + "port must be between 1 and 65535");
+                    }
+                    if (!DATABASE.matcher(database).matches()) {
+                        throw new IllegalArgumentException(
+                                block + "database may only hold letters, digits, - and _, at most 64 of them");
+                    }
+                    if (CONTROL.matcher(username).find()) {
+                        throw new IllegalArgumentException(block + "username may not hold control characters");
+                    }
+                    if (password != null && CONTROL.matcher(password).find()) {
+                        throw new IllegalArgumentException(block + "password may not hold control characters");
+                    }
+                }
+
+                /**
+                 * {@return the password, preferring {@code BUILDSYSTEM_<TYPE>_PASSWORD}} Lets operators keep the
+                 * secret out of config.yml.
+                 */
+                public @Nullable String resolvedPassword() {
+                    return envOrConfig("BUILDSYSTEM_" + type.name() + "_PASSWORD", password);
+                }
+
+                /**
+                 * Overridden so the password never appears in a log or pasted support output.
+                 */
+                @Override
+                public String toString() {
+                    return "Server[type=%s, host=%s, port=%d, database=%s, username=%s, password=%s, tls=%s]"
+                            .formatted(type, host, port, database, username, password == null ? null : "***", tls);
+                }
             }
         }
 

@@ -23,8 +23,6 @@ import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.settings.SettingsImpl;
 import de.eintosti.buildsystem.storage.codec.PlayerCodec;
-import de.eintosti.buildsystem.storage.yaml.YamlEntityFile;
-import de.eintosti.buildsystem.storage.yaml.YamlStore;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,25 +51,27 @@ public class PlayerStorageImpl implements PlayerStorage {
     protected final Logger logger;
 
     private final ConcurrentHashMap<UUID, BuildPlayer> buildPlayers;
-    private final YamlEntityFile<BuildPlayer> file;
+    private final EntityCollection<BuildPlayer> file;
 
-    public PlayerStorageImpl(BuildSystemPlugin plugin, TaskScheduler scheduler) {
+    public PlayerStorageImpl(BuildSystemPlugin plugin, TaskScheduler scheduler, EntityStore store) {
         this(
                 plugin.getLogger(),
-                new YamlEntityFile<>(
-                        new YamlStore(plugin.getDataFolder(), "players.yml", plugin.getLogger()),
-                        "players",
+                new EntityCollection<>(
+                        store,
                         "player",
                         () -> new PlayerCodec(plugin.getLogger()),
                         scheduler.background(),
-                        plugin.getLogger(),
-                        null));
+                        plugin.getLogger()));
     }
 
-    PlayerStorageImpl(Logger logger, YamlEntityFile<BuildPlayer> file) {
+    PlayerStorageImpl(Logger logger, EntityCollection<BuildPlayer> file) {
         this.logger = logger;
         this.buildPlayers = new ConcurrentHashMap<>();
         this.file = file;
+    }
+
+    EntityCollection<BuildPlayer> collection() {
+        return file;
     }
 
     @Override
@@ -114,8 +114,8 @@ public class PlayerStorageImpl implements PlayerStorage {
      */
     public CompletableFuture<Void> loadPlayers() {
         return load().thenAccept(players -> {
-                    Map<UUID, BuildPlayer> loadedPlayers =
-                            players.stream().collect(Collectors.toMap(BuildPlayer::getUniqueId, Function.identity()));
+                    Map<UUID, BuildPlayer> loadedPlayers = players.stream()
+                            .collect(Collectors.toMap(BuildPlayer::getUniqueId, Function.identity(), this::keepFirst));
                     this.buildPlayers.putAll(loadedPlayers);
                     logger.info("Loaded " + players.size() + " players from storage");
                 })
@@ -123,6 +123,11 @@ public class PlayerStorageImpl implements PlayerStorage {
                     logger.log(Level.SEVERE, "Failed to load players from storage", throwable);
                     return null;
                 });
+    }
+
+    private BuildPlayer keepFirst(BuildPlayer first, BuildPlayer duplicate) {
+        logger.warning("Two stored entries are for player " + first.getUniqueId() + ", keeping the first");
+        return first;
     }
 
     @Override

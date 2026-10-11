@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.display;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
@@ -31,9 +32,13 @@ import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
+import de.eintosti.buildsystem.storage.StorageException;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -41,6 +46,7 @@ import org.bukkit.Material;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockbukkit.mockbukkit.MockBukkit;
 
 /**
  * CRUD, built-in protection and status-membership behaviour of the {@link NavigatorCategoryRegistryImpl}, backed by a
@@ -59,6 +65,29 @@ class NavigatorCategoryRegistryImplTest {
         when(plugin.getDataFolder()).thenReturn(dataFolder);
         // The delete/reset cascades re-home the folder storage's folders; the mock has none, so they are no-ops.
         registry = new NavigatorCategoryRegistryImpl(plugin, mock(FolderStorageImpl.class));
+    }
+
+    @Test
+    void unreadableFile_stopsTheLoad_namingTheFileAndWhatToDo_andIsNotOverwritten() throws IOException {
+        Path file = new File(dataFolder, "categories.yml").toPath();
+        Files.writeString(file, "categories: [unclosed\n");
+        BuildSystemPlugin plugin = mock(BuildSystemPlugin.class, RETURNS_DEEP_STUBS);
+        when(plugin.getDataFolder()).thenReturn(dataFolder);
+
+        // Bukkit's YAML loader logs the parse error through the server.
+        MockBukkit.mock();
+        StorageException failure;
+        try {
+            failure = assertThrows(
+                    StorageException.class,
+                    () -> new NavigatorCategoryRegistryImpl(plugin, mock(FolderStorageImpl.class)));
+        } finally {
+            MockBukkit.unmock();
+        }
+
+        assertTrue(failure.getMessage().startsWith("Could not read categories.yml"), failure.getMessage());
+        assertTrue(failure.getMessage().contains("delete categories.yml"), failure.getMessage());
+        assertEquals("categories: [unclosed\n", Files.readString(file));
     }
 
     @Test

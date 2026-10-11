@@ -32,10 +32,21 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class YamlSetupStorage extends AbstractYamlStorage {
+public class YamlSetupStorage {
+
+    private final YamlStore store;
 
     public YamlSetupStorage(BuildSystemPlugin plugin) {
-        super(plugin, "setup.yml");
+        this.store = new YamlStore(plugin.getDataFolder(), "setup.yml", plugin.getLogger());
+        store.locked(store::reload);
+    }
+
+    private FileConfiguration getFile() {
+        return store.config();
+    }
+
+    private void saveFile() {
+        store.atomicSave(() -> {});
     }
 
     public <T extends Enum<?>> void saveIcons(IconType iconType, Map<T, Material> typeIcons) {

@@ -35,21 +35,28 @@ import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.menu.ItemBuilder;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.storage.EntityKind;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
+import de.eintosti.buildsystem.storage.StorageBackend;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
-import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import de.eintosti.buildsystem.world.menu.setup.LayoutEditorMenu;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +70,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
@@ -173,6 +181,7 @@ class ArchiveModeReloadTest {
 
     @Test
     void reload_whenThePlayersLoadAfterTheWorlds_keepsTheSnapshot() throws Exception {
+        useYaml();
         server.getPluginManager().disablePlugin(plugin);
         Path players = playersFile();
         Files.writeString(players, Files.readString(players) + "gate:\n  ==: " + PlayerLoadGate.ALIAS + "\n");
@@ -204,6 +213,7 @@ class ArchiveModeReloadTest {
 
     @Test
     void aPlayersFileThatFailsToLoad_isNotSavedOver_andArchiveModeLeavesTheInventoryAlone() throws Exception {
+        useYaml();
         server.getPluginManager().disablePlugin(plugin);
         Path players = playersFile();
         String broken = Files.readString(players) + "broken: [unclosed\n";
@@ -227,7 +237,36 @@ class ArchiveModeReloadTest {
     }
 
     @Test
+    void aPlayersTableThatFailsToLoad_leavesTheInventoryAlone() throws Exception {
+        server.getPluginManager().disablePlugin(plugin);
+        try (Connection connection =
+                        DriverManager.getConnection("jdbc:sqlite:" + new File(plugin.getDataFolder(), "storage.db"));
+                Statement statement = connection.createStatement()) {
+            // A table the plugin cannot read, with the real one kept aside.
+            statement.execute("ALTER TABLE buildsystem_players RENAME TO kept_players");
+            statement.execute("CREATE TABLE buildsystem_players (id VARCHAR(64) PRIMARY KEY, payload TEXT)");
+        }
+
+        server.getPluginManager().enablePlugin(plugin);
+        awaitStoredWorlds();
+        ((PlayerServiceImpl) api().getPlayerService()).playersLoaded().join();
+        server.getScheduler().performOneTick();
+        assertTrue(((PlayerServiceImpl) api().getPlayerService()).playerSavesRefused());
+        // The snapshot could not be stored, so a crash would lose what archive mode takes.
+        assertOutOfArchiveMode();
+        moveTo(archived, lobby);
+        moveTo(archived, archive);
+        assertOutOfArchiveMode();
+        rejoin();
+        assertOutOfArchiveMode();
+
+        server.getPluginManager().disablePlugin(plugin);
+        assertOutOfArchiveMode();
+    }
+
+    @Test
     void aWorldsFileThatFailsToLoad_leavesTheFoldersAlone() throws Exception {
+        useYaml();
         BuildWorld world = Objects.requireNonNull(worldStorage().getBuildWorld("archive"));
         Folder folder = api().getWorldService()
                 .getFolderStorage()
@@ -244,13 +283,13 @@ class ArchiveModeReloadTest {
         Files.writeString(worlds, Files.readString(worlds) + "broken: [unclosed\n");
 
         server.getPluginManager().enablePlugin(plugin);
-        WorldServiceImpl worldService = (WorldServiceImpl) api().getWorldService();
         long deadline = System.currentTimeMillis() + 10_000;
-        while (!worldService.worldsLoaded().isDone()) {
-            assertTrue(System.currentTimeMillis() < deadline, "the stored worlds never loaded");
+        while (!worldStorage().loadFailed()) {
+            assertTrue(System.currentTimeMillis() < deadline, "the stored worlds never failed to load");
             server.getScheduler().performOneTick();
             Thread.onSpinWait();
         }
+        server.getScheduler().performOneTick();
         server.getPluginManager().disablePlugin(plugin);
 
         assertEquals(stored, dataFile("folders.yml").getStringList(worldsPath));
@@ -268,6 +307,17 @@ class ArchiveModeReloadTest {
         setVanish(true);
         assertFalse(bystander.canSee(archived));
         assertNotNull(archived.getPotionEffect(PotionEffectType.INVISIBILITY));
+    }
+
+    @Test
+    void configReload_withAnInvalidValue_keepsThePreviousConfigWhole() {
+        plugin.getConfig().set("settings.archive.vanish", false);
+        plugin.getConfig().set("storage.table-prefix", "Not A Prefix");
+        plugin.saveConfig();
+
+        assertFalse(plugin.reloadConfigData(true));
+
+        assertFalse(bystander.canSee(archived), "the kept config still vanishes archived players");
     }
 
     @Test
@@ -481,7 +531,7 @@ class ArchiveModeReloadTest {
     }
 
     /**
-     * Waits for every queued write to {@code players.yml}: writes run in order, so an empty save lands after them.
+     * Waits for every queued write to the player storage: writes run in order, so an empty save lands after them.
      */
     private void flushWrites() {
         playerStorage().save(List.of()).join();
@@ -492,9 +542,37 @@ class ArchiveModeReloadTest {
     }
 
     private boolean snapshotStored(PlayerMock player) {
-        YamlConfiguration players =
-                YamlConfiguration.loadConfiguration(playersFile().toFile());
-        return players.isConfigurationSection("players." + player.getUniqueId() + ".archive-snapshot");
+        // A connection of its own, so this also reads what a disabled plugin left behind.
+        PluginConfig.Storage.Database settings;
+        try {
+            settings = new ConfigService(plugin).readStorageSettings();
+        } catch (IOException | InvalidConfigurationException e) {
+            throw new IllegalStateException(e);
+        }
+        StorageBackend backend =
+                StorageBackend.connect(settings.type(), settings, plugin.getDataFolder(), plugin.getLogger());
+        try {
+            Map<String, Object> stored = backend.collection(EntityKind.PLAYERS)
+                    .loadAll()
+                    .get(player.getUniqueId().toString());
+            return stored != null && stored.containsKey("archive-snapshot");
+        } finally {
+            backend.close();
+        }
+    }
+
+    /**
+     * Moves the storage to YAML through the migrate command, for the tests about players.yml.
+     */
+    private void useYaml() {
+        server.dispatchCommand(server.getConsoleSender(), "buildsystem storage migrate yaml confirm");
+        File config = new File(plugin.getDataFolder(), "config.yml");
+        long deadline = System.currentTimeMillis() + 10_000;
+        while (!"yaml".equals(YamlConfiguration.loadConfiguration(config).getString("storage.type"))) {
+            assertTrue(System.currentTimeMillis() < deadline, "the storage never moved to YAML");
+            server.getScheduler().performOneTick();
+            Thread.onSpinWait();
+        }
     }
 
     private YamlConfiguration dataFile(String name) {

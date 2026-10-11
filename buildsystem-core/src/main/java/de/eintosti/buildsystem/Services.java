@@ -18,6 +18,7 @@
 package de.eintosti.buildsystem;
 
 import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Menus;
@@ -30,8 +31,13 @@ import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.customblock.CustomBlockManager;
 import de.eintosti.buildsystem.player.noclip.NoClipService;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.storage.EntityKind;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
+import de.eintosti.buildsystem.storage.StorageBackend;
+import de.eintosti.buildsystem.storage.StorageMigrator;
+import de.eintosti.buildsystem.storage.StorageType;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
+import de.eintosti.buildsystem.storage.yaml.YamlSetupStorage;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.WorldPrompts;
@@ -43,6 +49,7 @@ import de.eintosti.buildsystem.world.display.NavigatorCategoryRegistryImpl;
 import de.eintosti.buildsystem.world.download.WorldDownloadService;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
+import java.io.File;
 import org.bukkit.NamespacedKey;
 import org.jspecify.annotations.NullMarked;
 
@@ -62,6 +69,8 @@ public final class Services {
     private final Messages messages;
 
     private final PlayerLookupService playerLookupService;
+    private volatile StorageBackend storageBackend;
+    private final StorageMigrator storageMigrator;
     private final WorldStorageImpl worldStorage;
     private final FolderStorageImpl folderStorage;
     private final NavigatorCategoryRegistryImpl navigatorCategoryRegistry;
@@ -89,24 +98,67 @@ public final class Services {
      * Constructs every service. Called during {@code onEnable}, with the configuration and messages loaded in
      * {@code onLoad}. The stored worlds and folders are loaded separately, by {@link #loadWorlds()}.
      */
-    Services(BuildSystemPlugin plugin, TaskScheduler taskScheduler, ConfigService configService, Messages messages) {
+    static Services create(
+            BuildSystemPlugin plugin, TaskScheduler taskScheduler, ConfigService configService, Messages messages) {
+        PluginConfig.Storage.Database database =
+                configService.current().storage().database();
+        StorageBackend storageBackend =
+                StorageBackend.connect(database.type(), database, plugin.getDataFolder(), plugin.getLogger());
+        try {
+            return new Services(plugin, taskScheduler, configService, messages, storageBackend);
+        } catch (RuntimeException | Error e) {
+            // onDisable only closes the connection of services that were built.
+            storageBackend.close();
+            throw e;
+        }
+    }
+
+    private Services(
+            BuildSystemPlugin plugin,
+            TaskScheduler taskScheduler,
+            ConfigService configService,
+            Messages messages,
+            StorageBackend storageBackend) {
         this.taskScheduler = taskScheduler;
         this.configService = configService;
         this.messages = messages;
 
         this.playerLookupService =
                 new PlayerLookupService(plugin, taskScheduler.background(), taskScheduler.mainThread());
-        // The storages read the world context and category registry from here only once the stored worlds load.
-        this.worldStorage = new WorldStorageImpl(plugin, this);
-        this.folderStorage = new FolderStorageImpl(plugin, worldStorage, this);
+        this.storageBackend = storageBackend;
+        if (storageBackend.type() == StorageType.YAML
+                && new File(plugin.getDataFolder(), StorageBackend.SQLITE_FILE).exists()) {
+            plugin.getLogger()
+                    .warning(StorageBackend.SQLITE_FILE + " exists, but storage.type is yaml, so worlds, folders and"
+                            + " players load from the YAML files instead.");
+        }
+        this.worldStorage = new WorldStorageImpl(
+                plugin.getLogger(),
+                taskScheduler.background(),
+                () -> configService.current().world().defaultNamespace(),
+                this::worldContext,
+                playerLookupService,
+                storageBackend.store(EntityKind.WORLDS));
+        this.folderStorage = new FolderStorageImpl(
+                plugin.getLogger(),
+                taskScheduler.background(),
+                worldStorage,
+                this::worldContext,
+                this::navigatorCategoryRegistry,
+                storageBackend.store(EntityKind.FOLDERS));
 
         this.navigatorCategoryRegistry = new NavigatorCategoryRegistryImpl(plugin, folderStorage);
+        YamlSetupStorage setupStorage = new YamlSetupStorage(plugin);
         this.worldStatusRegistry =
-                new WorldStatusRegistryImpl(plugin, navigatorCategoryRegistry, messages, worldStorage);
-        this.customizableIcons = new CustomizableIcons(plugin);
+                new WorldStatusRegistryImpl(plugin, navigatorCategoryRegistry, messages, worldStorage, setupStorage);
+        this.customizableIcons = new CustomizableIcons(setupStorage);
 
         this.customBlockManager = new CustomBlockManager(plugin, taskScheduler);
-        (this.playerService = new PlayerServiceImpl(plugin, configService, worldStorage, taskScheduler)).init();
+        (this.playerService = new PlayerServiceImpl(
+                        plugin, configService, worldStorage, taskScheduler, storageBackend.store(EntityKind.PLAYERS)))
+                .init();
+        this.storageMigrator =
+                new StorageMigrator(plugin, this, worldStorage, folderStorage, playerService.getPlayerStorage());
         this.navigatorEditorService = new NavigatorEditorService();
         this.noClipService = new NoClipService(taskScheduler);
         this.spawnService = new SpawnService(plugin, worldStorage, taskScheduler);
@@ -163,6 +215,24 @@ public final class Services {
 
     public ConfigService config() {
         return configService;
+    }
+
+    /**
+     * {@return the backend worlds, folders and players are kept in} Closed on disable, after the final saves.
+     */
+    public StorageBackend storage() {
+        return storageBackend;
+    }
+
+    /**
+     * Replaces the backend once {@link StorageMigrator} has moved everything to {@code backend}.
+     */
+    public void switchStorage(StorageBackend backend) {
+        this.storageBackend = backend;
+    }
+
+    public StorageMigrator storageMigrator() {
+        return storageMigrator;
     }
 
     public Messages messages() {

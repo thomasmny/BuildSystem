@@ -24,6 +24,7 @@ import static org.mockito.Mockito.mock;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
+import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.data.BuildWorldStatus;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
@@ -33,9 +34,10 @@ import de.eintosti.buildsystem.menu.MenuItems;
 import de.eintosti.buildsystem.menu.Prompts;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.storage.EntityCollection;
 import de.eintosti.buildsystem.storage.FolderStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
-import de.eintosti.buildsystem.storage.yaml.YamlEntityFile;
+import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
@@ -169,13 +171,13 @@ public final class TestData {
     }
 
     /**
-     * {@return a storage file that writes nothing} Every write completes at once and a load finds nothing, for tests of
+     * {@return a collection that stores nothing} Every write completes at once and a load finds nothing, for tests of
      * the in-memory side of a storage.
      */
     @SuppressWarnings("unchecked")
-    public static <T> YamlEntityFile<T> noopEntityFile() {
+    public static <T> EntityCollection<T> noopEntityCollection() {
         return mock(
-                YamlEntityFile.class,
+                EntityCollection.class,
                 invocation -> CompletableFuture.completedFuture(
                         invocation.getMethod().getName().equals("load") ? new LinkedHashMap<>() : null));
     }
@@ -244,9 +246,35 @@ public final class TestData {
      * {@return a world service with real storages, wired to the collaborators of {@code services}}
      */
     public static WorldServiceImpl worldService(BuildSystemPlugin plugin, Services services) {
-        WorldStorageImpl worldStorage = new WorldStorageImpl(plugin, services);
-        return new WorldServiceImpl(
-                plugin, services, worldStorage, new FolderStorageImpl(plugin, worldStorage, services));
+        WorldStorageImpl worldStorage = worldStorage(plugin, services);
+        return new WorldServiceImpl(plugin, services, worldStorage, folderStorage(plugin, services, worldStorage));
+    }
+
+    /**
+     * {@return a world storage on the plugin's {@code worlds.yml}, wired to the collaborators of {@code services}}
+     */
+    public static WorldStorageImpl worldStorage(BuildSystemPlugin plugin, Services services) {
+        return new WorldStorageImpl(
+                plugin.getLogger(),
+                services.scheduler().background(),
+                () -> services.config().current().world().defaultNamespace(),
+                services::worldContext,
+                services.playerLookup(),
+                YamlEntityStore.worlds(plugin.getDataFolder(), plugin.getLogger()));
+    }
+
+    /**
+     * {@return a folder storage on the plugin's {@code folders.yml}, wired to the collaborators of {@code services}}
+     */
+    public static FolderStorageImpl folderStorage(
+            BuildSystemPlugin plugin, Services services, WorldStorage worldStorage) {
+        return new FolderStorageImpl(
+                plugin.getLogger(),
+                services.scheduler().background(),
+                worldStorage,
+                services::worldContext,
+                services::navigatorCategoryRegistry,
+                YamlEntityStore.folders(plugin.getDataFolder(), plugin.getLogger()));
     }
 
     private static Optional<BuildWorldStatus> byId(String id) {

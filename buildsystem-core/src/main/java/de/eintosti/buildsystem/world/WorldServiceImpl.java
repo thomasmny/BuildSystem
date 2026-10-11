@@ -104,8 +104,7 @@ public class WorldServiceImpl implements WorldService {
     }
 
     public void init() {
-        this.folderStorage.loadFolders();
-        this.loadBootstrap.loadWorlds();
+        this.loadBootstrap.loadWorlds(folderStorage.loadFolders());
     }
 
     /**

@@ -23,6 +23,8 @@ import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
 import de.eintosti.buildsystem.util.MaterialUtils;
 import de.eintosti.buildsystem.world.WorldNames;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -32,6 +34,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.bukkit.Difficulty;
@@ -39,9 +42,15 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.Plugin;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.yaml.snakeyaml.error.Mark;
+import org.yaml.snakeyaml.error.MarkedYAMLException;
+import org.yaml.snakeyaml.error.YAMLException;
 
 @NullMarked
 public class ConfigService {
@@ -67,10 +76,91 @@ public class ConfigService {
     }
 
     /**
+     * {@return the storage settings as config.yml holds them now} Read from the file rather than the loaded config, so
+     * a connection block edited since the last reload is used.
+     *
+     * @throws IllegalArgumentException If a value is invalid
+     */
+    public PluginConfig.Storage.Database readStorageSettings() throws IOException, InvalidConfigurationException {
+        YamlConfiguration config = new YamlConfiguration();
+        try {
+            config.load(new File(plugin.getDataFolder(), "config.yml"));
+        } catch (InvalidConfigurationException | YAMLException e) {
+            throw new InvalidConfigurationException("config.yml cannot be read: " + describe(e));
+        }
+        config.setDefaults(Objects.requireNonNull(plugin.getConfig().getDefaults()));
+        return StorageSettingsFactory.fromConfig(config).database();
+    }
+
+    /**
+     * Reads config.yml to check that it parses. Bukkit loads a file that does not as an empty configuration, and saving
+     * that writes only the defaults back, the storage type among them, so the next start would use a fresh database.
+     *
+     * @param plugin The plugin whose config.yml is read
+     * @return Whether config.yml is missing or parses. A file that does not is logged.
+     */
+    public static boolean fileReadable(Plugin plugin) {
+        File file = new File(plugin.getDataFolder(), "config.yml");
+        if (!file.exists()) {
+            return true;
+        }
+        try {
+            new YamlConfiguration().load(file);
+            return true;
+        } catch (IOException e) {
+            plugin.getLogger()
+                    .log(
+                            Level.SEVERE,
+                            "config.yml cannot be read, so it is neither applied nor saved until it is fixed",
+                            e);
+            return false;
+        } catch (InvalidConfigurationException | YAMLException e) {
+            plugin.getLogger()
+                    .severe("config.yml cannot be read, so it is neither applied nor saved until it is fixed: "
+                            + describe(e));
+            return false;
+        }
+    }
+
+    /**
+     * {@return where a YAML file stops parsing} Only the position: SnakeYAML quotes the offending line in its message,
+     * and even the problem text can repeat a password, as an undefined alias or an unknown tag.
+     */
+    static String describe(Exception e) {
+        for (Throwable cause = e; cause != null; cause = cause.getCause()) {
+            if (cause instanceof MarkedYAMLException marked && marked.getProblemMark() != null) {
+                Mark mark = marked.getProblemMark();
+                return "syntax error at line " + (mark.getLine() + 1) + ", column " + (mark.getColumn() + 1);
+            }
+        }
+        return "syntax error";
+    }
+
+    /**
      * Reloads the configuration from disk and re-parses it into a new {@link PluginConfig}.
+     *
+     * @throws IllegalArgumentException If a value is invalid
      */
     public void load() {
         this.current = parse(plugin.getConfig(), plugin.getLogger(), wandDetector.detect());
+    }
+
+    /**
+     * Like {@link #load}, but a configuration with an invalid value is logged and not applied, so the one in use stays
+     * whole. For a running server, where failing part way through a reload or shutdown would do more harm.
+     *
+     * @return Whether the new configuration was applied
+     */
+    public boolean reload() {
+        try {
+            load();
+            return true;
+        } catch (IllegalArgumentException e) {
+            plugin.getLogger()
+                    .severe("config.yml was not applied, the previous settings stay in use until it is fixed: "
+                            + e.getMessage());
+            return false;
+        }
     }
 
     /**

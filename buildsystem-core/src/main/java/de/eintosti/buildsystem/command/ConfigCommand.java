@@ -53,8 +53,8 @@ public class ConfigCommand extends CommandBase {
             case "rl":
             case "reload":
                 messages.reload();
-                plugin.reloadConfigData(true);
-                messages.sendMessage(sender, "config_reloaded");
+                messages.sendMessage(
+                        sender, plugin.reloadConfigData(true) ? "config_reloaded" : "config_reload_invalid");
                 break;
             default:
                 messages.sendMessage(sender, "config_usage");

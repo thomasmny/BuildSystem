@@ -71,8 +71,16 @@ public final class YamlStore {
         return configuration;
     }
 
+    public String fileName() {
+        return file.getName();
+    }
+
+    public boolean exists() {
+        return file.exists();
+    }
+
     /**
-     * {@return whether the file exists but did not load} Saves are refused until it loads again.
+     * {@return whether the last {@link #reload} found the file but could not read it}
      */
     public boolean loadFailed() {
         return loadFailed;

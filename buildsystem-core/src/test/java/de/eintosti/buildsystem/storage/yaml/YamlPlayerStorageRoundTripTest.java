@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,7 +57,8 @@ class YamlPlayerStorageRoundTripTest {
     }
 
     private PlayerStorageImpl newStorage() {
-        return new PlayerStorageImpl(plugin, scheduler);
+        return new PlayerStorageImpl(
+                plugin, scheduler, YamlEntityStore.players(plugin.getDataFolder(), plugin.getLogger()));
     }
 
     private BuildPlayerImpl samplePlayer(UUID uuid) {
@@ -133,7 +135,7 @@ class YamlPlayerStorageRoundTripTest {
         Files.writeString(players, broken);
 
         PlayerStorageImpl storage = newStorage();
-        assertTrue(storage.load().get().isEmpty());
+        assertThrows(ExecutionException.class, () -> storage.load().get());
         storage.save(samplePlayer(UUID.randomUUID())).join();
         assertEquals(broken, Files.readString(players), "a file that failed to load is never written over");
         File[] copies = dataFolder.listFiles((dir, name) -> name.startsWith("players.yml.broken-"));

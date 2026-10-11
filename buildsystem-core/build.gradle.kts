@@ -70,12 +70,23 @@ dependencies {
     implementation(libs.paperlib)
     implementation(libs.sftp)
     implementation(libs.xseries)
+    // Shaded rather than in plugin.yml's libraries, so a server without internet access can use them. Paper and
+    // Spigot already ship the SQLite and MySQL drivers. checker-qual only holds annotations the driver needs to compile.
+    implementation(libs.mongodb.driver)
+    implementation(libs.postgresql) { exclude(group = "org.checkerframework") }
+    // The MongoDB driver and sshd log through the shaded slf4j, which prints a warning on stderr without a binding.
+    implementation(libs.slf4j.nop)
 
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.mockito)
     testImplementation(libs.mockbukkit)
     testImplementation(libs.testcontainers)
+    testImplementation(libs.testcontainers.mongodb)
+    testImplementation(libs.testcontainers.mysql)
+    testImplementation(libs.testcontainers.postgresql)
+    testImplementation(libs.mysql.connector)
+    testRuntimeOnly(libs.sqlite.jdbc)
     // Test-only Bukkit API: MockBukkit requires the Paper API. The plugin itself targets spigot-api (compileOnly
     // above); paper-api is a strict superset and is confined to the test classpath, so the shipped plugin stays
     // spigot-only. Do NOT add paper-api to a non-test configuration.
@@ -103,6 +114,9 @@ tasks.register<Test>("dockerTest") {
     testClassesDirs = sourceSets.test.get().output.classesDirs
     classpath = sourceSets.test.get().runtimeClasspath
     useJUnitPlatform { includeTags("docker") }
+    // Holds the test CA that signed PostgresTlsTest's server certificate, for tls: verify to trust.
+    systemProperty("javax.net.ssl.trustStore", file("src/test/resources/tls/truststore.p12").absolutePath)
+    systemProperty("javax.net.ssl.trustStorePassword", "changeit")
 }
 
 tasks.named("assemble") {
@@ -114,7 +128,14 @@ tasks.named<ShadowJar>("shadowJar") {
         exclude(dependency("org.apache.sshd:.*:.*"))
         exclude(dependency("net.i2p.crypto:.*:.*"))
         exclude(dependency("org.bstats:.*:.*"))
+        // Both load classes by name, which minimize cannot see.
+        exclude(dependency("org.mongodb:.*:.*"))
+        exclude(dependency("org.postgresql:.*:.*"))
+        // Only found through the class slf4j-api is compiled against, so minimize sees no use of it.
+        exclude(dependency("org.slf4j:slf4j-nop:.*"))
     }
+    // Lists the driver under its old name, and BuildSystem creates the driver itself.
+    exclude("META-INF/services/java.sql.Driver")
     archiveFileName.set("${rootProject.name}-${project.version}.jar")
     destinationDirectory.set(rootProject.layout.buildDirectory.dir("libs"))
 
@@ -128,6 +149,9 @@ tasks.named<ShadowJar>("shadowJar") {
     relocate("net.i2p.crypto", "$shadePath.eddsa")
     relocate("org.bstats", "$shadePath.bstats")
     relocate("org.slf4j", "$shadePath.slf4j")
+    relocate("org.postgresql", "$shadePath.postgresql")
+    relocate("com.mongodb", "$shadePath.mongodb")
+    relocate("org.bson", "$shadePath.bson")
 }
 
 // Run by .github/workflows/release.yml when a GitHub release is published.
@@ -274,6 +298,10 @@ bukkit {
             )
             description = "Permission for creating world types."
             default = BukkitPluginDescription.Permission.Default.TRUE
+        }
+        register("buildsystem.storage.migrate") {
+            description = "Move worlds, folders and players to another storage type."
+            default = BukkitPluginDescription.Permission.Default.OP
         }
         register("buildsystem.download") {
             description = "Download a world as a single-player save."

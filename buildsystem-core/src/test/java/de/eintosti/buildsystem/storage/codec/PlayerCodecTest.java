@@ -20,6 +20,7 @@ package de.eintosti.buildsystem.storage.codec;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import de.eintosti.buildsystem.api.player.settings.DesignColor;
@@ -166,5 +167,15 @@ class PlayerCodecTest {
         String key = CodecSamples.PLAYER_ID.toString();
         String yaml = key + ":\n" + body.indent(2);
         return codec.deserialize(key, CodecSamples.section(yaml, key));
+    }
+
+    @Test
+    void keyThatIsNotACanonicalUuid_isRefused() {
+        ConfigurationSection section =
+                CodecSamples.section(CodecSamples.resource("players-4.0.yml"), CodecSamples.PLAYER_ID.toString());
+        for (String key : CodecSamples.nonCanonical(CodecSamples.PLAYER_ID)) {
+            // Loaded, it would be saved again under the canonical key, next to the row it came from.
+            assertThrows(IllegalArgumentException.class, () -> codec.deserialize(key, section), key);
+        }
     }
 }
