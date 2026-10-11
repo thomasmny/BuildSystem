@@ -22,7 +22,6 @@ import de.eintosti.buildsystem.api.player.settings.NavigatorType;
 import de.eintosti.buildsystem.api.player.settings.Settings;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.menu.Menus;
@@ -31,6 +30,8 @@ import de.eintosti.buildsystem.navigator.NavigatorService;
 import de.eintosti.buildsystem.player.BuildPlayerImpl;
 import de.eintosti.buildsystem.player.CachedValues;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.protection.WorldProtectionPolicy;
+import de.eintosti.buildsystem.protection.WorldProtectionPolicy.Denial;
 import de.eintosti.buildsystem.util.FeedbackSound;
 import de.eintosti.buildsystem.util.Permissions;
 import java.util.Objects;
@@ -66,6 +67,7 @@ public class NavigatorListener implements Listener {
     private final Messages messages;
     private final Menus menus;
     private final PlayerService playerService;
+    private final WorldProtectionPolicy policy = new WorldProtectionPolicy();
 
     public NavigatorListener(
             NavigatorService navigatorService,
@@ -193,18 +195,15 @@ public class NavigatorListener implements Listener {
     }
 
     /**
-     * Cancels an event if the player is in an archived world.
+     * Cancels an event if the player is in a world whose status forbids building and none of the protection policy's
+     * bypasses apply.
      *
      * @param player The player object
      * @param cancellable The event to cancel
      */
     private void disableArchivedWorlds(Player player, Cancellable cancellable) {
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        if (buildWorld == null || buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
-            return;
-        }
-
-        if (!playerService.isInBuildMode(player)) {
+        if (buildWorld != null && policy.mayModify(player, buildWorld) == Denial.STATUS_LOCKED) {
             cancellable.setCancelled(true);
         }
     }

@@ -18,12 +18,15 @@
 package de.eintosti.buildsystem.integration;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
 import de.eintosti.buildsystem.integration.luckperms.LuckPermsExpansion;
 import de.eintosti.buildsystem.integration.placeholderapi.PapiTextResolver;
 import de.eintosti.buildsystem.integration.placeholderapi.PlaceholderApiExpansion;
+import de.eintosti.buildsystem.integration.worldedit.EditSessionListener;
 import de.eintosti.buildsystem.player.PlayerServiceImpl;
 import de.eintosti.buildsystem.player.settings.SettingsService;
+import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.world.WorldServiceImpl;
 import org.bukkit.plugin.PluginManager;
 import org.jspecify.annotations.NullMarked;
@@ -41,21 +44,28 @@ public final class Integrations {
     private final SettingsService settingsService;
     private final PlayerServiceImpl playerService;
     private final WorldServiceImpl worldService;
+    private final ConfigService configService;
+    private final TaskScheduler scheduler;
 
     private @Nullable PlaceholderApiExpansion placeholderApi;
     private @Nullable LuckPermsExpansion luckPerms;
+    private @Nullable EditSessionListener worldEdit;
 
     public Integrations(
             BuildSystemPlugin plugin,
             Messages messages,
             SettingsService settingsService,
             PlayerServiceImpl playerService,
-            WorldServiceImpl worldService) {
+            WorldServiceImpl worldService,
+            ConfigService configService,
+            TaskScheduler scheduler) {
         this.plugin = plugin;
         this.messages = messages;
         this.settingsService = settingsService;
         this.playerService = playerService;
         this.worldService = worldService;
+        this.configService = configService;
+        this.scheduler = scheduler;
     }
 
     public void activate() {
@@ -72,6 +82,13 @@ public final class Integrations {
             this.luckPerms = new LuckPermsExpansion(plugin, playerService, worldService.getWorldStorage());
             this.luckPerms.registerAll();
         }
+
+        boolean isWorldEdit =
+                pluginManager.getPlugin("WorldEdit") != null || pluginManager.getPlugin("FastAsyncWorldEdit") != null;
+        if (isWorldEdit && configService.current().settings().builder().blockWorldEditNonBuilder()) {
+            this.worldEdit = new EditSessionListener(worldService.getWorldStorage(), scheduler);
+            this.worldEdit.register();
+        }
     }
 
     public void deactivate() {
@@ -82,6 +99,10 @@ public final class Integrations {
 
         if (this.luckPerms != null) {
             this.luckPerms.unregisterAll();
+        }
+
+        if (this.worldEdit != null) {
+            this.worldEdit.unregister();
         }
     }
 }
