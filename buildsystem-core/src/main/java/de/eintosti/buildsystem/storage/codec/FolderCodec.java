@@ -101,7 +101,7 @@ public final class FolderCodec implements Codec<Folder> {
         NavigatorCategory category = parseCategory(categoryId);
         String materialName = section.getString("material");
         Material material = MaterialUtils.match(materialName);
-        FolderImpl folder = FolderImpl.builder(context, UUID.fromString(key))
+        FolderImpl folder = FolderImpl.builder(context, Codec.canonicalUuid(key))
                 .name(name)
                 .creator(Objects.requireNonNull(
                         Builder.deserialize(section.getString("creator")),

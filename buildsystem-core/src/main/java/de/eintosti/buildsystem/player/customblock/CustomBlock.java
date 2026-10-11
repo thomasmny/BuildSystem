@@ -180,19 +180,16 @@ public enum CustomBlock {
     }
 
     /**
-     * Materializes this custom block at a freshly placed block.
+     * Materializes this custom block at a freshly placed block. Does nothing for blocks with no placement (the invisible
+     * item frame and the debug stick).
      *
      * @param block The block that was placed
      * @param player The placing player, used to orient direction-dependent blocks
-     * @return {@code true} if a block was placed (and the original placement should be cancelled), {@code false} for
-     *     blocks with no placement (the invisible item frame and the debug stick)
      */
-    public boolean place(Block block, Player player) {
-        if (placer == null) {
-            return false;
+    public void place(Block block, Player player) {
+        if (placer != null) {
+            placer.place(block, player);
         }
-        placer.place(block, player);
-        return true;
     }
 
     /**

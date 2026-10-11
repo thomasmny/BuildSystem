@@ -66,6 +66,11 @@ abstract class AbstractWorldCreator {
 
     protected @Nullable Player audience;
 
+    /**
+     * Completes once the folder of a failed world is deleted, or at once when there was nothing to delete.
+     */
+    protected CompletableFuture<Void> folderDeleted = CompletableFuture.completedFuture(null);
+
     protected AbstractWorldCreator(
             WorldContext context, WorldStorageImpl worldStorage, String worldName, BuildWorldType worldType) {
         this.context = context;
@@ -140,9 +145,9 @@ abstract class AbstractWorldCreator {
         return newBuildWorld;
     }
 
-    private void deleteFolderOfFailedWorld() {
+    protected void deleteFolderOfFailedWorld() {
         File folder = FileUtils.worldFolder(worldName);
-        CompletableFuture.runAsync(
+        folderDeleted = CompletableFuture.runAsync(
                 () -> {
                     if (!folder.exists()) {
                         return;

@@ -1,0 +1,45 @@
+/*
+ * Copyright (c) 2018-2026, Thomas Meaney
+ * Copyright (c) contributors
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+package de.eintosti.buildsystem.storage;
+
+import org.jspecify.annotations.NullMarked;
+
+/**
+ * A connection to a database server or file that holds one {@link EntityStore} per collection.
+ */
+@NullMarked
+public interface Database extends AutoCloseable {
+
+    /**
+     * {@return the store for {@code kind}, created if it does not exist yet}
+     */
+    EntityStore collection(EntityKind kind);
+
+    /**
+     * {@return whether the table or collection for {@code kind} exists, which it does once it was opened}
+     */
+    boolean exists(EntityKind kind);
+
+    /**
+     * Removes the table or collection for {@code kind} with everything in it.
+     */
+    void drop(EntityKind kind);
+
+    @Override
+    void close();
+}

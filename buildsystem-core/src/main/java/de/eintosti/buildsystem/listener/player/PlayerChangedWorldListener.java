@@ -34,7 +34,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.potion.PotionEffectType;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -80,7 +79,7 @@ public class PlayerChangedWorldListener implements Listener {
                     player, "physics_deactivated_in_world", Placeholders.of("%world%", newWorld.getName()));
         }
 
-        removeOldNavigator(player);
+        navigatorService.closeNewNavigator(player);
         removeBuildMode(player);
         checkWorldStatus(player);
         settingsManager.updateVisibility(player);
@@ -88,11 +87,6 @@ public class PlayerChangedWorldListener implements Listener {
         if (settingsManager.getSettings(player).isScoreboard()) {
             settingsManager.forceUpdateSidebar(player);
         }
-    }
-
-    private void removeOldNavigator(Player player) {
-        navigatorService.removeArmorStands(player);
-        player.removePotionEffect(PotionEffectType.BLINDNESS);
     }
 
     private void removeBuildMode(Player player) {
@@ -116,7 +110,10 @@ public class PlayerChangedWorldListener implements Listener {
         }
 
         BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        if (buildWorld != null && !buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()) {
+        // Without a stored snapshot, a crash would lose what archive mode takes, so the inventory is left alone.
+        if (buildWorld != null
+                && !buildWorld.getData().get(WorldDataKey.STATUS).isBuildingAllowed()
+                && !playerManager.playerSavesRefused()) {
             snapshotChanged |= ArchiveMode.enter(
                     player, cachedValues, configService.current().settings().archive());
         }

@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 import org.bukkit.World;
 import org.jspecify.annotations.NullMarked;
@@ -69,9 +70,13 @@ public class WorldLoadBootstrap {
         this.afterLoad = afterLoad;
     }
 
-    public void loadWorlds() {
+    /**
+     * @param foldersLoaded Completes once the folders are in place, which the worlds are then assigned to
+     */
+    public void loadWorlds(CompletableFuture<Void> foldersLoaded) {
         this.worldStorage
                 .load()
+                .thenCombine(foldersLoaded, (worlds, ignored) -> worlds)
                 .thenApply(worlds -> {
                     // Off the main thread, before any world loads and would generate an empty world in a missing
                     // folder.
@@ -120,17 +125,22 @@ public class WorldLoadBootstrap {
 
     /**
      * Assigns all {@link BuildWorld}s to their respective {@link Folder}s, dropping references to worlds that no longer
-     * exist.
+     * exist. A world that is stored but could not be loaded keeps its place.
      *
      * <p>Must be called after all folders and worlds have been loaded.
      */
     private void assignWorldsToFolders() {
+        if (worldStorage.loadFailed()) {
+            // No world is known, so every folder would lose its worlds, and the next save would make that permanent.
+            return;
+        }
         folderStorage.getFolders().forEach(folder -> {
             List<UUID> invalidWorlds = new ArrayList<>();
             folder.getWorldUUIDs().stream()
                     .map(worldUUID -> {
                         BuildWorld buildWorld = worldStorage.getBuildWorld(worldUUID);
-                        if (buildWorld == null) {
+                        // A world that is stored but could not be parsed comes back once its entry is fixed.
+                        if (buildWorld == null && !worldStorage.skippedOnLoad(worldUUID)) {
                             invalidWorlds.add(worldUUID);
                             plugin.getLogger()
                                     .warning("World with UUID " + worldUUID + " does not exist. Removing from folder: "

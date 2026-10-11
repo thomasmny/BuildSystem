@@ -21,8 +21,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import com.cryptomorin.xseries.XGameRule;
 import de.eintosti.buildsystem.api.world.data.PhysicsCategory;
+import de.eintosti.buildsystem.storage.StorageTls;
+import de.eintosti.buildsystem.storage.StorageType;
 import de.eintosti.buildsystem.world.menu.GameRuleEntry;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Logger;
 import org.bukkit.Difficulty;
@@ -647,5 +651,143 @@ class PluginConfigTest {
                 """);
 
         assertEquals(18, cfg.world().backup().maxBackupsPerWorld());
+    }
+
+    // -----------------------------------------------------------------------
+    // 9. Storage backend: defaults, and nothing that could change a table or address
+    // -----------------------------------------------------------------------
+
+    @Test
+    void storageDatabase_missingKeys_defaultToSqliteAndEachTypesPort() {
+        PluginConfig.Storage.Database database = parse("").storage().database();
+
+        assertEquals(StorageType.SQLITE, database.type());
+        assertEquals("buildsystem_", database.tablePrefix());
+        assertEquals(3306, database.server(StorageType.MARIADB).port());
+        assertEquals(5432, database.server(StorageType.POSTGRESQL).port());
+        assertEquals(27017, database.server(StorageType.MONGODB).port());
+    }
+
+    @Test
+    void storageDatabase_readsTheBlockOfEachType() {
+        PluginConfig.Storage.Database database = parse("""
+                storage:
+                  type: PostgreSQL
+                  table-prefix: lobby_
+                  postgresql:
+                    host: db.internal
+                    port: 6543
+                    database: build-system_2
+                    username: builder
+                    password: hunter2
+                """).storage().database();
+
+        assertEquals(StorageType.POSTGRESQL, database.type());
+        assertEquals("lobby_", database.tablePrefix());
+        PluginConfig.Storage.Database.Server server = database.server(StorageType.POSTGRESQL);
+        assertEquals("db.internal", server.host());
+        assertEquals(6543, server.port());
+        assertEquals("build-system_2", server.database());
+        assertEquals("builder", server.username());
+        assertFalse(server.toString().contains("hunter2"));
+        assertEquals(StorageTls.PREFER, server.tls());
+    }
+
+    @Test
+    void storageDatabase_tlsIsOneOfFourModes() {
+        for (StorageTls tls : StorageTls.values()) {
+            assertEquals(
+                    tls,
+                    parse("storage:\n  mysql:\n    tls: " + tls.name().toLowerCase(Locale.ROOT))
+                            .storage()
+                            .database()
+                            .server(StorageType.MYSQL)
+                            .tls());
+        }
+    }
+
+    @Test
+    void storageDatabase_hostMayBeANameOrAnAddress() {
+        for (String host : List.of("localhost", "db-1.example.com", "mysql_db", "10.0.0.5", "[::1]", "[2001:db8::7]")) {
+            assertEquals(
+                    host,
+                    parse("storage:\n  mysql:\n    host: \"" + host + "\"")
+                            .storage()
+                            .database()
+                            .server(StorageType.MYSQL)
+                            .host());
+        }
+    }
+
+    @Test
+    void storageDatabase_prefixMayBeEmptyOrStartWithAnUnderscore() {
+        for (String prefix : List.of("", "_", "_2b", "b2_")) {
+            assertEquals(
+                    prefix,
+                    parse("storage:\n  table-prefix: \"" + prefix + "\"")
+                            .storage()
+                            .database()
+                            .tablePrefix());
+        }
+    }
+
+    @Test
+    void storageDatabase_valuesThatCouldReachAnotherTableOrAddress_failToParse() {
+        List<String> hostile = List.of(
+                "type: postgres",
+                "table-prefix: \"x; DROP TABLE worlds; --\"",
+                "table-prefix: Lobby_",
+                "table-prefix: 1lobby_",
+                "table-prefix: \"9\"",
+                "table-prefix: " + "a".repeat(33),
+                "mysql:\n    database: \"buildsystem?allowLoadLocalInfile=true\"",
+                "mysql:\n    database: \"../other\"",
+                "mysql:\n    database: \"\"",
+                "mysql:\n    host: \"evil.example/other\"",
+                "mysql:\n    host: \"db?user=root\"",
+                "mysql:\n    host: \"db;x=1\"",
+                "mysql:\n    host: \"db#\"",
+                "mysql:\n    host: \"db x\"",
+                "mysql:\n    host: \"(host=db,allowLoadLocalInfile=true)\"",
+                "mysql:\n    host: \"address=(host=db)(allowLoadLocalInfile=true)\"",
+                "mysql:\n    host: \"user:password@db\"",
+                "mysql:\n    host: \"db1,db2\"",
+                "mysql:\n    host: \"db:3307\"",
+                "mysql:\n    port: 0",
+                "mongodb:\n    port: 65536",
+                "mysql:\n    tls: \"verify&sslMode=DISABLED\"",
+                "postgresql:\n    tls: disable",
+                "mongodb:\n    tls: \"\"",
+                "mongodb:\n    tls: true",
+                "postgresql:\n    username: \"builder\\0search_path\\0evil\"",
+                "postgresql:\n    username: \"builder\\n\"",
+                "postgresql:\n    password: \"hunter2\\0options\\0-c x=y\"",
+                "mysql:\n    password: \"hunter2\\r\"");
+        for (String line : hostile) {
+            assertThrows(
+                    IllegalArgumentException.class,
+                    () -> {
+                        PluginConfig.Storage.Database database =
+                                parse("storage:\n  " + line).storage().database();
+                        Arrays.stream(StorageType.values())
+                                .filter(StorageType::hasServer)
+                                .forEach(database::server);
+                    },
+                    line);
+        }
+    }
+
+    @Test
+    void storageDatabase_anInvalidBlock_onlyFailsOnceItIsUsed() {
+        String mysql = "  mysql:\n    host: \"db?user=root\"\n";
+
+        PluginConfig.Storage.Database database =
+                parse("storage:\n  type: sqlite\n" + mysql).storage().database();
+
+        IllegalArgumentException unused =
+                assertThrows(IllegalArgumentException.class, () -> database.server(StorageType.MYSQL));
+        assertTrue(unused.getMessage().startsWith("storage.mysql.host"), unused.getMessage());
+        assertEquals("localhost", database.server(StorageType.POSTGRESQL).host());
+        assertThrows(IllegalArgumentException.class, () -> parse("storage:\n  type: mysql\n" + mysql));
     }
 }

@@ -19,10 +19,10 @@ package de.eintosti.buildsystem.player;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.api.player.PlayerService;
-import de.eintosti.buildsystem.api.storage.PlayerStorage;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.storage.EntityStore;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
@@ -45,26 +45,43 @@ public class PlayerServiceImpl implements PlayerService {
     private final MaxWorldsResolver maxWorldsResolver;
 
     private final Set<UUID> buildModePlayers;
+    private CompletableFuture<Void> playersLoaded = new CompletableFuture<>();
 
     public PlayerServiceImpl(
             BuildSystemPlugin plugin,
             ConfigService configService,
             WorldStorageImpl worldStorage,
-            TaskScheduler scheduler) {
+            TaskScheduler scheduler,
+            EntityStore store) {
         this.plugin = plugin;
         this.configService = configService;
         this.worldStorage = worldStorage;
-        this.playerStorage = new PlayerStorageImpl(plugin, scheduler);
+        this.playerStorage = new PlayerStorageImpl(plugin, scheduler, store);
         this.maxWorldsResolver = new MaxWorldsResolver(plugin.getLogger());
         this.buildModePlayers = ConcurrentHashMap.newKeySet();
     }
 
     public void init() {
-        this.playerStorage.loadPlayers();
+        this.playersLoaded = this.playerStorage.loadPlayers();
+    }
+
+    /**
+     * {@return a future that completes once the stored players are loaded, on a background thread}
+     */
+    public CompletableFuture<Void> playersLoaded() {
+        return playersLoaded;
+    }
+
+    /**
+     * {@return whether nothing about the players can be saved, since the stored players failed to load} An archive
+     * snapshot taken meanwhile would only live in memory, so a crash would lose the items.
+     */
+    public boolean playerSavesRefused() {
+        return playerStorage.loadFailed();
     }
 
     @Override
-    public PlayerStorage getPlayerStorage() {
+    public PlayerStorageImpl getPlayerStorage() {
         return playerStorage;
     }
 

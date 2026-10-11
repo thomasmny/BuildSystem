@@ -144,7 +144,7 @@ public final class WorldCodec implements Codec<BuildWorld> {
     @Override
     public BuildWorldImpl deserialize(String key, ConfigurationSection section) {
         // v4 keys sections by UUID and carries the name as a field; fall back to the key for pre-migration safety.
-        UUID uuid = UUID.fromString(key);
+        UUID uuid = Codec.canonicalUuid(key);
         String name = section.getString(NAME, key);
         Builder creator = parseCreator(name, section);
         BuildWorldType worldType = parseType(name, section);

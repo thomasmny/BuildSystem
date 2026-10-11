@@ -18,9 +18,6 @@
 package de.eintosti.buildsystem.player.customblock;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.api.world.BuildWorld;
-import de.eintosti.buildsystem.api.world.data.WorldDataKey;
-import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.util.TaskScheduler;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -37,11 +34,9 @@ import org.jspecify.annotations.NullMarked;
 public class CustomBlockManager implements Listener {
 
     private final TaskScheduler scheduler;
-    private final WorldStorageImpl worldStorage;
 
-    public CustomBlockManager(BuildSystemPlugin plugin, TaskScheduler scheduler, WorldStorageImpl worldStorage) {
+    public CustomBlockManager(BuildSystemPlugin plugin, TaskScheduler scheduler) {
         this.scheduler = scheduler;
-        this.worldStorage = worldStorage;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
@@ -50,10 +45,6 @@ public class CustomBlockManager implements Listener {
         if (event.isCancelled()) {
             return;
         }
-
-        Player player = event.getPlayer();
-        BuildWorld buildWorld = worldStorage.getBuildWorld(player.getWorld());
-        boolean isBuildWorld = buildWorld != null;
 
         ItemStack itemStack = event.getItemInHand();
         if (itemStack.getType() != Material.PLAYER_HEAD) {
@@ -65,24 +56,12 @@ public class CustomBlockManager implements Listener {
             return;
         }
 
-        // Placing a custom block fires physics updates; toggle physics on for the placement if the world disables it,
-        // otherwise the block (e.g., a portal or piston head) would pop off.
-        boolean hadToDisablePhysics = false;
-        if (isBuildWorld && !buildWorld.getData().get(WorldDataKey.PHYSICS)) {
-            hadToDisablePhysics = true;
-            buildWorld.getData().set(WorldDataKey.PHYSICS, true);
-        }
-
         setBlock(event, customBlock);
-
-        if (isBuildWorld && hadToDisablePhysics) {
-            buildWorld.getData().set(WorldDataKey.PHYSICS, false);
-        }
     }
 
     /**
-     * Replaces the placed player head with the custom block on the next tick, cancelling the original placement once the
-     * block is in. The block data must be applied a tick later, after Bukkit finishes placing the head.
+     * Replaces the placed player head with the custom block on the next tick. The block data must be applied a tick
+     * later, after Bukkit finishes placing the head.
      *
      * @param event The placement that dropped the custom-block head
      * @param customBlock The custom block to materialize
@@ -92,8 +71,10 @@ public class CustomBlockManager implements Listener {
         Block block = event.getBlockPlaced();
 
         scheduler.run(() -> {
-            if (customBlock.place(block, player)) {
-                event.setCancelled(true);
+            // This listener runs before the world protection, which can still cancel the placement after it. A tick
+            // later every listener has had its say.
+            if (!event.isCancelled()) {
+                customBlock.place(block, player);
             }
         });
     }

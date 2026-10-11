@@ -22,16 +22,19 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class YamlSpawnStorage extends AbstractYamlStorage {
+public class YamlSpawnStorage {
 
     private static final String SPAWN_KEY = "spawn";
 
+    private final YamlStore store;
+
     public YamlSpawnStorage(BuildSystemPlugin plugin) {
-        super(plugin, "spawn.yml");
+        this.store = new YamlStore(plugin.getDataFolder(), "spawn.yml", plugin.getLogger());
+        store.locked(store::reload);
     }
 
     public @Nullable String getSpawn() {
-        return getFile().getString(SPAWN_KEY);
+        return store.config().getString(SPAWN_KEY);
     }
 
     /**
@@ -40,7 +43,6 @@ public class YamlSpawnStorage extends AbstractYamlStorage {
      * @return Whether the file was written
      */
     public boolean saveSpawn(@Nullable String spawn) {
-        getFile().set(SPAWN_KEY, spawn);
-        return saveFile();
+        return store.atomicSave(() -> store.config().set(SPAWN_KEY, spawn));
     }
 }

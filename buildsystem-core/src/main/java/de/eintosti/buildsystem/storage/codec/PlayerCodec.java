@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -130,7 +129,7 @@ public final class PlayerCodec implements Codec<BuildPlayer> {
         display.getWorldFilter().setMode(parseFilterMode(section.getString("settings.world-display.filter.mode")));
         display.getWorldFilter().setText(section.getString("settings.world-display.filter.text", ""));
 
-        BuildPlayerImpl player = new BuildPlayerImpl(UUID.fromString(key), settings);
+        BuildPlayerImpl player = new BuildPlayerImpl(Codec.canonicalUuid(key), settings);
         player.setLogoutLocation(LogoutLocationCodec.parse(section.getString("logout-location")));
         ConfigurationSection archiveSnapshot = section.getConfigurationSection("archive-snapshot");
         if (archiveSnapshot != null) {

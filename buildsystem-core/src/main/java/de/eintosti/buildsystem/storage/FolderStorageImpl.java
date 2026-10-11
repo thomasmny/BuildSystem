@@ -17,8 +17,6 @@
  */
 package de.eintosti.buildsystem.storage;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.event.folder.FolderCreatedEvent;
 import de.eintosti.buildsystem.api.event.folder.FolderDeletedEvent;
 import de.eintosti.buildsystem.api.storage.FolderStorage;
@@ -26,10 +24,8 @@ import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
+import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
 import de.eintosti.buildsystem.storage.codec.FolderCodec;
-import de.eintosti.buildsystem.storage.migration.StorageMigration;
-import de.eintosti.buildsystem.storage.yaml.YamlEntityFile;
-import de.eintosti.buildsystem.storage.yaml.YamlStore;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.ArrayList;
@@ -38,8 +34,9 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -63,31 +60,39 @@ public class FolderStorageImpl implements FolderStorage {
      */
     private final ConcurrentHashMap<UUID, Folder> folders;
 
-    private final YamlEntityFile<Folder> file;
+    private final EntityCollection<Folder> file;
     private final Supplier<WorldContext> context;
 
-    public FolderStorageImpl(BuildSystemPlugin plugin, WorldStorage worldStorage, Services services) {
+    /**
+     * @param context Read only once the stored folders load, since building it needs this storage
+     * @param categories Read only once the stored folders load, since the registry is built from this storage
+     */
+    public FolderStorageImpl(
+            Logger logger,
+            Executor background,
+            WorldStorage worldStorage,
+            Supplier<WorldContext> context,
+            Supplier<NavigatorCategoryRegistry> categories,
+            EntityStore store) {
         this(
-                plugin.getLogger(),
+                logger,
                 worldStorage,
-                services::worldContext,
-                new YamlEntityFile<>(
-                        new YamlStore(plugin.getDataFolder(), "folders.yml", plugin.getLogger()),
-                        "folders",
-                        "folder",
-                        () -> new FolderCodec(services.worldContext(), services.navigatorCategoryRegistry()),
-                        services.scheduler().background(),
-                        plugin.getLogger(),
-                        StorageMigration::migrateFolders));
+                context,
+                new EntityCollection<>(
+                        store, "folder", () -> new FolderCodec(context.get(), categories.get()), background, logger));
     }
 
     FolderStorageImpl(
-            Logger logger, WorldStorage worldStorage, Supplier<WorldContext> context, YamlEntityFile<Folder> file) {
+            Logger logger, WorldStorage worldStorage, Supplier<WorldContext> context, EntityCollection<Folder> file) {
         this.logger = logger;
         this.worldStorage = worldStorage;
         this.folders = new ConcurrentHashMap<>();
         this.context = context;
         this.file = file;
+    }
+
+    EntityCollection<Folder> collection() {
+        return file;
     }
 
     @Override
@@ -126,13 +131,26 @@ public class FolderStorageImpl implements FolderStorage {
         return file.delete(folderKey);
     }
 
-    public void loadFolders() {
-        try {
-            this.folders.putAll(
-                    load().get().stream().collect(Collectors.toMap(Folder::getUniqueId, Function.identity())));
-        } catch (InterruptedException | ExecutionException e) {
-            logger.severe("Failed to load folders from storage: " + e.getMessage());
-        }
+    /**
+     * Loads the stored folders in the background.
+     *
+     * @return A future that completes once they are in place, and also when loading failed, which is logged
+     */
+    public CompletableFuture<Void> loadFolders() {
+        return load().thenAccept(loaded -> this.folders.putAll(loaded.stream()
+                        .collect(Collectors.toMap(Folder::getUniqueId, Function.identity(), this::keepFirst))))
+                .exceptionally(throwable -> {
+                    logger.log(
+                            Level.SEVERE,
+                            "Failed to load folders from storage",
+                            throwable instanceof CompletionException ? throwable.getCause() : throwable);
+                    return null;
+                });
+    }
+
+    private Folder keepFirst(Folder first, Folder duplicate) {
+        logger.warning("Two stored entries are for folder " + first.getUniqueId() + ", keeping the first");
+        return first;
     }
 
     @Override

@@ -31,10 +31,18 @@ import static org.mockito.Mockito.mockStatic;
 import com.cryptomorin.xseries.profiles.objects.Profileable;
 import de.eintosti.buildsystem.api.BuildSystem;
 import de.eintosti.buildsystem.api.player.BuildPlayer;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
+import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.config.ConfigService;
+import de.eintosti.buildsystem.config.PluginConfig;
 import de.eintosti.buildsystem.menu.ItemBuilder;
+import de.eintosti.buildsystem.player.BuildPlayerImpl;
+import de.eintosti.buildsystem.player.PlayerServiceImpl;
+import de.eintosti.buildsystem.storage.EntityKind;
 import de.eintosti.buildsystem.storage.PlayerStorageImpl;
+import de.eintosti.buildsystem.storage.StorageBackend;
 import de.eintosti.buildsystem.storage.WorldStorageImpl;
 import de.eintosti.buildsystem.test.SoundlessPlayer;
 import de.eintosti.buildsystem.test.TestData;
@@ -43,15 +51,30 @@ import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import de.eintosti.buildsystem.world.menu.setup.LayoutEditorMenu;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -59,6 +82,7 @@ import org.bukkit.event.inventory.InventoryType.SlotType;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffectType;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.AfterEach;
@@ -146,12 +170,129 @@ class ArchiveModeReloadTest {
 
         server.getPluginManager().enablePlugin(plugin);
         awaitStoredWorlds();
+        awaitArchiveMode();
         assertInArchiveMode();
         flushWrites();
         assertTrue(snapshotStored());
 
         moveTo(archived, lobby);
         assertOutOfArchiveMode();
+    }
+
+    @Test
+    void reload_whenThePlayersLoadAfterTheWorlds_keepsTheSnapshot() throws Exception {
+        useYaml();
+        server.getPluginManager().disablePlugin(plugin);
+        Path players = playersFile();
+        Files.writeString(players, Files.readString(players) + "gate:\n  ==: " + PlayerLoadGate.ALIAS + "\n");
+        ConfigurationSerialization.registerClass(PlayerLoadGate.class, PlayerLoadGate.ALIAS);
+        try {
+            server.getPluginManager().enablePlugin(plugin);
+            awaitStoredWorlds();
+            BuildPlayer blank = playerStorage().getBuildPlayer(archived.getUniqueId());
+            PlayerLoadGate.OPEN.countDown();
+            long deadline = System.currentTimeMillis() + 10_000;
+            while (playerStorage().getBuildPlayer(archived.getUniqueId()) == blank) {
+                assertTrue(System.currentTimeMillis() < deadline, "the players never loaded");
+                Thread.onSpinWait();
+            }
+
+            awaitArchiveMode();
+            assertInArchiveMode();
+            flushWrites();
+            assertTrue(snapshotStored());
+
+            moveTo(archived, lobby);
+            assertOutOfArchiveMode();
+        } finally {
+            PlayerLoadGate.OPEN.countDown();
+            // Only now: every save writes the gate back into the file, which reads it again.
+            ConfigurationSerialization.unregisterClass(PlayerLoadGate.class);
+        }
+    }
+
+    @Test
+    void aPlayersFileThatFailsToLoad_isNotSavedOver_andArchiveModeLeavesTheInventoryAlone() throws Exception {
+        useYaml();
+        server.getPluginManager().disablePlugin(plugin);
+        Path players = playersFile();
+        String broken = Files.readString(players) + "broken: [unclosed\n";
+        Files.writeString(players, broken);
+
+        server.getPluginManager().enablePlugin(plugin);
+        awaitStoredWorlds();
+        ((PlayerServiceImpl) api().getPlayerService()).playersLoaded().join();
+        server.getScheduler().performOneTick();
+        // The snapshot could not be stored, so a crash would lose what archive mode takes.
+        assertOutOfArchiveMode();
+        moveTo(archived, lobby);
+        moveTo(archived, archive);
+        assertOutOfArchiveMode();
+        rejoin();
+        assertOutOfArchiveMode();
+
+        server.getPluginManager().disablePlugin(plugin);
+        assertOutOfArchiveMode();
+        assertEquals(broken, Files.readString(players));
+    }
+
+    @Test
+    void aPlayersTableThatFailsToLoad_leavesTheInventoryAlone() throws Exception {
+        server.getPluginManager().disablePlugin(plugin);
+        try (Connection connection =
+                        DriverManager.getConnection("jdbc:sqlite:" + new File(plugin.getDataFolder(), "storage.db"));
+                Statement statement = connection.createStatement()) {
+            // A table the plugin cannot read, with the real one kept aside.
+            statement.execute("ALTER TABLE buildsystem_players RENAME TO kept_players");
+            statement.execute("CREATE TABLE buildsystem_players (id VARCHAR(64) PRIMARY KEY, payload TEXT)");
+        }
+
+        server.getPluginManager().enablePlugin(plugin);
+        awaitStoredWorlds();
+        ((PlayerServiceImpl) api().getPlayerService()).playersLoaded().join();
+        server.getScheduler().performOneTick();
+        assertTrue(((PlayerServiceImpl) api().getPlayerService()).playerSavesRefused());
+        // The snapshot could not be stored, so a crash would lose what archive mode takes.
+        assertOutOfArchiveMode();
+        moveTo(archived, lobby);
+        moveTo(archived, archive);
+        assertOutOfArchiveMode();
+        rejoin();
+        assertOutOfArchiveMode();
+
+        server.getPluginManager().disablePlugin(plugin);
+        assertOutOfArchiveMode();
+    }
+
+    @Test
+    void aWorldsFileThatFailsToLoad_leavesTheFoldersAlone() throws Exception {
+        useYaml();
+        BuildWorld world = Objects.requireNonNull(worldStorage().getBuildWorld("archive"));
+        Folder folder = api().getWorldService()
+                .getFolderStorage()
+                .createFolder(
+                        "Maps",
+                        api().getNavigatorCategoryRegistry().getDefault(),
+                        Builder.of(UUID.randomUUID(), "Creator"));
+        folder.addWorld(world);
+        server.getPluginManager().disablePlugin(plugin);
+        String worldsPath = "folders." + folder.getUniqueId() + ".worlds";
+        List<String> stored = List.of(world.getUniqueId().toString());
+        assertEquals(stored, dataFile("folders.yml").getStringList(worldsPath));
+        Path worlds = new File(plugin.getDataFolder(), "worlds.yml").toPath();
+        Files.writeString(worlds, Files.readString(worlds) + "broken: [unclosed\n");
+
+        server.getPluginManager().enablePlugin(plugin);
+        long deadline = System.currentTimeMillis() + 10_000;
+        while (!worldStorage().loadFailed()) {
+            assertTrue(System.currentTimeMillis() < deadline, "the stored worlds never failed to load");
+            server.getScheduler().performOneTick();
+            Thread.onSpinWait();
+        }
+        server.getScheduler().performOneTick();
+        server.getPluginManager().disablePlugin(plugin);
+
+        assertEquals(stored, dataFile("folders.yml").getStringList(worldsPath));
     }
 
     @Test
@@ -166,6 +307,17 @@ class ArchiveModeReloadTest {
         setVanish(true);
         assertFalse(bystander.canSee(archived));
         assertNotNull(archived.getPotionEffect(PotionEffectType.INVISIBILITY));
+    }
+
+    @Test
+    void configReload_withAnInvalidValue_keepsThePreviousConfigWhole() {
+        plugin.getConfig().set("settings.archive.vanish", false);
+        plugin.getConfig().set("storage.table-prefix", "Not A Prefix");
+        plugin.saveConfig();
+
+        assertFalse(plugin.reloadConfigData(true));
+
+        assertFalse(bystander.canSee(archived), "the kept config still vanishes archived players");
     }
 
     @Test
@@ -234,6 +386,26 @@ class ArchiveModeReloadTest {
 
         flushWrites();
         assertTrue(snapshotStored(bystander));
+    }
+
+    @Test
+    void joiningInTheArchive_withTheNavigatorsBarrierLeftOver_neverHandsTheBarrierBack() {
+        // A crash with the armor-stand navigator open left the barrier in place of the navigator.
+        bystander.getInventory().clear();
+        bystander
+                .getInventory()
+                .setItem(
+                        3,
+                        ItemBuilder.of(Material.BARRIER)
+                                .pdc(new NamespacedKey(plugin, "navigator_barrier"), PersistentDataType.BOOLEAN, true)
+                                .build());
+        bystander.setLocation(archive.getSpawnLocation());
+        server.getPluginManager().callEvent(new PlayerJoinEvent(bystander, ""));
+
+        moveTo(bystander, lobby);
+
+        assertFalse(bystander.getInventory().contains(Material.BARRIER));
+        assertTrue(bystander.getInventory().contains(Material.CLOCK));
     }
 
     @Test
@@ -325,6 +497,21 @@ class ArchiveModeReloadTest {
     }
 
     /**
+     * Ticks the server until the archived player is back in archive mode, which happens on the main thread once both
+     * the stored worlds and the stored players have loaded.
+     */
+    private void awaitArchiveMode() {
+        long deadline = System.currentTimeMillis() + 10_000;
+        while (!Objects.requireNonNull(BuildPlayerImpl.of(playerStorage().getBuildPlayer(archived.getUniqueId())))
+                .getCachedValues()
+                .hasArchiveState()) {
+            assertTrue(System.currentTimeMillis() < deadline, "the archived player never entered archive mode again");
+            server.getScheduler().performOneTick();
+            Thread.onSpinWait();
+        }
+    }
+
+    /**
      * Drops what the plugin holds in memory and loads the players from disk again, the way a server start after a crash
      * would. The player keeps the emptied archive inventory, which is what the server saved for them.
      */
@@ -344,7 +531,7 @@ class ArchiveModeReloadTest {
     }
 
     /**
-     * Waits for every queued write to {@code players.yml}: writes run in order, so an empty save lands after them.
+     * Waits for every queued write to the player storage: writes run in order, so an empty save lands after them.
      */
     private void flushWrites() {
         playerStorage().save(List.of()).join();
@@ -355,9 +542,49 @@ class ArchiveModeReloadTest {
     }
 
     private boolean snapshotStored(PlayerMock player) {
-        YamlConfiguration players =
-                YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "players.yml"));
-        return players.isConfigurationSection("players." + player.getUniqueId() + ".archive-snapshot");
+        // A connection of its own, so this also reads what a disabled plugin left behind.
+        PluginConfig.Storage.Database settings;
+        try {
+            settings = new ConfigService(plugin).readStorageSettings();
+        } catch (IOException | InvalidConfigurationException e) {
+            throw new IllegalStateException(e);
+        }
+        StorageBackend backend =
+                StorageBackend.connect(settings.type(), settings, plugin.getDataFolder(), plugin.getLogger());
+        try {
+            Map<String, Object> stored = backend.collection(EntityKind.PLAYERS)
+                    .loadAll()
+                    .get(player.getUniqueId().toString());
+            return stored != null && stored.containsKey("archive-snapshot");
+        } finally {
+            backend.close();
+        }
+    }
+
+    /**
+     * Moves the storage to YAML through the migrate command, for the tests about players.yml.
+     */
+    private void useYaml() {
+        server.dispatchCommand(server.getConsoleSender(), "buildsystem storage migrate yaml confirm");
+        File config = new File(plugin.getDataFolder(), "config.yml");
+        long deadline = System.currentTimeMillis() + 10_000;
+        while (!"yaml".equals(YamlConfiguration.loadConfiguration(config).getString("storage.type"))) {
+            assertTrue(System.currentTimeMillis() < deadline, "the storage never moved to YAML");
+            server.getScheduler().performOneTick();
+            Thread.onSpinWait();
+        }
+    }
+
+    private YamlConfiguration dataFile(String name) {
+        return YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), name));
+    }
+
+    private BuildSystem api() {
+        return Objects.requireNonNull(server.getServicesManager().load(BuildSystem.class));
+    }
+
+    private Path playersFile() {
+        return new File(plugin.getDataFolder(), "players.yml").toPath();
     }
 
     private PlayerStorageImpl playerStorage() {
@@ -406,5 +633,28 @@ class ArchiveModeReloadTest {
         World from = player.getWorld();
         player.setLocation(world.getSpawnLocation());
         server.getPluginManager().callEvent(new PlayerChangedWorldEvent(player, from));
+    }
+
+    /**
+     * Holds the player load back until {@link #OPEN} is counted down. Building the storage reads the file once on the
+     * main thread, which is let through; the load then reads it again on a worker thread.
+     */
+    @SerializableAs(PlayerLoadGate.ALIAS)
+    public record PlayerLoadGate() implements ConfigurationSerializable {
+
+        static final String ALIAS = "BuildSystemTestPlayerLoadGate";
+        static final CountDownLatch OPEN = new CountDownLatch(1);
+
+        public static PlayerLoadGate deserialize(Map<String, Object> ignored) throws InterruptedException {
+            if (!Bukkit.isPrimaryThread()) {
+                assertTrue(OPEN.await(10, TimeUnit.SECONDS), "the gate was never opened");
+            }
+            return new PlayerLoadGate();
+        }
+
+        @Override
+        public Map<String, Object> serialize() {
+            return Map.of();
+        }
     }
 }

@@ -35,8 +35,16 @@ import de.eintosti.buildsystem.util.TaskScheduler;
 import de.eintosti.buildsystem.util.UpdateChecker;
 import de.eintosti.buildsystem.world.WorldNames;
 import java.io.File;
+import java.time.Duration;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -44,8 +52,12 @@ import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 import org.jspecify.annotations.Nullable;
+import org.yaml.snakeyaml.error.YAMLException;
 
 public class BuildSystemPlugin extends JavaPlugin {
+
+    // Each remote backend gives up on a read after 30 seconds, so this leaves time for a few of them.
+    private static final Duration SAVE_TIMEOUT = Duration.ofSeconds(90);
 
     public static final int METRICS_ID = 7427;
     public static final String ADMIN_PERMISSION = Permissions.ADMIN;
@@ -63,6 +75,10 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     @Override
     public void onLoad() {
+        // Before anything reads config.yml through Bukkit, which would log the broken line, password and all.
+        if (!ConfigService.fileReadable(this)) {
+            throw new IllegalStateException("config.yml cannot be read, see the error above. Fix it and restart.");
+        }
         this.configService = new ConfigService(this);
         new ConfigMigrationManager(this).migrate();
         this.getConfig().options().copyDefaults(true);
@@ -75,8 +91,13 @@ public class BuildSystemPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        if (messages == null) {
+            // onLoad failed, for example on an invalid storage setting, and the server logged why.
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
         this.scheduler = new TaskScheduler(this);
-        this.services = new Services(this, scheduler, configService, messages);
+        this.services = Services.create(this, scheduler, configService, messages);
         this.services.loadWorlds();
         this.updateChecker = new UpdateChecker(this, services.scheduler().background());
         performUpdateCheck();
@@ -84,7 +105,13 @@ public class BuildSystemPlugin extends JavaPlugin {
         new CommandRegistrar(this, services).registerAll();
         new ListenerRegistrar(this, services).registerAll();
         (this.integrations = new Integrations(
-                        this, services.messages(), services.settings(), services.player(), services.world()))
+                        this,
+                        services.messages(),
+                        services.settings(),
+                        services.player(),
+                        services.world(),
+                        services.config(),
+                        services.scheduler()))
                 .activate();
 
         this.api = new BuildSystemApi(services);
@@ -95,23 +122,29 @@ public class BuildSystemPlugin extends JavaPlugin {
             Settings settings = buildPlayer.getSettings();
             services.noClip().startNoClip(pl, settings);
             services.settings().displayScoreboard(pl);
+            // A disable that threw partway through its player loop never closed the navigator for the rest.
+            services.navigator().clearLeftovers(pl);
         });
         Bukkit.getOnlinePlayers().forEach(services.settings()::updateVisibility);
         // After a reload, players may be standing in an archive world, which only exists once the stored worlds load.
-        services.world()
-                .worldsLoaded()
-                .thenRun(() -> Bukkit.getOnlinePlayers().forEach(pl -> {
-                    BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(
-                            services.player().getPlayerStorage().getBuildPlayer(pl));
-                    if (ArchiveMode.enterIfInArchiveWorld(
-                            pl,
-                            buildPlayer.getCachedValues(),
-                            services.world().getWorldStorage(),
-                            configService.current().settings().archive())) {
-                        services.player().getPlayerStorage().save(buildPlayer);
-                    }
-                    services.settings().updateVisibility(pl);
-                }));
+        // The players must have loaded too, or the new snapshot lands on a blank player the loaded one then replaces.
+        CompletableFuture.allOf(
+                        services.world().worldsLoaded(), services.player().playersLoaded())
+                .thenRunAsync(
+                        () -> Bukkit.getOnlinePlayers().forEach(pl -> {
+                            BuildPlayerImpl buildPlayer = BuildPlayerImpl.of(
+                                    services.player().getPlayerStorage().getBuildPlayer(pl));
+                            if (!services.player().playerSavesRefused()
+                                    && ArchiveMode.enterIfInArchiveWorld(
+                                            pl,
+                                            buildPlayer.getCachedValues(),
+                                            services.world().getWorldStorage(),
+                                            configService.current().settings().archive())) {
+                                services.player().getPlayerStorage().save(buildPlayer);
+                            }
+                            services.settings().updateVisibility(pl);
+                        }),
+                        scheduler.mainThread());
 
         services.worldDownload().start();
 
@@ -139,6 +172,12 @@ public class BuildSystemPlugin extends JavaPlugin {
             return;
         }
 
+        // Before anything that can throw: WorldEdit's event bus outlives the plugin, and an async FAWE edit arriving
+        // during the disable would otherwise still be judged and scheduled.
+        if (this.integrations != null) {
+            this.integrations.deactivateWorldEdit();
+        }
+
         // First, as on quit: otherwise the editor's copy would overwrite the inventory the snapshots below hand back.
         services.navigatorEditor().restoreAll();
         Bukkit.getOnlinePlayers().forEach(pl -> {
@@ -159,8 +198,15 @@ public class BuildSystemPlugin extends JavaPlugin {
         services.backup().close();
         services.world().cancelAllUnloadTasks();
 
-        reloadConfigData(false);
-        saveConfig();
+        try {
+            if (reloadConfigData(false)) {
+                saveConfig();
+            }
+        } catch (RuntimeException e) {
+            // Never in the way of the final saves below. A YAML error's message quotes a line of config.yml.
+            getLogger()
+                    .log(Level.SEVERE, "config.yml was not reloaded or saved", e instanceof YAMLException ? null : e);
+        }
 
         // Cancelling only stops future ticks, not one already running,
         // so this must happen before the join() below
@@ -168,14 +214,14 @@ public class BuildSystemPlugin extends JavaPlugin {
             this.configSaveTask.cancel();
         }
 
-        try {
-            saveBuildConfig().join();
-        } catch (CompletionException e) {
-            getLogger().severe("Error while waiting for saves: %s".formatted(e.getCause()));
-        }
+        // A migration holds writes back until it switches, which needs the main thread this blocks.
+        services.storageMigrator().abort();
+        awaitSaves(saveBuildConfig(), SAVE_TIMEOUT, getLogger());
 
         // Shut the shared background pool down only after the final saves above have completed.
         services.scheduler().shutdown();
+        // Every write was queued behind the final saves joined above, so none is left for the connection.
+        services.storage().close();
 
         // onEnable may have failed after the services were built, before these existed.
         if (this.integrations != null) {
@@ -248,11 +294,37 @@ public class BuildSystemPlugin extends JavaPlugin {
         }
     }
 
-    private CompletableFuture<Void> saveBuildConfig() {
-        CompletableFuture<Void> worldSave = services.world().save();
-        CompletableFuture<Void> playerSave = services.player().save();
-        CompletableFuture<Void> spawnSave = services.spawn().save();
-        return CompletableFuture.allOf(worldSave, playerSave, spawnSave);
+    private Map<String, CompletableFuture<Void>> saveBuildConfig() {
+        Map<String, CompletableFuture<Void>> saves = new LinkedHashMap<>();
+        saves.put("worlds", services.world().save());
+        saves.put("players", services.player().save());
+        saves.put("spawn", services.spawn().save());
+        return saves;
+    }
+
+    /**
+     * Waits for the final saves, but no longer than {@code timeout}, so a database that stopped answering cannot hang
+     * the shutdown. Logs the saves that did not finish.
+     *
+     * @param saves Each save by what it saves
+     */
+    static void awaitSaves(Map<String, CompletableFuture<Void>> saves, Duration timeout, Logger logger) {
+        try {
+            CompletableFuture.allOf(saves.values().toArray(CompletableFuture[]::new))
+                    .get(timeout.toMillis(), TimeUnit.MILLISECONDS);
+        } catch (ExecutionException e) {
+            logger.severe("Error while waiting for saves: %s".formatted(e.getCause()));
+        } catch (TimeoutException e) {
+            List<String> unfinished = saves.entrySet().stream()
+                    .filter(save -> !save.getValue().isDone())
+                    .map(Map.Entry::getKey)
+                    .toList();
+            logger.severe("Stopped waiting for saves after " + timeout.toSeconds() + " seconds. Not saved: "
+                    + String.join(", ", unfinished));
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.severe("Interrupted while waiting for saves");
+        }
     }
 
     private CachedValues cachedValues(Player player) {
@@ -264,14 +336,18 @@ public class BuildSystemPlugin extends JavaPlugin {
      * Reloads the config and config data.
      *
      * @param init Whether the plugin should reinitialize classes
+     * @return Whether the new config was applied, rather than kept out for an invalid value
      */
-    public void reloadConfigData(boolean init) {
+    public boolean reloadConfigData(boolean init) {
+        if (!ConfigService.fileReadable(this)) {
+            return false;
+        }
         for (Player pl : Bukkit.getOnlinePlayers()) {
             services.settings().hideScoreboard(pl);
         }
 
         reloadConfig();
-        services.config().load();
+        boolean applied = services.config().reload();
         if (isEnabled()) {
             services.backup().reload();
             services.worldDownload().reload();
@@ -292,5 +368,6 @@ public class BuildSystemPlugin extends JavaPlugin {
                 services.settings().hideScoreboards();
             }
         }
+        return applied;
     }
 }

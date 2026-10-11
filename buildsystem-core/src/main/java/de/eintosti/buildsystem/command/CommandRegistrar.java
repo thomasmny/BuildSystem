@@ -48,7 +48,7 @@ public final class CommandRegistrar {
         register("back", new BackCommand(messages, logger, services.player().getPlayerStorage()));
         register("blocks", new BlocksCommand(messages, logger, menus));
         register("build", new BuildCommand(messages, logger, services.player()));
-        register("buildsystem", new BuildSystemCommand(messages, logger));
+        register("buildsystem", new BuildSystemCommand(messages, logger, services));
         register("config", new ConfigCommand(messages, logger, plugin));
         register("explosions", new WorldToggleCommand(messages, logger, services.world(), Toggle.EXPLOSIONS));
         register("gamemode", new GamemodeCommand(messages, logger));

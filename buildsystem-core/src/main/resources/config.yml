@@ -133,6 +133,66 @@ world:
 # and selected by name where a feature needs one, e.g. world.backup.storage or
 # world.download.storage. A section only matters once something selects it.
 storage:
+  # Where worlds, folders and player settings are kept: yaml, sqlite, mysql,
+  # mariadb, postgresql or mongodb. sqlite keeps them in storage.db in the
+  # plugin folder, the others on the server set in their block below. World
+  # folders always stay on disk, and categories, statuses, setup and spawn always
+  # stay in their YAML files.
+  # To switch, run /buildsystem storage migrate <type>, which copies the current
+  # data over and switches without a restart, or change this and restart.
+  # On startup, each new table or collection is filled from worlds.yml,
+  # folders.yml and players.yml. Those files are kept but no longer updated, so
+  # changing this back to yaml and restarting loads them as they were at the
+  # switch, while migrating to yaml writes the current data into them.
+  # If the database cannot be reached, BuildSystem disables itself rather than
+  # fall back to yaml.
+  type: sqlite
+  # Put in front of every table and collection name: lowercase letters, digits
+  # and underscores, at most 32 and not starting with a digit. Every server needs
+  # its own prefix or its own database. Each server loads the data once on startup
+  # and keeps it in memory, so two servers sharing a prefix overwrite each other's
+  # worlds, folders and players.
+  table-prefix: buildsystem_
+  # Each password can also be supplied as an environment variable named after
+  # its block, e.g. BUILDSYSTEM_MYSQL_PASSWORD, which takes precedence and keeps
+  # the secret out of this file.
+  # tls sets whether the connection is encrypted: prefer (when the server offers
+  # it), off, require (always, without checking the certificate) or verify
+  # (always, checking the certificate and host name). verify trusts what the Java
+  # trust store trusts, so a private CA has to be added to it. With MongoDB, give
+  # verify a host name rather than an IP address. MongoDB cannot fall back to
+  # plain text, so there prefer does what off does, and require still checks the
+  # certificate, only not the host name.
+  mysql:
+    host: localhost
+    port: 3306
+    database: buildsystem
+    username: ''
+    password: ''
+    tls: prefer
+  mariadb:
+    host: localhost
+    port: 3306
+    database: buildsystem
+    username: ''
+    password: ''
+    tls: prefer
+  postgresql:
+    host: localhost
+    port: 5432
+    database: buildsystem
+    username: ''
+    password: ''
+    tls: prefer
+  # Leave username empty for a server without authentication. Users are
+  # authenticated against the admin database.
+  mongodb:
+    host: localhost
+    port: 27017
+    database: buildsystem
+    username: ''
+    password: ''
+    tls: prefer
   s3:
     # Leave empty for Amazon S3. Set it to point at an S3-compatible service instead,
     # e.g. MinIO, Backblaze B2 or Cloudflare R2: "https://s3.example.com"
@@ -158,4 +218,4 @@ folder:
   override-projects: false
 
 # Internal, do not change manually!
-version: 6
+version: 7

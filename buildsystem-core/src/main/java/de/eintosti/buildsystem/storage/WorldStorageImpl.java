@@ -17,18 +17,15 @@
  */
 package de.eintosti.buildsystem.storage;
 
-import de.eintosti.buildsystem.BuildSystemPlugin;
-import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.Visibility;
 import de.eintosti.buildsystem.api.world.data.WorldDataKey;
 import de.eintosti.buildsystem.api.world.display.Folder;
+import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.storage.codec.WorldCodec;
-import de.eintosti.buildsystem.storage.migration.StorageMigration;
-import de.eintosti.buildsystem.storage.yaml.YamlEntityFile;
-import de.eintosti.buildsystem.storage.yaml.YamlStore;
 import de.eintosti.buildsystem.util.FileUtils;
+import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.WorldNames;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,9 +33,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
@@ -66,32 +65,47 @@ public class WorldStorageImpl implements WorldStorage {
 
     private final ConcurrentHashMap<UUID, BuildWorld> buildWorldsByUuid;
     private final ConcurrentHashMap<String, UUID> uuidByName;
+    private final Set<String> pendingCreations = ConcurrentHashMap.newKeySet();
     private final Supplier<String> defaultNamespace;
-    private final YamlEntityFile<BuildWorld> file;
+    private final EntityCollection<BuildWorld> file;
 
-    public WorldStorageImpl(BuildSystemPlugin plugin, Services services) {
+    /**
+     * @param context Read only once the stored worlds load, since building it needs this storage
+     */
+    public WorldStorageImpl(
+            Logger logger,
+            Executor background,
+            Supplier<String> defaultNamespace,
+            Supplier<WorldContext> context,
+            PlayerLookupService playerLookup,
+            EntityStore store) {
         this(
-                plugin.getLogger(),
-                () -> services.config().current().world().defaultNamespace(),
-                new YamlEntityFile<>(
-                        new YamlStore(plugin.getDataFolder(), "worlds.yml", plugin.getLogger()),
-                        "worlds",
-                        "world",
-                        () -> new WorldCodec(services.worldContext(), services.playerLookup()),
-                        services.scheduler().background(),
-                        plugin.getLogger(),
-                        StorageMigration::migrateWorlds));
+                logger,
+                defaultNamespace,
+                new EntityCollection<>(
+                        store, "world", () -> new WorldCodec(context.get(), playerLookup), background, logger));
     }
 
     /**
      * @param defaultNamespace Supplies {@code world.default-namespace}, read on every use so a config reload applies
      */
-    WorldStorageImpl(Logger logger, Supplier<String> defaultNamespace, YamlEntityFile<BuildWorld> file) {
+    WorldStorageImpl(Logger logger, Supplier<String> defaultNamespace, EntityCollection<BuildWorld> file) {
         this.logger = logger;
         this.defaultNamespace = defaultNamespace;
         this.buildWorldsByUuid = new ConcurrentHashMap<>();
         this.uuidByName = new ConcurrentHashMap<>();
         this.file = file;
+    }
+
+    EntityCollection<BuildWorld> collection() {
+        return file;
+    }
+
+    /**
+     * {@return whether the world is stored but could not be loaded, so references to it must be kept}
+     */
+    public boolean skippedOnLoad(UUID worldUuid) {
+        return file.skippedOnLoad(worldUuid.toString());
     }
 
     @Override
@@ -107,6 +121,13 @@ public class WorldStorageImpl implements WorldStorage {
     @Override
     public CompletableFuture<Collection<BuildWorld>> load() {
         return file.load().thenApply(loaded -> new ArrayList<>(loaded.values()));
+    }
+
+    /**
+     * {@return whether the stored worlds failed to load} Nothing is saved for them until the file is fixed.
+     */
+    public boolean loadFailed() {
+        return file.loadFailed();
     }
 
     @Override
@@ -284,7 +305,7 @@ public class WorldStorageImpl implements WorldStorage {
      */
     public List<String> unimportedWorldNames() {
         return FileUtils.dimensionWorldNames().stream()
-                .filter(name -> !worldExists(name))
+                .filter(name -> !worldExists(name) && !isBeingCreated(name))
                 .toList();
     }
 
@@ -293,7 +314,31 @@ public class WorldStorageImpl implements WorldStorage {
      * over, and an existing folder merged into.
      */
     public boolean isNameTaken(String worldName) {
-        return worldExists(worldName) || FileUtils.worldFolder(worldName).exists();
+        return worldExists(worldName)
+                || isBeingCreated(worldName)
+                || FileUtils.worldFolder(worldName).exists();
+    }
+
+    /**
+     * Holds the name of a world whose folder is being filled in the background, so the folder is not imported while it
+     * is half-copied.
+     */
+    public void reserve(String worldName) {
+        pendingCreations.add(WorldNames.id(worldName));
+    }
+
+    /**
+     * Frees a name held by {@link #reserve}.
+     */
+    public void release(String worldName) {
+        pendingCreations.remove(WorldNames.id(worldName));
+    }
+
+    /**
+     * {@return whether the world is still being created in the background}
+     */
+    public boolean isBeingCreated(String worldName) {
+        return pendingCreations.contains(WorldNames.id(worldName));
     }
 
     @Override

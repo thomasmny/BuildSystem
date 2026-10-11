@@ -18,7 +18,11 @@
 package de.eintosti.buildsystem.world.display;
 
 import de.eintosti.buildsystem.api.world.display.RegistryEntry;
-import de.eintosti.buildsystem.storage.yaml.YamlRegistryStorage;
+import de.eintosti.buildsystem.storage.EntityCollection;
+import de.eintosti.buildsystem.storage.StorageException;
+import de.eintosti.buildsystem.storage.codec.Codec;
+import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
+import de.eintosti.buildsystem.storage.yaml.YamlStore;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -26,6 +30,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletionException;
+import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -36,11 +42,21 @@ import org.jspecify.annotations.NullMarked;
 public abstract class AbstractRegistry<E extends RegistryEntryImpl> {
 
     protected final Map<String, E> entries = new LinkedHashMap<>();
-    protected final YamlRegistryStorage<E> storage;
+    protected final YamlStore file;
+    protected final EntityCollection<E> storage;
     private final Comparator<? super E> order;
 
-    protected AbstractRegistry(YamlRegistryStorage<E> storage, Comparator<? super E> order) {
-        this.storage = storage;
+    /**
+     * @param file The registry's file, which stays YAML whatever backend holds the worlds
+     * @param rootKey The section the entries live under
+     * @param label What one entry is called in log messages
+     */
+    protected AbstractRegistry(
+            YamlStore file, String rootKey, String label, Codec<E> codec, Logger logger, Comparator<? super E> order) {
+        this.file = file;
+        // Small and edited on the main thread, so it is read and written right there.
+        this.storage = new EntityCollection<>(
+                new YamlEntityStore(file, rootKey, logger, null), label, () -> codec, Runnable::run, logger);
         this.order = order;
     }
 
@@ -68,7 +84,16 @@ public abstract class AbstractRegistry<E extends RegistryEntryImpl> {
      * Loads the stored entries, seeding the built-ins when there are none. Called once by the subclass constructor.
      */
     protected final void loadOrSeed() {
-        entries.putAll(storage.load());
+        try {
+            entries.putAll(storage.load().join());
+        } catch (CompletionException e) {
+            // Seeding here would overwrite the file, and every entry the admin made with it.
+            throw new StorageException(
+                    "Could not read " + file.fileName() + ", so BuildSystem does not start rather than replace it with"
+                            + " the built-in entries. Fix the error logged above, or delete " + file.fileName()
+                            + " to start over with the built-ins, then restart the server.",
+                    e.getCause());
+        }
         if (entries.isEmpty()) {
             seed();
         }
@@ -76,7 +101,7 @@ public abstract class AbstractRegistry<E extends RegistryEntryImpl> {
 
     private void seed() {
         entries.putAll(buildDefaults());
-        storage.saveAll(entries.values());
+        storage.replaceAll(entries.values());
     }
 
     /**

@@ -18,6 +18,9 @@
 package de.eintosti.buildsystem.config;
 
 import de.eintosti.buildsystem.config.PluginConfig.Storage;
+import de.eintosti.buildsystem.storage.StorageTls;
+import de.eintosti.buildsystem.storage.StorageType;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -60,7 +63,37 @@ final class StorageSettingsFactory {
                         config.getString(sftp + "host"),
                         config.getInt(sftp + "port", 22),
                         config.getString(sftp + "username"),
-                        config.getString(sftp + "password")));
+                        config.getString(sftp + "password")),
+                database(config));
+    }
+
+    private static Storage.Database database(FileConfiguration config) {
+        Map<StorageType, Storage.Database.Server> servers = new EnumMap<>(StorageType.class);
+        Map<StorageType, String> invalidServers = new EnumMap<>(StorageType.class);
+        for (StorageType type : StorageType.values()) {
+            if (type.hasServer()) {
+                String block = BASE + type.key() + ".";
+                try {
+                    servers.put(
+                            type,
+                            new Storage.Database.Server(
+                                    type,
+                                    config.getString(block + "host", "localhost"),
+                                    config.getInt(block + "port", type.defaultPort()),
+                                    config.getString(block + "database", "buildsystem"),
+                                    config.getString(block + "username", ""),
+                                    config.getString(block + "password", ""),
+                                    StorageTls.parse(block + "tls", config.getString(block + "tls", "prefer"))));
+                } catch (IllegalArgumentException e) {
+                    invalidServers.put(type, e.getMessage());
+                }
+            }
+        }
+        return new Storage.Database(
+                StorageType.parse(config.getString(BASE + "type", StorageType.SQLITE.key())),
+                config.getString(BASE + "table-prefix", "buildsystem_"),
+                servers,
+                invalidServers);
     }
 
     /**

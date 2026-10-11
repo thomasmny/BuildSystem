@@ -17,9 +17,7 @@
  */
 package de.eintosti.buildsystem.world.creation;
 
-import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
-import de.eintosti.buildsystem.api.world.creation.WorldBuilder;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.display.Folder;
@@ -140,7 +138,7 @@ public class WorldCreationPrompts {
             @Nullable String template,
             boolean privateWorld,
             @Nullable Folder folder) {
-        WorldBuilder builder = worldService
+        WorldBuilderImpl builder = worldService
                 .newWorld(selection.name())
                 .type(worldType)
                 .template(template)
@@ -162,12 +160,12 @@ public class WorldCreationPrompts {
         }
     }
 
-    private void buildAndTeleport(Player player, WorldBuilder worldBuilder) {
-        BuildWorld world =
-                worldBuilder.creator(Builder.of(player)).notify(player).build();
-        if (world != null) {
-            world.getTeleporter().teleport(player);
-        }
+    private void buildAndTeleport(Player player, WorldBuilderImpl worldBuilder) {
+        worldBuilder.creator(Builder.of(player)).notify(player).buildAsync().thenAccept(world -> {
+            if (world != null && player.isOnline()) {
+                world.getTeleporter().teleport(player);
+            }
+        });
     }
 
     /**
