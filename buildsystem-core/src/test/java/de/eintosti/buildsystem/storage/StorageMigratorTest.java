@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -171,6 +172,37 @@ class StorageMigratorTest {
                 current.get().collection(EntityKind.PLAYERS).loadAll();
         assertEquals(List.of("a", "unloaded"), List.copyOf(copied.keySet()));
         assertEquals("as is", copied.get("unloaded").get("kept"));
+    }
+
+    @Test
+    void migrate_isRefused_whileTheSourceHoldsEntriesItCannotRead() throws Exception {
+        live.add(new Note("a", 1));
+        notes.save(live);
+        runAll();
+        File players = new File(dataFolder, "players.yml");
+        YamlConfiguration file = YamlConfiguration.loadConfiguration(players);
+        file.set("players.unreadable", "not a section");
+        file.save(players);
+
+        CompletableFuture<Integer> unreadable = migrator.unreadable();
+        runAll();
+        assertEquals(1, unreadable.join());
+
+        CompletableFuture<Map<EntityKind, Integer>> migration = migrator.migrate(target(), settings());
+        runAll();
+
+        CompletionException failure = assertThrows(CompletionException.class, migration::join);
+        StorageMigrator.UnreadableEntriesException refused =
+                assertInstanceOf(StorageMigrator.UnreadableEntriesException.class, failure.getCause());
+        assertEquals(1, refused.count());
+        assertEquals(StorageType.YAML, current.get().type());
+        assertEquals(
+                "yaml",
+                YamlConfiguration.loadConfiguration(new File(dataFolder, "config.yml"))
+                        .getString("storage.type"));
+        CompletableFuture<Boolean> targetHoldsData = migrator.holdsData(target(), settings());
+        runAll();
+        assertFalse(targetHoldsData.join());
     }
 
     @Test

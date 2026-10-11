@@ -175,10 +175,12 @@ public class BuildSystemCommand extends CommandBase {
                 .whenCompleteAsync(
                         (copied, failure) -> {
                             if (failure != null) {
-                                failed(
-                                        sender,
-                                        type,
-                                        failure instanceof CompletionException ? failure.getCause() : failure);
+                                Throwable cause = failure instanceof CompletionException ? failure.getCause() : failure;
+                                if (cause instanceof StorageMigrator.UnreadableEntriesException unreadable) {
+                                    unreadable(sender, unreadable.count());
+                                } else {
+                                    failed(sender, type, cause);
+                                }
                                 return;
                             }
                             messages.sendMessage(
@@ -197,10 +199,12 @@ public class BuildSystemCommand extends CommandBase {
     private void confirm(CommandSender sender, StorageType type, PluginConfig.Storage.Database settings) {
         StorageMigrator migrator = services.storageMigrator();
         CompletableFuture<Integer> notLoaded = migrator.notLoaded();
+        CompletableFuture<Integer> unreadable = migrator.unreadable();
         migrator.holdsData(type, settings)
                 .thenCombine(notLoaded, Map::entry)
+                .thenCombine(unreadable, Map::entry)
                 .whenCompleteAsync(
-                        (preview, failure) -> {
+                        (checks, failure) -> {
                             if (failure != null) {
                                 failed(
                                         sender,
@@ -208,6 +212,11 @@ public class BuildSystemCommand extends CommandBase {
                                         failure instanceof CompletionException ? failure.getCause() : failure);
                                 return;
                             }
+                            if (checks.getValue() > 0) {
+                                unreadable(sender, checks.getValue());
+                                return;
+                            }
+                            Map.Entry<Boolean, Integer> preview = checks.getKey();
                             if (preview.getKey()) {
                                 messages.sendMessage(
                                         sender,
@@ -232,6 +241,10 @@ public class BuildSystemCommand extends CommandBase {
                                             .build());
                         },
                         services.scheduler().mainThread());
+    }
+
+    private void unreadable(CommandSender sender, int count) {
+        messages.sendMessage(sender, "storage_migrate_unreadable", Placeholders.of("%entries%", String.valueOf(count)));
     }
 
     private void failed(CommandSender sender, StorageType type, Throwable failure) {

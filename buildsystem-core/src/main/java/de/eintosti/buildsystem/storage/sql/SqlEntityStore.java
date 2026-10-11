@@ -60,6 +60,7 @@ final class SqlEntityStore implements EntityStore {
     private final String delete;
     private final String deleteAll;
     private final String dropTable;
+    private volatile int unreadable;
     private final Logger logger;
 
     /**
@@ -101,6 +102,7 @@ final class SqlEntityStore implements EntityStore {
     public SequencedMap<String, Map<String, Object>> loadAll() {
         return database.run("load " + table, connection -> {
             SequencedMap<String, Map<String, Object>> entries = new LinkedHashMap<>();
+            int skipped = 0;
             try (PreparedStatement statement = connection.prepareStatement(selectAll);
                     ResultSet rows = statement.executeQuery()) {
                 while (rows.next()) {
@@ -113,11 +115,18 @@ final class SqlEntityStore implements EntityStore {
                         entries.put(id, SerializedObjects.revive(values));
                     } catch (JsonParseException | IllegalArgumentException e) {
                         logger.log(Level.WARNING, "Skipping row \"" + id + "\" of " + table + ": could not be read", e);
+                        skipped++;
                     }
                 }
             }
+            unreadable = skipped;
             return entries;
         });
+    }
+
+    @Override
+    public int unreadable() {
+        return unreadable;
     }
 
     @Override

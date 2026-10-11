@@ -49,6 +49,7 @@ final class MongoEntityStore implements EntityStore {
     private static final String ID = "_id";
 
     private final MongoCollection<Document> collection;
+    private volatile int unreadable;
     private final Logger logger;
 
     MongoEntityStore(MongoCollection<Document> collection, Logger logger) {
@@ -59,21 +60,30 @@ final class MongoEntityStore implements EntityStore {
     @Override
     public SequencedMap<String, Map<String, Object>> loadAll() {
         SequencedMap<String, Map<String, Object>> entries = new LinkedHashMap<>();
+        int skipped = 0;
         List<Document> documents =
                 run("load", () -> collection.find().sort(Sorts.ascending(ID)).into(new ArrayList<>()));
         for (Document document : documents) {
             Object id = document.remove(ID);
             if (!(id instanceof String key)) {
                 logger.warning("Skipping document " + id + " of " + name() + ": its _id is not a string");
+                skipped++;
                 continue;
             }
             try {
                 entries.put(key, SerializedObjects.revive(document));
             } catch (IllegalArgumentException e) {
                 logger.log(Level.WARNING, "Skipping document " + key + " of " + name() + ": could not be read", e);
+                skipped++;
             }
         }
+        unreadable = skipped;
         return entries;
+    }
+
+    @Override
+    public int unreadable() {
+        return unreadable;
     }
 
     @Override

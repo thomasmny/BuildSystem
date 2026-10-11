@@ -43,6 +43,7 @@ public final class YamlEntityStore implements EntityStore {
     private final YamlStore store;
     private final String rootKey;
     private final Logger logger;
+    private volatile int unreadable;
     private final @Nullable BiConsumer<ConfigurationSection, Logger> migration;
 
     /**
@@ -96,6 +97,7 @@ public final class YamlEntityStore implements EntityStore {
     public SequencedMap<String, Map<String, Object>> loadAll() {
         return store.locked(() -> {
             SequencedMap<String, Map<String, Object>> entries = new LinkedHashMap<>();
+            unreadable = 0;
             boolean existed = store.reload();
             if (store.loadFailed()) {
                 // Reading on would hand back whatever the file did not lose, as if it were all of it.
@@ -110,14 +112,24 @@ public final class YamlEntityStore implements EntityStore {
             if (root == null) {
                 return entries;
             }
+            int skipped = 0;
             for (String key : root.getKeys(false)) {
                 ConfigurationSection section = root.getConfigurationSection(key);
                 if (section != null) {
                     entries.put(key, toMap(section));
+                } else {
+                    logger.warning("Skipping \"" + key + "\" in " + store.fileName() + ": it is not a section");
+                    skipped++;
                 }
             }
+            unreadable = skipped;
             return entries;
         });
+    }
+
+    @Override
+    public int unreadable() {
+        return unreadable;
     }
 
     /**

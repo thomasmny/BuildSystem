@@ -141,6 +141,9 @@ public abstract class SqlEntityStoreContractTest extends EntityStoreContractTest
                     statement.setString(1, "garbled");
                     statement.setString(2, "{not json");
                     statement.executeUpdate();
+                    statement.setString(1, "unrevivable");
+                    statement.setString(2, "{\"item\":{\"==\":\"com.example.UnknownItem\"}}");
+                    statement.executeUpdate();
                 }
                 return null;
             });
@@ -148,6 +151,7 @@ public abstract class SqlEntityStoreContractTest extends EntityStoreContractTest
             players.upsert(Map.of("fine", Map.of("n", "1")));
 
             assertEquals(Map.of("fine", Map.of("n", "1")), players.loadAll());
+            assertEquals(2, players.unreadable());
             assertEquals("{not json", raw.run("test", connection -> {
                 try (PreparedStatement statement =
                                 connection.prepareStatement("SELECT data FROM " + table + " WHERE id = 'garbled'");

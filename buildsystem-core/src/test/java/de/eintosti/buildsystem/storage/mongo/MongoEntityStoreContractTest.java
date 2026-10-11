@@ -19,7 +19,13 @@ package de.eintosti.buildsystem.storage.mongo;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.mongodb.MongoClientSettings;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.storage.EntityStore;
 import de.eintosti.buildsystem.storage.EntityStoreContractTest;
 import de.eintosti.buildsystem.storage.StorageType;
 import java.util.LinkedHashMap;
@@ -27,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import org.bson.Document;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -100,5 +107,23 @@ class MongoEntityStoreContractTest extends EntityStoreContractTest {
                 assertEquals(Set.of("good"), store("players").loadAll().keySet(), field + " in " + values);
             }
         }
+    }
+
+    @Test
+    void documentWithANonStringId_isSkipped_andCounted() {
+        EntityStore players = store("players");
+        players.upsert(Map.of("fine", Map.of("n", "1")));
+        try (MongoClient client = MongoClients.create(MongoClientSettings.builder()
+                .applyToClusterSettings(cluster ->
+                        cluster.hosts(List.of(new ServerAddress(DATABASE.getHost(), DATABASE.getMappedPort(27017)))))
+                .credential(MongoCredential.createCredential(USER, "admin", PASSWORD.toCharArray()))
+                .build())) {
+            client.getDatabase("buildsystem")
+                    .getCollection(tablePrefix + "players")
+                    .insertOne(new Document("_id", 42).append("n", "2"));
+        }
+
+        assertEquals(Map.of("fine", Map.of("n", "1")), players.loadAll());
+        assertEquals(1, players.unreadable());
     }
 }

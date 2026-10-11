@@ -37,6 +37,11 @@ public interface EntityStore {
     SequencedMap<String, Map<String, Object>> loadAll();
 
     /**
+     * {@return how many stored entries the last {@link #loadAll} could not read and left out}
+     */
+    int unreadable();
+
+    /**
      * {@return whether nothing is stored}
      */
     default boolean isEmpty() {

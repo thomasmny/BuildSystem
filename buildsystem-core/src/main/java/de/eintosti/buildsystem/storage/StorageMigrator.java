@@ -137,6 +137,24 @@ public final class StorageMigrator {
     }
 
     /**
+     * {@return how many stored entries cannot be read at all, read in the background} A migration could not copy them,
+     * so it is refused while there are any.
+     */
+    public CompletableFuture<Integer> unreadable() {
+        return CompletableFuture.supplyAsync(this::countUnreadable, background);
+    }
+
+    private int countUnreadable() {
+        int count = 0;
+        for (Part<?> part : parts) {
+            EntityStore store = part.collection().store();
+            store.loadAll();
+            count += store.unreadable();
+        }
+        return count;
+    }
+
+    /**
      * Copies what is in memory to {@code type}, along with the stored entries that are not, as they are stored. Checks
      * it by reading it back, writes {@code storage.type} and switches
      * to it. Call on the main thread, where the entities are owned.
@@ -167,7 +185,15 @@ public final class StorageMigrator {
         Set<EntityKind> created = EnumSet.noneOf(EntityKind.class);
         Map<EntityKind, Map<String, Map<String, Object>>> snapshots = new EnumMap<>(EntityKind.class);
         // Writes are only held once the target is reachable, so a server that never answers holds nothing back.
-        return CompletableFuture.supplyAsync(() -> open(type, settings, target, created), background)
+        return CompletableFuture.supplyAsync(
+                        () -> {
+                            int unreadable = countUnreadable();
+                            if (unreadable > 0) {
+                                throw new UnreadableEntriesException(unreadable);
+                            }
+                            return open(type, settings, target, created);
+                        },
+                        background)
                 .thenComposeAsync(stores -> hold(gate, snapshots).thenApply(ignored -> stores), mainThread)
                 .thenApplyAsync(stores -> copy(type, stores, snapshots), background)
                 .thenApplyAsync(stores -> switchTo(type, stores, target, gate), mainThread)
@@ -364,6 +390,23 @@ public final class StorageMigrator {
             case Number number -> number.longValue();
             case null, default -> value;
         };
+    }
+
+    /**
+     * Refuses a migration while the storage in use holds entries it cannot read, which would be lost.
+     */
+    public static final class UnreadableEntriesException extends IllegalStateException {
+
+        private final int count;
+
+        UnreadableEntriesException(int count) {
+            super(count + " stored entries cannot be read. Fix or delete them first, see the server log.");
+            this.count = count;
+        }
+
+        public int count() {
+            return count;
+        }
     }
 
     record Part<T>(EntityKind kind, EntityCollection<T> collection, Supplier<? extends Collection<T>> live) {
