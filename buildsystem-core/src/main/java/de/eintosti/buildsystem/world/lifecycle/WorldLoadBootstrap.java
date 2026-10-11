@@ -125,7 +125,7 @@ public class WorldLoadBootstrap {
 
     /**
      * Assigns all {@link BuildWorld}s to their respective {@link Folder}s, dropping references to worlds that no longer
-     * exist.
+     * exist. A world that is stored but could not be loaded keeps its place.
      *
      * <p>Must be called after all folders and worlds have been loaded.
      */
@@ -135,7 +135,8 @@ public class WorldLoadBootstrap {
             folder.getWorldUUIDs().stream()
                     .map(worldUUID -> {
                         BuildWorld buildWorld = worldStorage.getBuildWorld(worldUUID);
-                        if (buildWorld == null) {
+                        // A world that is stored but could not be parsed comes back once its entry is fixed.
+                        if (buildWorld == null && !worldStorage.skippedOnLoad(worldUUID)) {
                             invalidWorlds.add(worldUUID);
                             plugin.getLogger()
                                     .warning("World with UUID " + worldUUID + " does not exist. Removing from folder: "

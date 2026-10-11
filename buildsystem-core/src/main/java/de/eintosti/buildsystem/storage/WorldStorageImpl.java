@@ -101,6 +101,13 @@ public class WorldStorageImpl implements WorldStorage {
         return file;
     }
 
+    /**
+     * {@return whether the world is stored but could not be loaded, so references to it must be kept}
+     */
+    public boolean skippedOnLoad(UUID worldUuid) {
+        return file.skippedOnLoad(worldUuid.toString());
+    }
+
     @Override
     public CompletableFuture<Void> save(BuildWorld buildWorld) {
         return file.save(buildWorld);

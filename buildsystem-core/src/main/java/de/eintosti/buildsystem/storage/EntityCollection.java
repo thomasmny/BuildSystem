@@ -127,6 +127,13 @@ public final class EntityCollection<T> {
         return true;
     }
 
+    /**
+     * {@return whether the last load found {@code key} stored but could not parse it}
+     */
+    public boolean skippedOnLoad(String key) {
+        return skipped.containsKey(key);
+    }
+
     private boolean skipped(String key) {
         if (!skipped.containsKey(key)) {
             return false;

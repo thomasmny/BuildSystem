@@ -38,6 +38,8 @@ import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
@@ -94,35 +96,10 @@ class FailedWorldLoadTest {
 
     @Test
     void aWorldsLoadThatFails_leavesTheFolderItsWorlds() throws Exception {
-        BuildSystem api = Objects.requireNonNull(server.getServicesManager().load(BuildSystem.class));
-        Builder creator = Builder.of(UUID.randomUUID(), "Creator");
-        Folder folder = api.getWorldService()
-                .getFolderStorage()
-                .createFolder(
-                        "Maps",
-                        api.getNavigatorCategoryRegistry()
-                                .get(NavigatorCategoryRegistry.PUBLIC_ID)
-                                .orElseThrow(),
-                        creator);
-        BuildWorldImpl world = new BuildWorldImpl(
-                TestData.worldContext(),
-                UUID.randomUUID(),
-                "arena",
-                BuildWorldType.NORMAL,
-                WorldDataSchema.create("arena", TestData.ARCHIVE_STATUS),
-                creator,
-                List.of(),
-                System.currentTimeMillis(),
-                null,
-                folder);
-        ((WorldStorageImpl) api.getWorldService().getWorldStorage()).addBuildWorld(world);
-        folder.addWorld(world);
-        server.getPluginManager().disablePlugin(plugin);
-        List<String> worlds = List.of(world.getUniqueId().toString());
-        assertEquals(worlds, storedWorldsOf(folder));
+        Folder folder = storeWorldInFolder();
+        List<?> worlds = storedWorldsOf(folder);
 
-        try (Connection connection =
-                        DriverManager.getConnection("jdbc:sqlite:" + new File(plugin.getDataFolder(), "storage.db"));
+        try (Connection connection = storageDb();
                 Statement statement = connection.createStatement()) {
             statement.execute("ALTER TABLE buildsystem_worlds RENAME TO kept_worlds");
             statement.execute("CREATE TABLE buildsystem_worlds (id VARCHAR(64) PRIMARY KEY, payload TEXT)");
@@ -143,11 +120,76 @@ class FailedWorldLoadTest {
         assertEquals(worlds, storedWorldsOf(folder));
     }
 
+    @Test
+    void aWorldThatCannotBeParsed_staysInItsFolder() throws Exception {
+        Folder folder = storeWorldInFolder();
+        List<?> worlds = storedWorldsOf(folder);
+
+        try (Connection connection = storageDb();
+                PreparedStatement statement =
+                        connection.prepareStatement("UPDATE buildsystem_worlds SET data = ? WHERE id = ?")) {
+            statement.setString(1, "{\"name\":\"arena\",\"creator\":\"Creator\",\"creator-id\":\"not a uuid\"}");
+            statement.setString(2, String.valueOf(worlds.getFirst()));
+            assertEquals(1, statement.executeUpdate());
+        }
+        server.getPluginManager().enablePlugin(plugin);
+        long deadline = System.currentTimeMillis() + 10_000;
+        while (api().getWorldService().getWorldStorage().getBuildWorld("lobby") == null) {
+            assertTrue(System.currentTimeMillis() < deadline, "the worlds never loaded");
+            server.getScheduler().performOneTick();
+            Thread.onSpinWait();
+        }
+        server.getPluginManager().disablePlugin(plugin);
+
+        assertEquals(worlds, storedWorldsOf(folder));
+    }
+
+    /**
+     * Stores the world "arena" inside a folder and the world "lobby" outside it, then disables the plugin.
+     */
+    private Folder storeWorldInFolder() throws Exception {
+        BuildSystem api = api();
+        Builder creator = Builder.of(UUID.randomUUID(), "Creator");
+        Folder folder = api.getWorldService()
+                .getFolderStorage()
+                .createFolder(
+                        "Maps",
+                        api.getNavigatorCategoryRegistry()
+                                .get(NavigatorCategoryRegistry.PUBLIC_ID)
+                                .orElseThrow(),
+                        creator);
+        WorldStorageImpl worldStorage = (WorldStorageImpl) api.getWorldService().getWorldStorage();
+        for (String name : List.of("arena", "lobby")) {
+            BuildWorldImpl world = new BuildWorldImpl(
+                    TestData.worldContext(),
+                    UUID.randomUUID(),
+                    name,
+                    BuildWorldType.NORMAL,
+                    WorldDataSchema.create(name, TestData.ARCHIVE_STATUS),
+                    creator,
+                    List.of(),
+                    System.currentTimeMillis(),
+                    null,
+                    name.equals("arena") ? folder : null);
+            worldStorage.addBuildWorld(world);
+            if (name.equals("arena")) {
+                folder.addWorld(world);
+            }
+        }
+        server.getPluginManager().disablePlugin(plugin);
+        assertEquals(1, storedWorldsOf(folder).size());
+        return folder;
+    }
+
+    private Connection storageDb() throws SQLException {
+        return DriverManager.getConnection("jdbc:sqlite:" + new File(plugin.getDataFolder(), "storage.db"));
+    }
+
     private BuildSystem api() {
         return Objects.requireNonNull(server.getServicesManager().load(BuildSystem.class));
     }
 
-    private Object storedWorldsOf(Folder folder) throws Exception {
+    private List<?> storedWorldsOf(Folder folder) throws Exception {
         PluginConfig.Storage.Database settings = new ConfigService(plugin).readStorageSettings();
         assertEquals(StorageType.SQLITE, settings.type());
         StorageBackend backend =
@@ -156,7 +198,7 @@ class FailedWorldLoadTest {
             Map<String, Object> stored = backend.collection(EntityKind.FOLDERS)
                     .loadAll()
                     .get(folder.getUniqueId().toString());
-            return Objects.requireNonNull(stored).get("worlds");
+            return (List<?>) Objects.requireNonNull(stored).get("worlds");
         } finally {
             backend.close();
         }
