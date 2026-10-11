@@ -25,7 +25,7 @@ essentialsx = "2.21.2"
 annotations = "26.1.0"
 # Shaded and relocated into the plugin jar.
 mongodb-driver = "5.12.0"
-postgresql = "42.7.13"
+postgresql = "42.7.14"
 # Matches the slf4j-api that sshd brings.
 slf4j = "1.7.36"
 eddsa = "0.3.0"
