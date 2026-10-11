@@ -29,6 +29,7 @@ import java.util.Properties;
 import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.postgresql.ssl.DefaultJavaSSLFactory;
 
 /**
  * The backend chosen in {@code storage.type}, opened once when the plugin enables. Worlds, folders and players go to
@@ -174,6 +175,11 @@ public final class StorageBackend implements AutoCloseable {
                 properties.setProperty("logServerErrorDetail", "false");
                 properties.setProperty("socketTimeout", String.valueOf(READ_TIMEOUT_SECONDS));
                 properties.setProperty("sslmode", server.tls().postgresSslMode());
+                if (server.tls() == StorageTls.VERIFY) {
+                    // Trusts what the JVM trusts, like MySQL and MongoDB, instead of only ~/.postgresql/root.crt.
+                    // require and prefer keep pgjdbc's default, which accepts a self-signed certificate.
+                    properties.setProperty("sslfactory", DefaultJavaSSLFactory.class.getName());
+                }
             }
             default -> throw new IllegalArgumentException(server.type().displayName() + " does not use JDBC");
         }

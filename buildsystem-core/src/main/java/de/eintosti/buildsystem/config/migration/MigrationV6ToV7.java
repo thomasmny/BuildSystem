@@ -80,9 +80,10 @@ public class MigrationV6ToV7 implements Migration {
                         "tls sets whether the connection is encrypted: prefer (when the server offers",
                         "it), off, require (always, without checking the certificate) or verify",
                         "(always, checking the certificate and host name). verify trusts what the Java",
-                        "trust store trusts, or ~/.postgresql/root.crt for PostgreSQL. MongoDB cannot",
-                        "fall back to plain text, so there prefer does what off does, and require still",
-                        "checks the certificate, only not the host name."));
+                        "trust store trusts, so a private CA has to be added to it. With MongoDB, give",
+                        "verify a host name rather than an IP address. MongoDB cannot fall back to",
+                        "plain text, so there prefer does what off does, and require still checks the",
+                        "certificate, only not the host name."));
         server(config, "mariadb", 3306);
         server(config, "postgresql", 5432);
         server(config, "mongodb", 27017);

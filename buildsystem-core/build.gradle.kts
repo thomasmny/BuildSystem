@@ -114,6 +114,9 @@ tasks.register<Test>("dockerTest") {
     testClassesDirs = sourceSets.test.get().output.classesDirs
     classpath = sourceSets.test.get().runtimeClasspath
     useJUnitPlatform { includeTags("docker") }
+    // Holds the test CA that signed PostgresTlsTest's server certificate, for tls: verify to trust.
+    systemProperty("javax.net.ssl.trustStore", file("src/test/resources/tls/truststore.p12").absolutePath)
+    systemProperty("javax.net.ssl.trustStorePassword", "changeit")
 }
 
 tasks.named("assemble") {

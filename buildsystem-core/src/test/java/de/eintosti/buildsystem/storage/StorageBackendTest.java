@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 import org.postgresql.Driver;
+import org.postgresql.ssl.DefaultJavaSSLFactory;
 
 @NullMarked
 class StorageBackendTest {
@@ -54,6 +55,19 @@ class StorageBackendTest {
         assertEquals("mysql_db", mysql.getMainHost().getHost());
         assertEquals(3306, mysql.getMainHost().getPort());
         assertEquals("buildsystem", mysql.getDatabase());
+    }
+
+    @Test
+    void postgresVerify_trustsTheJvmTrustStore_andTheOtherModesKeepTheDefault() {
+        for (StorageTls tls : StorageTls.values()) {
+            Properties postgres = StorageBackend.properties(new PluginConfig.Storage.Database.Server(
+                    StorageType.POSTGRESQL, "localhost", 5432, "buildsystem", "builder", "secret", tls));
+
+            assertEquals(
+                    tls == StorageTls.VERIFY ? DefaultJavaSSLFactory.class.getName() : null,
+                    postgres.getProperty("sslfactory"),
+                    tls.name());
+        }
     }
 
     private static PluginConfig.Storage.Database.Server server(StorageType type) {
