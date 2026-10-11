@@ -22,9 +22,9 @@ import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.world.data.WorldStatusRegistry;
 import de.eintosti.buildsystem.config.ConfigService;
 import de.eintosti.buildsystem.i18n.Messages;
+import de.eintosti.buildsystem.integration.Integrations;
 import de.eintosti.buildsystem.integration.axiom.WorldManipulateByAxiomListener;
 import de.eintosti.buildsystem.integration.essentials.WarpWorldLoadListener;
-import de.eintosti.buildsystem.integration.worldedit.EditSessionListener;
 import de.eintosti.buildsystem.listener.color.AsyncPlayerChatListener;
 import de.eintosti.buildsystem.listener.color.SignChangeListener;
 import de.eintosti.buildsystem.listener.navigator.InventoryCreativeListener;
@@ -145,7 +145,7 @@ public final class ListenerRegistrar {
         register(new WeatherChangeListener(configService));
         register(new WorldManipulateListener(worldStorage, configService, worldStatusRegistry, settingsService));
 
-        registerIntegrations(configService);
+        registerIntegrations();
     }
 
     private void register(Listener listener) {
@@ -154,10 +154,10 @@ public final class ListenerRegistrar {
 
     /**
      * Registers listeners that back optional third-party integrations, each guarded by the presence of the integrated
-     * plugin. {@link EditSessionListener} hooks WorldEdit's own event bus from its constructor, so it is created rather
-     * than registered through the {@link PluginManager}.
+     * plugin. The WorldEdit listener sits on WorldEdit's own event bus, so {@link Integrations} owns it, to take it off
+     * again on disable.
      */
-    private void registerIntegrations(ConfigService configService) {
+    private void registerIntegrations() {
         if (pluginManager.getPlugin("AxiomPaper") != null) {
             register(new WorldManipulateByAxiomListener(services.world().getWorldStorage(), plugin.getLogger()));
         }
@@ -165,12 +165,6 @@ public final class ListenerRegistrar {
         Plugin essentials = pluginManager.getPlugin("Essentials");
         if (essentials != null) {
             register(new WarpWorldLoadListener(services.world().getWorldStorage(), essentials, plugin.getLogger()));
-        }
-
-        boolean isWorldEdit =
-                pluginManager.getPlugin("WorldEdit") != null || pluginManager.getPlugin("FastAsyncWorldEdit") != null;
-        if (isWorldEdit && configService.current().settings().builder().blockWorldEditNonBuilder()) {
-            new EditSessionListener(services.world().getWorldStorage(), services.scheduler());
         }
     }
 }

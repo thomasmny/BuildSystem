@@ -102,7 +102,13 @@ public class BuildSystemPlugin extends JavaPlugin {
         new CommandRegistrar(this, services).registerAll();
         new ListenerRegistrar(this, services).registerAll();
         (this.integrations = new Integrations(
-                        this, services.messages(), services.settings(), services.player(), services.world()))
+                        this,
+                        services.messages(),
+                        services.settings(),
+                        services.player(),
+                        services.world(),
+                        services.config(),
+                        services.scheduler()))
                 .activate();
 
         this.api = new BuildSystemApi(services);
@@ -113,6 +119,8 @@ public class BuildSystemPlugin extends JavaPlugin {
             Settings settings = buildPlayer.getSettings();
             services.noClip().startNoClip(pl, settings);
             services.settings().displayScoreboard(pl);
+            // A disable that threw partway through its player loop never closed the navigator for the rest.
+            services.navigator().clearLeftovers(pl);
         });
         Bukkit.getOnlinePlayers().forEach(services.settings()::updateVisibility);
         // After a reload, players may be standing in an archive world, which only exists once the stored worlds load.
@@ -158,6 +166,12 @@ public class BuildSystemPlugin extends JavaPlugin {
                 scheduler.shutdown();
             }
             return;
+        }
+
+        // Before anything that can throw: WorldEdit's event bus outlives the plugin, and an async FAWE edit arriving
+        // during the disable would otherwise still be judged and scheduled.
+        if (this.integrations != null) {
+            this.integrations.deactivateWorldEdit();
         }
 
         // First, as on quit: otherwise the editor's copy would overwrite the inventory the snapshots below hand back.

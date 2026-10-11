@@ -153,7 +153,7 @@ public final class Services {
                 new WorldStatusRegistryImpl(plugin, navigatorCategoryRegistry, messages, worldStorage, setupStorage);
         this.customizableIcons = new CustomizableIcons(setupStorage);
 
-        this.customBlockManager = new CustomBlockManager(plugin, taskScheduler, worldStorage);
+        this.customBlockManager = new CustomBlockManager(plugin, taskScheduler);
         (this.playerService = new PlayerServiceImpl(
                         plugin, configService, worldStorage, taskScheduler, storageBackend.store(EntityKind.PLAYERS)))
                 .init();
