@@ -27,7 +27,7 @@ val baselineApi: Configuration = configurations.detachedConfiguration(
     isTransitive = false
 }
 val japicmpTool: Configuration = configurations.detachedConfiguration(
-    dependencies.create("com.github.siom79.japicmp:japicmp:0.26.3:jar-with-dependencies")
+    dependencies.create("com.github.siom79.japicmp:japicmp:0.26.5:jar-with-dependencies")
 ).apply {
     isTransitive = false
 }
