@@ -16,7 +16,7 @@ mysql-connector = "26.7.0"
 
 # Plugins
 luckperms = "5.5"
-worldedit = "7.4.5"
+worldedit = "7.4.6"
 placeholderapi = "2.12.3"
 axiompaper = "6.0.1+26.3"
 essentialsx = "2.21.2"
