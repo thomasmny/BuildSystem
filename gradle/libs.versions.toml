@@ -27,7 +27,7 @@ annotations = "26.1.0"
 mongodb-driver = "5.13.0"
 postgresql = "42.7.14"
 # Matches the slf4j-api that sshd brings.
-slf4j = "1.7.36"
+slf4j = "2.0.20"
 eddsa = "0.3.0"
 bstats = "3.2.1"
 fastboard = "2.2.2"
