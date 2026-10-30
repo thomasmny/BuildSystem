@@ -33,7 +33,7 @@ bstats = "3.2.1"
 fastboard = "2.2.2"
 jspecify = "1.0.1"
 nbt = "1.5.1"
-sshd-sftp = "2.20.0"
+sshd-sftp = "2.20.1"
 xseries = "14.0.0"
 
 [libraries]
