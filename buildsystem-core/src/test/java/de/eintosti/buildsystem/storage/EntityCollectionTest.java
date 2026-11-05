@@ -127,6 +127,20 @@ class EntityCollectionTest {
     }
 
     @Test
+    void aSaveAfterSwitchingStores_writesEveryEntryToTheNewOne() {
+        EntityStore before = mock(EntityStore.class);
+        EntityStore after = mock(EntityStore.class);
+        EntityCollection<Setting> file = settings(before, Runnable::run);
+
+        file.save(List.of(new Setting("a", "1"))).join();
+        // The new store holds what a migration copied, which need not be what was last queued for the old one.
+        file.switchTo(after);
+        file.save(List.of(new Setting("a", "1"))).join();
+
+        verify(after).upsert(stored("a", "1"));
+    }
+
+    @Test
     void aSaveThatFailed_isWrittenAgainByTheNextOne() {
         EntityStore store = mock(EntityStore.class);
         doThrow(new StorageException("Could not save", null))

@@ -157,7 +157,8 @@ public final class Services {
         (this.playerService = new PlayerServiceImpl(
                         plugin, configService, worldStorage, taskScheduler, storageBackend.store(EntityKind.PLAYERS)))
                 .init();
-        storageBackend.createViews();
+        // The tables are upgraded by now, so this only builds the views, which nothing in the plugin waits for.
+        taskScheduler.background().execute(storageBackend::prepare);
         this.storageMigrator =
                 new StorageMigrator(plugin, this, worldStorage, folderStorage, playerService.getPlayerStorage());
         this.navigatorEditorService = new NavigatorEditorService();

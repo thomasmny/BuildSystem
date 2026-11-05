@@ -52,6 +52,7 @@ public final class SqlDatabase implements Database {
     private final Logger logger;
 
     private @Nullable Connection connection;
+    private boolean closed;
     private final Set<EntityKind> textColumns = EnumSet.noneOf(EntityKind.class);
 
     private SqlDatabase(
@@ -146,10 +147,17 @@ public final class SqlDatabase implements Database {
      */
     @Override
     public synchronized boolean upgradeFormat(int from) {
-        // Format 0 has no views. A later step that changes a column must drop them first: PostgreSQL refuses to change
-        // a column that a view reads.
         if (from >= 1) {
             return true;
+        }
+        // A start whose upgrade did not finish still created views over the tables it converted. PostgreSQL refuses to
+        // change a column that a view reads, and createViews makes them again.
+        for (SqlViews.View view : views()) {
+            try {
+                dropView(view);
+            } catch (StorageException e) {
+                // A user may lack the right to drop views. If one is in the way, the conversion fails and says so.
+            }
         }
         for (EntityKind kind : EntityKind.values()) {
             String table = tablePrefix + kind.id();
@@ -173,9 +181,22 @@ public final class SqlDatabase implements Database {
      */
     @Override
     public synchronized void createViews() {
-        for (SqlViews.View view : views()) {
+        List<SqlViews.View> views = views();
+        Set<EntityKind> readable = EnumSet.noneOf(EntityKind.class);
+        try {
+            for (EntityKind kind :
+                    views.stream().map(SqlViews.View::kind).distinct().toList()) {
+                if (!textColumns.contains(kind) && exists(kind)) {
+                    readable.add(kind);
+                }
+            }
+        } catch (StorageException e) {
+            logger.warning("Could not create the views, which only outside tools read: " + e.getMessage());
+            return;
+        }
+        for (SqlViews.View view : views) {
             try {
-                if (!textColumns.contains(view.kind()) && exists(view.kind())) {
+                if (readable.contains(view.kind())) {
                     dropView(view);
                     execute("create " + view.name(), "CREATE VIEW " + view.name() + " AS " + view.select());
                 }
@@ -239,6 +260,10 @@ public final class SqlDatabase implements Database {
         if (connection != null && connection.isValid(VALID_TIMEOUT_SECONDS)) {
             return connection;
         }
+        if (closed) {
+            // Work that was queued before the plugin disabled must not open a connection nobody closes.
+            throw new SQLException("The database connection is closed");
+        }
         closeQuietly();
         Connection opened = driver.connect(url, properties);
         if (opened == null) {
@@ -250,6 +275,7 @@ public final class SqlDatabase implements Database {
 
     @Override
     public synchronized void close() {
+        closed = true;
         closeQuietly();
     }
 

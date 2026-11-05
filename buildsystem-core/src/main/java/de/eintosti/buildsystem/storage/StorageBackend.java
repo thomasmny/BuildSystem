@@ -69,15 +69,27 @@ public final class StorageBackend implements AutoCloseable {
     private final @Nullable Database database;
     private final File dataFolder;
     private final Logger logger;
+    /**
+     * The format stored when this connected.
+     */
+    private final int connectedFormat;
+
+    private @Nullable Boolean fresh;
     private boolean formatReady;
 
     private StorageBackend(
-            StorageType type, String location, @Nullable Database database, File dataFolder, Logger logger) {
+            StorageType type,
+            String location,
+            @Nullable Database database,
+            File dataFolder,
+            Logger logger,
+            int connectedFormat) {
         this.type = type;
         this.location = location;
         this.database = database;
         this.dataFolder = dataFolder;
         this.logger = logger;
+        this.connectedFormat = connectedFormat;
     }
 
     /**
@@ -122,9 +134,10 @@ public final class StorageBackend implements AutoCloseable {
                                 logger);
                     }
                 };
+        int format = 0;
         if (database != null) {
             try {
-                refuseNewerFormat(database, type);
+                format = refuseNewerFormat(database, type);
             } catch (StorageException e) {
                 database.close();
                 throw e;
@@ -134,7 +147,7 @@ public final class StorageBackend implements AutoCloseable {
                             ? SQLITE_FILE
                             : settings.server(type).database()));
         }
-        return new StorageBackend(type, location(type, settings), database, dataFolder, logger);
+        return new StorageBackend(type, location(type, settings), database, dataFolder, logger, format);
     }
 
     /**
@@ -160,8 +173,10 @@ public final class StorageBackend implements AutoCloseable {
     /**
      * Refuses data this version may not understand, which saving would then overwrite. Writes nothing, since connecting
      * alone must not change a database that is only being looked at.
+     *
+     * @return The format the database holds
      */
-    private static void refuseNewerFormat(Database database, StorageType type) {
+    private static int refuseNewerFormat(Database database, StorageType type) {
         int stored = storedFormat(database);
         if (stored > FORMAT_VERSION) {
             throw new StorageException(
@@ -169,6 +184,7 @@ public final class StorageBackend implements AutoCloseable {
                             + stored + ", this version reads up to " + FORMAT_VERSION + "). Update the plugin.",
                     null);
         }
+        return stored;
     }
 
     /**
@@ -187,22 +203,29 @@ public final class StorageBackend implements AutoCloseable {
     }
 
     /**
-     * Upgrades the database the first time a store is opened. Tables without a version are from before there was one,
-     * unless there are none at all, and the ones about to be created are already in the current format. An upgrade that
-     * did not finish leaves the version alone, so the next start tries again.
+     * Upgrades the database once. Tables without a version are from before there was one, unless there were none when
+     * the first was opened, so that every table was created in the current format. An upgrade that did not finish
+     * leaves the version alone, so the next start tries again.
      */
     private synchronized void prepareFormat(Database database) {
         if (formatReady) {
             return;
         }
-        int stored = storedFormat(database);
-        if (stored < FORMAT_VERSION) {
-            boolean fresh = stored == 0 && Arrays.stream(EntityKind.values()).noneMatch(database::exists);
-            if (fresh || database.upgradeFormat(stored)) {
-                writeFormat(database, FORMAT_VERSION);
-            }
+        if (connectedFormat < FORMAT_VERSION && (fresh(database) || database.upgradeFormat(connectedFormat))) {
+            writeFormat(database, FORMAT_VERSION);
         }
         formatReady = true;
+    }
+
+    /**
+     * {@return whether the database held no tables or collections without a version before this opened one} Must be
+     * called before the first one is created.
+     */
+    private synchronized boolean fresh(Database database) {
+        if (fresh == null) {
+            fresh = connectedFormat == 0 && Arrays.stream(EntityKind.values()).noneMatch(database::exists);
+        }
+        return fresh;
     }
 
     /**
@@ -222,10 +245,12 @@ public final class StorageBackend implements AutoCloseable {
     }
 
     /**
-     * Creates or replaces the views over the tables, once they exist. Never fails: nothing in the plugin reads them.
+     * Upgrades the format of the tables that exist, then creates or replaces the views over them. A migration calls
+     * this only once its copy is verified, so a failed one leaves the tables it found as they were.
      */
-    public void createViews() {
+    public void prepare() {
         if (database != null) {
+            prepareFormat(database);
             database.createViews();
         }
     }
@@ -309,13 +334,14 @@ public final class StorageBackend implements AutoCloseable {
     }
 
     /**
-     * {@return the store for {@code kind}, as it is} Unlike {@link #store}, nothing is imported into it.
+     * {@return the store for {@code kind}, as it is} Unlike {@link #store}, nothing is imported into it and the format
+     * is not upgraded, which {@link #prepare} does.
      */
     public EntityStore collection(EntityKind kind) {
         if (database == null) {
             return kind.yaml(dataFolder, logger);
         }
-        prepareFormat(database);
+        fresh(database);
         return database.collection(kind);
     }
 
@@ -362,6 +388,7 @@ public final class StorageBackend implements AutoCloseable {
         if (database == null) {
             return yaml;
         }
+        prepareFormat(database);
         // Only a new table: an empty one may be empty because everything in it was deleted, and the old file
         // would bring it all back.
         boolean existed = database.exists(kind);

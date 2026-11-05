@@ -181,7 +181,7 @@ public class FolderStorageImpl implements FolderStorage {
     public Folder createFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
         Folder folder = new FolderImpl(context.get(), name, category, parent, creator);
         folders.put(folder.getUniqueId(), folder);
-        file.save(folder);
+        save(folder);
         fireEvent(new FolderCreatedEvent(folder));
         return folder;
     }

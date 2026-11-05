@@ -24,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jspecify.annotations.NullMarked;
@@ -33,8 +34,8 @@ import org.jspecify.annotations.Nullable;
  * Codec for a creator and a list of builders, each stored as a map with a {@code uuid} and a {@code name}.
  *
  * <p>Before 4.1 they were strings: {@code <uuid>,<name>} and a {@code ;}-joined list of those. Both still load, so an
- * entry keeps working until it is next saved. An entry in a list that is incomplete is skipped and logged, so one
- * corrupt builder never drops the others.
+ * entry keeps working until it is next saved. An entry in a list that is incomplete or invalid is skipped and logged,
+ * so one corrupt builder never drops the others.
  */
 @NullMarked
 public final class BuilderCodec {
@@ -59,6 +60,8 @@ public final class BuilderCodec {
 
     /**
      * {@return the builder stored under {@code key}, or {@code null} when there is none or it is incomplete}
+     *
+     * @throws IllegalArgumentException If the stored uuid is invalid
      */
     public static @Nullable Builder parse(ConfigurationSection section, String key) {
         ConfigurationSection fields = section.getConfigurationSection(key);
@@ -74,20 +77,26 @@ public final class BuilderCodec {
         List<Builder> builders = new ArrayList<>();
         if (section.isList(key)) {
             for (Map<?, ?> fields : section.getMapList(key)) {
-                addIfValid(builders, of(string(fields.get(UUID_KEY)), string(fields.get(NAME))), fields);
+                addIfValid(builders, () -> of(string(fields.get(UUID_KEY)), string(fields.get(NAME))), fields);
             }
             return builders;
         }
         String legacy = section.getString(key);
         if (legacy != null && !legacy.isEmpty()) {
             for (String entry : legacy.split(LEGACY_DELIMITER)) {
-                addIfValid(builders, Builder.deserialize(entry), entry);
+                addIfValid(builders, () -> Builder.deserialize(entry), entry);
             }
         }
         return builders;
     }
 
-    private static void addIfValid(List<Builder> builders, @Nullable Builder builder, Object stored) {
+    private static void addIfValid(List<Builder> builders, Supplier<@Nullable Builder> parse, Object stored) {
+        Builder builder;
+        try {
+            builder = parse.get();
+        } catch (IllegalArgumentException e) {
+            builder = null;
+        }
         if (builder == null) {
             LOGGER.warning("Ignoring malformed builder entry '" + stored + "'");
             return;

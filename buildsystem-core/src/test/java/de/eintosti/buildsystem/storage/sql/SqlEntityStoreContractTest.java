@@ -247,7 +247,7 @@ public abstract class SqlEntityStoreContractTest extends EntityStoreContractTest
             execute(raw, "INSERT INTO " + table + " (id, data) VALUES ('garbled', '{not json')");
 
             store("worlds").upsert(Map.of("fine", Map.of("name", "fine")));
-            backend.createViews();
+            backend.prepare();
 
             assertEquals(Map.of("fine", Map.of("name", "fine")), store("worlds").loadAll());
             assertEquals(
@@ -261,13 +261,45 @@ public abstract class SqlEntityStoreContractTest extends EntityStoreContractTest
             execute(raw, "DELETE FROM " + table + " WHERE id = 'garbled'");
             restart();
             store("worlds");
-            backend.createViews();
+            backend.prepare();
 
             assertEquals(StorageBackend.FORMAT_VERSION, storedFormat());
             assertEquals(
                     List.of(List.of("fine", "fine")),
                     query(raw, "SELECT id, name FROM " + tablePrefix + "worlds_view"));
             assertThrows(StorageException.class, () -> insert(raw, table, "refused", "{not json"));
+        } finally {
+            raw.close();
+        }
+    }
+
+    @Test
+    void anUpgradeThatStoppedAtOneTable_finishesOnceItsRowIsFixed_althoughTheOtherHasViews() {
+        String worlds = tablePrefix + "worlds";
+        String folders = tablePrefix + "folders";
+        SqlDatabase raw = rawDatabase();
+        try {
+            execute(raw, "CREATE TABLE " + worlds + " (id VARCHAR(64) NOT NULL PRIMARY KEY, data TEXT NOT NULL)");
+            insert(raw, worlds, "fine", "{\"name\":\"fine\"}");
+            execute(raw, "CREATE TABLE " + folders + " (id VARCHAR(64) NOT NULL PRIMARY KEY, data TEXT NOT NULL)");
+            execute(raw, "INSERT INTO " + folders + " (id, data) VALUES ('garbled', '{not json')");
+
+            store("worlds");
+            backend.prepare();
+            if (!jsonColumn()) {
+                return;
+            }
+            assertEquals(0, storedFormat());
+
+            execute(raw, "DELETE FROM " + folders + " WHERE id = 'garbled'");
+            restart();
+            store("worlds");
+            backend.prepare();
+
+            assertEquals(StorageBackend.FORMAT_VERSION, storedFormat());
+            assertEquals(
+                    List.of(List.of("fine", "fine")),
+                    query(raw, "SELECT id, name FROM " + tablePrefix + "worlds_view"));
         } finally {
             raw.close();
         }
@@ -314,7 +346,7 @@ public abstract class SqlEntityStoreContractTest extends EntityStoreContractTest
     void views_showTheDataInColumns() {
         storeSampleData();
         store("players");
-        backend.createViews();
+        backend.prepare();
 
         SqlDatabase raw = rawDatabase();
         try {
@@ -350,7 +382,7 @@ public abstract class SqlEntityStoreContractTest extends EntityStoreContractTest
     void views_canBeJoined() {
         storeSampleData();
         store("players");
-        backend.createViews();
+        backend.prepare();
 
         SqlDatabase raw = rawDatabase();
         try {
@@ -379,7 +411,7 @@ public abstract class SqlEntityStoreContractTest extends EntityStoreContractTest
         SqlDatabase raw = rawDatabase();
         try {
             insert(raw, tablePrefix + "worlds", "garbled", garbledRow());
-            backend.createViews();
+            backend.prepare();
 
             assertEquals(
                     List.of(Arrays.asList("old", null, null)),
@@ -402,7 +434,7 @@ public abstract class SqlEntityStoreContractTest extends EntityStoreContractTest
     void droppingATable_dropsItsViews() {
         storeSampleData();
         store("players");
-        backend.createViews();
+        backend.prepare();
 
         backend.drop(EntityKind.WORLDS);
 

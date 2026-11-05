@@ -79,11 +79,12 @@ class BuilderCodecTest {
     }
 
     @Test
-    void list_skipsAnIncompleteEntry_keepsTheOthers() {
+    void list_skipsAnIncompleteOrInvalidEntry_keepsTheOthers() {
         List<Builder> parsed = BuilderCodec.parseList(
                 section(List.of(
                         Map.of("uuid", ALICE_ID.toString(), "name", "Alice"),
                         Map.of("name", "No uuid"),
+                        Map.of("uuid", "nonsense", "name", "Bad uuid"),
                         Map.of("uuid", BOB_ID.toString(), "name", "Bob"))),
                 KEY);
 
@@ -100,8 +101,8 @@ class BuilderCodecTest {
 
     @Test
     void list_readsTheStringFromBefore41_skippingAMalformedEntry() {
-        List<Builder> parsed =
-                BuilderCodec.parseList(section(ALICE_ID + ",Alice;not-a-valid-builder;" + BOB_ID + ",Bob"), KEY);
+        List<Builder> parsed = BuilderCodec.parseList(
+                section(ALICE_ID + ",Alice;not-a-valid-builder;nonsense,Bad uuid;" + BOB_ID + ",Bob"), KEY);
 
         assertEquals(
                 List.of("Alice", "Bob"), parsed.stream().map(Builder::getName).toList());

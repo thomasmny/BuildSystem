@@ -204,7 +204,7 @@ public final class EntityCollection<T> {
     }
 
     private synchronized CompletableFuture<Void> writeAll(Map<String, Map<String, Object>> serialized) {
-        lastQueued.clear();
+        forgetEverything();
         lastQueued.putAll(serialized);
         return write(() -> store.replaceAll(serialized)).whenComplete((ignored, failure) -> {
             if (failure != null) {
@@ -246,10 +246,12 @@ public final class EntityCollection<T> {
     }
 
     /**
-     * Sends every write that has not started yet to {@code store}. Only safe while writes are held.
+     * Sends every write that has not started yet to {@code store}. Only safe while writes are held. What was queued
+     * describes the old store, so the next save writes every entry again.
      */
-    void switchTo(EntityStore store) {
+    synchronized void switchTo(EntityStore store) {
         this.store = store;
+        forgetEverything();
     }
 
     /**

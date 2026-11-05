@@ -128,6 +128,7 @@ class StorageMigratorTest {
 
         assertEquals(Map.of(EntityKind.PLAYERS, 2), migration.join());
         assertEquals(target(), current.get().type());
+        assertEquals(StorageBackend.FORMAT_VERSION, current.get().storedFormat());
         assertEquals(
                 List.of("a", "b", "c"),
                 List.copyOf(
@@ -415,6 +416,27 @@ class StorageMigratorTest {
             assertEquals(
                     List.of("a"),
                     List.copyOf(started.store(EntityKind.PLAYERS).loadAll().keySet()));
+        }
+    }
+
+    @Test
+    void migrate_thatFails_leavesTheFormatOfTheTablesItFoundAlone() {
+        try (StorageBackend before = StorageBackend.connect(target(), settings(), dataFolder, LOGGER)) {
+            // Opened as it is, so the table holds no format, like one written before there was one.
+            before.collection(EntityKind.PLAYERS).upsert(Map.of("old", Map.of("time", 1)));
+        }
+        live.add(new Note("a", 1));
+        notes.save(live);
+        runAll();
+
+        CompletableFuture<Map<EntityKind, Integer>> migration = migrator.migrate(target(), settings());
+        drain(background);
+        migrator.abort();
+        runAll();
+
+        assertThrows(CompletionException.class, migration::join);
+        try (StorageBackend after = StorageBackend.connect(target(), settings(), dataFolder, LOGGER)) {
+            assertEquals(0, after.storedFormat());
         }
     }
 
