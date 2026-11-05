@@ -40,11 +40,19 @@ public class BuildersImpl implements Builders {
 
     private @Nullable Builder creator;
     private final Map<UUID, Builder> buildersByUuid;
+    private Runnable changeListener = () -> {};
 
     public BuildersImpl(Messages messages, @Nullable Builder creator, List<Builder> builders) {
         this.messages = messages;
         this.creator = creator;
         this.buildersByUuid = builders.stream().collect(Collectors.toMap(Builder::getUniqueId, Function.identity()));
+    }
+
+    /**
+     * @param listener Runs after the creator or a builder is set, added or removed
+     */
+    public void setChangeListener(Runnable listener) {
+        this.changeListener = listener;
     }
 
     @Override
@@ -55,6 +63,7 @@ public class BuildersImpl implements Builders {
     @Override
     public void setCreator(@Nullable Builder creator) {
         this.creator = creator;
+        changeListener.run();
     }
 
     @Override
@@ -96,6 +105,7 @@ public class BuildersImpl implements Builders {
     @Override
     public void addBuilder(Builder builder) {
         buildersByUuid.put(builder.getUniqueId(), builder);
+        changeListener.run();
     }
 
     @Override
@@ -106,6 +116,7 @@ public class BuildersImpl implements Builders {
     @Override
     public void removeBuilder(UUID uuid) {
         buildersByUuid.remove(uuid);
+        changeListener.run();
     }
 
     @Override

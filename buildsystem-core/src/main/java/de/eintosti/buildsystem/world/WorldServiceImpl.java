@@ -485,23 +485,32 @@ public class WorldServiceImpl implements WorldService {
         });
     }
 
+    /**
+     * Saves every world and folder, also one whose change was not reported, such as a builder renamed through the API.
+     */
     public CompletableFuture<Void> save() {
-        CompletableFuture<Void> worldFuture = this.worldStorage
-                .save(this.worldStorage.getBuildWorlds())
-                .whenComplete((r, e) -> {
-                    if (e != null) {
-                        plugin.getLogger().log(Level.SEVERE, "Failed to save world data", e);
-                    }
-                });
+        return logFailures(
+                worldStorage.save(worldStorage.getBuildWorlds()), folderStorage.save(folderStorage.getFolders()));
+    }
 
-        CompletableFuture<Void> folderFuture = this.folderStorage
-                .save(this.folderStorage.getFolders())
-                .whenComplete((r, e) -> {
-                    if (e != null) {
-                        plugin.getLogger().log(Level.SEVERE, "Failed to save folder data", e);
-                    }
-                });
+    /**
+     * Saves the worlds and folders that changed since they were last saved.
+     */
+    public CompletableFuture<Void> saveChanged() {
+        return logFailures(worldStorage.saveChanged(), folderStorage.saveChanged());
+    }
 
+    private CompletableFuture<Void> logFailures(CompletableFuture<Void> worlds, CompletableFuture<Void> folders) {
+        CompletableFuture<Void> worldFuture = worlds.whenComplete((r, e) -> {
+            if (e != null) {
+                plugin.getLogger().log(Level.SEVERE, "Failed to save world data", e);
+            }
+        });
+        CompletableFuture<Void> folderFuture = folders.whenComplete((r, e) -> {
+            if (e != null) {
+                plugin.getLogger().log(Level.SEVERE, "Failed to save folder data", e);
+            }
+        });
         return CompletableFuture.allOf(worldFuture, folderFuture);
     }
 }

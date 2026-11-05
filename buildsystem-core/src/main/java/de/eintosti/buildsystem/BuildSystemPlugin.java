@@ -63,6 +63,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     public static final String ADMIN_PERMISSION = Permissions.ADMIN;
 
     private static final long CONFIG_SAVE_INTERVAL_TICKS = 60L * 20L;
+    private static final long CHANGE_SAVE_INTERVAL_TICKS = 5L * 20L;
 
     private ConfigService configService;
     private Messages messages;
@@ -72,6 +73,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     private @Nullable Integrations integrations;
     private @Nullable BuildSystemApi api;
     private BukkitTask configSaveTask;
+    private BukkitTask changeSaveTask;
 
     @Override
     public void onLoad() {
@@ -154,8 +156,18 @@ public class BuildSystemPlugin extends JavaPlugin {
         // on the calling thread and only writes that map to disk asynchronously. Running the timer off-main read those
         // collections while players were mutating them, which threw ConcurrentModificationException and lost the whole
         // save cycle. Building the maps is cheap; the disk I/O is still async.
+        // The worlds and folders report their changes, so only those are saved, often enough that a crash loses little.
+        // The players and the spawn are saved whole.
+        this.changeSaveTask = services.scheduler()
+                .runTimer(services.world()::saveChanged, CHANGE_SAVE_INTERVAL_TICKS, CHANGE_SAVE_INTERVAL_TICKS);
         this.configSaveTask = services.scheduler()
-                .runTimer(this::saveBuildConfig, CONFIG_SAVE_INTERVAL_TICKS, CONFIG_SAVE_INTERVAL_TICKS);
+                .runTimer(
+                        () -> {
+                            services.player().save();
+                            services.spawn().save();
+                        },
+                        CONFIG_SAVE_INTERVAL_TICKS,
+                        CONFIG_SAVE_INTERVAL_TICKS);
 
         Bukkit.getConsoleSender()
                 .sendMessage("%sBuildSystem » Plugin %senabled%s!"
@@ -212,6 +224,9 @@ public class BuildSystemPlugin extends JavaPlugin {
         // so this must happen before the join() below
         if (this.configSaveTask != null) {
             this.configSaveTask.cancel();
+        }
+        if (this.changeSaveTask != null) {
+            this.changeSaveTask.cancel();
         }
 
         // A migration holds writes back until it switches, which needs the main thread this blocks.

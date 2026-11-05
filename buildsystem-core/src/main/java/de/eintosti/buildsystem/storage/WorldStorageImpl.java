@@ -25,6 +25,7 @@ import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.player.PlayerLookupService;
 import de.eintosti.buildsystem.storage.codec.WorldCodec;
 import de.eintosti.buildsystem.util.FileUtils;
+import de.eintosti.buildsystem.world.BuildWorldImpl;
 import de.eintosti.buildsystem.world.WorldContext;
 import de.eintosti.buildsystem.world.WorldNames;
 import java.util.ArrayList;
@@ -70,6 +71,12 @@ public class WorldStorageImpl implements WorldStorage {
     private final EntityCollection<BuildWorld> file;
 
     /**
+     * The worlds that changed since they were last saved, which {@link #saveChanged} writes. A world counts as changed
+     * once it is added, which also rewrites a world read in an older format.
+     */
+    private final Set<UUID> changed = ConcurrentHashMap.newKeySet();
+
+    /**
      * @param context Read only once the stored worlds load, since building it needs this storage
      */
     public WorldStorageImpl(
@@ -110,12 +117,38 @@ public class WorldStorageImpl implements WorldStorage {
 
     @Override
     public CompletableFuture<Void> save(BuildWorld buildWorld) {
-        return file.save(buildWorld);
+        return markChangedOnFailure(file.save(buildWorld), List.of(buildWorld));
     }
 
     @Override
     public CompletableFuture<Void> save(Collection<BuildWorld> buildWorlds) {
-        return file.save(buildWorlds);
+        return markChangedOnFailure(file.save(buildWorlds), buildWorlds);
+    }
+
+    /**
+     * Saves the worlds that changed since they were last saved. A world removed since is skipped, so it is not written
+     * back after its delete.
+     */
+    public CompletableFuture<Void> saveChanged() {
+        List<BuildWorld> worlds = new ArrayList<>();
+        changed.removeIf(uuid -> {
+            BuildWorld buildWorld = buildWorldsByUuid.get(uuid);
+            if (buildWorld != null) {
+                worlds.add(buildWorld);
+            }
+            return true;
+        });
+        return save(worlds);
+    }
+
+    private CompletableFuture<Void> markChangedOnFailure(
+            CompletableFuture<Void> save, Collection<BuildWorld> buildWorlds) {
+        List<UUID> uuids = buildWorlds.stream().map(BuildWorld::getUniqueId).toList();
+        return save.whenComplete((ignored, failure) -> {
+            if (failure != null) {
+                changed.addAll(uuids);
+            }
+        });
     }
 
     @Override
@@ -179,6 +212,10 @@ public class WorldStorageImpl implements WorldStorage {
     public synchronized void addBuildWorld(BuildWorld buildWorld) {
         this.buildWorldsByUuid.put(buildWorld.getUniqueId(), buildWorld);
         this.uuidByName.put(WorldNames.id(buildWorld.getName()), buildWorld.getUniqueId());
+        if (buildWorld instanceof BuildWorldImpl impl) {
+            impl.setChangeListener(() -> changed.add(impl.getUniqueId()));
+        }
+        changed.add(buildWorld.getUniqueId());
     }
 
     public synchronized void removeBuildWorld(BuildWorld buildWorld) {
