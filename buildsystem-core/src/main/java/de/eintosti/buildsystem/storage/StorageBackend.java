@@ -18,11 +18,13 @@
 package de.eintosti.buildsystem.storage;
 
 import de.eintosti.buildsystem.config.PluginConfig;
+import de.eintosti.buildsystem.storage.migration.StorageMigration;
 import de.eintosti.buildsystem.storage.mongo.MongoConnection;
 import de.eintosti.buildsystem.storage.sql.SqlDatabase;
 import de.eintosti.buildsystem.storage.sql.SqlDialect;
 import de.eintosti.buildsystem.storage.yaml.YamlEntityStore;
 import java.io.File;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
@@ -50,6 +52,16 @@ public final class StorageBackend implements AutoCloseable {
      */
     public static final int READ_TIMEOUT_SECONDS = 30;
 
+    /**
+     * The format of what is stored in a database, kept in the database so that a change to it has something to go by.
+     * {@code 1} is the first with a JSON column type; tables from before it hold no version. YAML files have their own
+     * version, {@link StorageMigration#CURRENT_VERSION}.
+     */
+    public static final int FORMAT_VERSION = 1;
+
+    private static final String FORMAT_ENTRY = "format";
+    private static final String FORMAT_FIELD = "version";
+
     private static final Set<String> LOCAL_HOSTS = Set.of("localhost", "127.0.0.1", "[::1]");
 
     private final StorageType type;
@@ -57,14 +69,27 @@ public final class StorageBackend implements AutoCloseable {
     private final @Nullable Database database;
     private final File dataFolder;
     private final Logger logger;
+    /**
+     * The format stored when this connected.
+     */
+    private final int connectedFormat;
+
+    private @Nullable Boolean fresh;
+    private boolean formatReady;
 
     private StorageBackend(
-            StorageType type, String location, @Nullable Database database, File dataFolder, Logger logger) {
+            StorageType type,
+            String location,
+            @Nullable Database database,
+            File dataFolder,
+            Logger logger,
+            int connectedFormat) {
         this.type = type;
         this.location = location;
         this.database = database;
         this.dataFolder = dataFolder;
         this.logger = logger;
+        this.connectedFormat = connectedFormat;
     }
 
     /**
@@ -109,13 +134,20 @@ public final class StorageBackend implements AutoCloseable {
                                 logger);
                     }
                 };
+        int format = 0;
         if (database != null) {
+            try {
+                format = refuseNewerFormat(database, type);
+            } catch (StorageException e) {
+                database.close();
+                throw e;
+            }
             logger.info("Connected to " + type.displayName() + ", database "
                     + (type == StorageType.SQLITE
                             ? SQLITE_FILE
                             : settings.server(type).database()));
         }
-        return new StorageBackend(type, location(type, settings), database, dataFolder, logger);
+        return new StorageBackend(type, location(type, settings), database, dataFolder, logger, format);
     }
 
     /**
@@ -136,6 +168,91 @@ public final class StorageBackend implements AutoCloseable {
                         + "/" + settings.tablePrefix();
             }
         };
+    }
+
+    /**
+     * Refuses data this version may not understand, which saving would then overwrite. Writes nothing, since connecting
+     * alone must not change a database that is only being looked at.
+     *
+     * @return The format the database holds
+     */
+    private static int refuseNewerFormat(Database database, StorageType type) {
+        int stored = storedFormat(database);
+        if (stored > FORMAT_VERSION) {
+            throw new StorageException(
+                    "The data in " + type.displayName() + " was written by a newer version of BuildSystem (format "
+                            + stored + ", this version reads up to " + FORMAT_VERSION + "). Update the plugin.",
+                    null);
+        }
+        return stored;
+    }
+
+    /**
+     * {@return the format the database says it holds, or {@code 0} if it says nothing}
+     */
+    private static int storedFormat(Database database) {
+        if (!database.hasMetadata()) {
+            return 0;
+        }
+        Map<String, Object> format = database.metadata().loadAll().get(FORMAT_ENTRY);
+        return format != null && format.get(FORMAT_FIELD) instanceof Number version ? version.intValue() : 0;
+    }
+
+    private static void writeFormat(Database database, int version) {
+        database.metadata().upsert(Map.of(FORMAT_ENTRY, Map.of(FORMAT_FIELD, version)));
+    }
+
+    /**
+     * Upgrades the database once. Tables without a version are from before there was one, unless there were none when
+     * the first was opened, so that every table was created in the current format. An upgrade that did not finish
+     * leaves the version alone, so the next start tries again.
+     */
+    private synchronized void prepareFormat(Database database) {
+        if (formatReady) {
+            return;
+        }
+        if (connectedFormat < FORMAT_VERSION && (fresh(database) || database.upgradeFormat(connectedFormat))) {
+            writeFormat(database, FORMAT_VERSION);
+        }
+        formatReady = true;
+    }
+
+    /**
+     * {@return whether the database held no tables or collections without a version before this opened one} Must be
+     * called before the first one is created.
+     */
+    private synchronized boolean fresh(Database database) {
+        if (fresh == null) {
+            fresh = connectedFormat == 0 && Arrays.stream(EntityKind.values()).noneMatch(database::exists);
+        }
+        return fresh;
+    }
+
+    /**
+     * {@return the format stored in the database, or {@code 0} for YAML or a database that says nothing}
+     */
+    int storedFormat() {
+        return database == null ? 0 : storedFormat(database);
+    }
+
+    /**
+     * Stamps the database with {@code version}, as a version writing that format would. Does nothing for YAML.
+     */
+    void writeFormat(int version) {
+        if (database != null) {
+            writeFormat(database, version);
+        }
+    }
+
+    /**
+     * Upgrades the format of the tables that exist, then creates or replaces the views over them. A migration calls
+     * this only once its copy is verified, so a failed one leaves the tables it found as they were.
+     */
+    public void prepare() {
+        if (database != null) {
+            prepareFormat(database);
+            database.createViews();
+        }
     }
 
     private static SqlDatabase sqlite(File file, String prefix, Logger logger) {
@@ -217,10 +334,15 @@ public final class StorageBackend implements AutoCloseable {
     }
 
     /**
-     * {@return the store for {@code kind}, as it is} Unlike {@link #store}, nothing is imported into it.
+     * {@return the store for {@code kind}, as it is} Unlike {@link #store}, nothing is imported into it and the format
+     * is not upgraded, which {@link #prepare} does.
      */
     public EntityStore collection(EntityKind kind) {
-        return database == null ? kind.yaml(dataFolder, logger) : database.collection(kind);
+        if (database == null) {
+            return kind.yaml(dataFolder, logger);
+        }
+        fresh(database);
+        return database.collection(kind);
     }
 
     /**
@@ -266,6 +388,7 @@ public final class StorageBackend implements AutoCloseable {
         if (database == null) {
             return yaml;
         }
+        prepareFormat(database);
         // Only a new table: an empty one may be empty because everything in it was deleted, and the old file
         // would bring it all back.
         boolean existed = database.exists(kind);

@@ -29,6 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostCreateEvent;
+import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.config.PluginConfig;
@@ -59,6 +60,7 @@ class WorldImporterImplTest {
     private final WorldContext context = TestData.worldContext();
     private ServerMock server;
     private WorldStorageImpl worldStorage;
+    private final FolderStorage folderStorage = mock(FolderStorage.class);
 
     @BeforeEach
     void setUp() {
@@ -95,7 +97,7 @@ class WorldImporterImplTest {
 
     @Test
     void importWithPluginGenerator_registersAnImportedWorld() {
-        BuildWorld imported = new WorldImporterImpl(context, worldStorage, "terra_world")
+        BuildWorld imported = new WorldImporterImpl(context, worldStorage, folderStorage, "terra_world")
                 .customGenerator(new CustomGeneratorImpl("Terra", "Terra", null))
                 .build();
 
@@ -109,7 +111,7 @@ class WorldImporterImplTest {
     @Test
     void failedGeneration_leavesNoRegisteredWorld() {
         // Not a valid world key, so the server refuses to create it.
-        BuildWorld imported = new WorldImporterImpl(context, worldStorage, "maps:not valid").build();
+        BuildWorld imported = new WorldImporterImpl(context, worldStorage, folderStorage, "maps:not valid").build();
 
         assertNull(imported);
         verify(worldStorage).removeBuildWorld(any());

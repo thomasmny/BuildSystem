@@ -1,10 +1,16 @@
 0a0a0a0a-0000-4000-8000-000000000001:
   name: arena
   uuid: 0a0a0a0a-0000-4000-8000-000000000001
-  creator: 0c0c0c0c-0000-4000-8000-000000000001,Alex
+  creator:
+    uuid: 0c0c0c0c-0000-4000-8000-000000000001
+    name: Alex
   type: IMPORTED
   date: 1700000000000
-  builders: 0c0c0c0c-0000-4000-8000-000000000001,Alex;0c0c0c0c-0000-4000-8000-000000000002,Sam
+  builders:
+  - uuid: 0c0c0c0c-0000-4000-8000-000000000001
+    name: Alex
+  - uuid: 0c0c0c0c-0000-4000-8000-000000000002
+    name: Sam
   chunk-generator: Terra:Terra
   data:
     status: finished
@@ -42,7 +48,7 @@
   uuid: 0a0a0a0a-0000-4000-8000-000000000002
   type: NORMAL
   date: 1700000000001
-  builders: ''
+  builders: []
   data:
     status: not_started
     spawn: ''

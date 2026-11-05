@@ -23,9 +23,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -45,6 +47,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.Executor;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -55,6 +58,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.mockito.InOrder;
 
 @NullMarked
 class EntityCollectionTest {
@@ -80,6 +84,120 @@ class EntityCollectionTest {
             return new Entry(key);
         }
     };
+
+    private record Setting(String key, String value) {}
+
+    private static final Codec<Setting> SETTING_CODEC = new Codec<>() {
+        @Override
+        public String key(Setting value) {
+            return value.key();
+        }
+
+        @Override
+        public Map<String, Object> serialize(Setting value) {
+            return Map.of("value", value.value());
+        }
+
+        @Override
+        public Setting deserialize(String key, ConfigurationSection section) {
+            return new Setting(key, section.getString("value", ""));
+        }
+    };
+
+    private static Map<String, Map<String, Object>> stored(String key, String value) {
+        return Map.of(key, Map.of("value", value));
+    }
+
+    private static EntityCollection<Setting> settings(EntityStore store, Executor background) {
+        return new EntityCollection<>(
+                store, "setting", () -> SETTING_CODEC, background, Logger.getLogger("EntityCollectionTest"));
+    }
+
+    @Test
+    void aSave_onlyWritesWhatChanged() {
+        EntityStore store = mock(EntityStore.class);
+        EntityCollection<Setting> file = settings(store, Runnable::run);
+
+        file.save(List.of(new Setting("a", "1"), new Setting("b", "1"))).join();
+        file.save(List.of(new Setting("a", "1"), new Setting("b", "1"))).join();
+        file.save(List.of(new Setting("a", "1"), new Setting("b", "2"))).join();
+
+        verify(store, times(2)).upsert(any());
+        verify(store).upsert(stored("b", "2"));
+    }
+
+    @Test
+    void aSaveAfterSwitchingStores_writesEveryEntryToTheNewOne() {
+        EntityStore before = mock(EntityStore.class);
+        EntityStore after = mock(EntityStore.class);
+        EntityCollection<Setting> file = settings(before, Runnable::run);
+
+        file.save(List.of(new Setting("a", "1"))).join();
+        // The new store holds what a migration copied, which need not be what was last queued for the old one.
+        file.switchTo(after);
+        file.save(List.of(new Setting("a", "1"))).join();
+
+        verify(after).upsert(stored("a", "1"));
+    }
+
+    @Test
+    void aSaveThatFailed_isWrittenAgainByTheNextOne() {
+        EntityStore store = mock(EntityStore.class);
+        doThrow(new StorageException("Could not save", null))
+                .doNothing()
+                .when(store)
+                .upsert(any());
+        EntityCollection<Setting> file = settings(store, Runnable::run);
+
+        assertThrows(CompletionException.class, file.save(List.of(new Setting("a", "1")))::join);
+        file.save(List.of(new Setting("a", "1"))).join();
+
+        verify(store, times(2)).upsert(stored("a", "1"));
+    }
+
+    @Test
+    void aValueChangedBackWhileAWriteIsPending_isStillWritten() {
+        Deque<Runnable> queued = new ArrayDeque<>();
+        EntityStore store = mock(EntityStore.class);
+        EntityCollection<Setting> file = settings(store, queued::add);
+
+        file.save(List.of(new Setting("a", "1")));
+        file.save(List.of(new Setting("a", "2")));
+        file.save(List.of(new Setting("a", "1")));
+        while (!queued.isEmpty()) {
+            queued.remove().run();
+        }
+
+        InOrder order = inOrder(store);
+        order.verify(store).upsert(stored("a", "1"));
+        order.verify(store).upsert(stored("a", "2"));
+        order.verify(store).upsert(stored("a", "1"));
+    }
+
+    @Test
+    void anEntrySavedAfterItsDelete_isWrittenAgain() {
+        EntityStore store = mock(EntityStore.class);
+        EntityCollection<Setting> file = settings(store, Runnable::run);
+
+        file.save(List.of(new Setting("a", "1"))).join();
+        file.delete("a").join();
+        file.save(List.of(new Setting("a", "1"))).join();
+
+        verify(store, times(2)).upsert(stored("a", "1"));
+    }
+
+    @Test
+    void aSaveWithNothingToWrite_stillWaitsForWhatIsQueued() {
+        Deque<Runnable> queued = new ArrayDeque<>();
+        EntityCollection<Setting> file = settings(mock(EntityStore.class), queued::add);
+
+        file.save(List.of(new Setting("a", "1")));
+        CompletableFuture<Void> unchanged = file.save(List.of(new Setting("a", "1")));
+
+        assertFalse(unchanged.isDone());
+        queued.remove().run();
+        assertTrue(unchanged.isDone());
+    }
 
     @Test
     void aDeleteAfterASave_isWrittenAfterIt() {

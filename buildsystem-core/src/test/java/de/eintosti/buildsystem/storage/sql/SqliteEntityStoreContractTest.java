@@ -25,6 +25,16 @@ import java.util.Properties;
 class SqliteEntityStoreContractTest extends SqlEntityStoreContractTest {
 
     @Override
+    protected boolean jsonColumn() {
+        return false;
+    }
+
+    @Override
+    protected String garbledRow() {
+        return "{not json";
+    }
+
+    @Override
     protected PluginConfig.Storage.Database settings() {
         return settings(StorageType.SQLITE, "localhost", 0, "buildsystem", "", "", tablePrefix);
     }

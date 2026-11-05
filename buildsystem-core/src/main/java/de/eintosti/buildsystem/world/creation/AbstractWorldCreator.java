@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.world.creation;
 
 import de.eintosti.buildsystem.api.event.world.BuildWorldCreateEvent;
 import de.eintosti.buildsystem.api.event.world.BuildWorldPostCreateEvent;
+import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.generator.CustomGenerator;
@@ -50,6 +51,7 @@ abstract class AbstractWorldCreator {
 
     protected final WorldContext context;
     protected final WorldStorageImpl worldStorage;
+    protected final FolderStorage folderStorage;
     protected final String worldName;
 
     protected BuildWorldType worldType;
@@ -72,9 +74,14 @@ abstract class AbstractWorldCreator {
     protected CompletableFuture<Void> folderDeleted = CompletableFuture.completedFuture(null);
 
     protected AbstractWorldCreator(
-            WorldContext context, WorldStorageImpl worldStorage, String worldName, BuildWorldType worldType) {
+            WorldContext context,
+            WorldStorageImpl worldStorage,
+            FolderStorage folderStorage,
+            String worldName,
+            BuildWorldType worldType) {
         this.context = context;
         this.worldStorage = worldStorage;
+        this.folderStorage = folderStorage;
         this.worldName = worldName;
         this.worldType = worldType;
         this.difficulty = context.configService().current().world().defaults().difficulty();
@@ -141,6 +148,11 @@ abstract class AbstractWorldCreator {
         new WorldDefaults(context.logger(), context.configService(), difficulty, time, worldBorderSize)
                 .apply(world, factory.generatedType(), !isImport());
         newBuildWorld.getUnloader().manageUnload();
+        // Not left to the save timer: after a crash the world's folder would be there without its creator or settings.
+        worldStorage.save(newBuildWorld);
+        if (folder != null) {
+            folderStorage.save(folder);
+        }
         Bukkit.getServer().getPluginManager().callEvent(new BuildWorldPostCreateEvent(newBuildWorld, isImport()));
         return newBuildWorld;
     }

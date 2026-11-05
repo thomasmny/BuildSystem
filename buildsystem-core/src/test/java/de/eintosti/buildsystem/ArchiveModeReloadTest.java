@@ -48,6 +48,7 @@ import de.eintosti.buildsystem.test.SoundlessPlayer;
 import de.eintosti.buildsystem.test.TestData;
 import de.eintosti.buildsystem.util.Permissions;
 import de.eintosti.buildsystem.world.BuildWorldImpl;
+import de.eintosti.buildsystem.world.WorldServiceImpl;
 import de.eintosti.buildsystem.world.data.WorldDataSchema;
 import de.eintosti.buildsystem.world.menu.setup.LayoutEditorMenu;
 import java.io.File;
@@ -62,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.bukkit.Bukkit;
@@ -565,9 +567,18 @@ class ArchiveModeReloadTest {
      * Moves the storage to YAML through the migrate command, for the tests about players.yml.
      */
     private void useYaml() {
+        // The migration refuses to run before the stored entries have loaded.
+        CompletableFuture<Void> loaded = CompletableFuture.allOf(
+                ((WorldServiceImpl) api().getWorldService()).worldsLoaded(),
+                ((PlayerServiceImpl) api().getPlayerService()).playersLoaded());
+        long deadline = System.currentTimeMillis() + 10_000;
+        while (!loaded.isDone()) {
+            assertTrue(System.currentTimeMillis() < deadline, "the stored entries never loaded");
+            server.getScheduler().performOneTick();
+            Thread.onSpinWait();
+        }
         server.dispatchCommand(server.getConsoleSender(), "buildsystem storage migrate yaml confirm");
         File config = new File(plugin.getDataFolder(), "config.yml");
-        long deadline = System.currentTimeMillis() + 10_000;
         while (!"yaml".equals(YamlConfiguration.loadConfiguration(config).getString("storage.type"))) {
             assertTrue(System.currentTimeMillis() < deadline, "the storage never moved to YAML");
             server.getScheduler().performOneTick();

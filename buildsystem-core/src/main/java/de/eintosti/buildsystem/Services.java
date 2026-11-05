@@ -50,6 +50,7 @@ import de.eintosti.buildsystem.world.download.WorldDownloadService;
 import de.eintosti.buildsystem.world.lifecycle.WorldOperations;
 import de.eintosti.buildsystem.world.spawn.SpawnService;
 import java.io.File;
+import java.util.concurrent.CompletableFuture;
 import org.bukkit.NamespacedKey;
 import org.jspecify.annotations.NullMarked;
 
@@ -203,6 +204,11 @@ public final class Services {
      */
     void loadWorlds() {
         this.worldService.init();
+        // The tables are upgraded by now, so this only builds the views, which nothing in the plugin waits for. After
+        // the loads, since the views share their connection. A failed worlds load never completes, which leaves the
+        // views as they are until a restart that loads.
+        CompletableFuture.allOf(worldService.worldsLoaded(), playerService.playersLoaded())
+                .whenCompleteAsync((ignored, failure) -> storageBackend.prepare(), taskScheduler.background());
     }
 
     /**

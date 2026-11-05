@@ -93,7 +93,10 @@ class WorldCodecTest {
 
             BuildWorldImpl world = codec.deserialize(key, section);
 
-            assertEquals(CodecSamples.asMap(section), CodecSamples.reparsed(codec.serialize(world)), key);
+            assertEquals(
+                    CodecSamples.withBuildersAsFields(CodecSamples.asMap(section)),
+                    CodecSamples.reparsed(codec.serialize(world)),
+                    key);
         }
     }
 

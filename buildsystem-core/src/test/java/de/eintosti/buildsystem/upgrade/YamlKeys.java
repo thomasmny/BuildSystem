@@ -45,6 +45,18 @@ final class YamlKeys {
     }
 
     /**
+     * {@return {@code rename}, then moving a creator to its {@code uuid} field} Since 4.1 a creator is stored as a
+     * {@code uuid} and a {@code name} rather than as one string, so the old leaf lives on below it. The builders list
+     * keeps its key.
+     */
+    static UnaryOperator<String> creatorAsFields(UnaryOperator<String> rename) {
+        return key -> {
+            String renamed = rename.apply(key);
+            return renamed.endsWith(".creator") ? renamed + ".uuid" : renamed;
+        };
+    }
+
+    /**
      * Asserts that every leaf key of each file in {@code before} is still in the same file in {@code after}.
      *
      * @param rename Maps a key of the old file to where the new version keeps it, for files whose sections are re-keyed

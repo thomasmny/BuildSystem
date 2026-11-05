@@ -19,6 +19,7 @@ package de.eintosti.buildsystem.storage;
 
 import de.eintosti.buildsystem.storage.codec.Codec;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,9 @@ import org.jspecify.annotations.Nullable;
  * <p>Entities are serialized on the calling thread, where their state is owned, and only the captured maps are written
  * off it. Writes run one after another in the order they were submitted, so a save queued before a delete can never
  * land after it and bring the entry back.
+ *
+ * <p>A save only writes what changed since the last write of that entry, so saving everything on a timer stays cheap.
+ * Nothing is known about an entry until its first save, which is also what rewrites an entry read in an older format.
  */
 @NullMarked
 public final class EntityCollection<T> {
@@ -63,6 +67,12 @@ public final class EntityCollection<T> {
     private final Map<String, Map<String, Object>> skipped = new ConcurrentHashMap<>();
 
     private final Set<String> refusalsLogged = ConcurrentHashMap.newKeySet();
+
+    /**
+     * What was last queued for each key. Compared against what was queued rather than what was written: otherwise a
+     * value changed and changed back while the first write is pending would be skipped, leaving the first one stored.
+     */
+    private final Map<String, Map<String, Object>> lastQueued = new HashMap<>();
 
     /**
      * @param label What one entity is called in log messages
@@ -108,7 +118,28 @@ public final class EntityCollection<T> {
         }
         Map<String, Map<String, Object>> serialized = serialize(values);
         serialized.keySet().removeIf(this::skipped);
-        return write(() -> store.upsert(serialized));
+        return writeChanged(serialized);
+    }
+
+    private synchronized CompletableFuture<Void> writeChanged(Map<String, Map<String, Object>> serialized) {
+        serialized.entrySet().removeIf(entry -> entry.getValue().equals(lastQueued.get(entry.getKey())));
+        if (serialized.isEmpty()) {
+            // Callers such as the shutdown wait on this for what is already queued.
+            return lastWrite.handle((ignored, throwable) -> null);
+        }
+        lastQueued.putAll(serialized);
+        return write(() -> store.upsert(serialized)).whenComplete((ignored, failure) -> {
+            if (failure != null) {
+                forget(serialized);
+            }
+        });
+    }
+
+    /**
+     * Makes the next save write these entries again, unless something newer was queued for them since.
+     */
+    private synchronized void forget(Map<String, Map<String, Object>> entries) {
+        entries.forEach(lastQueued::remove);
     }
 
     /**
@@ -169,7 +200,21 @@ public final class EntityCollection<T> {
         Map<String, Map<String, Object>> serialized = serialize(values);
         serialized.keySet().removeIf(this::skipped);
         serialized.putAll(skipped);
-        return write(() -> store.replaceAll(serialized));
+        return writeAll(serialized);
+    }
+
+    private synchronized CompletableFuture<Void> writeAll(Map<String, Map<String, Object>> serialized) {
+        forgetEverything();
+        lastQueued.putAll(serialized);
+        return write(() -> store.replaceAll(serialized)).whenComplete((ignored, failure) -> {
+            if (failure != null) {
+                forgetEverything();
+            }
+        });
+    }
+
+    private synchronized void forgetEverything() {
+        lastQueued.clear();
     }
 
     public CompletableFuture<Void> delete(T value) {
@@ -181,6 +226,11 @@ public final class EntityCollection<T> {
             return CompletableFuture.completedFuture(null);
         }
         skipped.remove(key);
+        return writeDelete(key);
+    }
+
+    private synchronized CompletableFuture<Void> writeDelete(String key) {
+        lastQueued.remove(key);
         return write(() -> store.delete(key));
     }
 
@@ -196,10 +246,12 @@ public final class EntityCollection<T> {
     }
 
     /**
-     * Sends every write that has not started yet to {@code store}. Only safe while writes are held.
+     * Sends every write that has not started yet to {@code store}. Only safe while writes are held. What was queued
+     * describes the old store, so the next save writes every entry again.
      */
-    void switchTo(EntityStore store) {
+    synchronized void switchTo(EntityStore store) {
         this.store = store;
+        forgetEverything();
     }
 
     /**
@@ -245,6 +297,7 @@ public final class EntityCollection<T> {
     public CompletableFuture<Map<String, T>> load(BiConsumer<Map<String, T>, ConfigurationSection> link) {
         return CompletableFuture.supplyAsync(
                         () -> {
+                            forgetEverything();
                             MemoryConfiguration root = new MemoryConfiguration();
                             Map<String, T> loaded = new LinkedHashMap<>();
                             Map<String, Map<String, Object>> unparsed = new LinkedHashMap<>();

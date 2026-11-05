@@ -113,8 +113,8 @@ class Upgrade302Test {
                 fixture,
                 saved,
                 Map.of(
-                        "worlds.yml", rekey("worlds.", worldIds(fixture)),
-                        "folders.yml", rekey("folders.", folderIds),
+                        "worlds.yml", YamlKeys.creatorAsFields(rekey("worlds.", worldIds(fixture))),
+                        "folders.yml", YamlKeys.creatorAsFields(rekey("folders.", folderIds)),
                         "config.yml", Upgrade302Test::movedConfigKey),
                 Map.of(
                         // Replaced by data.visibility.

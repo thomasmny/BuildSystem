@@ -100,11 +100,11 @@ public final class WorldCodec implements Codec<BuildWorld> {
         world.put(UUID_KEY, buildWorld.getUniqueId().toString());
         Builders builders = buildWorld.getBuilders();
         if (builders.getCreator() != null) {
-            world.put(CREATOR, builders.getCreator().toString());
+            world.put(CREATOR, BuilderCodec.serialize(builders.getCreator()));
         }
         world.put(TYPE, buildWorld.getType().name());
         world.put(DATE, buildWorld.getCreation());
-        world.put(BUILDERS, BuilderListCodec.format(builders.getAllBuilders()));
+        world.put(BUILDERS, BuilderCodec.serialize(builders.getAllBuilders()));
         if (buildWorld.getCustomGenerator() != null) {
             world.put(CHUNK_GENERATOR, buildWorld.getCustomGenerator().toString());
         }
@@ -150,7 +150,7 @@ public final class WorldCodec implements Codec<BuildWorld> {
         BuildWorldType worldType = parseType(name, section);
         WorldDataImpl worldData = parseWorldData(name, section);
         long creationDate = section.isLong(DATE) ? section.getLong(DATE) : -1;
-        List<Builder> builders = BuilderListCodec.parse(section.getString(BUILDERS));
+        List<Builder> builders = BuilderCodec.parseList(section, BUILDERS);
         String generatorName = section.getString(CHUNK_GENERATOR);
         CustomGeneratorImpl customGenerator =
                 generatorName != null ? CustomGeneratorImpl.stored(generatorName, name) : null;
@@ -319,6 +319,10 @@ public final class WorldCodec implements Codec<BuildWorld> {
     }
 
     private @Nullable Builder parseCreator(String worldName, ConfigurationSection section) {
+        if (section.isConfigurationSection(CREATOR)) {
+            return BuilderCodec.parse(section, CREATOR);
+        }
+
         final String creator = section.getString(CREATOR);
 
         // Previously, creator name & id were stored separately

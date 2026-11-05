@@ -225,6 +225,31 @@ final class CodecSamples {
         return values;
     }
 
+    /**
+     * {@return the values of an entry written by 4.0 as 4.1 writes them} Only the shape of the creator and the builders
+     * changed, from {@code <uuid>,<name>} strings to fields.
+     */
+    static Map<String, Object> withBuildersAsFields(Map<String, Object> values) {
+        Map<String, Object> converted = new LinkedHashMap<>(values);
+        converted.computeIfPresent("creator", (key, creator) -> builderFields(creator.toString()));
+        converted.computeIfPresent(
+                "builders",
+                (key, builders) -> builders.toString().isEmpty()
+                        ? List.of()
+                        : Arrays.stream(builders.toString().split(";"))
+                                .map(CodecSamples::builderFields)
+                                .toList());
+        return converted;
+    }
+
+    private static Map<String, Object> builderFields(String legacy) {
+        String[] parts = legacy.split(",");
+        Map<String, Object> fields = new LinkedHashMap<>();
+        fields.put("uuid", parts[0]);
+        fields.put("name", parts[1]);
+        return fields;
+    }
+
     static Map<String, Object> reparsed(Map<String, Object> serialized) {
         return asMap(section(toYaml(Map.of("entry", serialized)), "entry"));
     }

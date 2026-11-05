@@ -37,6 +37,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.eintosti.buildsystem.BuildSystemPlugin;
+import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.data.BuildWorldType;
 import de.eintosti.buildsystem.api.world.lifecycle.WorldTeleporter;
@@ -89,6 +90,7 @@ class WorldCreationPromptsTest {
     private final Prompts.PromptFlow flow = mock(Prompts.PromptFlow.class, RETURNS_SELF);
     private WorldContext context;
     private WorldStorageImpl worldStorage;
+    private final FolderStorage folderStorage = mock(FolderStorage.class);
     private WorldBuilderImpl builder;
     private Messages messages;
     private MockedStatic<Bukkit> bukkit;
@@ -129,7 +131,7 @@ class WorldCreationPromptsTest {
         WorldServiceImpl worldService = mock(WorldServiceImpl.class);
         when(worldService.getWorldStorage()).thenReturn(worldStorage);
         when(prompts.sanitizeWorldName(player, "copy")).thenReturn("copy");
-        builder = spy(new WorldBuilderImpl(context, worldStorage, dataFolder, "copy"));
+        builder = spy(new WorldBuilderImpl(context, worldStorage, folderStorage, dataFolder, "copy"));
         when(worldService.newWorld("copy")).thenReturn(builder);
         when(prompts.flow(player)).thenReturn(flow);
 
@@ -194,7 +196,7 @@ class WorldCreationPromptsTest {
 
         assertTrue(worldStorage.isBeingCreated("copy"));
         assertEquals(List.of(), worldStorage.unimportedWorldNames(), "a world being created is not importable");
-        assertNull(new WorldImporterImpl(context, worldStorage, "copy")
+        assertNull(new WorldImporterImpl(context, worldStorage, folderStorage, "copy")
                 .notify(player)
                 .build());
         verify(messages).sendMessage(eq(player), eq("worlds_world_exists"), any(Placeholders.class));

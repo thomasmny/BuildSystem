@@ -45,6 +45,7 @@ import org.jspecify.annotations.Nullable;
 public final class MongoConnection implements Database {
 
     private static final int SERVER_TIMEOUT_SECONDS = 10;
+    private static final String METADATA = "meta";
 
     private final MongoClient client;
     private final MongoDatabase database;
@@ -103,8 +104,12 @@ public final class MongoConnection implements Database {
 
     @Override
     public boolean exists(EntityKind kind) {
+        return collectionExists(collectionPrefix + kind.id());
+    }
+
+    private boolean collectionExists(String name) {
         try {
-            return database.listCollectionNames().into(new ArrayList<>()).contains(collectionPrefix + kind.id());
+            return database.listCollectionNames().into(new ArrayList<>()).contains(name);
         } catch (MongoException e) {
             throw new StorageException(
                     "Could not list the collections: " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
@@ -125,19 +130,31 @@ public final class MongoConnection implements Database {
 
     @Override
     public EntityStore collection(EntityKind kind) {
+        return open(collectionPrefix + kind.id());
+    }
+
+    @Override
+    public boolean hasMetadata() {
+        return collectionExists(collectionPrefix + METADATA);
+    }
+
+    @Override
+    public EntityStore metadata() {
+        return open(collectionPrefix + METADATA);
+    }
+
+    private EntityStore open(String name) {
         // MongoDB only creates a collection on the first write. Created now, so that it exists from here on like a
         // table does, and an emptied collection is not taken for a new one.
-        if (!exists(kind)) {
+        if (!collectionExists(name)) {
             try {
-                database.createCollection(collectionPrefix + kind.id());
+                database.createCollection(name);
             } catch (MongoException e) {
                 throw new StorageException(
-                        "Could not create " + collectionPrefix + kind.id() + ": "
-                                + e.getClass().getSimpleName() + ": " + e.getMessage(),
-                        e);
+                        "Could not create " + name + ": " + e.getClass().getSimpleName() + ": " + e.getMessage(), e);
             }
         }
-        return new MongoEntityStore(database.getCollection(collectionPrefix + kind.id()), logger);
+        return new MongoEntityStore(database.getCollection(name), logger);
     }
 
     @Override

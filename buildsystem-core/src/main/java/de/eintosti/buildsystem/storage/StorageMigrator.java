@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -195,7 +196,7 @@ public final class StorageMigrator {
                         },
                         background)
                 .thenComposeAsync(stores -> hold(gate, snapshots).thenApply(ignored -> stores), mainThread)
-                .thenApplyAsync(stores -> copy(type, stores, snapshots), background)
+                .thenApplyAsync(stores -> copy(type, stores, snapshots, target), background)
                 .thenApplyAsync(stores -> switchTo(type, stores, target, gate), mainThread)
                 .thenApply(ignored -> {
                     Map<EntityKind, Integer> counts = new EnumMap<>(EntityKind.class);
@@ -318,7 +319,8 @@ public final class StorageMigrator {
     private Map<EntityKind, EntityStore> copy(
             StorageType type,
             Map<EntityKind, EntityStore> stores,
-            Map<EntityKind, Map<String, Map<String, Object>>> snapshots) {
+            Map<EntityKind, Map<String, Map<String, Object>>> snapshots,
+            AtomicReference<@Nullable StorageBackend> target) {
         for (Part<?> part : parts) {
             EntityKind kind = part.kind();
             // The held writes are done, so the source holds everything in memory, and whatever else it holds was never
@@ -334,6 +336,7 @@ public final class StorageMigrator {
                         null);
             }
         }
+        Objects.requireNonNull(target.get()).prepare();
         return stores;
     }
 

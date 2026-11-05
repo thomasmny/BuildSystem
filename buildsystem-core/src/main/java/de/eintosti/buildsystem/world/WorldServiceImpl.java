@@ -129,14 +129,15 @@ public class WorldServiceImpl implements WorldService {
     @Contract("_ -> new")
     public WorldBuilderImpl newWorld(String name) {
         String worldName = validateWorldName(name);
-        return new WorldBuilderImpl(services.worldContext(), worldStorage, plugin.getDataFolder(), worldName);
+        return new WorldBuilderImpl(
+                services.worldContext(), worldStorage, folderStorage, plugin.getDataFolder(), worldName);
     }
 
     @Override
     @Contract("_ -> new")
     public WorldImporter importWorld(String name) {
         String worldName = validateWorldName(name);
-        return new WorldImporterImpl(services.worldContext(), worldStorage, worldName);
+        return new WorldImporterImpl(services.worldContext(), worldStorage, folderStorage, worldName);
     }
 
     /**
@@ -258,7 +259,8 @@ public class WorldServiceImpl implements WorldService {
             }
         }
 
-        WorldImporterImpl worldImporter = new WorldImporterImpl(services.worldContext(), worldStorage, worldName)
+        WorldImporterImpl worldImporter = new WorldImporterImpl(
+                        services.worldContext(), worldStorage, folderStorage, worldName)
                 .type(worldType)
                 .creator(creator)
                 .customGenerator(

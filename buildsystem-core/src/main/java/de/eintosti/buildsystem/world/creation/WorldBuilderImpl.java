@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.world.creation;
 
+import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.WorldBuilder;
@@ -49,8 +50,13 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
     private final File dataFolder;
     private @Nullable String template = null;
 
-    public WorldBuilderImpl(WorldContext context, WorldStorageImpl worldStorage, File dataFolder, String worldName) {
-        super(context, worldStorage, worldName, BuildWorldType.NORMAL);
+    public WorldBuilderImpl(
+            WorldContext context,
+            WorldStorageImpl worldStorage,
+            FolderStorage folderStorage,
+            File dataFolder,
+            String worldName) {
+        super(context, worldStorage, folderStorage, worldName, BuildWorldType.NORMAL);
         this.dataFolder = dataFolder;
     }
 
