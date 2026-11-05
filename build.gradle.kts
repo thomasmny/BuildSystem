@@ -5,7 +5,7 @@ plugins {
     // The core module writes the plugin jar to the root build/libs, so the root needs a clean task too.
     base
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
-    id("com.diffplug.spotless") version "8.10.4" apply false
+    id("com.diffplug.spotless") version "8.11.0" apply false
 }
 
 nexusPublishing {
