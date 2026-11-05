@@ -294,6 +294,7 @@ public final class StorageMigrator {
             }
             stores.put(part.kind(), backend.collection(part.kind()));
         });
+        backend.createViews();
         return stores;
     }
 

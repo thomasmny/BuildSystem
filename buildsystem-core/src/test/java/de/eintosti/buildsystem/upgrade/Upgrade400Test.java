@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.UnaryOperator;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -70,7 +71,13 @@ class Upgrade400Test {
             server.stopAndCopyTo(saved);
         }
 
-        YamlKeys.assertNoKeyLost(fixture, saved, Map.of(), Map.of());
+        YamlKeys.assertNoKeyLost(
+                fixture,
+                saved,
+                Map.of(
+                        "worlds.yml", YamlKeys.creatorAsFields(UnaryOperator.identity()),
+                        "folders.yml", YamlKeys.creatorAsFields(UnaryOperator.identity())),
+                Map.of());
         // The global spawn is read back from spawn.yml by the next start; until then the file is all there is.
         assertEquals(
                 "lobby:0.5:65.0:0.5:90.0:0.0",

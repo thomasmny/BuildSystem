@@ -62,7 +62,7 @@ public class BuildSystemPlugin extends JavaPlugin {
     public static final int METRICS_ID = 7427;
     public static final String ADMIN_PERMISSION = Permissions.ADMIN;
 
-    private static final long CONFIG_SAVE_INTERVAL_TICKS = 5L * 60L * 20L;
+    private static final long CONFIG_SAVE_INTERVAL_TICKS = 60L * 20L;
 
     private ConfigService configService;
     private Messages messages;

@@ -25,7 +25,11 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.EnumSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -38,6 +42,7 @@ import org.jspecify.annotations.Nullable;
 public final class SqlDatabase implements Database {
 
     private static final int VALID_TIMEOUT_SECONDS = 5;
+    private static final String METADATA = "meta";
 
     private final SqlDialect dialect;
     private final Driver driver;
@@ -47,6 +52,7 @@ public final class SqlDatabase implements Database {
     private final Logger logger;
 
     private @Nullable Connection connection;
+    private final Set<EntityKind> textColumns = EnumSet.noneOf(EntityKind.class);
 
     private SqlDatabase(
             SqlDialect dialect, Driver driver, String url, Properties properties, String tablePrefix, Logger logger) {
@@ -96,7 +102,10 @@ public final class SqlDatabase implements Database {
 
     @Override
     public boolean exists(EntityKind kind) {
-        String table = tablePrefix + kind.id();
+        return tableExists(tablePrefix + kind.id());
+    }
+
+    private boolean tableExists(String table) {
         return run("look for " + table, connection -> {
             // The name is a LIKE pattern, where _ matches any character, so only an exact match counts.
             try (ResultSet tables = connection
@@ -114,7 +123,84 @@ public final class SqlDatabase implements Database {
 
     @Override
     public void drop(EntityKind kind) {
+        // PostgreSQL refuses to drop a table that a view reads.
+        views().stream().filter(view -> view.kind() == kind).forEach(this::dropView);
         table(kind).dropTable();
+    }
+
+    @Override
+    public boolean hasMetadata() {
+        return tableExists(tablePrefix + METADATA);
+    }
+
+    @Override
+    public EntityStore metadata() {
+        SqlEntityStore store = new SqlEntityStore(this, dialect, tablePrefix + METADATA, logger);
+        store.createTable();
+        return store;
+    }
+
+    /**
+     * A row that is not JSON makes the conversion fail. It is then left as it is, since the plugin skips and keeps such
+     * a row, and the data column still works as text. Views over it would fail on that row, so it gets none.
+     */
+    @Override
+    public synchronized boolean upgradeFormat(int from) {
+        // Format 0 has no views. A later step that changes a column must drop them first: PostgreSQL refuses to change
+        // a column that a view reads.
+        if (from >= 1) {
+            return true;
+        }
+        for (EntityKind kind : EntityKind.values()) {
+            String table = tablePrefix + kind.id();
+            String convert = dialect.convertDataToJson(table);
+            if (convert != null && exists(kind)) {
+                try {
+                    execute("convert " + table, convert);
+                } catch (StorageException e) {
+                    textColumns.add(kind);
+                    logger.warning("Keeping the data column of " + table + " as text, without views, until a row"
+                            + " that is not JSON is fixed or deleted. Tried again on every start: " + e.getMessage());
+                }
+            }
+        }
+        return textColumns.isEmpty();
+    }
+
+    /**
+     * Failing only warns: the plugin does not read the views, and a user without the right to create views, or an older
+     * server without {@code JSON_TABLE}, is no reason to stop the server.
+     */
+    @Override
+    public synchronized void createViews() {
+        for (SqlViews.View view : views()) {
+            try {
+                if (!textColumns.contains(view.kind()) && exists(view.kind())) {
+                    dropView(view);
+                    execute("create " + view.name(), "CREATE VIEW " + view.name() + " AS " + view.select());
+                }
+            } catch (StorageException e) {
+                logger.warning("Could not create the view " + view.name() + ", which only outside tools read: "
+                        + e.getMessage());
+            }
+        }
+    }
+
+    private List<SqlViews.View> views() {
+        return SqlViews.of(dialect, tablePrefix);
+    }
+
+    private void dropView(SqlViews.View view) {
+        execute("drop " + view.name(), "DROP VIEW IF EXISTS " + view.name());
+    }
+
+    private void execute(String action, String sql) {
+        run(action, connection -> {
+            try (Statement statement = connection.createStatement()) {
+                statement.execute(sql);
+            }
+            return null;
+        });
     }
 
     /**

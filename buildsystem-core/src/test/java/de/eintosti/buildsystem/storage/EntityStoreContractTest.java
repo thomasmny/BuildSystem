@@ -101,7 +101,7 @@ public abstract class EntityStoreContractTest {
      */
     protected final String tablePrefix = "t" + UUID.randomUUID().toString().substring(0, 8) + "_";
 
-    private StorageBackend backend;
+    protected StorageBackend backend;
 
     /**
      * {@return the {@code storage} settings that select the backend under test}
@@ -125,6 +125,13 @@ public abstract class EntityStoreContractTest {
     void close() {
         backend.close();
         MockBukkit.unmock();
+    }
+
+    /**
+     * {@return the format the database under test says it holds}
+     */
+    protected int storedFormat() {
+        return backend.storedFormat();
     }
 
     /**
@@ -346,7 +353,7 @@ public abstract class EntityStoreContractTest {
         assertEquals(Map.of(), backend.store(EntityKind.WORLDS).loadAll());
     }
 
-    private void restart() {
+    protected void restart() {
         backend.close();
         backend = StorageBackend.connect(settings().type(), settings(), dataFolder, LOGGER);
     }
@@ -424,6 +431,41 @@ public abstract class EntityStoreContractTest {
 
         assertEquals(entries, store("players").loadAll());
         assertEquals(Map.of("kept", Map.of("name", "kept")), store("worlds").loadAll());
+    }
+
+    @Test
+    void aNewDatabase_recordsTheFormatItIsWrittenIn() {
+        Assumptions.assumeFalse(settings().type() == StorageType.YAML, "YAML files have their own version");
+
+        store("players");
+
+        assertEquals(StorageBackend.FORMAT_VERSION, backend.storedFormat());
+    }
+
+    @Test
+    void connecting_recordsNothing() {
+        Assumptions.assumeFalse(settings().type() == StorageType.YAML, "YAML files have their own version");
+
+        StorageBackend probe = StorageBackend.connect(settings().type(), settings(), dataFolder, LOGGER);
+        try {
+            assertEquals(0, probe.storedFormat());
+        } finally {
+            probe.close();
+        }
+    }
+
+    @Test
+    void aFormatFromANewerVersion_isRefused() {
+        Assumptions.assumeFalse(settings().type() == StorageType.YAML, "YAML files have their own version");
+        store("players").upsert(Map.of("kept", Map.of("n", "1")));
+        backend.writeFormat(StorageBackend.FORMAT_VERSION + 1);
+
+        StorageException refused = assertThrows(
+                StorageException.class,
+                () -> StorageBackend.connect(settings().type(), settings(), dataFolder, LOGGER));
+
+        assertTrue(refused.getMessage().contains("newer version"), refused.getMessage());
+        assertEquals(Map.of("kept", Map.of("n", "1")), store("players").loadAll());
     }
 
     @Test

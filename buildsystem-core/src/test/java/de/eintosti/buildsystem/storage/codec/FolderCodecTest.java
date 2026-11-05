@@ -69,7 +69,10 @@ class FolderCodecTest {
                 folder.setParent(parent(UUID.fromString(parent), folder));
             }
 
-            assertEquals(CodecSamples.asMap(section), CodecSamples.reparsed(codec.serialize(folder)), key);
+            assertEquals(
+                    CodecSamples.withBuildersAsFields(CodecSamples.asMap(section)),
+                    CodecSamples.reparsed(codec.serialize(folder)),
+                    key);
         }
     }
 

@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.storage.codec;
 
-import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategoryRegistry;
@@ -65,7 +64,7 @@ public final class FolderCodec implements Codec<Folder> {
         Map<String, Object> serialized = new LinkedHashMap<>();
         serialized.put("name", folder.getName());
         serialized.put("uuid", folder.getUniqueId().toString());
-        serialized.put("creator", folder.getCreator().toString());
+        serialized.put("creator", BuilderCodec.serialize(folder.getCreator()));
         serialized.put("creation", folder.getCreation());
         // A subfolder always has its parent's category, so a whole tree saves its top folder's, which keeps an
         // unresolved category the same across the tree.
@@ -104,8 +103,7 @@ public final class FolderCodec implements Codec<Folder> {
         FolderImpl folder = FolderImpl.builder(context, Codec.canonicalUuid(key))
                 .name(name)
                 .creator(Objects.requireNonNull(
-                        Builder.deserialize(section.getString("creator")),
-                        "Creator cannot be null for folder: " + name))
+                        BuilderCodec.parse(section, "creator"), "Creator cannot be null for folder: " + name))
                 .creation(section.getLong("creation", System.currentTimeMillis()))
                 .category(category != null ? category : categoryRegistry.getDefault())
                 .material(material != null ? material : Material.CHEST)

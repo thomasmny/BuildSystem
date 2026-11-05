@@ -40,6 +40,31 @@ public interface Database extends AutoCloseable {
      */
     void drop(EntityKind kind);
 
+    /**
+     * {@return whether the table or collection that records the format of the data exists}
+     */
+    boolean hasMetadata();
+
+    /**
+     * {@return the store that records the format of the data, created if it does not exist yet}
+     */
+    EntityStore metadata();
+
+    /**
+     * Brings tables or collections written in format {@code from} up to {@link StorageBackend#FORMAT_VERSION}. An entry
+     * in an older shape needs nothing here, since the codecs read every older shape.
+     *
+     * @return Whether everything was upgraded. If not, the format stays as it was, so the next start tries again.
+     */
+    default boolean upgradeFormat(int from) {
+        return true;
+    }
+
+    /**
+     * Creates or replaces the views that outside tools read, over the tables that exist.
+     */
+    default void createViews() {}
+
     @Override
     void close();
 }

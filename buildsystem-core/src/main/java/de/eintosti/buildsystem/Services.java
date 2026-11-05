@@ -157,6 +157,7 @@ public final class Services {
         (this.playerService = new PlayerServiceImpl(
                         plugin, configService, worldStorage, taskScheduler, storageBackend.store(EntityKind.PLAYERS)))
                 .init();
+        storageBackend.createViews();
         this.storageMigrator =
                 new StorageMigrator(plugin, this, worldStorage, folderStorage, playerService.getPlayerStorage());
         this.navigatorEditorService = new NavigatorEditorService();

@@ -52,6 +52,11 @@ class PostgresEntityStoreContractTest extends SqlEntityStoreContractTest {
     }
 
     @Override
+    protected String dataParameter() {
+        return "CAST(? AS JSON)";
+    }
+
+    @Override
     protected PluginConfig.Storage.Database settings() {
         return settings(StorageType.POSTGRESQL, DATABASE, 5432);
     }

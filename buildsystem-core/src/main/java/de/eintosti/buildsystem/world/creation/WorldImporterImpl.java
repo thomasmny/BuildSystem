@@ -17,6 +17,7 @@
  */
 package de.eintosti.buildsystem.world.creation;
 
+import de.eintosti.buildsystem.api.storage.FolderStorage;
 import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.creation.WorldImporter;
@@ -38,8 +39,9 @@ public class WorldImporterImpl extends AbstractWorldCreator implements WorldImpo
 
     private final WorldDataVersionGuard versionGuard;
 
-    public WorldImporterImpl(WorldContext context, WorldStorageImpl worldStorage, String worldName) {
-        super(context, worldStorage, worldName, BuildWorldType.IMPORTED);
+    public WorldImporterImpl(
+            WorldContext context, WorldStorageImpl worldStorage, FolderStorage folderStorage, String worldName) {
+        super(context, worldStorage, folderStorage, worldName, BuildWorldType.IMPORTED);
         this.versionGuard = new WorldDataVersionGuard(context.logger(), worldName);
         this.creationDate = FileUtils.getDirectoryCreation(FileUtils.worldFolder(worldName));
     }
