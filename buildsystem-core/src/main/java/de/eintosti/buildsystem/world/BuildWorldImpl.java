@@ -80,6 +80,8 @@ public final class BuildWorldImpl implements BuildWorld, HeadProfileSource {
     private final WorldPermissionsImpl worldPermissions;
     private final WorldTeleporterImpl worldTeleporter;
 
+    private Runnable changeListener = () -> {};
+
     public BuildWorldImpl(
             WorldContext context,
             String name,
@@ -163,6 +165,8 @@ public final class BuildWorldImpl implements BuildWorld, HeadProfileSource {
         this.folder = folder;
 
         this.worldData.setOverride(this::folderOverride);
+        this.worldData.setChangeListener(this::changed);
+        this.builders.setChangeListener(this::changed);
         this.worldData.setStatusChangeListener((previousStatus, newStatus) -> Bukkit.getServer()
                 .getPluginManager()
                 .callEvent(new BuildWorldStatusChangeEvent(this, previousStatus, newStatus)));
@@ -170,6 +174,17 @@ public final class BuildWorldImpl implements BuildWorld, HeadProfileSource {
         this.worldUnloader = WorldUnloaderImpl.of(context, this);
         this.worldPermissions = WorldPermissionsImpl.of(context, this);
         this.worldTeleporter = WorldTeleporterImpl.of(context, this);
+    }
+
+    /**
+     * @param listener Runs after anything that is saved changes, such as the name, a setting or a builder
+     */
+    public void setChangeListener(Runnable listener) {
+        this.changeListener = listener;
+    }
+
+    private void changed() {
+        changeListener.run();
     }
 
     /**
@@ -213,6 +228,7 @@ public final class BuildWorldImpl implements BuildWorld, HeadProfileSource {
     public void setName(String name) {
         this.name = name;
         this.worldData.setWorldName(name);
+        changed();
     }
 
     @Override

@@ -343,4 +343,61 @@ class YamlWorldStorageRoundTripTest {
         assertEquals(1, loaded.size());
         assertEquals("Good", loaded.iterator().next().getName());
     }
+
+    @Test
+    void saveChanged_writesASettingAndABuilderChangedSinceTheLastSave() {
+        WorldStorageImpl storage = newStorage();
+        BuildWorldImpl world = sampleWorld(UUID.randomUUID(), "Changed");
+        storage.addBuildWorld(world);
+        storage.saveChanged().join();
+
+        world.getData().set(WorldDataKey.PROJECT, "Moved");
+        storage.saveChanged().join();
+        assertEquals(
+                "Moved", newStorage().load().join().iterator().next().getData().get(WorldDataKey.PROJECT));
+
+        world.getBuilders().addBuilder(Builder.of(UUID.randomUUID(), "Joined"));
+        storage.saveChanged().join();
+        assertTrue(newStorage()
+                .load()
+                .join()
+                .iterator()
+                .next()
+                .getBuilders()
+                .getBuilderNames()
+                .contains("Joined"));
+    }
+
+    @Test
+    void saveChanged_skipsAWorldRemovedAfterItChanged() {
+        WorldStorageImpl storage = newStorage();
+        BuildWorldImpl world = sampleWorld(UUID.randomUUID(), "Removed");
+        storage.addBuildWorld(world);
+        storage.saveChanged().join();
+
+        world.getData().set(WorldDataKey.PROJECT, "Changed before the delete");
+        storage.removeBuildWorld(world);
+        storage.delete(world);
+        storage.saveChanged().join();
+
+        assertTrue(newStorage().load().join().isEmpty());
+    }
+
+    @Test
+    void saveChanged_rewritesALoadedWorldInTheCurrentFormat() throws Exception {
+        UUID uuid = UUID.randomUUID();
+        YamlConfiguration yaml = new YamlConfiguration();
+        yaml.set("worlds.Legacy.uuid", uuid.toString());
+        yaml.set("worlds.Legacy.type", "NORMAL");
+        yaml.set("worlds.Legacy.date", 1L);
+        yaml.set("worlds.Legacy.data.status", "FINISHED");
+        File file = new File(dataFolder, "worlds.yml");
+        yaml.save(file);
+
+        WorldStorageImpl storage = newStorage();
+        storage.load().join().forEach(storage::addBuildWorld);
+        storage.saveChanged().join();
+
+        assertTrue(YamlConfiguration.loadConfiguration(file).isConfigurationSection("worlds." + uuid));
+    }
 }

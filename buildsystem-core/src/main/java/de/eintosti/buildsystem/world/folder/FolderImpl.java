@@ -66,6 +66,8 @@ public class FolderImpl implements Folder {
 
     private @Nullable String unresolvedMaterial;
 
+    private Runnable changeListener = () -> {};
+
     public FolderImpl(
             WorldContext context, String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
         this(builder(context, UUID.randomUUID())
@@ -98,6 +100,22 @@ public class FolderImpl implements Folder {
         return new FolderBuilder(context, uuid);
     }
 
+    /**
+     * @param listener Runs after anything that is saved changes for this folder
+     */
+    public void setChangeListener(Runnable listener) {
+        this.changeListener = listener;
+    }
+
+    /**
+     * Reports a change of this folder and of its subfolders, which are saved with the category of the folder at the
+     * top.
+     */
+    private void changed() {
+        changeListener.run();
+        subfolders.forEach(subfolder -> ((FolderImpl) subfolder).changed());
+    }
+
     @Override
     public UUID getUniqueId() {
         return this.uuid;
@@ -114,6 +132,7 @@ public class FolderImpl implements Folder {
             throw new IllegalArgumentException("Folder name must not be blank");
         }
         this.name = name;
+        changed();
     }
 
     @Override
@@ -140,6 +159,7 @@ public class FolderImpl implements Folder {
     public void setIcon(Material material) {
         this.material = material;
         this.unresolvedMaterial = null;
+        changed();
     }
 
     @Override
@@ -150,6 +170,7 @@ public class FolderImpl implements Folder {
     @Override
     public void setIconSkullTexture(@Nullable String skullTexture) {
         this.iconSkullTexture = skullTexture;
+        changed();
     }
 
     @Override
@@ -184,6 +205,7 @@ public class FolderImpl implements Folder {
     public void setCategory(NavigatorCategory category) {
         this.category = category;
         this.unresolvedCategory = null;
+        changed();
     }
 
     /**
@@ -192,6 +214,7 @@ public class FolderImpl implements Folder {
      */
     public void rehome(NavigatorCategory category) {
         this.category = category;
+        changed();
     }
 
     /**
@@ -200,6 +223,7 @@ public class FolderImpl implements Folder {
     public void keepUnresolved(@Nullable String category, @Nullable String material) {
         this.unresolvedCategory = category;
         this.unresolvedMaterial = material;
+        changed();
     }
 
     public @Nullable String getUnresolvedCategory() {
@@ -229,6 +253,7 @@ public class FolderImpl implements Folder {
         }
 
         this.parent = parent;
+        changed();
     }
 
     @Override
@@ -255,6 +280,7 @@ public class FolderImpl implements Folder {
     @Override
     public void addWorld(BuildWorld buildWorld) {
         this.worlds.add(buildWorld.getUniqueId());
+        changed();
         // BuildWorld owns the back-reference; only update it when it is not already pointing here, which also
         // terminates the addWorld <-> setFolder handshake.
         if (buildWorld.getFolder() != this) {
@@ -265,6 +291,7 @@ public class FolderImpl implements Folder {
     @Override
     public void removeWorld(BuildWorld buildWorld) {
         this.worlds.remove(buildWorld.getUniqueId());
+        changed();
         if (buildWorld.getFolder() == this) {
             buildWorld.setFolder(null);
         }
@@ -274,6 +301,7 @@ public class FolderImpl implements Folder {
     public void removeWorld(UUID uuid) {
         // Pure list cleanup for a world that no longer exists (no back-reference to clear).
         this.worlds.remove(uuid);
+        changed();
     }
 
     @Override
@@ -317,6 +345,7 @@ public class FolderImpl implements Folder {
     @Override
     public void setPermission(String permission) {
         this.permission = permission;
+        changed();
     }
 
     @Override
@@ -327,6 +356,7 @@ public class FolderImpl implements Folder {
     @Override
     public void setProject(String project) {
         this.project = project;
+        changed();
     }
 
     @Override

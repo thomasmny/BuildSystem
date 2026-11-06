@@ -49,6 +49,7 @@ public class WorldDataImpl implements WorldData {
     private String worldName;
     private Function<WorldDataKey<?>, @Nullable Object> override = key -> null;
     private @Nullable BiConsumer<BuildWorldStatus, BuildWorldStatus> statusChangeListener;
+    private Runnable changeListener = () -> {};
 
     WorldDataImpl(String worldName, Map<WorldDataKey<?>, Object> values) {
         this.worldName = worldName;
@@ -69,6 +70,13 @@ public class WorldDataImpl implements WorldData {
         this.statusChangeListener = listener;
     }
 
+    /**
+     * @param listener Runs after any stored value changes
+     */
+    public void setChangeListener(Runnable listener) {
+        this.changeListener = listener;
+    }
+
     private void requireKnown(WorldDataKey<?> key) {
         if (!values.containsKey(key)) {
             throw new IllegalArgumentException("Unknown world data key: " + key.id());
@@ -87,6 +95,7 @@ public class WorldDataImpl implements WorldData {
         requireKnown(key);
         Object previous = values.put(key, key.type().cast(Objects.requireNonNull(value, "value")));
         unresolved.remove(key);
+        changeListener.run();
         BiConsumer<BuildWorldStatus, BuildWorldStatus> listener = this.statusChangeListener;
         if (listener != null && key.equals(WorldDataKey.STATUS) && !value.equals(previous)) {
             listener.accept((BuildWorldStatus) previous, (BuildWorldStatus) value);
@@ -106,6 +115,7 @@ public class WorldDataImpl implements WorldData {
     public void keepUnresolved(WorldDataKey<?> key, String raw) {
         requireKnown(key);
         unresolved.put(key, raw);
+        changeListener.run();
     }
 
     /**
