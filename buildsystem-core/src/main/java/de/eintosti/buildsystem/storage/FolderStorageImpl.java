@@ -31,7 +31,10 @@ import de.eintosti.buildsystem.world.folder.FolderImpl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -61,6 +64,13 @@ public class FolderStorageImpl implements FolderStorage {
     private final ConcurrentHashMap<UUID, Folder> folders;
 
     private final EntityCollection<Folder> file;
+
+    /**
+     * The folders that changed since they were last saved, which {@link #saveChanged} writes. A folder counts as changed
+     * once it is added, which also rewrites a folder read in an older format.
+     */
+    private final Set<UUID> changed = ConcurrentHashMap.newKeySet();
+
     private final Supplier<WorldContext> context;
 
     /**
@@ -97,12 +107,44 @@ public class FolderStorageImpl implements FolderStorage {
 
     @Override
     public CompletableFuture<Void> save(Folder folder) {
-        return file.save(folder);
+        return markChangedOnFailure(file.save(folder), List.of(folder));
     }
 
     @Override
     public CompletableFuture<Void> save(Collection<Folder> folders) {
-        return file.save(folders);
+        return markChangedOnFailure(file.save(folders), folders);
+    }
+
+    /**
+     * Saves the folders that changed since they were last saved. A folder removed since is skipped, so it is not
+     * written back after its delete.
+     */
+    public CompletableFuture<Void> saveChanged() {
+        List<Folder> changedFolders = new ArrayList<>();
+        changed.removeIf(uuid -> {
+            Folder folder = folders.get(uuid);
+            if (folder != null) {
+                changedFolders.add(folder);
+            }
+            return true;
+        });
+        return save(changedFolders);
+    }
+
+    private CompletableFuture<Void> markChangedOnFailure(CompletableFuture<Void> save, Collection<Folder> saved) {
+        List<UUID> uuids = saved.stream().map(Folder::getUniqueId).toList();
+        return save.whenComplete((ignored, failure) -> {
+            if (failure != null) {
+                changed.addAll(uuids);
+            }
+        });
+    }
+
+    private void track(Folder folder) {
+        if (folder instanceof FolderImpl impl) {
+            impl.setChangeListener(() -> changed.add(impl.getUniqueId()));
+        }
+        changed.add(folder.getUniqueId());
     }
 
     /**
@@ -137,8 +179,12 @@ public class FolderStorageImpl implements FolderStorage {
      * @return A future that completes once they are in place, and also when loading failed, which is logged
      */
     public CompletableFuture<Void> loadFolders() {
-        return load().thenAccept(loaded -> this.folders.putAll(loaded.stream()
-                        .collect(Collectors.toMap(Folder::getUniqueId, Function.identity(), this::keepFirst))))
+        return load().thenAccept(loaded -> {
+                    Map<UUID, Folder> byUuid = loaded.stream()
+                            .collect(Collectors.toMap(Folder::getUniqueId, Function.identity(), this::keepFirst));
+                    this.folders.putAll(byUuid);
+                    byUuid.values().forEach(this::track);
+                })
                 .exceptionally(throwable -> {
                     logger.log(
                             Level.SEVERE,
@@ -181,6 +227,7 @@ public class FolderStorageImpl implements FolderStorage {
     public Folder createFolder(String name, NavigatorCategory category, @Nullable Folder parent, Builder creator) {
         Folder folder = new FolderImpl(context.get(), name, category, parent, creator);
         folders.put(folder.getUniqueId(), folder);
+        track(folder);
         save(folder);
         fireEvent(new FolderCreatedEvent(folder));
         return folder;

@@ -23,6 +23,7 @@ import static org.mockito.Mockito.*;
 import de.eintosti.buildsystem.BuildSystemPlugin;
 import de.eintosti.buildsystem.Services;
 import de.eintosti.buildsystem.api.storage.WorldStorage;
+import de.eintosti.buildsystem.api.world.BuildWorld;
 import de.eintosti.buildsystem.api.world.builder.Builder;
 import de.eintosti.buildsystem.api.world.display.Folder;
 import de.eintosti.buildsystem.api.world.display.NavigatorCategory;
@@ -182,5 +183,61 @@ class YamlFolderStorageRoundTripTest {
         Folder loadedChild = findByName(loaded, "Child");
         assertNotNull(loadedChild.getParent());
         assertEquals("Parent", loadedChild.getParent().getName());
+    }
+
+    @Test
+    void saveChanged_writesASubfolderWhenTheCategoryItSavesFromItsParentIsSet() {
+        FolderStorageImpl storage = quietStorage();
+        Builder creator = Builder.of(UUID.randomUUID(), "Creator");
+        Folder parent = storage.createFolder("Parent", TestData.PUBLIC, creator);
+        Folder child = storage.createFolder("Child", TestData.PUBLIC, parent, creator);
+        ((FolderImpl) parent).keepUnresolved("deleted", null);
+        storage.saveChanged().join();
+        File file = new File(dataFolder, "folders.yml");
+        String childCategory = "folders." + child.getUniqueId() + ".category";
+        assertEquals("deleted", YamlConfiguration.loadConfiguration(file).getString(childCategory));
+
+        // Only the parent is set, since the child already shows this category.
+        ((FolderImpl) parent).setCategory(TestData.PUBLIC);
+        storage.saveChanged().join();
+
+        assertEquals(
+                TestData.PUBLIC.getId(),
+                YamlConfiguration.loadConfiguration(file).getString(childCategory));
+    }
+
+    @Test
+    void saveChanged_writesAWorldAddedToAFolder_butNotARemovedFolder() {
+        FolderStorageImpl storage = quietStorage();
+        Builder creator = Builder.of(UUID.randomUUID(), "Creator");
+        Folder kept = storage.createFolder("Kept", TestData.PUBLIC, creator);
+        Folder removed = storage.createFolder("Removed", TestData.PUBLIC, creator);
+        storage.saveChanged().join();
+
+        UUID world = UUID.randomUUID();
+        BuildWorld buildWorld = mock(BuildWorld.class);
+        when(buildWorld.getUniqueId()).thenReturn(world);
+        when(buildWorld.getFolder()).thenReturn(kept);
+        kept.addWorld(buildWorld);
+        removed.setProject("Changed before the delete");
+        storage.removeFolder(removed);
+        storage.saveChanged().join();
+
+        Collection<Folder> stored = newStorage().load().join();
+        assertEquals(List.of("Kept"), stored.stream().map(Folder::getName).toList());
+        assertEquals(List.of(world), findByName(stored, "Kept").getWorldUUIDs());
+    }
+
+    private FolderStorageImpl quietStorage() {
+        return new FolderStorageImpl(
+                plugin.getLogger(),
+                services.scheduler().background(),
+                worldStorage,
+                services::worldContext,
+                services::navigatorCategoryRegistry,
+                YamlEntityStore.folders(plugin.getDataFolder(), plugin.getLogger())) {
+            @Override
+            protected void fireEvent(Event event) {}
+        };
     }
 }
