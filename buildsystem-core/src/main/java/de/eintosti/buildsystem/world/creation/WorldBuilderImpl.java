@@ -166,7 +166,7 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
 
         File worldFile = FileUtils.worldFolder(worldName);
         try {
-            FileUtils.copy(templateFile, worldFile);
+            FileUtils.copyWorld(templateFile, worldFile);
         } catch (IOException e) {
             failTemplateCopy(e);
             return null;
@@ -204,7 +204,7 @@ public class WorldBuilderImpl extends AbstractWorldCreator implements WorldBuild
         return CompletableFuture.runAsync(
                         () -> {
                             try {
-                                FileUtils.copy(templateFile, worldFile);
+                                FileUtils.copyWorld(templateFile, worldFile);
                             } catch (IOException e) {
                                 throw new CompletionException(e);
                             }

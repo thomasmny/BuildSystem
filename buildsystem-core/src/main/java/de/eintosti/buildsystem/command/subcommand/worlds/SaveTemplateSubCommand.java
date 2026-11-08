@@ -112,7 +112,7 @@ public class SaveTemplateSubCommand extends WorldSubCommand {
                     return CompletableFuture.runAsync(
                                     () -> {
                                         try {
-                                            FileUtils.copy(worldDir, templateDir);
+                                            FileUtils.copyWorld(worldDir, templateDir);
                                         } catch (IOException e) {
                                             throw new CompletionException(e);
                                         }

@@ -17,7 +17,6 @@
  */
 package de.eintosti.buildsystem.util;
 
-import com.google.common.collect.Sets;
 import de.eintosti.buildsystem.world.WorldNames;
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +46,8 @@ import org.jspecify.annotations.Nullable;
 public final class FileUtils {
 
     private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
-    private static final Set<String> IGNORE_FILES = Sets.newHashSet("uid.dat", "session.lock");
+    private static final Set<String> IGNORE_FILES = Set.of("uid.dat", "session.lock");
+    private static final String WORLD_METADATA_FILE = "metadata.json";
     private static final Set<String> VANILLA_DIMENSIONS = Set.of("overworld", "the_nether", "the_end");
 
     private FileUtils() {}
@@ -193,7 +193,28 @@ public final class FileUtils {
         }
 
         if (source.isDirectory()) {
-            copyDirectory(source, target);
+            copyDirectory(source, target, false);
+        } else {
+            copyFile(source, target);
+        }
+    }
+
+    /**
+     * Copies world files into a new world, omitting files tied to the source world's identity. In addition to the
+     * usual lock and uid files, the root {@code metadata.json} must be regenerated for the copy: retaining it can
+     * prevent the cloned world from loading. Nested files with the same name are preserved.
+     *
+     * @param source The world folder to copy
+     * @param target The new world folder
+     * @throws IOException If any part of the copy fails
+     */
+    public static void copyWorld(File source, File target) throws IOException {
+        if (IGNORE_FILES.contains(source.getName())) {
+            return;
+        }
+
+        if (source.isDirectory()) {
+            copyDirectory(source, target, true);
         } else {
             copyFile(source, target);
         }
@@ -206,7 +227,7 @@ public final class FileUtils {
      * @param target The target directory where the source directory will be copied to
      * @throws IOException If the target cannot be created, the source cannot be listed, or any child fails to copy
      */
-    private static void copyDirectory(File source, File target) throws IOException {
+    private static void copyDirectory(File source, File target, boolean ignoreRootMetadata) throws IOException {
         if (!target.exists() && !target.mkdirs()) {
             throw new IOException("Failed to create target directory: " + target.getAbsolutePath());
         }
@@ -217,7 +238,7 @@ public final class FileUtils {
         }
 
         for (String fileName : fileNames) {
-            if (IGNORE_FILES.contains(fileName)) {
+            if (IGNORE_FILES.contains(fileName) || (ignoreRootMetadata && WORLD_METADATA_FILE.equals(fileName))) {
                 continue;
             }
             copy(new File(source, fileName), new File(target, fileName));
