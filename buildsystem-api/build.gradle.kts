@@ -22,7 +22,7 @@ java {
 // The last released API jar, and japicmp to compare against it. Detached configurations, because in a normal one
 // Gradle resolves this project's own coordinates to the project itself.
 val baselineApi: Configuration = configurations.detachedConfiguration(
-    dependencies.create("de.eintosti:buildsystem-api:4.0.0")
+    dependencies.create("de.eintosti:buildsystem-api:4.1.0")
 ).apply {
     isTransitive = false
 }
